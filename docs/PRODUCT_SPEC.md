@@ -1,7 +1,7 @@
-# 메모앱 제품 명세 — 단계 0
+# 메모앱 제품 명세
 
 ## 목적과 명세 권위
-개인정보를 포함한 S메모를 대체하는 한국어 Windows 앱이다. 중앙 관리창·독립 바탕화면 포스트잇이 중심이고 Android, 여러 PC, 종단간 암호화 동기화, 로컬 OCR·음성·AI까지 최종 범위에 포함한다. 핵심 메모는 계정·서버·인터넷 없이 사용한다. 이번 이관 작업은 **단계 0 개발 준비만**이며 제품 기능 구현을 시작하지 않는다.
+개인정보를 포함한 S메모를 대체하는 한국어 Windows 앱이다. 중앙 관리창·독립 바탕화면 포스트잇이 중심이고 Android, 여러 PC, 종단간 암호화 동기화, 로컬 OCR·음성·AI까지 최종 범위에 포함한다. 핵심 메모는 계정·서버·인터넷 없이 사용한다. 단계 0 준비 이후 최신 사용자 요청으로 **단계 1 실제 개발이 승인**되었다. 중요한 암호 저장/복구 구현은 부모 작업의 독립 검토를 선행한다.
 
 원선택과 운영 지시는 [SOURCE_PROMPT.txt](SOURCE_PROMPT.txt)에 누락 없이 보존했다(27,417바이트, SHA256 `29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d`). 문서 간 충돌 시 원문과 이후 명시적 사용자 변경을 우선한다. 기능별 추적·상태·수용 조건은 FEATURES.json의 134 ID가 유일한 원장이다. STATUS는 진행, VERIFICATION은 실행 근거, README는 사용 안내만 담당한다.
 
@@ -28,9 +28,9 @@ Android: 네이티브 Kotlin + Jetpack Compose 방향을 선택한다. .NET WPF 
 배포: 이후 Windows win-x64 독립 실행 시험판 zip(포터블) 및 설치형을 분리한다. ARM64는 실행 환경 확인 후 지원 목록에 반영한다. 설치형 포맷·배포 서명 인증서·Android 서명키는 이번 골격에 포함하지 않는다. 이번 CI의 DLL/EXE는 런타임 의존 개발 골격이며 설치 가능한 완성 시험판이 아니다. 자동 업데이트·공개 배포는 하지 않는다.
 
 ## 모듈 경계
-UI(Windows/Android), Documents, Notes/Organization, Storage, Cryptography/KeyAccess, Search, Attachments, History, Recovery, ImportExport, Sync, LocalIntelligence, Lifecycle/Updates를 분리한다. Core의 DocumentContract는 **직렬화 계약 골격만**이며 저장·암호화·검증기·동기화 구현이 아니다. Windows UI는 준비 안내만 표시한다. 메모 기능이 있는 것으로 보이게 하는 가짜 버튼은 없다.
+UI(Windows/Android), Documents, Notes/Organization, Storage, Cryptography/KeyAccess, Search, Attachments, History, Recovery, ImportExport, Sync, LocalIntelligence, Lifecycle/Updates를 분리한다. Core의 DocumentContract는 **직렬화 계약 골격만**이며 저장·암호화·검증기·동기화 구현이 아니다. Windows 기본 UI는 암호 저장 검토 대기로 작성을 차단한다. 별도 개발용 --editing-preview에서만 메모리 편집/포스트잇 바인딩을 평가하며 저장/복원 기능이 있는 시험판으로 제출하지 않는다.
 
-Storage는 검증된 암호화 envelope만 받는 계약으로 설계한다. UI/검색/AI는 잠금 해제된 메모리 자료에만 접근한다. 통신 모듈은 기본 비활성이고 저장 계층이 네트워크 클라이언트를 갖지 않는다. 단계 0에는 어떤 실행 중 네트워크·저장 코드도 넣지 않는다.
+Storage는 검증된 암호화 envelope만 받는 계약으로 설계한다. UI/검색/AI는 잠금 해제된 메모리 자료에만 접근한다. 통신 모듈은 기본 비활성이고 저장 계층이 네트워크 클라이언트를 갖지 않는다. 현재도 실행 중 네트워크·파일 저장·암호 코드는 없으며 세션 편집 객체만 추가했다.
 
 ## 문서·데이터 계약 v1
 Windows 편집기 내부 파일을 원본으로 쓰지 않는다. UTF-8 JSON의 버전 있는 블록 문서를 기준으로 rich/plain/markdown을 구분한다. rich는 paragraph/list/checklist/table/link/image 등 노드와 runs/marks를 갖는다. 각 노드의 알 수 없는 필드는 opaque로 보존하고 편집 불가능한 노드는 읽기 전용으로 유지한다. 이를 지원하지 못하는 클라이언트는 저장 자체를 차단한다. WPF FlowDocument는 투영이며 보존용 원본이 아니다.
@@ -97,3 +97,5 @@ AI 질문은 허용한 잠금 해제 메모만 검색하고 근거 note/revision
 
 ## 변경 기록
 2026-10-02: 이번 범위를 단계 0으로 제한(이관 요청). 원문 최종 제품 범위는 그대로 유지. 지원 기간과 Windows 기본 후보를 근거로 .NET 10/WPF 선택. 코드 의존성 없이 계약/검사 골격만 작성. 중요 보안 선택은 자체 검토한 후보이며 구현 전 별도 검토 필요. GitHub Forbidden으로 원격 정책/현재 HEAD/Windows CI 가용성을 확인하지 못함.
+
+2026-10-02 후속 사용자 요청: 단계 1 실제 개발 승인. 상세 설계/중요 선택 검토는 STAGE1_SECURITY_REVIEW.md, 단일 실행 계획은 STAGE1_PLAN.md. 독립 편집 상태·개발용 Windows 바인딩을 먼저 작성하고 암호/복구 코드는 독립 검토 대기.

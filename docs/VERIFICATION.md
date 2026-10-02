@@ -31,3 +31,12 @@
 - S메모 형식/수입: 공개 백업 안내만 조사, 내부 포맷 fixture 미확보.
 - 독립 보안 검토/전문 감사 없음. 설계 자체 검토만 수행, 구현 전 별도 검토 필요.
 - 원격 commit/push/PR, 설치형/포터블 완성 패키지/APK/배포 서명 없음.
+
+## 단계 1 독립 편집 단위 (기준 be6dbed 이후, 코드 커밋은 인계에서 연결)
+- 사용자 재요청에 따른 gh repo view 단 1회: Forbidden. 추가/대체 접근 없음. 원격 작업/Windows CI 보류.
+- 편집 시험을 먼저 작성하고 미구현 CreateNote에서 exit 134 NotImplementedException을 확인했다. 실제 NoteDraft/EditingWorkspace 구현 후 동일 시험 PASS.
+- `dotnet run --project tests/MemoApp.ContractChecks -c Release`: 기존 계약 왕복 + 실제 새 메모/다중 편집 참조/한글 제목·본문/수정 시각·버전/변경 이벤트/다른 메모 독립성/동일값 중복변경 방지/세션 Clear 후 기존 참조 편집 거부 PASS.
+- `dotnet build MemoApp.slnx -c Release`: Linux WPF 교차 빌드 PASS, 0 warning/error. MainWindow·StickyNoteWindow 바인딩을 컴파일했으며 실제 화면/GUI/IME 실행을 시험한 것은 아니다.
+- 원장 검사는 단계 0 전용 상태 강제에서 단계별 상태 허용으로 바꿨다. 근거 없는 검증됨 거부/사용자 미수용/M06 정규화/134 ID·이름 유지 검사는 보존. 6개 Python 회귀 및 원문 checksum 대조 PASS.
+- 기본 제품 실행은 작성 차단. --editing-preview는 명시적 비영속 화면 평가 모드, 저장·암호·재실행 복원 시험판이 아니다.
+- 암호/키/파일 저장/실제 복구는 아직 구현 없음. STAGE1_SECURITY_REVIEW.md 독립 검토 결과를 기다린다. 독립 검토 수행을 주장하지 않는다.

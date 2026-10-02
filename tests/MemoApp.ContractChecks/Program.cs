@@ -23,3 +23,4 @@ if (restored.NoteId != note.NoteId || restored.RevisionId != note.RevisionId ||
 if (restored.Content.GetProperty("nodes")[3].GetProperty("opaque").GetProperty("keep").GetBoolean() != true)
     throw new InvalidOperationException("Unknown node lost");
 Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roundtrip (in-memory only)");
+EditingChecks.Run();

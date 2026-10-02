@@ -8,34 +8,40 @@
       "name": "새 메모 만들기",
       "normalized": "새 메모 만들기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A01: 새 메모 만들기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "A02",
       "name": "메모 수정",
       "normalized": "메모 수정",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A02: 메모 수정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "A03",
@@ -59,7 +65,7 @@
       "name": "메모 자동 저장",
       "normalized": "메모 자동 저장",
       "phase": 1,
-      "status": "미착수",
+      "status": "차단됨",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A04: 메모 자동 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
@@ -69,7 +75,7 @@
       "implementation_locations": [],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "자동 저장의 암호/파일 구현 전에 STAGE1_SECURITY_REVIEW.md 독립 검토 결과 필요."
     },
     {
       "id": "A05",
@@ -93,51 +99,60 @@
       "name": "메모 제목 사용",
       "normalized": "메모 제목 사용",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A06: 메모 제목 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "A07",
       "name": "제목 없이 본문만 사용하는 간단 메모",
       "normalized": "제목 없이 본문만 사용하는 간단 메모",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A07: 제목 없이 본문만 사용하는 간단 메모 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "A08",
       "name": "여러 메모 동시에 열기",
       "normalized": "여러 메모 동시에 열기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A08: 여러 메모 동시에 열기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "A09",
@@ -161,34 +176,40 @@
       "name": "메모 작성일·수정일 표시",
       "normalized": "메모 작성일·수정일 표시",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A10: 메모 작성일·수정일 표시 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "B01",
       "name": "메모를 바탕화면에 작은 창으로 띄우기",
       "normalized": "메모를 바탕화면에 작은 창으로 띄우기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B01: 메모를 바탕화면에 작은 창으로 띄우기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml"
+      ],
       "planned_module": "DesktopNotes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "B02",
@@ -382,17 +403,20 @@
       "name": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용",
       "normalized": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B13: 바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml"
+      ],
       "planned_module": "DesktopNotes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "C01",
@@ -620,17 +644,20 @@
       "name": "서식 없는 단순 텍스트만 사용",
       "normalized": "서식 없는 단순 텍스트만 사용",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C14: 서식 없는 단순 텍스트만 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "독립 일반 텍스트 모드의 생성·편집·저장·재개가 가능하다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+      ],
       "planned_module": "Documents",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "C15",
@@ -2065,34 +2092,40 @@
       "name": "왼쪽 폴더·오른쪽 메모 구조",
       "normalized": "왼쪽 폴더·오른쪽 메모 구조",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "S01: 왼쪽 폴더·오른쪽 메모 구조 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml"
+      ],
       "planned_module": "WindowsUI",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "S02",
       "name": "메모 카드 형태",
       "normalized": "메모 카드 형태",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "S02: 메모 카드 형태 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml"
+      ],
       "planned_module": "WindowsUI",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
     },
     {
       "id": "S04",

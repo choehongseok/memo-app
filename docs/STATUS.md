@@ -1,18 +1,16 @@
 # 현재 상태
-2026-10-02, 단계 0 로컬 준비물 작성·검사 완료, 원격/Windows 확인 차단. 전체 제품 미완성. 제품 ID는 M06 정규화 대체 외 모두 미착수; 사용자 수용 미확인.
+2026-10-02 후속 요청으로 단계 1 실제 개발 진행. 전체 134 기능 미완성. M06 정규화 대체 유지, 사용자 수용 미확인.
 
-실제 환경: Linux x86_64 cloud, `/workspace/memo-app`. origin `https://github.com/choehongseok/memo-app.git`. 최초 branch work, HEAD 없음, 기존 제품 파일 없음. 상위/하위 AGENTS·override 발견 없음. 기존 작업 초기화/삭제 없음.
+실제 cloud: Linux x86_64, `/workspace/memo-app`, origin `https://github.com/choehongseok/memo-app.git`. 기존 준비 branch `preparation/stage-0`/be6dbed 보존, 현재 `development/stage-1`. 작업 전 clean 확인, 초기화/기존 파일 삭제 없음.
 
-원격 확인: gh repo view 및 branches REST 조회 모두 Forbidden. 사전 빈 public 조회는 사용자 제공 과거 정보이며 현재 상태 확인은 아님. 원격 default branch·HEAD·visibility·보호 규칙·쓰기 권한·Actions 설정/한도 미확인. 다른 접근 방식으로 우회하지 않았고 push/PR/main 변경 없음.
+원격: 후속 요청에 따라 gh repo view를 1회 재확인했으나 `Post https://api.github.com/graphql: Forbidden`. 대체 경로 우회/추가 조회/원격 쓰기 없음. 원격 HEAD·보호 규칙·Actions/runner 가용성 미확인. 현재 원격 commit/push/PR 없음.
 
-산출물: SOURCE_PROMPT.txt(전체 원문), PRODUCT_SPEC.md(설계), FEATURES.json(134개), PREPARATION_PLAN.md, README, Core 문서 계약, Windows 준비 창, tests/tools, Windows CI 설정.
+실제 변경: Core 메모리 편집 상태(새 메모/제목/일반 한글 본문/UTC 시각/변경 버전/편집창 상태 공유/세션 종료 시 참조 편집 차단), WPF 관리창/포스트잇 바인딩. 기본 실행은 작성 차단; --editing-preview에서만 명시적 비영속 개발 모드. 저장/암호/복원 코드 없음. 관련 11개 ID 진행 중, A04 암호 저장 독립 검토로 차단, 나머지 미착수.
 
-검사: VERIFICATION.md 참조. 로컬 branch는 `preparation/stage-0`. 원문 대조·변조 시험 6개·메모리 계약·전체 Linux 교차 빌드·패키지 목록·안전 스캔을 수행했다. 마지막 검증 코드 commit: `1bb83db62676eea447881a7e574a187a6a708d42`. 이 코드를 다시 확인한 뒤 문서 인계 commit을 추가한다. 원격/Windows 실행 검증 전 단계 0 완전 종료라고 주장하지 않음.
+검증: 134 ID/이름/원문 SHA 유지, Python 6개 회귀 PASS, Core 실제 편집 상태 검사 PASS, 전체 Linux 교차 빌드 0 경고/오류. Windows UI/IME/DPAPI/실행은 미검증. 상세 근거 VERIFICATION.md.
 
-다음 작업: 접근 복구 후 원격 현재 상태·보호 규칙 확인 → 자료 있으면 보존/통합+draft PR, 여전히 빈 저장소이면 허용된 최초 main 커밋 → Windows CI 실행·로그·산출물 확인. force push 금지.
+즉시 다음 작업: 부모 독립 검토 요청은 STAGE1_SECURITY_REVIEW.md. 이 설계의 키/nonce/KDF 대체/복구/파일 트랜잭션을 별도 검토한 결과와 기준 commit을 받아 수정 후에만 EncryptedVault/WindowsKeyAccess 구현. 승인된 개발 범위의 반복 사용자 승인 요청은 필요 없음.
 
-다음 기능 개발: 별도 보안 검토로 키/nonce/KDF/복구/원자 저장 계약을 확정한 후 단계 1 작은 암호 메모 흐름. 이번에는 진행하지 않음.
+이어갈 계획: STAGE1_PLAN.md. 검토 후 실제 암호 파일 저장·복원·오류/변조·평문 누출 시험 → WPF 자동 저장/잠금/재실행 연결 → 가능한 Windows CI/실행 검증. 원격 접근 복구 시 현황/정책 확인 후 기존 자료 보존/통합+draft PR. force push 금지.
 
-차단: GitHub Forbidden. Android toolchain/실기기·Windows GUI/Hello·S메모 내부 형식/비민감 fixture·모델 추론·배포 서명 미확인/미실행. 비용/외부 API/공개 배포/visibility 변경 없음.
-
-인계: 로컬 git 준비 commit은 보존됨. 원격 commit은 없음. `/workspace/memo-app-stage0.bundle`에 이 브랜치 전체를 보존하며 복원은 `git clone -b preparation/stage-0 /workspace/memo-app-stage0.bundle memo-app-recovered`. 대상 원격 접근이 복구될 때만 실제 저장소와 통합한다.
+보존: stage0 bundle `/workspace/memo-app-stage0.bundle` 유지. 후속 stage1 bundle `/workspace/memo-app-stage1.bundle`에 실제 commit과 모든 문서 보존. 복원 `git clone -b development/stage-1 /workspace/memo-app-stage1.bundle memo-app-recovered`. 로컬 PC 전환·실메모/키·유료 가입·공개 배포·외부 API·visibility 변경 없음.

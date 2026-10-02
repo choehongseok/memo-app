@@ -1,0 +1,10 @@
+<Window x:Class="MemoApp.Windows.StickyNoteWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="임시 포스트잇 — 저장되지 않음" Width="360" Height="400" Background="#FFF7BA">
+ <DockPanel Margin="12">
+  <StackPanel DockPanel.Dock="Top">
+   <TextBlock Text="비영속 개발 모드 · 합성 자료만 입력" Foreground="DarkRed" TextWrapping="Wrap" Margin="0,0,0,8"/>
+   <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+  </StackPanel>
+  <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+ </DockPanel>
+</Window>

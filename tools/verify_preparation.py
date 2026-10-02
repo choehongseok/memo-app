@@ -1,4 +1,4 @@
-"""Stage 0 source integrity. No product-behavior claims."""
+"""Source/ledger integrity across stages. No product-behavior claims."""
 from pathlib import Path
 import hashlib,json,re,sys
 ROOT=Path(__file__).resolve().parents[1]
@@ -18,12 +18,16 @@ def verify_ledger(source,ledger):
   assert r['user_acceptance']=='미확인','사용자 수용 미확인'
   assert r['acceptance_criteria'] and all(isinstance(x,str) and x for x in r['acceptance_criteria'])
   assert r['planned_module'] and isinstance(r['implementation_locations'],list)
-  assert r['test_evidence']==[],'단계 0 기능 검증 주장 금지'
+  assert isinstance(r['test_evidence'],list)
+  assert r['status'] in {'미착수','진행 중','구현됨·미검증','검증됨','차단됨','정규화로 대체됨'}
+  if r['status']=='검증됨':
+   assert r['test_evidence'],'근거 없는 검증 완료 금지'
+   for evidence in r['test_evidence']:
+    assert all(evidence.get(k) for k in ['commit','environment','command','result']), '불완전 검증 근거'
   if r['id']=='M06':
    assert r['status']=='정규화로 대체됨'
    assert r['normalized']=='정규화로 대체됨: M01~M05 유지'
   else:
-   assert r['status']=='미착수','단계 0 제품 구현 주장 금지'
    assert r['normalized']==r['name'],'무단 정규화/제외'
  return len(rows)
 def main():
@@ -36,7 +40,7 @@ def main():
  assert sdk=={'version':'10.0.401','rollForward':'disable','allowPrerelease':False}
  for p in ROOT.glob('**/*.csproj'): assert '<PackageReference' not in p.read_text(),'미검토 제품 의존성'
  for entry in ['*.db','*.key','*.pfx','user-data/','models/']: assert entry in (ROOT/'.gitignore').read_text()
- print(f'PASS: original 27417 bytes/SHA256, {count} exact IDs/names, M06 normalization, preparation boundaries')
+ print(f'PASS: original 27417 bytes/SHA256, {count} exact IDs/names, M06 normalization, scope invariants')
  print('LIMIT: no Windows execution/encryption/storage/recovery/sync/Android/AI verification')
 if __name__=='__main__':
  try: main()
