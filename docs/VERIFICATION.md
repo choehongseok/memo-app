@@ -1,7 +1,7 @@
 # 단계 0 검증 기록
 2026-10-02, cloud Linux x86_64, Python 3.12.14. gh GraphQL repo view/REST branches 모두 Forbidden; 우회 없음. Microsoft SDK 10.0.401(runtime 10.0.12) SHA512 검증 설치. 직접 제품 NuGet 패키지 0개. 기준 HEAD 없음.
 
-## 실행 결과 (첫 구현 커밋 전 작업 트리)
+## 실행 결과 — 코드 commit `1bb83db62676eea447881a7e574a187a6a708d42`
 검사 SDK 실행 경로는 `/workspace/memo-tools/dotnet/dotnet`, `DOTNET_CLI_HOME=/tmp/memo-dotnet-home`, `DOTNET_CLI_TELEMETRY_OPTOUT=1`, `DOTNET_NOLOGO=1`. 아래 명령의 dotnet은 이 SDK를 뜻한다.
 
 | 명령 | 환경/결과 | 증명 범위 |
@@ -11,8 +11,11 @@
 | `dotnet run --project tests/MemoApp.ContractChecks -c Release` | Linux PASS | 메모리 JSON 계약의 한글/표/첨부참조/미지원 노드 보존 |
 | `dotnet build MemoApp.slnx -c Release` | Linux 교차 빌드 PASS, 0 warning/0 error | Core·검사·WPF 컴파일만, Windows 실행 아님 |
 | `dotnet list MemoApp.slnx package --include-transitive` | 세 프로젝트 모두 No packages | 직접/전이 NuGet 제품 패키지 없음; SDK/참조팩 별도 |
+| XML/YAML parse 및 workflow trigger/runner 검사 | Linux PASS | 구문과 설정만, runner 실행 아님 |
 | `git diff --cached --check` | PASS | staged 공백 오류 없음 |
 | `python3 tools/check_commit_safety.py` | PASS | 추적 파일 확장자/대표 비밀 패턴 휴리스틱, 전문 감사 아님 |
+
+커밋 이후 동일 코드에서 공통 검사/전체 빌드를 다시 실행하여 인계한다. Windows 실실행 결과는 여전히 없음.
 
 첫 계약 검사 exit 134: JSON의 공백까지 GetRawText로 비교한 검사 오류. 진단은 IDs/리비전/참조/scope 동일, raw=False·semantic=True를 확인했다. 수정은 JsonElement.DeepEquals로 구조·값 비교하며 title/mode/device/schema/deleted도 검사한다. 내용 보존 수용 조건을 낮추지 않았다. 수정 후 재실행 PASS. 실패 시 시험 내용은 합성 자료만이며 개인정보/키 없음.
 
