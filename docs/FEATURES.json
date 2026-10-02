@@ -16,12 +16,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "A02",
@@ -36,12 +45,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "A03",
@@ -65,17 +83,29 @@
       "name": "메모 자동 저장",
       "normalized": "메모 자동 저장",
       "phase": 1,
-      "status": "차단됨",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A04: 메모 자동 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "자동 저장의 암호/파일 구현 전에 STAGE1_SECURITY_REVIEW.md 독립 검토 결과 필요."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "A05",
@@ -107,12 +137,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "A07",
@@ -127,12 +166,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "A08",
@@ -147,12 +195,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "A09",
@@ -184,12 +241,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "B01",
@@ -208,8 +274,16 @@
         "src/MemoApp.Windows/StickyNoteWindow.xaml"
       ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "67fe9c5a777add6d3c4eda6821d7895472579ceb",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release",
+          "result": "PASS compile only; Windows GUI 미실행"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "B02",
@@ -415,8 +489,16 @@
         "src/MemoApp.Windows/StickyNoteWindow.xaml"
       ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "67fe9c5a777add6d3c4eda6821d7895472579ceb",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release",
+          "result": "PASS compile only; Windows GUI 미실행"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "C01",
@@ -652,12 +734,21 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Editing/NoteDraft.cs",
-        "src/MemoApp.Core/Editing/EditingWorkspace.cs"
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "Documents",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "C15",
@@ -1446,17 +1537,29 @@
       "name": "수정 이력 저장",
       "normalized": "수정 이력 저장",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "M01: 수정 이력 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "History",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "M02",
@@ -1803,34 +1906,58 @@
       "name": "백업 파일 선택 후 복구",
       "normalized": "백업 파일 선택 후 복구",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O06: 백업 파일 선택 후 복구 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "변조·잘못된 키는 적용 전에 차단하고 덮어쓰기/병합/이전을 명시한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "O07",
       "name": "복구 전 현재 상태 자동 보존",
       "normalized": "복구 전 현재 상태 자동 보존",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O07: 복구 전 현재 상태 자동 보존 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "복구 이전 현재 상태를 암호화 보존하고 실패 시 기존 상태를 유지한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "O08",
@@ -1922,17 +2049,29 @@
       "name": "파일 하나를 복사해 다른 PC에서 계속 사용",
       "normalized": "파일 하나를 복사해 다른 PC에서 계속 사용",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "P04: 파일 하나를 복사해 다른 PC에서 계속 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Sync",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "P05",
@@ -2104,8 +2243,16 @@
         "src/MemoApp.Windows/StickyNoteWindow.xaml"
       ],
       "planned_module": "WindowsUI",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "67fe9c5a777add6d3c4eda6821d7895472579ceb",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release",
+          "result": "PASS compile only; Windows GUI 미실행"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "S02",
@@ -2124,8 +2271,16 @@
         "src/MemoApp.Windows/StickyNoteWindow.xaml"
       ],
       "planned_module": "WindowsUI",
-      "test_evidence": [],
-      "blocking_reason": "메모리 편집/개발용 바인딩 부분 구현. 암호 저장·복원 및 Windows 실제 UI 미검증. 부모 독립 보안 검토 대기."
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "67fe9c5a777add6d3c4eda6821d7895472579ceb",
+          "environment": "Linux cloud x86_64 / SDK 10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release",
+          "result": "PASS compile only; Windows GUI 미실행"
+        }
+      ],
+      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
     },
     {
       "id": "S04",

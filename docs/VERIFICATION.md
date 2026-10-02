@@ -1,4 +1,6 @@
-# 단계 0 검증 기록
+# 검증 기록
+
+## 단계 0 기록
 2026-10-02, cloud Linux x86_64, Python 3.12.14. gh GraphQL repo view/REST branches 모두 Forbidden; 우회 없음. Microsoft SDK 10.0.401(runtime 10.0.12) SHA512 검증 설치. 직접 제품 NuGet 패키지 0개. 기준 HEAD 없음.
 
 ## 실행 결과 — 코드 commit `1bb83db62676eea447881a7e574a187a6a708d42`
@@ -23,7 +25,7 @@
 
 빌드 파일은 `src/MemoApp.Windows/bin/Release/net10.0-windows/MemoApp.Windows.dll` (컴파일 골격). 설치 가능한 Windows 제품 패키지/실행 검증 근거로 제출하지 않는다. Windows CI 설정 존재는 실행 성공 근거가 아니다.
 
-## 미실행/차단
+## 미실행/차단 (단계 0 시점)
 - Windows runner: GitHub 접근 차단으로 실행/설정/한도 미확인. GUI/Hello/한글 IME/다중 모니터 미실행.
 - Android APK/에뮬레이터/실기기: SDK/adb 없음, 단계 4 구현 없음.
 - 저장/재실행/비정상 종료/디스크 실패, 암호/잠금/백업/복구/이력/동기화: 제품 구현 없음.
@@ -55,3 +57,11 @@
 `dotnet build MemoApp.slnx -c Release`: Linux 교차 빌드 PASS, 경고/오류 0개. Windows 생성/해제/편집/포스트잇/자동 저장/잠금/후보 검사·명시 복구/암호문 사본 화면을 컴파일했음. Windows 실행, GUI 바인딩·IME·OS lock event·다른 Windows 계정·ACL 동작은 미검증.
 
 시험 중 실패: 프로세스 실행기가 apphost에도 dll 인자를 추가해 child가 worker 분기로 들어가지 못하고 timeout. 자신이 생성한 worker tree를 종료한 뒤 host 종류별 인자를 수정, 동일 4 crash 시험 PASS. ReadOnlyObservableCollection 이벤트는 INotifyCollectionChanged를 통해 구독하도록 컴파일 오류 수정. Windows Path using 누락 수정 후 교차 빌드 PASS. 검사를 제거하거나 수용 조건을 낮추지 않았음.
+
+## Windows x64 패키지 및 체크포인트
+- Core/integration 검사 코드: ef5a8b71f3e05c8ae4da2c2330dba265e2a08f3f. 마지막 Core 변경 이후 모든 위 동작 검사 PASS.
+- Window-level recovery 완료의 uiEpoch 가드/활성 복구 중 종료 보류 코드: 67fe9c5a777add6d3c4eda6821d7895472579ceb. `dotnet build MemoApp.slnx -c Release` Linux PASS 0 warning/error. 실제 Windows 이벤트 race는 미실행.
+- `dotnet publish src/MemoApp.Windows -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o artifacts/windows-x64-synthetic-trial` Linux PASS. SDK10.0.401/공식 NuGet runtime packs10.0.12, 직접 제품 PackageReference0.
+- Windows AMD64 PE magic/machine 검사, zip CRC 및 vault/key/db/dump/runtime-user-data 파일 미혼입 검사 수행. Microsoft runtime/WindowsDesktop 라이선스와 third-party notices를 패키지에 복사. 추가 제품 라이선스/전문 취약점 감사 완료를 주장하지 않음.
+- 원장 부분 검사 근거를 넣자 근거 없는 전체 검증됨 테스트가 실패. component/cross-build 근거를 full acceptance로 사용하지 못하도록 kind=feature-acceptance/PASS를 요구하는 검사를 추가. 기존 6 회귀 모두 PASS, 수용 조건 하향/검사 삭제 없음. 모든 관련 ID는 진행 중으로 유지.
+- 원격 push/PR/Windows CI 실행은 Forbidden 차단 그대로. 실제 Windows 실행·GUI·OS 잠금·IME·다른 계정 복구·ACL·네트워크 관찰은 미실행. APK/실기기/모델 추론도 미실행. 실제 개인정보 사용 준비 완료 아님.

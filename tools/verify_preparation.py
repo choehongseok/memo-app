@@ -22,6 +22,7 @@ def verify_ledger(source,ledger):
   assert r['status'] in {'미착수','진행 중','구현됨·미검증','검증됨','차단됨','정규화로 대체됨'}
   if r['status']=='검증됨':
    assert r['test_evidence'],'근거 없는 검증 완료 금지'
+   assert any(e.get('kind')=='feature-acceptance' and e.get('result')=='PASS' for e in r['test_evidence']), '부분 검사만으로 기능 전체 검증 완료 금지'
    for evidence in r['test_evidence']:
     assert all(evidence.get(k) for k in ['commit','environment','command','result']), '불완전 검증 근거'
   if r['id']=='M06':
@@ -41,7 +42,7 @@ def main():
  for p in ROOT.glob('**/*.csproj'): assert '<PackageReference' not in p.read_text(),'미검토 제품 의존성'
  for entry in ['*.db','*.key','*.pfx','user-data/','models/']: assert entry in (ROOT/'.gitignore').read_text()
  print(f'PASS: original 27417 bytes/SHA256, {count} exact IDs/names, M06 normalization, scope invariants')
- print('LIMIT: no Windows execution/encryption/storage/recovery/sync/Android/AI verification')
+ print('LIMIT: this source/ledger check does not test app behavior; see the runtime checks')
 if __name__=='__main__':
  try: main()
  except (AssertionError,KeyError,ValueError) as e: print(f'FAIL: {e}',file=sys.stderr);sys.exit(1)
