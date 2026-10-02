@@ -7,6 +7,8 @@
 
 실제 변경: Core 메모리 편집 상태(새 메모/제목/일반 한글 본문/UTC 시각/변경 버전/편집창 상태 공유/세션 종료 시 참조 편집 차단), WPF 관리창/포스트잇 바인딩. 기본 실행은 작성 차단; --editing-preview에서만 명시적 비영속 개발 모드. 저장/암호/복원 코드 없음. 관련 11개 ID 진행 중, A04 암호 저장 독립 검토로 차단, 나머지 미착수.
 
+마지막 검증 코드 commit: `0c63a0a0cba23a37a3febf8993df2ee70d933d88`.
+
 검증: 134 ID/이름/원문 SHA 유지, Python 6개 회귀 PASS, Core 실제 편집 상태 검사 PASS, 전체 Linux 교차 빌드 0 경고/오류. Windows UI/IME/DPAPI/실행은 미검증. 상세 근거 VERIFICATION.md.
 
 즉시 다음 작업: 부모 독립 검토 요청은 STAGE1_SECURITY_REVIEW.md. 이 설계의 키/nonce/KDF 대체/복구/파일 트랜잭션을 별도 검토한 결과와 기준 commit을 받아 수정 후에만 EncryptedVault/WindowsKeyAccess 구현. 승인된 개발 범위의 반복 사용자 승인 요청은 필요 없음.

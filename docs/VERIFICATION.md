@@ -32,7 +32,7 @@
 - 독립 보안 검토/전문 감사 없음. 설계 자체 검토만 수행, 구현 전 별도 검토 필요.
 - 원격 commit/push/PR, 설치형/포터블 완성 패키지/APK/배포 서명 없음.
 
-## 단계 1 독립 편집 단위 (기준 be6dbed 이후, 코드 커밋은 인계에서 연결)
+## 단계 1 독립 편집 단위 — 코드 commit `0c63a0a0cba23a37a3febf8993df2ee70d933d88`
 - 사용자 재요청에 따른 gh repo view 단 1회: Forbidden. 추가/대체 접근 없음. 원격 작업/Windows CI 보류.
 - 편집 시험을 먼저 작성하고 미구현 CreateNote에서 exit 134 NotImplementedException을 확인했다. 실제 NoteDraft/EditingWorkspace 구현 후 동일 시험 PASS.
 - `dotnet run --project tests/MemoApp.ContractChecks -c Release`: 기존 계약 왕복 + 실제 새 메모/다중 편집 참조/한글 제목·본문/수정 시각·버전/변경 이벤트/다른 메모 독립성/동일값 중복변경 방지/세션 Clear 후 기존 참조 편집 거부 PASS.
