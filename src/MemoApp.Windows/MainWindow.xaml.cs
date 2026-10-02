@@ -17,7 +17,8 @@ public partial class MainWindow : Window
     private SaveCoordinator? session;
     private byte[]? generatedSecret;
     private DateTimeOffset activity = DateTimeOffset.UtcNow;
-    private bool closing, confirmedExit;
+    private bool closing, confirmedExit, transitionBusy;
+    private long uiEpoch;
     public MainWindow()
     {
         InitializeComponent();
@@ -31,7 +32,7 @@ public partial class MainWindow : Window
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
     {
         if (e.Reason == SessionSwitchReason.SessionLock)
-            Dispatcher.BeginInvoke(new Action(async () => { ClearSecretControls(); if (session is not null) await session.LockAsync(); }));
+            Dispatcher.BeginInvoke(new Action(async () => { ConcealViews(); if (session is not null) await session.LockAsync(); }));
     }
     private async void Timer_Tick(object? sender, EventArgs e)
     {
@@ -58,6 +59,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
+        uiEpoch++;
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         EditingPanel.Visibility = Visibility.Collapsed;
@@ -157,12 +159,14 @@ public partial class MainWindow : Window
             if (!ReleaseSettledSession()) return;
             if (MessageBox.Show($"선택한 인증 후보(메모 {candidate.NoteCount}개)를 새 키 epoch의 snapshot으로 적용할까요? 기존 파일과 다른 후보는 보존합니다.", "복구 적용", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
             var vault = EncryptedVault.Open(root, secret, candidate.Name);
+            long capturedEpoch = uiEpoch; transitionBusy = true;
             try { await Task.Run(() => vault.Save(vault.Loaded)); }
             catch { vault.Dispose(); throw; }
+            if (capturedEpoch != uiEpoch) { vault.Dispose(); return; }
             StartSession(vault);
         }
         catch { Notice.Text = "복구 실패 — 후보를 보존하고 쓰기를 중단했습니다. 비밀·파일·쓰기 권한을 확인하세요."; }
-        finally { if (secret is not null) CryptographicOperations.ZeroMemory(secret); }
+        finally { transitionBusy = false; if (secret is not null) CryptographicOperations.ZeroMemory(secret); }
     }
     private void ExportPending_Click(object sender, RoutedEventArgs e)
     {
@@ -200,7 +204,9 @@ public partial class MainWindow : Window
     private async void Window_Closing(object? sender, CancelEventArgs e)
     {
         if (confirmedExit) return;
-        e.Cancel = true; if (closing) return; closing = true;
+        e.Cancel = true;
+        if (transitionBusy) { Notice.Text = "복구 파일 작업이 끝날 때까지 종료를 보류합니다."; return; }
+        if (closing) return; closing = true;
         try
         {
             if (session is not null)
