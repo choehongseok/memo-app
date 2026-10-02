@@ -65,3 +65,5 @@
 - Windows AMD64 PE magic/machine 검사, zip CRC 및 vault/key/db/dump/runtime-user-data 파일 미혼입 검사 수행. Microsoft runtime/WindowsDesktop 라이선스와 third-party notices를 패키지에 복사. 추가 제품 라이선스/전문 취약점 감사 완료를 주장하지 않음.
 - 원장 부분 검사 근거를 넣자 근거 없는 전체 검증됨 테스트가 실패. component/cross-build 근거를 full acceptance로 사용하지 못하도록 kind=feature-acceptance/PASS를 요구하는 검사를 추가. 기존 6 회귀 모두 PASS, 수용 조건 하향/검사 삭제 없음. 모든 관련 ID는 진행 중으로 유지.
 - 원격 push/PR/Windows CI 실행은 Forbidden 차단 그대로. 실제 Windows 실행·GUI·OS 잠금·IME·다른 계정 복구·ACL·네트워크 관찰은 미실행. APK/실기기/모델 추론도 미실행. 실제 개인정보 사용 준비 완료 아님.
+
+ZIP 결과: 63,192,131 bytes, SHA256 `744dec678cc0088b97056ab5511b7a7c4495b03650987464d430aa12480ff5a8`. CRC/PE AMD64/자료 파일 미혼입 PASS. Library 인계 저장 1회는 네트워크 오류로 실패. 해당 저장을 완료/접근 가능하다고 주장하지 않으며 재시도/다른 경로 전환하지 않음. cloud 로컬 파일과 검증 bundle 보존.
