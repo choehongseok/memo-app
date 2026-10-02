@@ -29,3 +29,14 @@ A01/A02/A04/A06/A07/A08/A10/C14, B01/B13, S01/S02. Windows 관리창 왼쪽 분�
 복구 비밀만 사용하는 초기 경로·DPAPI 역할이 위협 모델을 만족하는가? 랜덤 nonce/DEK wrap 사용 한도·AAD/파서가 적절한가? snapshot 교체/previous 보존·rollback 한계가 첫 시험판에 충분한가? 첫 실제 저장 전에 수정해야 할 항목과 허용 범위를 기록해 달라.
 
 검토 결과란: 대기. 부모 작업의 별도 검토 결과/날짜/기준 commit을 받은 후 문서에 기록하고 승인된 설계만 구현한다. 이 결과는 사용자 개발 승인을 다시 요청하는 절차가 아니다.
+
+## 독립 설계 검토 결과 — 2026-10-02
+부모 작업이 별도 검토자에게 54ae10c 설계 문구를 전달해 독립 검토함. 범위는 설계 텍스트만, 코드 열람/실행/감사 아님. 조건부 구현 진행 허용. 작성자는 이를 독립 코드 검토/Windows 검증으로 주장하지 않음.
+
+필수 반영 조건: 즉시 모든 창 비노출/입력·늦은 async 차단; 실패 잠금 상태 분리; DPAPI 같은 계정 접근과 독립 앱 인증 구분 및 자동 접근 기본 off; 단일 writer·직렬 저장·generation/sessionEpoch·base snapshot 검사; corrupt main 복구에서 정상 previous 보존 및 replace 실패 후 후보 분류/쓰기 중단; CSPRNG nonce와 키별 2^20 wrap 한도(실패/재시도 포함), rollback 한계; 정확 32-byte 복구 비밀 재입력/다른 계정 없이 복구; envelope/JSON 엄격 길이·깊이·중복·관계·EOF 검사. 변조/절단/쓰기·flush·replace 실패/process crash/동시 writer/잠금 race/복구/평문 누출을 실제 시험.
+
+구현 범위 구체화: 첫 버전 DPAPI 자동 접근은 아예 구현하지 않고 off/미제공으로 표시한다. 해제·재시작 해제는 32-byte 복구 비밀만 사용한다. Hello도 미제공/미검증. 외부 패키지 0개. 복구 비밀의 생성 후 정확 재입력 확인 전 파일 생성 금지. 암호 current/previous에는 recovery-wrapped vault key가 들어가 파일 복사+비밀로 복구 가능.
+
+writer 세션마다 새로운 vault key/epoch를 생성해 이후 snapshot에 recovery key로 wrap한다. 실패/재시도는 현재 세션의 wrapCount를 누적하고 한도에서 쓰기를 중단한다. 인증된 카운터의 rollback/프로세스 종료 시 실패 시도 소실은 증명 불가임을 기록하며 세션 재개 때 fresh key epoch를 사용한다. 명시 복구도 fresh epoch로 새 snapshot에 전환한다. AEAD는 유효한 과거 전체 snapshot replay를 검출하지 못한다.
+
+독립 검토 근거: https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.dataprotectionscope , https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-replacefilew , https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=51288 .

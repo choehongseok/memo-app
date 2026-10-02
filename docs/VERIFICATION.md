@@ -40,3 +40,18 @@
 - 원장 검사는 단계 0 전용 상태 강제에서 단계별 상태 허용으로 바꿨다. 근거 없는 검증됨 거부/사용자 미수용/M06 정규화/134 ID·이름 유지 검사는 보존. 6개 Python 회귀 및 원문 checksum 대조 PASS.
 - 기본 제품 실행은 작성 차단. --editing-preview는 명시적 비영속 화면 평가 모드, 저장·암호·재실행 복원 시험판이 아니다.
 - 암호/키/파일 저장/실제 복구는 아직 구현 없음. STAGE1_SECURITY_REVIEW.md 독립 검토 결과를 기다린다. 독립 검토 수행을 주장하지 않는다.
+
+## 독립 설계 검토 조건 반영 후 첫 암호 저장 단위
+2026-10-02, cloud Linux x86_64 / SDK 10.0.401. 부모가 별도 검토자의 설계 문구 검토 결과를 전달함(54ae10c 기준, 코드 열람/실행 아님). 조건은 STAGE1_SECURITY_REVIEW.md에 기록. 전문 보안 감사/독립 코드 검토 완료를 주장하지 않음.
+
+`dotnet run --project tests/MemoApp.ContractChecks -c Release` 실제 동작 PASS:
+- 암호 파일 생성/편집 snapshot/새 인스턴스 복원, 잘못된 비밀/재입력 불일치/잘못된 43자 인코딩 거부, DPAPI 없는 파일 복사·다른 임시 root 복구.
+- envelope 19개 영역(AAD/header/nonce/wrap/tag/payload) 변조와 7개 절단, trailing/16 MiB 초과 파일 거부. 인증된 중복 JSON property·지원하지 않는 mode·null history·integer overflow·깊이 초과 거부. 중복 UUID·잘못된 부모·cycle·live/tombstone collision·메모/제목/본문 한도 거부. wrap/sequence 한도 쓰기 차단.
+- 실제 파일 create/write/flush 전후/replace 전후 오류 주입, 결과 후보 3개 분류 및 이후 쓰기 중단. 외부 base 변경 자동 overwrite 거부. corrupt/missing main 명시 복구에서 기존 정상 previous 파일 바이트 보존.
+- 별도 프로세스 writer 거부, flush/replace 전후 4개 child 프로세스 실제 Kill. Linux exit 137 확인. main에서 기존 또는 새 인증 snapshot 복원 가능. stdout/stderr의 합성 내용/복구 비밀 미노출 확인.
+- current/previous/pending 파일의 합성 평문 본문/복구 비밀 raw bytes 누출 검사. 실패 보류 암호문 사본이 실제 해독 가능한지 확인. 로그 파일을 생성하는 제품 코드는 없음.
+- 저장 I/O를 실제 pause한 동안 즉시 Conceal/입력 참조 폐기 및 키 해제, session epoch로 늦은 UI 갱신 차단, 이전 generation 저장 완료가 새 dirty를 없애지 않는지 확인. 직렬화한 최신 변경 재실행 복원 및 암호 이력 보존. 잠금 중 쓰기 실패는 암호문 보류·키 종료, 암호화 전 실패는 숨겨진 평문 복구 대기·키 보유로 구분. 정확 비밀로 숨겨진 편집을 재개하고 수정/저장/잠금 왕복.
+
+`dotnet build MemoApp.slnx -c Release`: Linux 교차 빌드 PASS, 경고/오류 0개. Windows 생성/해제/편집/포스트잇/자동 저장/잠금/후보 검사·명시 복구/암호문 사본 화면을 컴파일했음. Windows 실행, GUI 바인딩·IME·OS lock event·다른 Windows 계정·ACL 동작은 미검증.
+
+시험 중 실패: 프로세스 실행기가 apphost에도 dll 인자를 추가해 child가 worker 분기로 들어가지 못하고 timeout. 자신이 생성한 worker tree를 종료한 뒤 host 종류별 인자를 수정, 동일 4 crash 시험 PASS. ReadOnlyObservableCollection 이벤트는 INotifyCollectionChanged를 통해 구독하도록 컴파일 오류 수정. Windows Path using 누락 수정 후 교차 빌드 PASS. 검사를 제거하거나 수용 조건을 낮추지 않았음.

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using MemoApp.Core;
 
+if (VaultFailureChecks.TryWorker(args)) return;
+
 // Synthetic in-memory contract checks; these do not prove save/encryption/sync behavior.
 using var content = JsonDocument.Parse("""
 {"nodes":[{"type":"paragraph","text":"가상 한글 메모"},{"type":"table","cells":[["합성"]]},
@@ -24,3 +26,6 @@ if (restored.Content.GetProperty("nodes")[3].GetProperty("opaque").GetProperty("
     throw new InvalidOperationException("Unknown node lost");
 Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roundtrip (in-memory only)");
 EditingChecks.Run();
+VaultChecks.Run();
+VaultFailureChecks.Run();
+await CoordinatorChecks.Run();

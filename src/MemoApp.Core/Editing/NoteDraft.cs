@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using MemoApp.Core.Storage;
 namespace MemoApp.Core.Editing;
 
 // An unlocked in-memory draft; this type performs no I/O, key handling or autosave.
@@ -14,6 +15,11 @@ public sealed class NoteDraft : INotifyPropertyChanged
         this.clock = clock;
         Id = Guid.NewGuid();
         CreatedAt = ModifiedAt = clock.GetUtcNow();
+    }
+    internal NoteDraft(TimeProvider clock, StoredNote source) : this(clock)
+    {
+        Id = source.NoteId; CreatedAt = source.CreatedAt; ModifiedAt = source.ModifiedAt;
+        title = source.Title; text = source.Text;
     }
     public Guid Id { get; }
     public DateTimeOffset CreatedAt { get; }
