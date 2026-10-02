@@ -1,0 +1,2285 @@
+{
+  "schema_version": 1,
+  "source": "docs/SOURCE_PROMPT.txt",
+  "feature_count": 134,
+  "features": [
+    {
+      "id": "A01",
+      "name": "새 메모 만들기",
+      "normalized": "새 메모 만들기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A01: 새 메모 만들기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A02",
+      "name": "메모 수정",
+      "normalized": "메모 수정",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A02: 메모 수정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A03",
+      "name": "메모 삭제",
+      "normalized": "메모 삭제",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A03: 메모 삭제 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A04",
+      "name": "메모 자동 저장",
+      "normalized": "메모 자동 저장",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A04: 메모 자동 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A05",
+      "name": "메모 복사·복제",
+      "normalized": "메모 복사·복제",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A05: 메모 복사·복제 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A06",
+      "name": "메모 제목 사용",
+      "normalized": "메모 제목 사용",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A06: 메모 제목 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A07",
+      "name": "제목 없이 본문만 사용하는 간단 메모",
+      "normalized": "제목 없이 본문만 사용하는 간단 메모",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A07: 제목 없이 본문만 사용하는 간단 메모 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A08",
+      "name": "여러 메모 동시에 열기",
+      "normalized": "여러 메모 동시에 열기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A08: 여러 메모 동시에 열기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A09",
+      "name": "최근 사용한 메모 보기",
+      "normalized": "최근 사용한 메모 보기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A09: 최근 사용한 메모 보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "A10",
+      "name": "메모 작성일·수정일 표시",
+      "normalized": "메모 작성일·수정일 표시",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "A10: 메모 작성일·수정일 표시 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Notes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B01",
+      "name": "메모를 바탕화면에 작은 창으로 띄우기",
+      "normalized": "메모를 바탕화면에 작은 창으로 띄우기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B01: 메모를 바탕화면에 작은 창으로 띄우기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B02",
+      "name": "재실행 후 메모 위치 기억",
+      "normalized": "재실행 후 메모 위치 기억",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B02: 재실행 후 메모 위치 기억 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "종료·재실행 후 위치가 유지되고 모니터 분리 시 화면 안으로 복구한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B03",
+      "name": "메모 창 크기 기억",
+      "normalized": "메모 창 크기 기억",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B03: 메모 창 크기 기억 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B04",
+      "name": "메모별 색상 변경",
+      "normalized": "메모별 색상 변경",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B04: 메모별 색상 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B05",
+      "name": "메모 투명도 조절",
+      "normalized": "메모 투명도 조절",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B05: 메모 투명도 조절 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B06",
+      "name": "항상 위에 표시",
+      "normalized": "항상 위에 표시",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B06: 항상 위에 표시 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B07",
+      "name": "메모 접기·펼치기",
+      "normalized": "메모 접기·펼치기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B07: 메모 접기·펼치기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B08",
+      "name": "메모 최소화",
+      "normalized": "메모 최소화",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B08: 메모 최소화 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B09",
+      "name": "여러 메모 한 번에 숨기기·표시하기",
+      "normalized": "여러 메모 한 번에 숨기기·표시하기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B09: 여러 메모 한 번에 숨기기·표시하기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B10",
+      "name": "메모 화면 위치 자동 정렬",
+      "normalized": "메모 화면 위치 자동 정렬",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B10: 메모 화면 위치 자동 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B11",
+      "name": "여러 모니터에서 메모 위치 기억",
+      "normalized": "여러 모니터에서 메모 위치 기억",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B11: 여러 모니터에서 메모 위치 기억 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "다중 모니터 배치·DPI 변경·분리 후 모든 창이 접근 가능하다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B12",
+      "name": "특정 메모를 바탕화면에 고정",
+      "normalized": "특정 메모를 바탕화면에 고정",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B12: 특정 메모를 바탕화면에 고정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "위치 고정은 B06 항상 위 및 D08 목록 고정과 독립적이다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "B13",
+      "name": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용",
+      "normalized": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "B13: 바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "DesktopNotes",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C01",
+      "name": "글꼴 변경",
+      "normalized": "글꼴 변경",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C01: 글꼴 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C02",
+      "name": "글자 크기 변경",
+      "normalized": "글자 크기 변경",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C02: 글자 크기 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C03",
+      "name": "굵게",
+      "normalized": "굵게",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C03: 굵게 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C04",
+      "name": "밑줄",
+      "normalized": "밑줄",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C04: 밑줄 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C05",
+      "name": "취소선",
+      "normalized": "취소선",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C05: 취소선 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C06",
+      "name": "글자색 변경",
+      "normalized": "글자색 변경",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C06: 글자색 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C07",
+      "name": "형광펜·배경색",
+      "normalized": "형광펜·배경색",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C07: 형광펜·배경색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C08",
+      "name": "글머리표",
+      "normalized": "글머리표",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C08: 글머리표 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C09",
+      "name": "번호 목록",
+      "normalized": "번호 목록",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C09: 번호 목록 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C10",
+      "name": "체크박스 목록",
+      "normalized": "체크박스 목록",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C10: 체크박스 목록 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C11",
+      "name": "표 삽입",
+      "normalized": "표 삽입",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C11: 표 삽입 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "표 셀·서식을 Windows/Android 왕복 저장해 손실 없이 보존한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C12",
+      "name": "링크 삽입·클릭",
+      "normalized": "링크 삽입·클릭",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C12: 링크 삽입·클릭 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C13",
+      "name": "실행취소·다시실행",
+      "normalized": "실행취소·다시실행",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C13: 실행취소·다시실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C14",
+      "name": "서식 없는 단순 텍스트만 사용",
+      "normalized": "서식 없는 단순 텍스트만 사용",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C14: 서식 없는 단순 텍스트만 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "독립 일반 텍스트 모드의 생성·편집·저장·재개가 가능하다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "C15",
+      "name": "Markdown 지원",
+      "normalized": "Markdown 지원",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "C15: Markdown 지원 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "Markdown 왕복·안전 렌더링을 시험하고 외부 리소스 자동 로드가 없다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Documents",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D01",
+      "name": "폴더 만들기",
+      "normalized": "폴더 만들기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D01: 폴더 만들기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D02",
+      "name": "하위 폴더 만들기",
+      "normalized": "하위 폴더 만들기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D02: 하위 폴더 만들기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D03",
+      "name": "메모를 폴더 간 이동",
+      "normalized": "메모를 폴더 간 이동",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D03: 메모를 폴더 간 이동 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D04",
+      "name": "태그 사용",
+      "normalized": "태그 사용",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D04: 태그 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D05",
+      "name": "메모별 색상 분류",
+      "normalized": "메모별 색상 분류",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D05: 메모별 색상 분류 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D06",
+      "name": "중요 메모 표시",
+      "normalized": "중요 메모 표시",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D06: 중요 메모 표시 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D07",
+      "name": "즐겨찾기",
+      "normalized": "즐겨찾기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D07: 즐겨찾기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D08",
+      "name": "메모 고정",
+      "normalized": "메모 고정",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D08: 메모 고정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D09",
+      "name": "보관함",
+      "normalized": "보관함",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D09: 보관함 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D10",
+      "name": "휴지통",
+      "normalized": "휴지통",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D10: 휴지통 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D11",
+      "name": "휴지통 자동 비우기",
+      "normalized": "휴지통 자동 비우기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D11: 휴지통 자동 비우기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "초기 자동 삭제는 꺼짐이며 보존 정책·동기화 삭제기록을 확인 후 적용한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D12",
+      "name": "여러 메모 일괄 이동·삭제",
+      "normalized": "여러 메모 일괄 이동·삭제",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D12: 여러 메모 일괄 이동·삭제 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D13",
+      "name": "이름순 정렬",
+      "normalized": "이름순 정렬",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D13: 이름순 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D14",
+      "name": "최근 수정순 정렬",
+      "normalized": "최근 수정순 정렬",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D14: 최근 수정순 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D15",
+      "name": "작성일순 정렬",
+      "normalized": "작성일순 정렬",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D15: 작성일순 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "D16",
+      "name": "사용자 지정 순서로 직접 배열",
+      "normalized": "사용자 지정 순서로 직접 배열",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "D16: 사용자 지정 순서로 직접 배열 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Organization",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E01",
+      "name": "전체 메모 검색",
+      "normalized": "전체 메모 검색",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E01: 전체 메모 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E02",
+      "name": "제목 검색",
+      "normalized": "제목 검색",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E02: 제목 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E03",
+      "name": "본문 검색",
+      "normalized": "본문 검색",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E03: 본문 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E04",
+      "name": "폴더별 검색",
+      "normalized": "폴더별 검색",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E04: 폴더별 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E05",
+      "name": "태그별 검색",
+      "normalized": "태그별 검색",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E05: 태그별 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E06",
+      "name": "기간 지정 검색",
+      "normalized": "기간 지정 검색",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E06: 기간 지정 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E07",
+      "name": "중요 메모만 검색",
+      "normalized": "중요 메모만 검색",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E07: 중요 메모만 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E08",
+      "name": "검색 결과에서 해당 문장 강조",
+      "normalized": "검색 결과에서 해당 문장 강조",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E08: 검색 결과에서 해당 문장 강조 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E09",
+      "name": "여러 조건 조합 검색",
+      "normalized": "여러 조건 조합 검색",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E09: 여러 조건 조합 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "E10",
+      "name": "자주 쓰는 검색조건 저장",
+      "normalized": "자주 쓰는 검색조건 저장",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "E10: 자주 쓰는 검색조건 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Search",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H01",
+      "name": "메모에 이미지 붙이기",
+      "normalized": "메모에 이미지 붙이기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H01: 메모에 이미지 붙이기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H02",
+      "name": "Ctrl+V로 이미지 붙이기",
+      "normalized": "Ctrl+V로 이미지 붙이기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H02: Ctrl+V로 이미지 붙이기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H03",
+      "name": "이미지 드래그앤드롭",
+      "normalized": "이미지 드래그앤드롭",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H03: 이미지 드래그앤드롭 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H04",
+      "name": "PDF 첨부",
+      "normalized": "PDF 첨부",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H04: PDF 첨부 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H05",
+      "name": "한글·Word·Excel 등 파일 첨부",
+      "normalized": "한글·Word·Excel 등 파일 첨부",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H05: 한글·Word·Excel 등 파일 첨부 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H06",
+      "name": "첨부파일 클릭해서 열기",
+      "normalized": "첨부파일 클릭해서 열기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H06: 첨부파일 클릭해서 열기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "대상과 평문 임시파일 위험을 알리고 사용자 동작으로 외부 앱을 연다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H07",
+      "name": "파일 경로만 연결",
+      "normalized": "파일 경로만 연결",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H07: 파일 경로만 연결 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "원본 파일 암호화를 주장하지 않고 깨진 경로·경로 탈출을 방어한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H08",
+      "name": "이미지 미리보기",
+      "normalized": "이미지 미리보기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H08: 이미지 미리보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "H09",
+      "name": "첨부파일 검색",
+      "normalized": "첨부파일 검색",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "H09: 첨부파일 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "파일명·확장자 검색 및 OCR 결과 연계만 지원 범위로 표시한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Attachments",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L01",
+      "name": "Windows 시작 시 자동 실행",
+      "normalized": "Windows 시작 시 자동 실행",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L01: Windows 시작 시 자동 실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L02",
+      "name": "시스템 트레이 상주",
+      "normalized": "시스템 트레이 상주",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L02: 시스템 트레이 상주 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L03",
+      "name": "창을 닫아도 트레이에서 계속 실행",
+      "normalized": "창을 닫아도 트레이에서 계속 실행",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L03: 창을 닫아도 트레이에서 계속 실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L04",
+      "name": "완전히 종료하는 메뉴",
+      "normalized": "완전히 종료하는 메뉴",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L04: 완전히 종료하는 메뉴 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L05",
+      "name": "트레이 우클릭으로 새 메모",
+      "normalized": "트레이 우클릭으로 새 메모",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L05: 트레이 우클릭으로 새 메모 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L06",
+      "name": "트레이에서 최근 메모 바로 열기",
+      "normalized": "트레이에서 최근 메모 바로 열기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L06: 트레이에서 최근 메모 바로 열기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L07",
+      "name": "포터블 실행",
+      "normalized": "포터블 실행",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L07: 포터블 실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "깨끗한 다른 PC에서 복구 수단으로 열고 경로·키·데이터 이전을 검증한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L08",
+      "name": "일반 Windows 설치형",
+      "normalized": "일반 Windows 설치형",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L08: 일반 Windows 설치형 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "설치·업그레이드·제거가 기존 자료를 임의 삭제하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L09",
+      "name": "자동 업데이트",
+      "normalized": "자동 업데이트",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L09: 자동 업데이트 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "기본값 수동; 출처·서명·변조 검증 실패 시 업데이트를 적용하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "L10",
+      "name": "수동 업데이트",
+      "normalized": "수동 업데이트",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "L10: 수동 업데이트 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "사용자 동작으로 서명을 검증한 업데이트만 적용한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Lifecycle",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "M01",
+      "name": "수정 이력 저장",
+      "normalized": "수정 이력 저장",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "M01: 수정 이력 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "History",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "M02",
+      "name": "과거 버전 보기",
+      "normalized": "과거 버전 보기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "M02: 과거 버전 보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "History",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "M03",
+      "name": "과거 버전으로 되돌리기",
+      "normalized": "과거 버전으로 되돌리기",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "M03: 과거 버전으로 되돌리기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "기존 이력을 보존한 새 리비전으로 복원하고 동기화와 충돌하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "History",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "M04",
+      "name": "삭제한 메모 복원",
+      "normalized": "삭제한 메모 복원",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "M04: 삭제한 메모 복원 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "History",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "M05",
+      "name": "변경 이력 날짜별 비교",
+      "normalized": "변경 이력 날짜별 비교",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "M05: 변경 이력 날짜별 비교 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "History",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "M06",
+      "name": "변경 이력이 필요 없음",
+      "normalized": "정규화로 대체됨: M01~M05 유지",
+      "phase": 2,
+      "status": "정규화로 대체됨",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "M06: 변경 이력이 필요 없음 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "원선택 ID를 남기고 정규화로 대체됨: M01~M05 유지로 표시한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "History",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N01",
+      "name": "TXT 내보내기",
+      "normalized": "TXT 내보내기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N01: TXT 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N02",
+      "name": "PDF 내보내기",
+      "normalized": "PDF 내보내기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N02: PDF 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N03",
+      "name": "Excel 내보내기",
+      "normalized": "Excel 내보내기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N03: Excel 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N04",
+      "name": "Word 내보내기",
+      "normalized": "Word 내보내기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N04: Word 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N05",
+      "name": "여러 메모 일괄 내보내기",
+      "normalized": "여러 메모 일괄 내보내기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N05: 여러 메모 일괄 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N06",
+      "name": "TXT 가져오기",
+      "normalized": "TXT 가져오기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N06: TXT 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N07",
+      "name": "Excel 가져오기",
+      "normalized": "Excel 가져오기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N07: Excel 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N08",
+      "name": "다른 메모 프로그램 자료 가져오기",
+      "normalized": "다른 메모 프로그램 자료 가져오기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N08: 다른 메모 프로그램 자료 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "실제 확인한 앱·형식·버전만 어댑터 지원 목록에 표시한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N09",
+      "name": "S메모 자료 가져오기",
+      "normalized": "S메모 자료 가져오기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N09: S메모 자료 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "S메모 공개 형식/비민감 합성 자료로 시험하고 원본을 수정하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "N10",
+      "name": "전체 자료를 한 파일로 이전",
+      "normalized": "전체 자료를 한 파일로 이전",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "N10: 전체 자료를 한 파일로 이전 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "암호화된 단일 이전 파일로 새 PC 복원, 무결성·키 복구를 확인한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "ImportExport",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O01",
+      "name": "자동 백업",
+      "normalized": "자동 백업",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O01: 자동 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O02",
+      "name": "종료 시 백업",
+      "normalized": "종료 시 백업",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O02: 종료 시 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O03",
+      "name": "하루 한 번 백업",
+      "normalized": "하루 한 번 백업",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O03: 하루 한 번 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O04",
+      "name": "백업 보관 개수 설정",
+      "normalized": "백업 보관 개수 설정",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O04: 백업 보관 개수 설정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O05",
+      "name": "수동 백업",
+      "normalized": "수동 백업",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O05: 수동 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O06",
+      "name": "백업 파일 선택 후 복구",
+      "normalized": "백업 파일 선택 후 복구",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O06: 백업 파일 선택 후 복구 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "변조·잘못된 키는 적용 전에 차단하고 덮어쓰기/병합/이전을 명시한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O07",
+      "name": "복구 전 현재 상태 자동 보존",
+      "normalized": "복구 전 현재 상태 자동 보존",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O07: 복구 전 현재 상태 자동 보존 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "복구 이전 현재 상태를 암호화 보존하고 실패 시 기존 상태를 유지한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O08",
+      "name": "백업 미리보기",
+      "normalized": "백업 미리보기",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O08: 백업 미리보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "O09",
+      "name": "특정 메모 선택 복구",
+      "normalized": "특정 메모 선택 복구",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "O09: 특정 메모 선택 복구 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "선택 메모만 복원하고 미선택 원본·첨부·삭제기록을 보존한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Recovery",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "P01",
+      "name": "한 PC에서만 사용",
+      "normalized": "한 PC에서만 사용",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "P01: 한 PC에서만 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "네트워크·계정·서버 없이 핵심 흐름이 동작한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Sync",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "P02",
+      "name": "집 PC와 다른 PC에서 사용",
+      "normalized": "집 PC와 다른 PC에서 사용",
+      "phase": 3,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "P02: 집 PC와 다른 PC에서 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Sync",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "P03",
+      "name": "USB로 데이터 직접 이동",
+      "normalized": "USB로 데이터 직접 이동",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "P03: USB로 데이터 직접 이동 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Sync",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "P04",
+      "name": "파일 하나를 복사해 다른 PC에서 계속 사용",
+      "normalized": "파일 하나를 복사해 다른 PC에서 계속 사용",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "P04: 파일 하나를 복사해 다른 PC에서 계속 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Sync",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "P05",
+      "name": "여러 PC 자동 동기화",
+      "normalized": "여러 PC 자동 동기화",
+      "phase": 3,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "P05: 여러 PC 자동 동기화 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "암호화 변경 단위로 동기화하며 동시·오프라인 수정, 삭제 충돌, 중복을 보존한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Sync",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "P06",
+      "name": "PC별 서로 다른 메모 일부 유지",
+      "normalized": "PC별 서로 다른 메모 일부 유지",
+      "phase": 3,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "P06: PC별 서로 다른 메모 일부 유지 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "기기 전용 메모를 업로드하지 않고 창 위치·배율을 다른 기기에 덮어쓰지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Sync",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "Q03",
+      "name": "휴대폰에서 메모 작성·수정",
+      "normalized": "휴대폰에서 메모 작성·수정",
+      "phase": 4,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "Q03: 휴대폰에서 메모 작성·수정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "Android 저장 후 Windows 표·서식·이미지·미지원 노드가 손실되지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Android",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "Q04",
+      "name": "Android 앱",
+      "normalized": "Android 앱",
+      "phase": 4,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "Q04: Android 앱 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "APK 빌드·에뮬레이터·실기기 시험을 각각 기록한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Android",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "Q06",
+      "name": "PC·휴대폰 자동 동기화",
+      "normalized": "PC·휴대폰 자동 동기화",
+      "phase": 4,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "Q06: PC·휴대폰 자동 동기화 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "PC/Android 상호운용 암호화·키 교체·등록 해제·충돌 시험을 통과한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Android",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "Q07",
+      "name": "휴대폰 사진 촬영 후 메모 추가",
+      "normalized": "휴대폰 사진 촬영 후 메모 추가",
+      "phase": 4,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "Q07: 휴대폰 사진 촬영 후 메모 추가 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "사진·EXIF 등 민감정보를 암호화 저장하고 허용 없이 전송하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Android",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "Q08",
+      "name": "휴대폰 알림",
+      "normalized": "휴대폰 알림",
+      "phase": 4,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "Q08: 휴대폰 알림 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "운영 실패·충돌 알림이며 잠금화면 메모 본문·제목 노출이 없다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Android",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "R01",
+      "name": "바탕화면 달력",
+      "normalized": "바탕화면 달력",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "R01: 바탕화면 달력 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "날짜 확인 위젯이며 일정/할 일 기능을 추가하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Widgets",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "R02",
+      "name": "바탕화면 시계",
+      "normalized": "바탕화면 시계",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "R02: 바탕화면 시계 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "Widgets",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "S01",
+      "name": "왼쪽 폴더·오른쪽 메모 구조",
+      "normalized": "왼쪽 폴더·오른쪽 메모 구조",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "S01: 왼쪽 폴더·오른쪽 메모 구조 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "WindowsUI",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "S02",
+      "name": "메모 카드 형태",
+      "normalized": "메모 카드 형태",
+      "phase": 1,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "S02: 메모 카드 형태 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "WindowsUI",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "S04",
+      "name": "다크모드",
+      "normalized": "다크모드",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "S04: 다크모드 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "WindowsUI",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "S05",
+      "name": "글자 크기 전체 조절",
+      "normalized": "글자 크기 전체 조절",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "S05: 글자 크기 전체 조절 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "WindowsUI",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "S06",
+      "name": "화면 배율 조절",
+      "normalized": "화면 배율 조절",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "S06: 화면 배율 조절 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "WindowsUI",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T08",
+      "name": "드래그앤드롭으로 메모 순서 변경",
+      "normalized": "드래그앤드롭으로 메모 순서 변경",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T08: 드래그앤드롭으로 메모 순서 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T09",
+      "name": "메모 글자 수",
+      "normalized": "메모 글자 수",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T09: 메모 글자 수 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T10",
+      "name": "전체 메모 개수",
+      "normalized": "전체 메모 개수",
+      "phase": 2,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T10: 전체 메모 개수 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T12",
+      "name": "OCR로 이미지 글자 추출",
+      "normalized": "OCR로 이미지 글자 추출",
+      "phase": 5,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T12: OCR로 이미지 글자 추출 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "로컬 OCR 실제 엔진으로 한글 합성 이미지를 처리하고 통신·정확도를 확인한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T13",
+      "name": "음성으로 메모 작성",
+      "normalized": "음성으로 메모 작성",
+      "phase": 5,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T13: 음성으로 메모 작성 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "로컬 음성 엔진으로 한글 음성을 처리하고 클라우드 대체 전송이 없다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T14",
+      "name": "AI 요약",
+      "normalized": "AI 요약",
+      "phase": 5,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T14: AI 요약 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "로컬 모델 실제 요약, 성능·라이선스·모델 크기·통신을 기록한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T15",
+      "name": "AI 문장 다듬기",
+      "normalized": "AI 문장 다듬기",
+      "phase": 5,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T15: AI 문장 다듬기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "로컬 문장 다듬기 미리보기 후 동의로 반영하고 원본 이력을 유지한다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    },
+    {
+      "id": "T16",
+      "name": "AI에게 내 메모 내용 질문",
+      "normalized": "AI에게 내 메모 내용 질문",
+      "phase": 5,
+      "status": "미착수",
+      "user_acceptance": "미확인",
+      "acceptance_criteria": [
+        "T16: AI에게 내 메모 내용 질문 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
+        "허용한 잠금 해제 메모만 검색하고 근거 메모를 표시하며 자료 내 지시를 실행하지 않는다.",
+        "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
+      ],
+      "implementation_locations": [],
+      "planned_module": "LocalIntelligence",
+      "test_evidence": [],
+      "blocking_reason": null
+    }
+  ]
+}

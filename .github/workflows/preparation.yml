@@ -1,0 +1,56 @@
+name: Preparation checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-skeleton:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install fixed official SDK with SHA512 validation
+        shell: pwsh
+        run: |
+          $metadata = Invoke-RestMethod 'https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json'
+          $sdk = @($metadata.releases | ForEach-Object { $_.sdk } | Where-Object { $_.version -eq '10.0.401' })[0]
+          $file = @($sdk.files | Where-Object { $_.rid -eq 'win-x64' -and $_.name.EndsWith('.zip') })[0]
+          if (!$file) { throw 'Exact SDK archive not found' }
+          $archive = Join-Path $env:RUNNER_TEMP 'memo-sdk.zip'
+          $sdkDir = Join-Path $env:RUNNER_TEMP 'memo-dotnet'
+          Invoke-WebRequest $file.url -OutFile $archive
+          if ((Get-FileHash $archive -Algorithm SHA512).Hash.ToLowerInvariant() -ne $file.hash.ToLowerInvariant()) { throw 'SDK hash mismatch' }
+          Expand-Archive $archive -DestinationPath $sdkDir
+          $sdkDir | Out-File $env:GITHUB_PATH -Append
+          "DOTNET_ROOT=$sdkDir" | Out-File $env:GITHUB_ENV -Append
+          "DOTNET_CLI_TELEMETRY_OPTOUT=1" | Out-File $env:GITHUB_ENV -Append
+          "DOTNET_NOLOGO=1" | Out-File $env:GITHUB_ENV -Append
+      - name: Record environment and commit
+        shell: pwsh
+        run: |
+          dotnet --info
+          git rev-parse HEAD
+      - name: Scope and safety checks
+        shell: pwsh
+        run: |
+          python tools/verify_preparation.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests -p 'test_*.py' -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/check_commit_safety.py
+          exit $LASTEXITCODE
+      - name: Build Windows skeleton
+        run: dotnet build MemoApp.slnx -c Release
+      - name: Synthetic contract checks
+        run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build
+      - name: Publish development skeleton (runtime required)
+        run: dotnet publish src/MemoApp.Windows -c Release --no-restore -o artifacts/windows-skeleton
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-development-skeleton
+          path: artifacts/windows-skeleton
+          retention-days: 7

@@ -1,0 +1,5 @@
+<Solution>
+ <Project Path="src/MemoApp.Core/MemoApp.Core.csproj"/>
+ <Project Path="src/MemoApp.Windows/MemoApp.Windows.csproj"/>
+ <Project Path="tests/MemoApp.ContractChecks/MemoApp.ContractChecks.csproj"/>
+</Solution>
