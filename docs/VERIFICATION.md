@@ -67,3 +67,9 @@
 - 원격 push/PR/Windows CI 실행은 Forbidden 차단 그대로. 실제 Windows 실행·GUI·OS 잠금·IME·다른 계정 복구·ACL·네트워크 관찰은 미실행. APK/실기기/모델 추론도 미실행. 실제 개인정보 사용 준비 완료 아님.
 
 ZIP 결과: 63,192,131 bytes, SHA256 `744dec678cc0088b97056ab5511b7a7c4495b03650987464d430aa12480ff5a8`. CRC/PE AMD64/자료 파일 미혼입 PASS. Library 인계 저장 1회는 네트워크 오류로 실패. 해당 저장을 완료/접근 가능하다고 주장하지 않으며 재시도/다른 경로 전환하지 않음. cloud 로컬 파일과 검증 bundle 보존.
+
+## 2026-10-06 Windows CI 복구
+- 기존 run37503614819: Scope and safety checks에서 `원문 변경`, 나머지 build/계약/publish skipped. core.autocrlf=true 별도 checkout 재현: Git blob27,417 bytes/SHA256 29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d, checkout27,655 bytes/SHA256 b59c1e47fac393cd940b7a607a37cac7da5d15f2a798bac5a890aaf69bcafd65, CRLF238개. CRLF를 LF로 되돌린 bytes가 blob과 동일. 검사 기대값 변경 없이 .gitattributes에서 해당 원문만 -text 적용한 동일 checkout에서 원문/134 ID PASS.
+- 7d13a12의 run37504500668: 실제 Windows blob/checkout 모두27,417 bytes/원래 SHA256 일치. 후속 `charmap codec can't decode byte 0x9d` 실패. UTF-8 원장 파일의 cp1252 decode에서 같은 종류 오류 재현. Python 검사와 회귀 파일 읽기에 UTF-8을 명시, 기존6 회귀/원장/민감정보/diff PASS. 제품 코드 변경/검사 완화 없음.
+- a8915328d42db319504b4b457f58a64f8d454c7d의 https://github.com/choehongseok/memo-app/actions/runs/37504683119 성공(Windows Server2022, SDK10.0.401): blob/checkout 원래 byte/hash 일치, 134 ID/M06, Python6, 민감정보, build 경고·오류0, 모든 합성 계약 검사, self-contained Windows x64 publish 및 artifact 업로드. 계약 로그는 실제 암호 파일/복구/잘못된 비밀/writer, 변조19/절단7/엄격parser/파일오류/충돌/후보보존, 다른프로세스 writer/실제Kill4/평문·키 검사, generation/epoch/직렬저장/즉시잠금/실패 경쟁 PASS.
+- Artifact ID11430249406,64,957,037 bytes,SHA256 5b079cee5e1071b4a0b9b6c488e75954e604f813168549cc667f783223e04b2c, expires2026-10-13. Windows GUI/IME/OS SessionLock/ACL/다른 계정 사용자 시나리오는 실행하지 않았다. 독립 코드 감사/전체134 기능 수용을 증명하지 않는다.

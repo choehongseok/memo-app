@@ -1,4 +1,11 @@
 # 현재 상태
+## 2026-10-06 원격 저장 및 Windows CI 갱신
+아래 2026-10-02 상태는 당시 기록이다. 일반 Git push로 main/preparation/stage-0=be6dbed, development/stage-1 이력을 저장했고 draft PR https://github.com/choehongseok/memo-app/pull/1 을 생성했다(미병합).
+Windows checkout 원문 CRLF 변환은 .gitattributes의 원문 -text로, Python 기본 charmap 읽기 실패는 검사/회귀의 명시 UTF-8 읽기로 수정했다. 원문 byte/hash, 134 ID/이름/M06 및 검사 기준은 변경하지 않았다. 제품 코드 변경 없음.
+검증 코드 a8915328d42db319504b4b457f58a64f8d454c7d의 Windows Server 2022 CI https://github.com/choehongseok/memo-app/actions/runs/37504683119 성공: 원문 blob/checkout 일치, 원장/Python6/민감정보 검사, Windows 빌드 경고·오류0, 실제 합성 암호 파일/장애/프로세스 종료/잠금 경쟁 계약 검사, publish, artifact 업로드.
+artifact windows-x64-synthetic-trial ID11430249406, 64,957,037 bytes, SHA256 5b079cee5e1071b4a0b9b6c488e75954e604f813168549cc667f783223e04b2c, 만료2026-10-13. 이전 Linux 생성 ZIP과 별개다. 미서명 합성 시험판이며 Windows GUI/IME/OS SessionLock/ACL/다른 계정 사용자 흐름은 여전히 미검증이다. 전체134 기능/실제 개인정보 사용 준비 완료 아님.
+push username 오류는 일시 발생했지만 설정/토큰 변경 없이 동일 Git 경로 dry-run 및 push가 후속 성공했다. 내부 인증 제공 원인은 미확인이며 저장소 권한 문제로 단정하지 않는다.
+
 2026-10-02, 단계 1 첫 합성 자료용 암호 메모 단위. 전체 134 기능 미완성, 사용자 수용 미확인. M06 정규화 유지.
 
 실제 cloud Linux x86_64, `/workspace/memo-app`, origin `https://github.com/choehongseok/memo-app.git`. branch `development/stage-1`; 기준 준비 be6dbed 및 기존 이력 보존. 검증 Core 코드 ef5a8b7, 최종 Windows 소스/교차 publish 코드 67fe9c5. 현재 기능/검사 근거 FEATURES.json 및 VERIFICATION.md.
