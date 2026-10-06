@@ -37,6 +37,8 @@ jobs:
       - name: Scope and safety checks
         shell: pwsh
         run: |
+          python -c "import hashlib, pathlib, subprocess; p='docs/SOURCE_PROMPT.txt'; blob=subprocess.check_output(['git','show','HEAD:'+p]); checkout=pathlib.Path(p).read_bytes(); print('source blob:',len(blob),hashlib.sha256(blob).hexdigest()); print('source checkout:',len(checkout),hashlib.sha256(checkout).hexdigest()); assert blob==checkout, 'Source checkout differs from Git blob'"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/verify_preparation.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m unittest discover -s tests -p 'test_*.py' -v

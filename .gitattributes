@@ -1,0 +1,2 @@
+# Preserve the attached specification byte for byte on every checkout.
+docs/SOURCE_PROMPT.txt -text
