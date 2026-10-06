@@ -5,8 +5,8 @@ spec=importlib.util.spec_from_file_location('verify',ROOT/'tools/verify_preparat
 verify=importlib.util.module_from_spec(spec);spec.loader.exec_module(verify)
 class LedgerDriftChecks(unittest.TestCase):
  def setUp(self):
-  self.source=(ROOT/'docs/SOURCE_PROMPT.txt').read_text()
-  self.ledger=json.loads((ROOT/'docs/FEATURES.json').read_text())
+  self.source=(ROOT/'docs/SOURCE_PROMPT.txt').read_text(encoding='utf-8')
+  self.ledger=json.loads((ROOT/'docs/FEATURES.json').read_text(encoding='utf-8'))
  def test_original_selection_is_exact(self):
   self.assertEqual(134,verify.verify_ledger(self.source,self.ledger))
  def test_missing_android_id_is_rejected(self):

@@ -34,13 +34,13 @@ def verify_ledger(source,ledger):
 def main():
  b=(ROOT/'docs/SOURCE_PROMPT.txt').read_bytes()
  assert len(b)==27417 and hashlib.sha256(b).hexdigest()==SOURCE_SHA256,'원문 변경'
- count=verify_ledger(b.decode(),json.loads((ROOT/'docs/FEATURES.json').read_text()))
+ count=verify_ledger(b.decode('utf-8'),json.loads((ROOT/'docs/FEATURES.json').read_text(encoding='utf-8')))
  for path in ['AGENTS.md','README.md','docs/PRODUCT_SPEC.md','docs/STATUS.md','docs/VERIFICATION.md','global.json','MemoApp.slnx','.github/workflows/preparation.yml']:
   assert (ROOT/path).is_file(),f'필수 파일 누락: {path}'
- sdk=json.loads((ROOT/'global.json').read_text())['sdk']
+ sdk=json.loads((ROOT/'global.json').read_text(encoding='utf-8'))['sdk']
  assert sdk=={'version':'10.0.401','rollForward':'disable','allowPrerelease':False}
- for p in ROOT.glob('**/*.csproj'): assert '<PackageReference' not in p.read_text(),'미검토 제품 의존성'
- for entry in ['*.db','*.key','*.pfx','user-data/','models/']: assert entry in (ROOT/'.gitignore').read_text()
+ for p in ROOT.glob('**/*.csproj'): assert '<PackageReference' not in p.read_text(encoding='utf-8'),'미검토 제품 의존성'
+ for entry in ['*.db','*.key','*.pfx','user-data/','models/']: assert entry in (ROOT/'.gitignore').read_text(encoding='utf-8')
  print(f'PASS: original 27417 bytes/SHA256, {count} exact IDs/names, M06 normalization, scope invariants')
  print('LIMIT: this source/ledger check does not test app behavior; see the runtime checks')
 if __name__=='__main__':
