@@ -16,9 +16,23 @@ public partial class StickyNoteWindow : Window
     private Action<string>? notice;
     private MarkdownNotePreview? markdownPreview;
     private StructuredNoteEditor? structuredEditor;
+    private AttachmentPanel? attachmentPanel;
     private string? bodyMode;
     public void SetEditingContext(EditingWorkspace owner,Func<bool> valid,Action<string> status)
     {workspace=owner;current=valid;notice=status;ConfigureBody();}
+    public void SetAttachmentContext(SaveCoordinator owner,Func<bool> valid,Action<string> status)
+    {
+        ClearAttachmentPanel();if(closed||!valid()||draft.IsClosed||draft.IsDeleted)return;
+        bool attached=false;AttachmentPanel? created=null;
+        bool Current()=>!closed&&valid()&&!draft.IsClosed&&!draft.IsDeleted&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
+        created=new(owner,draft,Current,status);if(Current()){attachmentPanel=created;AttachmentHost.Content=created;attached=true;AttachmentHost.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;}else created.Dispose();
+    }
+    private void ClearAttachmentPanel()
+    {
+        var previous=attachmentPanel;attachmentPanel=null;previous?.Dispose();
+        try{AttachmentHost.Content=null;}catch{}
+        try{AttachmentHost.Visibility=Visibility.Collapsed;}catch{}
+    }
     private void ClearMarkdownPreview()
     {var previous=markdownPreview;markdownPreview=null;MarkdownHost.Content=null;MarkdownHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ClearStructuredEditor()
@@ -79,7 +93,7 @@ public partial class StickyNoteWindow : Window
         draft.PropertyChanged += DraftChanged;
         Closed += (_, _) =>
         {
-            closed=true;workspace=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearMarkdownPreview();ClearStructuredEditor();
+            closed=true;workspace=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearMarkdownPreview();ClearStructuredEditor();ClearAttachmentPanel();
             BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
             DataContext = null; BodyEditor.Clear(); TitleEditor.Clear();
         };
@@ -103,7 +117,7 @@ public partial class StickyNoteWindow : Window
     private void Fold_Changed(object sender, RoutedEventArgs e)
     {
         if (BodyEditor is null || restoringLayout) return;
-        bool folded = ((CheckBox)sender).IsChecked == true;BodyPanel.Visibility=folded?Visibility.Collapsed:Visibility.Visible;
+        bool folded = ((CheckBox)sender).IsChecked == true;BodyPanel.Visibility=folded?Visibility.Collapsed:Visibility.Visible;AttachmentHost.Visibility=folded||attachmentPanel is null?Visibility.Collapsed:Visibility.Visible;
         if(Placement is not null){Placement.SetFolded(folded);BodyEditor.Visibility=folded?Visibility.Collapsed:Visibility.Visible;return;}
         if (folded) { expandedHeight = Height; BodyEditor.Visibility = Visibility.Collapsed; Height = 160; }
         else { BodyEditor.Visibility = Visibility.Visible; Height = expandedHeight; }

@@ -20,11 +20,24 @@ public sealed class AttachmentSource : IDisposable
         AttachmentValidation.Description(name,mime,0,new string('0',64));
         cancellationToken.ThrowIfCancellationRequested();
         using var input=LocalRegularFile.Open(source);
-        long length=input.Length;if(length>AttachmentValidation.MaxObject)throw new InvalidDataException("Attachment source size limit");
+        return ReadCaptured(input,input.Length,name,mime,cancellationToken);
+    }
+    internal static AttachmentSource ReadCaptured(Stream input,long length,string name,string mime,CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if(length<0||length>AttachmentValidation.MaxObject)throw new InvalidDataException("Attachment source size limit");
+        AttachmentValidation.Description(name,mime,checked((int)length),new string('0',64));
         var bytes=new byte[checked((int)length)];
         try
         {
-            input.ReadExactly(bytes);if(input.ReadByte()!=-1)throw new IOException("Attachment source changed while reading");
+            for(int offset=0;offset<bytes.Length;)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                int read=input.Read(bytes,offset,Math.Min(65536,bytes.Length-offset));
+                if(read==0)throw new EndOfStreamException("Attachment source changed while reading");offset+=read;
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            if(input.ReadByte()!=-1)throw new IOException("Attachment source changed while reading");
             cancellationToken.ThrowIfCancellationRequested();var hash=Convert.ToHexStringLower(SHA256.HashData(bytes));
             cancellationToken.ThrowIfCancellationRequested();return new(bytes,name,mime,hash);
         }

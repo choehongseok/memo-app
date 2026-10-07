@@ -1,3 +1,7 @@
+# 2026-10-07 로컬 파일첨부 Main+Sticky 연결·새 Windows 시험 대기
+
+원격0f405f9/tree029ca037·Windows37672914079에서 source/Python26/build0/fullCore/기존WPF전부PASS, 새missing-panel/host만예상RED·publish/upload skipped. 메타투영·이름확장자NFC검색/mid-read취소·실제inputzero는 missingAPI RED→targeted/fullCorePASS. 새Main+Sticky opaque패널·같은source권한·repeated/cancel/잠금/selection/nativeclear회귀 crossbuild0경고오류, 독립읽기 필수blocker없음(실행아님). standalone자체hide/detach 새조건은RED-stage로실제Windows관측후보강예정. H04/H05/H09부분진행85/미착수47/N09차단1/M06정규화1/전수완료·사용자수용0. 이미지·파일실행·평문export아직미연결이며계속개발.
+
 # 2026-10-07 첨부 원자모델 보존·UI RED 회귀 준비
 
 18:29UTC 보존코드 source/mutation targeted실행 PASS, 4프로젝트crossbuild0경고오류·Python26·134원문 PASS. 별도 source경계 읽기검토에필수blocker없음(독립실행아님), 동시파일교체/동일길이변경/Linux공유잠금/동기IO취소한계기록. 실제Main+Sticky 첨부패널회귀를 구현전추가했으며Windows missing-panel RED관측후UI연결예정. 파일파싱/실행/이미지/내보내기미연결·134사용자수용0 유지.

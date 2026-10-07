@@ -40,6 +40,8 @@ public partial class MainWindow : Window
     private NoteDraft? markdownNote;
     private StructuredNoteEditor? structuredEditor;
     private NoteDraft? structuredNote;
+    private AttachmentPanel? attachmentPanel;
+    private NoteDraft? attachmentNote;
     private string? selectedBodyMode;
     private NoteDraft? SingleNote=>NotesList.SelectedItems.Count==1?NotesList.SelectedItem as NoteDraft:null;
     private sealed record BatchRequest(SaveCoordinator Session,long Epoch,NoteDraft[] Notes,bool Deleted);
@@ -99,7 +101,7 @@ public partial class MainWindow : Window
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
-        EditingPanel.Visibility = Visibility.Collapsed;ClearMarkdownPreview();ClearStructuredEditor();
+        EditingPanel.Visibility = Visibility.Collapsed;ClearMarkdownPreview();ClearStructuredEditor();ClearAttachmentPanel();
         Editor.DataContext = null; Editor.IsEnabled = false; NotesList.ItemsSource = null;
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false; BodyEditor.Clear(); TitleEditor.Clear();
         loadingUi = true;
@@ -184,6 +186,21 @@ public partial class MainWindow : Window
     {
         var previous=structuredEditor;structuredEditor=null;structuredNote=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;previous?.Dispose();
     }
+    private void ClearAttachmentPanel()
+    {
+        var previous=attachmentPanel;attachmentPanel=null;attachmentNote=null;previous?.Dispose();
+        try{AttachmentHost.Content=null;}catch{}
+        try{AttachmentHost.Visibility=Visibility.Collapsed;}catch{}
+    }
+    private void ConfigureAttachmentPanel(NoteDraft? selected)
+    {
+        if(selected is not {IsClosed:false,IsDeleted:false}||session is not {IsLocked:false} active||concealing){ClearAttachmentPanel();return;}
+        if(ReferenceEquals(attachmentNote,selected)&&attachmentPanel is {IsDisposed:false})return;
+        ClearAttachmentPanel();long epoch=uiEpoch;bool attached=false;AttachmentPanel? created=null;
+        bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&active.Workspace.Notes.Contains(selected)&&selected is {IsClosed:false,IsDeleted:false}&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
+        created=new(active,selected,Current,message=>{if(Current())Notice.Text=message;});
+        if(Current()){attachmentPanel=created;attachmentNote=selected;AttachmentHost.Content=created;AttachmentHost.Visibility=Visibility.Visible;attached=true;}else created.Dispose();
+    }
     private void SelectEditor()
     {
         var selected=SingleNote;bool changed=!ReferenceEquals(Editor.DataContext,selected)||selectedBodyMode!=selected?.Mode;
@@ -218,6 +235,7 @@ public partial class MainWindow : Window
             }
         }
         else ClearMarkdownPreview();
+        ConfigureAttachmentPanel(selected);
         bool loading=loadingUi;loadingUi=true;ModeChoice.SelectedItem=ModeChoice.Items.Cast<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==selected?.Mode);loadingUi=loading;
         MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();
     }
@@ -244,7 +262,7 @@ public partial class MainWindow : Window
         stickyWindows.Add(note.Id,window);
         bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&stickyWindows.TryGetValue(note.Id,out var current)&&ReferenceEquals(current,window);
         var placement=new DesktopWindowController(window,"memo",note.Id,state,Current,layout=>PersistLayout(active,epoch,layout));
-        placements.Add(window,placement);window.SetPlacement(placement);window.SetEditingContext(active.Workspace,Current,message=>{if(Current())Notice.Text=message;});window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
+        placements.Add(window,placement);window.SetPlacement(placement);window.SetEditingContext(active.Workspace,Current,message=>{if(Current())Notice.Text=message;});window.SetAttachmentContext(active,Current,message=>{if(Current())Notice.Text=message;});window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
         window.Closed+=(_,_)=>{stickyWindows.Remove(note.Id);placements.Remove(window);};window.Show();
     }
     private void PersistLayout(SaveCoordinator active,long epoch,StoredWindowLayout layout)

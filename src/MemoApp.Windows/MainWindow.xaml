@@ -68,7 +68,7 @@
     <Button x:Name="BatchRestoreButton" Content="선택 메모 일괄 복원" Click="BatchRestore_Click" Padding="6" IsEnabled="False"/>
    </StackPanel></ScrollViewer>
    <DockPanel Grid.Column="1" Margin="0,0,16,0">
-    <StackPanel DockPanel.Dock="Top"><WrapPanel><Button Content="순서 ↑" Click="OrderUp_Click" Padding="6" Margin="0,0,6,4"/><Button Content="순서 ↓" Click="OrderDown_Click" Padding="6" Margin="0,0,0,4"/></WrapPanel><TextBlock Text="검색"/><TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" Margin="0,4,0,4"/><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/></ComboBox></StackPanel>
+    <StackPanel DockPanel.Dock="Top"><WrapPanel><Button Content="순서 ↑" Click="OrderUp_Click" Padding="6" Margin="0,0,6,4"/><Button Content="순서 ↓" Click="OrderDown_Click" Padding="6" Margin="0,0,0,4"/></WrapPanel><TextBlock Text="검색"/><TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" Margin="0,4,0,4"/><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문 + 첨부 이름"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/><ComboBoxItem Content="첨부 이름·확장자"/></ComboBox></StackPanel>
     <ListBox x:Name="NotesList" SelectionMode="Extended" SelectionChanged="NotesList_SelectionChanged" AllowDrop="True" PreviewMouseLeftButtonDown="NoteDragStart" PreviewMouseMove="NoteDragMove" DragOver="NoteDragOver" Drop="NoteDrop">
      <ListBox.ItemTemplate><DataTemplate><Border Padding="8"><StackPanel><TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap"/><TextBlock Text="{Binding Text}" TextWrapping="Wrap" MaxHeight="42" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding ModifiedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss} UTC}" Foreground="Gray"/></StackPanel></Border></DataTemplate></ListBox.ItemTemplate>
     </ListBox>
@@ -81,6 +81,7 @@
      <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="태그 적용" Click="ApplyTags_Click" Padding="6"/><TextBox x:Name="TagsInput" MaxLength="2048" ToolTip="쉼표로 구분한 태그 (메모당 최대 16개)"/></DockPanel>
      <TextBlock Text="제목"/><TextBox x:Name="TitleEditor" MaxLength="256" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" Padding="6"/>
      <TextBlock x:Name="NoteInfo" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
+     <ContentControl x:Name="AttachmentHost" Visibility="Collapsed" Margin="0,0,0,8"/>
      <WrapPanel><TextBlock Text="문서 모드 " VerticalAlignment="Center"/><ComboBox x:Name="ModeChoice" Width="180" SelectionChanged="Mode_Changed"><ComboBoxItem Content="일반 텍스트" Tag="plain"/><ComboBoxItem Content="서식 문서" Tag="rich"/><ComboBoxItem Content="Markdown 원문" Tag="markdown"/></ComboBox></WrapPanel>
      <TextBlock Text="Ctrl+Z 실행취소 / Ctrl+Y 다시실행 · 모드 전환은 원본을 이력에 보존합니다" TextWrapping="Wrap"/>
     </StackPanel>

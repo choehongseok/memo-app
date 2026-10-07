@@ -2452,16 +2452,34 @@
       "name": "PDF 첨부",
       "normalized": "PDF 첨부",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H04: PDF 첨부 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/StoredAttachmentObject.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Core/Transfer/AttachmentSource.cs",
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMutationChecks.cs",
+        "tests/MemoApp.ContractChecks/AttachmentSourceChecks.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentUiChecks.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "0f405f9d06328a60a43aa3b2275c0192b21c2353",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "원본 opaque bytes/암호객체/refs/이력/전체백업과 source Core부분검사만. 같은커밋 WPF는 missing-panel/host RED; 후속UI/메타검색 실행은별도근거를따른다. PDF/Office파싱·이미지·실행·export·사용자수용/전체134 완료가아니다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -2469,16 +2487,34 @@
       "name": "한글·Word·Excel 등 파일 첨부",
       "normalized": "한글·Word·Excel 등 파일 첨부",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H05: 한글·Word·Excel 등 파일 첨부 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/StoredAttachmentObject.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Core/Transfer/AttachmentSource.cs",
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMutationChecks.cs",
+        "tests/MemoApp.ContractChecks/AttachmentSourceChecks.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentUiChecks.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "0f405f9d06328a60a43aa3b2275c0192b21c2353",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "원본 opaque bytes/암호객체/refs/이력/전체백업과 source Core부분검사만. 같은커밋 WPF는 missing-panel/host RED; 후속UI/메타검색 실행은별도근거를따른다. PDF/Office파싱·이미지·실행·export·사용자수용/전체134 완료가아니다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -2537,16 +2573,37 @@
       "name": "첨부파일 검색",
       "normalized": "첨부파일 검색",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H09: 첨부파일 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "파일명·확장자 검색 및 OCR 결과 연계만 지원 범위로 표시한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/StoredAttachmentObject.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Core/Transfer/AttachmentSource.cs",
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMutationChecks.cs",
+        "tests/MemoApp.ContractChecks/AttachmentSourceChecks.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentUiChecks.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Core/Storage/AttachmentDescription.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMetadataChecks.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "0f405f9d06328a60a43aa3b2275c0192b21c2353",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "원본 opaque bytes/암호객체/refs/이력/전체백업과 source Core부분검사만. 같은커밋 WPF는 missing-panel/host RED; 후속UI/메타검색 실행은별도근거를따른다. PDF/Office파싱·이미지·실행·export·사용자수용/전체134 완료가아니다."
+        }
+      ],
       "blocking_reason": null
     },
     {

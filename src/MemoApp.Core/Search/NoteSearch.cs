@@ -1,7 +1,7 @@
 using System.Text;
 using MemoApp.Core.Editing;
 namespace MemoApp.Core.Search;
-public enum SearchField { All, Title, Body }
+public enum SearchField { All, Title, Body, Attachments }
 public enum SearchView { Active, Archive, Trash, All }
 public enum SearchSort { Modified, Created, Name, Custom }
 public sealed record SearchOptions
@@ -25,7 +25,14 @@ public static class NoteSearch
     {
         ArgumentNullException.ThrowIfNull(workspace); ArgumentNullException.ThrowIfNull(options);
         if (!Enum.IsDefined(options.View) || !Enum.IsDefined(options.Sort)) throw new ArgumentException("Unsupported search option");
-        var found = Find(workspace.Notes, options.Query, options.Field).AsEnumerable();
+        if(!Enum.IsDefined(options.Field))throw new ArgumentException("Unsupported search field");
+        string needle=Normalize(options.Query);
+        bool MatchesAttachment(NoteDraft note)=>workspace.DescribeAttachments(note).Any(item=>Normalize(item.Name).Contains(needle,StringComparison.OrdinalIgnoreCase));
+        var found = options.Field==SearchField.Attachments
+            ? workspace.Notes.Where(n=>!n.IsClosed&&(needle.Length==0||MatchesAttachment(n)))
+            : options.Field==SearchField.All
+                ? workspace.Notes.Where(n=>!n.IsClosed&&(Normalize(n.Title).Contains(needle,StringComparison.OrdinalIgnoreCase)||Normalize(n.Text).Contains(needle,StringComparison.OrdinalIgnoreCase)||MatchesAttachment(n)))
+                : Find(workspace.Notes, options.Query, options.Field).AsEnumerable();
         found = found.Where(n => options.View switch
         {
             SearchView.Active => !n.IsDeleted && !n.Archived,
@@ -63,6 +70,7 @@ public static class NoteSearch
         if (!Enum.IsDefined(field)) throw new ArgumentOutOfRangeException(nameof(field));
         string needle = Normalize(query);
         bool Contains(string text) => Normalize(text).Contains(needle, StringComparison.OrdinalIgnoreCase);
+        if(field==SearchField.Attachments)throw new ArgumentException("Attachment search requires the owning workspace");
         return notes.Where(n => !n.IsClosed && (field != SearchField.Body && Contains(n.Title) || field != SearchField.Title && Contains(n.Text))).ToArray();
     }
     private static string Normalize(string value)

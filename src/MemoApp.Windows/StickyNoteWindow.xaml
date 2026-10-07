@@ -5,6 +5,7 @@
    <TextBlock Text="합성 자료만 입력 · 저장 상태는 관리창에서 확인" Foreground="DarkRed" TextWrapping="Wrap" Margin="0,0,0,8"/>
    <WrapPanel Margin="0,0,0,8"><CheckBox Content="항상 위" IsChecked="{Binding Topmost, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0,0,8,0"/><CheckBox x:Name="FoldToggle" Content="접기" Checked="Fold_Changed" Unchecked="Fold_Changed"/><CheckBox x:Name="PositionToggle" Content="위치 고정" Checked="Position_Changed" Unchecked="Position_Changed" Margin="6,0,0,0"/><TextBlock Text=" 투명도 "/><Slider Width="90" Minimum="0.3" Maximum="1" Value="{Binding Opacity, RelativeSource={RelativeSource AncestorType=Window}}"/></WrapPanel>
    <TextBox x:Name="TitleEditor" MaxLength="256" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,8"/>
+   <ContentControl x:Name="AttachmentHost" Visibility="Collapsed" Margin="0,0,0,8"/>
   </StackPanel>
   <Grid x:Name="BodyPanel"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <TextBox x:Name="BodyEditor" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>

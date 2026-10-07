@@ -242,6 +242,12 @@ public sealed class EditingWorkspace
         return ids.ToArray();
     }
     internal void RequireAttachmentNote(NoteDraft note)=>RequireNote(note);
+    public AttachmentDescription[] DescribeAttachments(NoteDraft note)
+    {
+        RequireNote(note,true);
+        return note.AttachmentIds.Select(id=>attachmentObjects.Single(item=>item.ObjectId==id))
+            .Select(item=>new AttachmentDescription(item.ObjectId,item.Name,item.Mime,item.Length,item.Sha256)).ToArray();
+    }
     internal void AddAttachment(NoteDraft note,StoredAttachmentObject item)
     {
         RequireNote(note);ArgumentNullException.ThrowIfNull(item);

@@ -14,6 +14,19 @@ internal static class AttachmentSourceChecks
     {
         var type=typeof(EncryptedVault).Assembly.GetType("MemoApp.Core.Transfer.AttachmentSource");VaultChecks.Require(type is not null,"Bounded opaque attachment file reader with owned buffers is missing");
         var read=type!.GetMethod("Read",BindingFlags.Static|BindingFlags.Public)!.CreateDelegate<Func<string,CancellationToken,IDisposable>>();
+        var captured=type.GetMethod("ReadCaptured",BindingFlags.Static|BindingFlags.NonPublic);
+        VaultChecks.Require(captured is not null,"Deterministic bounded source-read ownership seam is missing");
+        var readCaptured=captured!.CreateDelegate<Func<Stream,long,string,string,CancellationToken,IDisposable>>();
+        using(var cancel=new CancellationTokenSource())using(var interrupted=new InterruptedStream(cancel,false))
+        {
+            bool canceled=false;try{readCaptured(interrupted,70001,"synthetic.bin","application/octet-stream",cancel.Token).Dispose();}catch(OperationCanceledException){canceled=true;}
+            VaultChecks.Require(canceled&&interrupted.Owned is not null&&interrupted.Owned.All(b=>b==0),"Cancellation during read refuses return and zeroes exact allocated input array");
+        }
+        using(var broken=new InterruptedStream(null,true))
+        {
+            VaultChecks.ExpectFailure(()=>readCaptured(broken,70001,"synthetic.bin","application/octet-stream",CancellationToken.None).Dispose(),"Read failure is not an imported attachment");
+            VaultChecks.Require(broken.Owned is not null&&broken.Owned.All(b=>b==0),"Read failure zeroes every allocated input byte before escaping");
+        }
         var root=Path.Combine(Path.GetTempPath(),"memo-attachment-source-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
         try
         {
@@ -55,5 +68,16 @@ internal static class AttachmentSourceChecks
             Console.WriteLine("PASS: bounded opaque local file bytes/name/MIME/hash preservation, source invariance, owned zero/dispose, empty/max/oversize/cancel/network/URI/link and Unix special-file refusal (no parsing, launching or exporting)");
         }
         finally{Directory.Delete(root,true);}
+    }
+    private sealed class InterruptedStream(CancellationTokenSource? cancel,bool fail):Stream
+    {
+        internal byte[]? Owned;
+        public override int Read(byte[] buffer,int offset,int count)
+        {
+            Owned=buffer;Array.Fill(buffer,(byte)0xA1,offset,count);cancel?.Cancel();if(fail)throw new IOException("synthetic source read failure");return count;
+        }
+        public override bool CanRead=>true;public override bool CanSeek=>false;public override bool CanWrite=>false;
+        public override long Length=>70001;public override long Position{get=>0;set=>throw new NotSupportedException();}
+        public override void Flush()=>throw new NotSupportedException();public override long Seek(long offset,SeekOrigin origin)=>throw new NotSupportedException();public override void SetLength(long value)=>throw new NotSupportedException();public override void Write(byte[] buffer,int offset,int count)=>throw new NotSupportedException();
     }
 }
