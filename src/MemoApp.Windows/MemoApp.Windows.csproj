@@ -5,4 +5,5 @@
   </PropertyGroup>
   <ItemGroup><None Include="Start-Portable.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
   <ItemGroup><ProjectReference Include="../MemoApp.Core/MemoApp.Core.csproj"/></ItemGroup>
+  <ItemGroup><None Include="../../docs/licenses/Markdig1.4.0.txt" Link="licenses/Markdig1.4.0.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
 </Project>

@@ -120,3 +120,5 @@ AI 질문은 허용한 잠금 해제 메모만 검색하고 근거 note/revision
 현재818a531 코드의 payload는schema3이며 폴더/태그/metadata·암호휴지통·이력·장치별UI프로필을추가했다. 기존envelope1/nonce/키정책은유지하며 v1/v2 첫v3저장은정확한원본ciphertext를previous로보존한다. Windows개별/일괄 일반메모·검색·이력비교·수동암호백업·TXT·포터블·순서·장치창/설정/날짜위젯에 실제Core/WPF 자동시험이있다. 서식/Markdown/첨부/설치형/자동백업/동기화/Android/로컬엔진최종범위는그대로미완료다. 상세현재상태는FEATURES/STATUS/VERIFICATION을따른다.
 
 S메모형식조사보완: [공식기존복구안내](https://www.smemo.co.kr/html/restore_memo.html)는 syncmemo_data의개별RTF/STF본문확인을설명하고 STF도서식일수있음을명시한다. [2015 PC4.0공식공지](https://www.smemo.co.kr/web/notice?page=5)는3.5이하와저장형식이달라짐을설명한다. 이는버전별metadata/첨부/전체자료형식검증이아니며 현재앱버전의호환성으로확대하지않는다. N09에는버전별설명또는빈테스트환경의완전합성파일·기대매핑·hash가필요하며 사용자실자료/키/실행파일은요구하지않는다.
+
+현재 후속 개발 payload schema4는 exact Markdown rawText와 immutable rich SourceJson·full-content history를 추가했다. plain/markdown/rich 모드 전환은 명시 손실 확인 후 원본 revision을 보존하며 known/opaque 문서·이력·복제·숨김복구·v1/2/3 첫schema4 저장의 exact original ciphertext previous/failure 보존을 자동검사했다. 기본 rich Main/Sticky 공유편집과 제한서식 명령은 실제Windows 제어시험 근거가 있으며 completion/purge 후속회귀를 진행한다. Markdig1.4.0은 fixed AST-only/inert/bounded projector용 검토된 의존성으로 Core에 고정했다. 원본134범위·서식/Markdown/이미지·첨부/동기화/Android/로컬엔진 최종목표 및 사용자수용 미확인은 유지한다.

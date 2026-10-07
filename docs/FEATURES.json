@@ -790,16 +790,30 @@
       "name": "글꼴 변경",
       "normalized": "글꼴 변경",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C01: 글꼴 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -807,16 +821,30 @@
       "name": "글자 크기 변경",
       "normalized": "글자 크기 변경",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C02: 글자 크기 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -824,16 +852,30 @@
       "name": "굵게",
       "normalized": "굵게",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C03: 굵게 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -841,16 +883,30 @@
       "name": "밑줄",
       "normalized": "밑줄",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C04: 밑줄 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -858,16 +914,30 @@
       "name": "취소선",
       "normalized": "취소선",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C05: 취소선 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -875,16 +945,30 @@
       "name": "글자색 변경",
       "normalized": "글자색 변경",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C06: 글자색 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -892,16 +976,30 @@
       "name": "형광펜·배경색",
       "normalized": "형광펜·배경색",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C07: 형광펜·배경색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -909,16 +1007,30 @@
       "name": "글머리표",
       "normalized": "글머리표",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C08: 글머리표 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -926,16 +1038,30 @@
       "name": "번호 목록",
       "normalized": "번호 목록",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C09: 번호 목록 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -943,16 +1069,30 @@
       "name": "체크박스 목록",
       "normalized": "체크박스 목록",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C10: 체크박스 목록 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -960,16 +1100,30 @@
       "name": "표 삽입",
       "normalized": "표 삽입",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C11: 표 삽입 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "표 셀·서식을 Windows/Android 왕복 저장해 손실 없이 보존한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -977,16 +1131,30 @@
       "name": "링크 삽입·클릭",
       "normalized": "링크 삽입·클릭",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C12: 링크 삽입·클릭 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -1059,16 +1227,33 @@
       "name": "Markdown 지원",
       "normalized": "Markdown 지원",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C15: Markdown 지원 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "Markdown 왕복·안전 렌더링을 시험하고 외부 리소스 자동 로드가 없다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "src/MemoApp.Core/Documents/SafeMarkdown.cs",
+        "docs/DEPENDENCY_ALLOWLIST.json",
+        "tests/MemoApp.ContractChecks/MarkdownChecks.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "partial-contract",
+          "commit": "3f036d62e93782d7844d4235c4346b276e8d2b47",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        }
+      ],
       "blocking_reason": null
     },
     {

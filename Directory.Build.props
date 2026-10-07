@@ -4,5 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode>true</RestoreLockedMode>
   </PropertyGroup>
 </Project>

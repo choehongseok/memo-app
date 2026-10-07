@@ -23,6 +23,8 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private StyledDocument? projected;
     private bool rebuilding,committing,disposed,editable,refreshPending,composing;
     private long projectionGeneration;
+    private long compositionToken;
+    public string? CleanupErrorCode{get;private set;}
     private readonly TextBlock state=new(){TextWrapping=TextWrapping.Wrap,Margin=new(4)};
     private readonly TextBox linkInput=new(){Width=190,MaxLength=2048,ToolTip="http/https 링크를 원문에 보존 (자동 실행 없음)"};
     private readonly WrapPanel toolbar=new(){Margin=new(0,0,0,4)};
@@ -57,7 +59,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
         Button("• 목록",()=>ToggleList(false));Button("1. 목록",()=>ToggleList(true));Button("체크목록",InsertChecklist);Button("체크",ToggleChecked);Button("2×2 표",()=>InsertTable(2,2));toolbar.Children.Add(linkInput);Button("링크 표시 추가",()=>ApplyLink(linkInput.Text));
         RichInput.TextChanged+=Changed;DataObject.AddPastingHandler(RichInput,Pasting);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart),true);
-        RichInput.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionStart),true);
+        RichInput.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate),true);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete),true);
         RichInput.PreviewDragOver+=RejectDrop;RichInput.PreviewDrop+=RejectDrop;
         CommandManager.AddPreviewExecutedHandler(RichInput,PreviewCommand);
@@ -273,13 +275,14 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     {
         if(composing)return;CommitNative();
     }
-    private void CompositionStart(object sender,TextCompositionEventArgs e){if(Live()&&editable&&!rebuilding)composing=true;}
+    private void CompositionStart(object sender,TextCompositionEventArgs e){if(Live()&&editable&&!rebuilding){compositionToken++;composing=true;}}
+    private void CompositionUpdate(object sender,TextCompositionEventArgs e){if(!composing)CompositionStart(sender,e);}
     private void CompositionComplete(object sender,TextCompositionEventArgs e)
     {
-        if(!composing)return;long generation=projectionGeneration;var target=note;var source=target?.Document;long? version=target?.EditVersion;
+        if(!composing)return;long generation=projectionGeneration,token=compositionToken;var target=note;var source=target?.Document;long? version=target?.EditVersion;
         Dispatcher.BeginInvoke(new Action(()=>
         {
-            if(disposed||generation!=projectionGeneration||!composing)return;
+            if(disposed||generation!=projectionGeneration||token!=compositionToken||!composing)return;
             composing=false;
             if(Live()&&ReferenceEquals(note,target)&&ReferenceEquals(target!.Document,source)&&target.EditVersion==version)CommitNative();
             else if(Live())Rebuild();else ClearSensitive();
@@ -374,18 +377,19 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     public void ClearSensitive()
     {
-        if(disposed)return;disposed=true;projectionGeneration++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
+        if(disposed)return;disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
         var oldNote=note;projected=null;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
         // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
         RichInput.TextChanged-=Changed;DataObject.RemovePastingHandler(RichInput,Pasting);
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));
-        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionStart));
+        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate));
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete));
         RichInput.PreviewDragOver-=RejectDrop;RichInput.PreviewDrop-=RejectDrop;CommandManager.RemovePreviewExecutedHandler(RichInput,PreviewCommand);
-        Visibility=Visibility.Collapsed;RichInput.IsUndoEnabled=false;RichInput.IsReadOnly=true;RichInput.DataContext=null;state.Text="";toolbar.IsEnabled=false;
-        linkInput.IsUndoEnabled=false;linkInput.Clear();
-        try{RichInput.Document.Blocks.Clear();}catch(InvalidOperationException){/* The concealed, detached view must not interrupt key release. */}
-        finally{rebuilding=false;}
+        foreach(Action cleanup in new Action[]{()=>Visibility=Visibility.Collapsed,()=>RichInput.IsUndoEnabled=false,()=>RichInput.IsReadOnly=true,()=>RichInput.DataContext=null,()=>state.Text="",()=>toolbar.IsEnabled=false,()=>linkInput.IsUndoEnabled=false,linkInput.Clear,()=>RichInput.Document.Blocks.Clear()})
+        {
+            try{cleanup();}catch(Exception error) when(error is not OutOfMemoryException){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
+        }
+        rebuilding=false;
     }
     public void Dispose()=>ClearSensitive();
 }

@@ -28,6 +28,7 @@ internal static class Program
             {
                 var failures=new List<string>();
                 var groups=new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-post-handler-race",RichPostHandlerRaceRun),("rich-exception-purge",RichExceptionPurgeRun),("rich-clear-exception",RichClearExceptionRun),("rich-url-clear-exception",()=>RichClearExceptionCase(true)),("rich-two-views",RichViewsRun),("rich-formatting-commands",RichFormattingCommandsRun),("rich-fidelity",RichFidelityRun),("rich-link-split",RichLinkSplitRun),("rich-history-mode",RichHistoryRun),("rich-native-style-refusal",RichNativeStyleRun),("rich-native-malformed-unicode",RichMalformedNativeRun),("rich-composition-boundary",RichCompositionRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun),("rich-nested-native-worker",RichNestedNativeProcessRun)};
+                groups=groups.Append(("rich-composition-metadata",(Func<Task>)RichCompositionMetadataRun)).ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {
@@ -223,6 +224,13 @@ internal static class Program
         run.Text="완성👩‍💻é";Raise(TextCompositionManager.PreviewTextInputEvent);await Idle();Require(note.Text=="완성👩‍💻é","completed composition event must validate and publish complete Unicode source");
         string beforeNext=note.Document!.SourceJson;Raise(TextCompositionManager.PreviewTextInputStartEvent);run=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;run.Text="COMPLETE_A";Raise(TextCompositionManager.PreviewTextInputEvent);Raise(TextCompositionManager.PreviewTextInputStartEvent);run.Text="TRANSIENT_B_\uD800";await Idle();Require(note.Document!.SourceJson==beforeNext && ReferenceEquals(((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline,run),"stale completion A must not finish or rollback newly started composition B");run.Text="완성 B";Raise(TextCompositionManager.PreviewTextInputEvent);await Idle();Require(note.Text=="완성 B","only matching composition B completion may publish final source");
         Raise(TextCompositionManager.PreviewTextInputStartEvent);run=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;run.Text="LATE_COMPOSITION";Raise(TextCompositionManager.PreviewTextInputEvent);live=false;view.ClearSensitive();workspace.Clear();await Idle();Require(view.RichInput.Document.Blocks.Count==0 && !view.RichInput.CanUndo && note.Document is null,"queued composition completion cannot revive concealed content");window.Close();
+    }
+    private static async Task RichCompositionMetadataRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="metadata composition baseline";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();
+        void Raise(RoutedEvent routed)=>view.RichInput.RaiseEvent(new TextCompositionEventArgs(Keyboard.PrimaryDevice,new TextComposition(InputManager.Current,view.RichInput,"",TextCompositionAutoComplete.Off)){RoutedEvent=routed});
+        Raise(TextCompositionManager.PreviewTextInputStartEvent);((Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline).Text="완성 본문과 metadata";Raise(TextCompositionManager.PreviewTextInputEvent);note.Title="최신 제목";note.Favorite=true;await Idle();Require(note.Text=="완성 본문과 metadata"&&note.Title=="최신 제목"&&note.Favorite,"completed composition must preserve latest title/metadata instead of discarding completed content");
+        live=false;view.ClearSensitive();workspace.Clear();window.Close();
     }
     private static async Task RichWindowsIntegrationRun()
     {

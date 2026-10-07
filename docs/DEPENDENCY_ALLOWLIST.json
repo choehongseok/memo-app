@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "packages": [
+    {
+      "id": "Markdig",
+      "version": "1.4.0",
+      "project": "src/MemoApp.Core/MemoApp.Core.csproj",
+      "allowed_tfms": [
+        "net10.0",
+        "net10.0-windows7.0"
+      ],
+      "archive_size": 1279982,
+      "archive_sha512": "8EkBFFlLoQCRS+LKLGdEUN6L57BGkQN2tiR2/zzrd+N2kVFANJzq24TKSeH7lE+ucHcA+OxhlNNmsJAZFJeTqg==",
+      "content_hash": "lLhaiI/mNDTNzgLqnmknhf4LjgTqOAyjx5+GNz0X3AxYMxUhmFppF2WVMdER+SDqwhE5wUF1pzs/cuLwFxs7xA==",
+      "license": "BSD-2-Clause",
+      "license_path": "docs/licenses/Markdig1.4.0.txt",
+      "license_sha256": "7423242b4ae72bccdf19a06cd3c20790df8519a164a08f37b31cb4a40034d827",
+      "source_commit": "56e9c238584a44a169f174c881855c049768634c",
+      "repository_signer_sha256": "1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D"
+    }
+  ]
+}

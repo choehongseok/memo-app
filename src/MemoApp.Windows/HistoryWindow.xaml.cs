@@ -4,13 +4,14 @@ using System.Windows.Media;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Core.History;
+using MemoApp.Core.Documents;
 namespace MemoApp.Windows;
 public partial class HistoryWindow : Window
 {
     private Action<Guid>? restore;
     private bool closed;
     private ComparisonChoice[]? comparisonSources;
-    private sealed record ComparisonChoice(Guid RevisionId,bool Current,DateTimeOffset Date,string Title,string Text,NoteMetadata Metadata)
+    private sealed record ComparisonChoice(Guid RevisionId,bool Current,DateTimeOffset Date,string Title,string Text,NoteMetadata Metadata,string Mode,StyledDocument? Document)
     {
         public string Label=>$"{Date:yyyy-MM-dd HH:mm:ss.fffffff} UTC · {(Current?"열었을 때 현재":"이력")} · {RevisionId.ToString("N")[..8]} · {Title}";
     }
@@ -27,8 +28,8 @@ public partial class HistoryWindow : Window
         if(revisions.Count>512||revisions.Any(r=>r.NoteId!=note.Id)||current is not null&&current.NoteId!=note.Id||revisions.Select(r=>r.RevisionId).Distinct().Count()!=revisions.Count||current is not null&&revisions.Any(r=>r.RevisionId==current.RevisionId))throw new ArgumentException("Comparison sources must be one consistent note head/history");
         RestoreVersion.IsEnabled = !note.IsDeleted && revisions.Count != 0;
         Revisions.ItemsSource = revisions; Revisions.SelectedItem = revisions.FirstOrDefault();
-        comparisonSources=(current is null?Array.Empty<ComparisonChoice>():[new(current.RevisionId,true,current.ModifiedAt,current.Title,current.Text,current.Metadata)])
-            .Concat(revisions.Select(r=>new ComparisonChoice(r.RevisionId,false,r.ModifiedAt,r.Title,r.Text,r.Metadata))).ToArray();
+        comparisonSources=(current is null?Array.Empty<ComparisonChoice>():[new(current.RevisionId,true,current.ModifiedAt,current.Title,current.Text,current.Metadata,current.Mode,current.Document)])
+            .Concat(revisions.Select(r=>new ComparisonChoice(r.RevisionId,false,r.ModifiedAt,r.Title,r.Text,r.Metadata,r.Mode,r.Document))).ToArray();
         LeftRevision.ItemsSource=RightRevision.ItemsSource=comparisonSources;LeftRevision.SelectedItem=comparisonSources.LastOrDefault();RightRevision.SelectedItem=comparisonSources.FirstOrDefault();
         Closed += (_, _) =>
         {
@@ -42,7 +43,7 @@ public partial class HistoryWindow : Window
         if(closed||comparisonSources is null||LeftRevision.SelectedItem is not ComparisonChoice left||RightRevision.SelectedItem is not ComparisonChoice right||!comparisonSources.Contains(left)||!comparisonSources.Contains(right))return;
         LeftTitle.Text=left.Title;RightTitle.Text=right.Title;LeftText.Text=left.Text;RightText.Text=right.Text;
         var result=BoundedHistoryDiff.Compare(left.Text,right.Text);DiffText.Text=result.Rendered;DiffState.Text=result.Message;
-        ComparisonInfo.Text=$"이전 {left.Date:yyyy-MM-dd HH:mm:ss} UTC / 이후 {right.Date:yyyy-MM-dd HH:mm:ss} UTC · 제목 {(left.Title==right.Title?"동일":"변경")} · {BoundedHistoryDiff.MetadataChanges(left.Metadata,right.Metadata)}";
+        ComparisonInfo.Text=$"이전 {left.Date:yyyy-MM-dd HH:mm:ss} UTC / 이후 {right.Date:yyyy-MM-dd HH:mm:ss} UTC · 제목 {(left.Title==right.Title?"동일":"변경")} · 모드 {(left.Mode==right.Mode?"동일":"변경")} · 서식 {(left.Document==right.Document?"동일":"변경")} · {BoundedHistoryDiff.MetadataChanges(left.Metadata,right.Metadata)}";
     }
     private void Selection_Changed(object sender, SelectionChangedEventArgs e)
     {

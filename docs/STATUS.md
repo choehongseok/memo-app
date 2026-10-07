@@ -1,3 +1,11 @@
+# 2026-10-07 서식 편집·안전 Markdown Core 진행
+
+원격 cbe164d2e10aebdc19f136d28ecf501a687798a8, Windows CI37620850833: build/fullCore/source/Python/safety PASS. 실제 rich 공유편집·원문충실도·글꼴/크기/굵게/밑줄/취소선/색/형광펜/목록/체크/표/비활성링크 명령·Undo/Redo·native Unicode/미지원스타일 거절·Main/Sticky·기존plain/batch/device PASS. 원래 publish/clear 예외 purge2개와 isolated nested-worker도 PASS. URL입력창 clear 예외·완료A 뒤 새compositionB·동일본문 서식이력 표시는 RED이며 해당 후속수정/새 metadata-composition 회귀를 진행한다. 실제물리IME/OS SessionLock/다른계정ACL/혼합DPI/사용자수용은 미검증. 신규 trial upload 없음.
+
+로컬 SafeMarkdown Core는 exact Markdig1.4.0/BSD-2-Clause와 실제 lockfile/contentHash를 고정하고 일반 restore/build/publish locked mode를 사용한다. 공식 패키지 NuGet signature verify exit0·archive SHA512 및 독립 읽기 경계검토를 수행했다. fullBSD 고지 output/publish byte동일, parser DisableHtml/AST-only·inert labels·소스65536/사전괄호depth32·AST8192/blocks1024/복합depth32/출력65536 한도와 exact rawsource 불변이 실제 Core회귀 PASS. 부모조건부 locked mode/고지복사누락·조건/nested dependency는 음성시험RED→gate보강→Python24 PASS. Windows Markdown preview 연결은 아직 없으며 전체CommonMark/GFM 충실도나 모든패키지 재현빌드를 주장하지 않는다.
+
+134원장: 구현/부분연결 진행82, 미착수50, 외부형식차단1(N09), 정규화보존1(M06), 최종전수수용완료0. 서식12ID+C15가 부분Core/진행으로 전환됐으며 완료가 아니다. Windows 사용자시험미대기로 지금중단해야하는기능0; 독립Windows preview/첨부 등 과제가 남아있다. Android5ID의 실제SDK사용전약관확인·N09 버전별 완전합성fixture 의존은 이전과 같다. 같은 development/stage-1/draftPR1 유지, main 미병합.
+
 # 2026-10-07 일괄 처리·날짜별 이력 비교 실제 Windows 통과
 코드818a5318db425ec047f47d65b05a6a41187015c9, local43ac492와 treeacc05584b157af9dcf99886bd3dfa23f61dca7bf 일치. development/stage-1/draftPR1 유지. https://github.com/choehongseok/memo-app/actions/runs/37591832853 Windows build/Core/actualWPF/publish/upload/source/Python6/safety 전체SUCCESS. artifact11469151806,65038911bytes,SHA256 d27da63fcb25ba3f396b98bdd13aa914c498cdc97ef7925838b6410d05d477b5,expires2026-10-14T08:09:48Z.
 
