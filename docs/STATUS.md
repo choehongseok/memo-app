@@ -1,3 +1,7 @@
+# 2026-10-07 strict PNG 픽셀 decoder Core 진행
+
+lease 원격 f568538/tree c637461의 Windows37691454935 전체SUCCESS(source/Python26/safety/build/Core/WPF/publish), uploadSKIPPED를 확인했다. 다음 Core decoder는 기존RGB/RGBA profile 안에서만 BCL zlib·2개 scanline·최대4MiB BGRA를 사용하며 generic WIC/이미지UI는 미연결이다. missing-type RED 뒤 exact EOF/Adler/5필터·독립fixed/dynamic/Paeth tie·각할당취소·원본불변·실제scratch/result zero targetedPASS. 독립 읽기필수blocker없음, 4프로젝트crossbuild0경고/오류. 첫전체Core는 기존ID동시생성경합이 한 번 실패했고 동일전체 재실행은PASS였으며 경합원인을 별도확인한다. 최신decoder Windows는 후속gate이고85부분/47미착수/2특수·134/사용자수용0을 유지한다.
+
 # 2026-10-07 내부 첨부 바이트 lease 진행
 
 이미지 미리보기 준비용 Core lease를 구현했다. 정확한 암호 객체를 확인하고 단일 사용·2개 용량·source/잠금/fault/해제 시 권한 폐기·실행 중 callback 종료 후 실제 buffer zero를 검사했다. 독립 코드 읽기에서 NoteDraft의 event graph를 통한 키 소유자 잔류를 발견했고, 실제 RED 회귀 뒤 inert token으로 수정했다. native decoder/preview UI는 아직 연결하지 않았고 H08 완료를 주장하지 않는다. 후속 Windows CI는 별도 확인하며 기존 85부분/47미착수/N09차단1/M06정규화1/134개·사용자수용0을 유지한다.
