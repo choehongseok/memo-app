@@ -114,3 +114,9 @@ AI 질문은 허용한 잠금 해제 메모만 검색하고 근거 note/revision
 암호 previous/pending은 자동 삭제하지 않는다. 디스크 사용량이 늘 수 있으며 복구 화면은 current와 최근128개 후보만 검사한다. 표시된 선택 후보는 AEAD/JSON/관계를 검증한 뒤 명시 확인으로 적용, 새 key epoch와 snapshot으로 전환한다. 과거 전체 snapshot의 유효 replay를 감지하거나 삭제 부활/동기화 문제를 해결한 것으로 주장하지 않는다. 병합·선택 메모 복구·정식 백업 일정/보관 정책은 미제공.
 
 잠금은 모든 UI/독립창을 먼저 가리고 입력/세션 epoch를 폐기한다. 최신 dirty를 동결하여 암호문으로 준비한 뒤 키를 즉시 zero하고 직렬 disk commit 완료를 기다린다. 실패는 ciphertext pending(키 종료) 또는 plaintext-hidden(암호화 전 실패, 키 보유)을 구분한다. 숨겨진 상태는 정확 비밀 재입력으로만 편집 재개. 암호문 보류 사본은 create-new로 내보낼 수 있다. 정상 종료는 저장/잠금 완료 후 수행하며 미저장 대기 데이터 포기는 별도 UI 확인이다. 5분 idle/Windows SessionLock 연결은 작성됐으나 실제 Windows event/화면/IME/ACL/다른 계정 검증은 미실행.
+
+
+## 2026-10-07 후속 구현 기록 (앞선 v1 기록과 구분)
+현재818a531 코드의 payload는schema3이며 폴더/태그/metadata·암호휴지통·이력·장치별UI프로필을추가했다. 기존envelope1/nonce/키정책은유지하며 v1/v2 첫v3저장은정확한원본ciphertext를previous로보존한다. Windows개별/일괄 일반메모·검색·이력비교·수동암호백업·TXT·포터블·순서·장치창/설정/날짜위젯에 실제Core/WPF 자동시험이있다. 서식/Markdown/첨부/설치형/자동백업/동기화/Android/로컬엔진최종범위는그대로미완료다. 상세현재상태는FEATURES/STATUS/VERIFICATION을따른다.
+
+S메모형식조사보완: [공식기존복구안내](https://www.smemo.co.kr/html/restore_memo.html)는 syncmemo_data의개별RTF/STF본문확인을설명하고 STF도서식일수있음을명시한다. [2015 PC4.0공식공지](https://www.smemo.co.kr/web/notice?page=5)는3.5이하와저장형식이달라짐을설명한다. 이는버전별metadata/첨부/전체자료형식검증이아니며 현재앱버전의호환성으로확대하지않는다. N09에는버전별설명또는빈테스트환경의완전합성파일·기대매핑·hash가필요하며 사용자실자료/키/실행파일은요구하지않는다.

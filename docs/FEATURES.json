@@ -1523,17 +1523,33 @@
       "name": "여러 메모 일괄 이동·삭제",
       "normalized": "여러 메모 일괄 이동·삭제",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D12: 여러 메모 일괄 이동·삭제 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/History/BoundedHistoryDiff.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/HistoryWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/BatchChecks.cs",
+        "tests/MemoApp.ContractChecks/HistoryDiffChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-batch-history-component",
+          "commit": "818a5318db425ec047f47d65b05a6a41187015c9",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + complete Core + actual WPF batch/comparison/fault suite + publish; https://github.com/choehongseok/memo-app/actions/runs/37591832853",
+          "result": "PASS bounded101 all-selection preflight; foreign/duplicate/mixed/history512/whole-byte-budget rejection; selected revisions/rapid delete-restore/encrypted restart; real WPF singleton-guard/surviving multi-selection/batch move-trash-restore/open-sticky refusal/UI profile invariance/flush-fault original preservation/truthful unsaved status/stale-session refusal; captured exact head and all immutable revisions/date/Unicode/CRLF/bounded-diff fallback/full lock source-preview-Undo clearing. Not physical IME/OS SessionLock/ACL/dialog usability or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "원자 일괄 이동·암호휴지통·복원/읽기전용 날짜별 비교 연결과 실제 Windows 자동제어·실패 회귀 PASS. 실제 확인창/키보드/IME/OS 잠금/ACL·사용자수용 및 전체 기능 기준은 미확인."
     },
     {
       "id": "D13",
@@ -2594,17 +2610,33 @@
       "name": "변경 이력 날짜별 비교",
       "normalized": "변경 이력 날짜별 비교",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "M05: 변경 이력 날짜별 비교 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/History/BoundedHistoryDiff.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/HistoryWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/BatchChecks.cs",
+        "tests/MemoApp.ContractChecks/HistoryDiffChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "History",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-batch-history-component",
+          "commit": "818a5318db425ec047f47d65b05a6a41187015c9",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + complete Core + actual WPF batch/comparison/fault suite + publish; https://github.com/choehongseok/memo-app/actions/runs/37591832853",
+          "result": "PASS bounded101 all-selection preflight; foreign/duplicate/mixed/history512/whole-byte-budget rejection; selected revisions/rapid delete-restore/encrypted restart; real WPF singleton-guard/surviving multi-selection/batch move-trash-restore/open-sticky refusal/UI profile invariance/flush-fault original preservation/truthful unsaved status/stale-session refusal; captured exact head and all immutable revisions/date/Unicode/CRLF/bounded-diff fallback/full lock source-preview-Undo clearing. Not physical IME/OS SessionLock/ACL/dialog usability or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "원자 일괄 이동·암호휴지통·복원/읽기전용 날짜별 비교 연결과 실제 Windows 자동제어·실패 회귀 PASS. 실제 확인창/키보드/IME/OS 잠금/ACL·사용자수용 및 전체 기능 기준은 미확인."
     },
     {
       "id": "M06",
@@ -2788,7 +2820,7 @@
       "name": "S메모 자료 가져오기",
       "normalized": "S메모 자료 가져오기",
       "phase": 2,
-      "status": "미착수",
+      "status": "차단됨",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N09: S메모 자료 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
@@ -2797,8 +2829,16 @@
       ],
       "implementation_locations": [],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "official-format-documentation",
+          "commit": "818a5318db425ec047f47d65b05a6a41187015c9",
+          "environment": "read-only official documentation / 2026-10-07",
+          "command": "https://www.smemo.co.kr/html/restore_memo.html ; https://www.smemo.co.kr/html/backup_restore.html ; https://www.smemo.co.kr/web/notice?page=5",
+          "result": "Partial historical body-format evidence only; no verified versioned schema/metadata map/synthetic fixture. N09 blocked, no vendor program/real-data download or execution"
+        }
+      ],
+      "blocking_reason": "공식 구버전 안내는 syncmemo_data의 RTF/STF 개별본문을 설명하지만 STF는 서식일 수 있고 2015 PC4.0 공지는 형식변경을 명시한다. 특정 버전의 인코딩·제목/폴더/시각/서식/첨부 매핑 및 완전합성 versioned fixture가 없어 S메모 호환 어댑터를 검증할 수 없다. 실제 사용자자료/실행파일은 요구하거나 실행하지 않는다."
     },
     {
       "id": "N10",
@@ -3677,5 +3717,23 @@
       "test_evidence": [],
       "blocking_reason": null
     }
-  ]
+  ],
+  "progress_summary": {
+    "as_of_code": "818a5318db425ec047f47d65b05a6a41187015c9",
+    "implemented_or_partial_in_progress": 69,
+    "not_started": 63,
+    "external_format_blocked": 1,
+    "normalized_preserved": 1,
+    "fully_feature_verified": 0,
+    "user_acceptance_confirmed": 0,
+    "current_user_test_hard_stop": 0,
+    "later_android_sdk_terms_pending_ids": [
+      "Q03",
+      "Q04",
+      "Q06",
+      "Q07",
+      "Q08"
+    ],
+    "note": "Implementation counts include partial shared-code coverage, not completed134 features. Dependency tags overlap status counts; independent Windows work remains."
+  }
 }

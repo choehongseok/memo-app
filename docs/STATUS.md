@@ -1,3 +1,16 @@
+# 2026-10-07 일괄 처리·날짜별 이력 비교 실제 Windows 통과
+코드818a5318db425ec047f47d65b05a6a41187015c9, local43ac492와 treeacc05584b157af9dcf99886bd3dfa23f61dca7bf 일치. development/stage-1/draftPR1 유지. https://github.com/choehongseok/memo-app/actions/runs/37591832853 Windows build/Core/actualWPF/publish/upload/source/Python6/safety 전체SUCCESS. artifact11469151806,65038911bytes,SHA256 d27da63fcb25ba3f396b98bdd13aa914c498cdc97ef7925838b6410d05d477b5,expires2026-10-14T08:09:48Z.
+
+D12: bounded101 선택→전체 중복/소유/상태/폴더/한도 preflight→stage-all/accept/publish. 여러 메모 이동·휴지통·복원을 새리비전으로 보존하고 실패시 일부만 변경하지 않는다. Extended선택에서는 단일편집 binding/명령을 막고 surviving선택을 유지. 성공한 삭제알림만 sticky를 닫는다. 실제 열린sticky+history512/전체16MiB거절후 전체Notes/UiDevices/선택/창열림불변, 실제flush실패 원본암호bytes보존/변경반영·미저장안내, staleBatch→잠금→새session 차단 WPF회귀PASS.
+
+M05: 저장된 head를 같은singleton/epoch/membership 확인 후 동결해 고유revision별 UTC날짜·제목·metadata·본문 비교. exactUnicode/CRLF/LF/CR/끝개행을 보존하며 input65536/라인4096/cells1000000/output131072 초과는 명시fallback과 양쪽원문 보존. 같은본문은 행렬없이 처리. 생성후draft변경에도 source불변, 잠금시 source/cache/선택/preview/diff/metadata/Undo전체제거 PASS.
+
+시험 우선: Core batch/diff stub실패와 long identical fallback실패를 관측한뒤수정. Windows37589322158은 기존Single선택 실패, 37590467180은 일괄UI검사를 지나 비교컨트롤누락 실패를 확인한시험커밋이며 publish skipped. 연결후37591832853에서 모두PASS. 독립 실제diff 읽기검토에 남은필수blocker없음; 검토자는 독립실행하지 않았다.
+
+134 원장: 구현/부분연결 진행69, 미착수63, 외부형식차단1(N09), 정규화보존1(M06), 최종ID전수검증/사용자수용완료0. Windows 실물시험 미대기로 현재구현을중단해야하는기능0이며 독립과제가남아있다. Android5ID(Q03/Q04/Q06/Q07/Q08)는 이후 실제SDK사용전약관확인이필요하다(미착수수와중복). N09는 공식RTF/STF 본문근거는있으나 버전별metadata/첨부매핑 및 합성fixture가없어차단.
+
+CI 표준공개runner계산은무료이나 artifact는공용storage한도/과금이별도다. 추가비용계정설정을변경하지않고 중간시험판 자동업로드는앞으로생략하며 build/Core/WPF/publish는유지한다. 기존유효trial을삭제하지않고 최종인계는별도로보존한다. 실제확인창/물리키보드·IME·OSSessionLock·다른계정ACL/USB/혼합DPI는여전히미검증. 다음독립Windows 기능을이어간다.
+
 # 2026-10-07 장치별 창·표시 설정·날짜 위젯 후속본
 최신 코드 a91ca5e1a8b93df108d526d70cb1909ce2e6ba25, local9d66d24와 tree ddd71137718515d94e3384e3b62ad33e426ea740 동일. development/stage-1/draft PR1만 갱신했으며 원문134 ID/byte/hash/M06 유지.
 

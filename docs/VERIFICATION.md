@@ -103,3 +103,13 @@ ZIP 결과: 63,192,131 bytes, SHA256 `744dec678cc0088b97056ab5511b7a7c4495b03650
 - https://github.com/choehongseok/memo-app/actions/runs/37587829442 실제 Windows Server2022 전체SUCCESS. app/check-host 같은 manifest와 native HWND PerMonitorV2 assertion PASS; native window restore/resize/store/arrange workarea, same-turn new+closed-open memo/widget→lock→encrypted reopen, explicit user-close versus conceal, fold unfoldedsize/position/topmost/opacity, native hook SC_MOVE/SC_SIZE/SC_MAXIMIZE codepath, hide/show, theme/font/scale history·clock 적용, oldcontroller guard/anotherprofile isolation PASS
 - 물리 키보드/OS 메뉴/Snap·혼합DPI 실제모니터·IME/OS SessionLock/ACL/USB는 해당 자동시험이 증명하지 않는다. 처음3 UI correctness 지적은 독립 읽기 검토에서 발견후 수정됐고 검토자는 실행하지 않았다
 - 원문byte/hash/134ID/Python6/비밀휴리스틱/build/publish/upload PASS. artifact11467587240,65026133bytes,SHA256 b57371769f8516719b5093e65d9e2769cb53d6bff589640f2561cc0948d27480,expires2026-10-14T07:32:16Z. 미서명 합성시험판이며 전문보안감사/전체제품수용이 아니다
+
+
+## 2026-10-07 818a531 D12/M05 실제 Windows
+- Core미구현stub와 identical1000줄 계산fallback 실패를 먼저관측하고 구현/수정한뒤전체Core PASS. batch bounded101/중복·외부·closed·혼합상태·unknownfolder·empty拒/이력512·전체bytebudget 실패fullbytes/events/version불변/no-op/rapid delete-restore 사건/tombstone/알림중edit·Clear/실제암호restart PASS
+- Diff exact Unicode/case/CRLF·LF·CR/빈줄/끝개행, 라인·입력·checkedcells·출력제한의전체fallback/metadata전체변경 표시 PASS; 같은긴본문은 행렬없이 bounded출력
+- Windowsred-first:37589322158 정확히 Extended선택 미지원으로FAIL, 이어37590467180은 일괄UI 검사를지나 LeftRevision미구현FAIL. 두시험commit은 publish/upload skipped. 818a531의 https://github.com/choehongseok/memo-app/actions/runs/37591832853 전체SUCCESS
+- 실제WPF: multiple선택시editor/source/단일명령 차단, surviving선택보존, 모든선택원자이동/삭제·복원/성공Deleted뒤sticky닫기; history512 및 실제16MiBboundary 거절에서 Notes/UiDevices/선택/열린sticky불변; realpre-flush원본bytes보존/반영된미저장변경의정직안내; oldBatch→Lock→newsession차단 PASS
+- 실제비교창: save완료/같은single/epoch/membership후capturedhead, 모든고유revision/동일날짜label별도선택, 생성후본문수정에도headpreview불변, Close의sources/선택/원문/title/diff/metadata/Undo clear PASS. Date label은7자리초+짧은revision표식을포함
+- Linux교차/Windows양쪽 build0warnings/errors; 원문27417bytes/SHA256·134ID·Python6·safety·existingcrypto/fault/processkill/lock회귀 및 publish PASS. artifact11469151806,65038911bytes,SHA256d27da63fcb25ba3f396b98bdd13aa914c498cdc97ef7925838b6410d05d477b5,expires2026-10-14T08:09:48Z
+- 독립 source/test읽기검토에서 최종범위의추가필수blocker없음. 검토자는실행하지않았다. 실제확인dialog/키보드/IME/OSSessionLock/ACL/USB/물리혼합DPI 및전문보안감사·전체134사용자수용을증명하지않는다

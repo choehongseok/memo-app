@@ -3,6 +3,12 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      upload_trial:
+        description: 'Explicit trial upload only after confirming shared artifact storage allowance; may incur storage charges'
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -10,7 +16,7 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node24
         with:
           persist-credentials: false
       - name: Install fixed official SDK with SHA512 validation
@@ -34,6 +40,25 @@ jobs:
         run: |
           dotnet --info
           git rev-parse HEAD
+      - name: Record optional installed Microsoft MSI validation tools
+        shell: pwsh
+        run: |
+          $roots = @("${env:ProgramFiles(x86)}\Windows Kits", "$env:ProgramFiles\Windows Kits") | Select-Object -Unique
+          $names = @('msival2.exe', 'darice.cub', 'evalcom2.dll', 'orca.exe')
+          $found = @()
+          foreach ($root in $roots) {
+            if (Test-Path -LiteralPath $root) {
+              $found += Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction Stop | Where-Object { $_.Name -in $names }
+            }
+          }
+          if ($found.Count -eq 0) { Write-Output 'No native MSI ICE tool set found in installed Windows Kits; no SDK installed and no MSI executed' }
+          foreach ($file in ($found | Select-Object -First 50)) {
+            Write-Output "MSI tool inventory: $($file.FullName)"
+            if ($file.Extension -in @('.exe', '.dll')) {
+              $signature = Get-AuthenticodeSignature -FilePath $file.FullName
+              Write-Output "MSI tool signature: $($signature.Status) $($signature.SignerCertificate.Subject)"
+            }
+          }
       - name: Scope and safety checks
         shell: pwsh
         run: |
@@ -53,7 +78,8 @@ jobs:
         run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
       - name: Publish unsigned synthetic-data Windows x64 trial
         run: dotnet publish src/MemoApp.Windows -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, Node24
+        if: github.event_name == 'workflow_dispatch' && inputs.upload_trial
         with:
           name: windows-x64-synthetic-trial
           path: artifacts/windows-x64-synthetic-trial
