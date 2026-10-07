@@ -213,7 +213,14 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     public void PasteData(IDataObject data)
     {
         if(!Live()||!editable)return;
-        try{if(!data.GetDataPresent(DataFormats.UnicodeText,false)||data.GetData(DataFormats.UnicodeText,false) is not string text||text.Length>RichDocumentCodec.MaxText||!RichDocumentCodec.IsWellFormedUnicode(text))return;RichInput.Selection.Text=text.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n');}
+        var target=note!;var owner=workspace!;var source=target.Document;long version=target.EditVersion;var native=RichInput.Document;var start=RichInput.Selection.Start;var end=RichInput.Selection.End;
+        bool Same()=>Live()&&ReferenceEquals(note,target)&&ReferenceEquals(workspace,owner)&&ReferenceEquals(target.Document,source)&&target.EditVersion==version&&ReferenceEquals(RichInput.Document,native)&&RichInput.Selection.Start.CompareTo(start)==0&&RichInput.Selection.End.CompareTo(end)==0;
+        try
+        {
+            bool present=data.GetDataPresent(DataFormats.UnicodeText,false);if(!Same()||!present)return;
+            object value=data.GetData(DataFormats.UnicodeText,false);if(!Same()||value is not string text||text.Length>RichDocumentCodec.MaxText||!RichDocumentCodec.IsWellFormedUnicode(text))return;
+            string normalized=text.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n');if(!Same())return;RichInput.Selection.Text=normalized;
+        }
         catch{if(Live()){Rebuild();notice?.Invoke("붙여넣기 실패 — 기존 문서를 보존했습니다.");}}
     }
     private void Pasting(object sender,DataObjectPastingEventArgs e){e.CancelCommand();if(!e.IsDragDrop)PasteData(e.DataObject);}

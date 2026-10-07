@@ -22,7 +22,17 @@ internal static class Program
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {
-            try { await RichPasteRaceRun();await RichViewsRun();await RichFidelityRun();await RichWindowsIntegrationRun();await Run(); await BatchFailureRun();await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
+            try
+            {
+                var failures=new List<string>();
+                foreach(var group in new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-two-views",RichViewsRun),("rich-fidelity",RichFidelityRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun)})
+                {
+                    try{await group.Run();Console.WriteLine("PASS: WPF group "+group.Name);}
+                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);}
+                    finally{foreach(var window in app.Windows.Cast<Window>().Where(w=>w.Content is StructuredNoteEditor).ToArray()){((StructuredNoteEditor)window.Content).Dispose();window.Close();}}
+                }
+                if(failures.Count==0){Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)");result=0;}
+            }
             catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }
         };
@@ -42,6 +52,30 @@ internal static class Program
         var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="race baseline";workspace.ConvertMode(note,"rich",true);string before=note.Document!.SourceJson;bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();
         view.PasteData(new DelayedTextData(()=>{live=false;view.ClearSensitive();}));await Idle();Require(view.RichInput.Document.Blocks.Count==0 && !view.RichInput.CanUndo && note.Document!.SourceJson==before,"delayed OLE getter cannot reinsert plaintext into concealed/disposed view");window.Close();workspace.Clear();
         workspace=new EditingWorkspace(TimeProvider.System);note=workspace.CreateNote();workspace.ConvertMode(note,"rich",true);live=true;using var changedView=new StructuredNoteEditor(workspace,note,()=>live,_=>{});window=new Window{Content=changedView,Width=400,Height=300};window.Show();await Idle();changedView.PasteData(new DelayedTextData(()=>workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("CONCURRENT_CANONICAL_CHANGE"))));await Idle();Require(note.Text=="CONCURRENT_CANONICAL_CHANGE","delayed OLE getter must not paste into newer canonical source/version");live=false;changedView.ClearSensitive();workspace.Clear();window.Close();
+    }
+    private static async Task RichRebuildRaceRun()
+    {
+        var errors=new List<string>();
+        foreach(bool conceal in new[]{true,false})
+        {
+            var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="REBUILD_A";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
+            view.RichInput.TextChanged+=(_,_)=>{if(armed){armed=false;if(conceal){live=false;view.ClearSensitive();}else workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("REBUILD_B"));}};
+            try
+            {
+                Invoke(view,"Rebuild");await Idle();
+                Require(conceal?view.RichInput.Document.Blocks.Count==0&&!view.RichInput.CanUndo:new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("REBUILD_B")&&!view.RichInput.CanUndo,"rebuild publish callback must never reattach stale A after conceal/latest B");
+            }
+            catch(Exception error){errors.Add((conceal?"conceal: ":"source B: ")+error.GetBaseException().Message);}
+            finally{live=false;view.ClearSensitive();workspace.Clear();window.Close();}
+        }
+        Require(errors.Count==0,string.Join(" / ",errors));
+    }
+    private static async Task RichCommitRaceRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
+        workspace.Changed+=()=>{if(armed){armed=false;workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("REENTRANT_B"));}};
+        ((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.Add(new Run("_A"));await Idle();Require(note.Text=="REENTRANT_B" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("REENTRANT_B") && !view.RichInput.CanUndo,"reentrant canonical B during own A commit must rebuild latest and invalidate stale A Undo");
+        ((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.Add(new Run("_next"));await Idle();Require(note.Text=="REENTRANT_B_next","next native typing must preserve reentrant B not overwrite from stale A view");live=false;view.ClearSensitive();workspace.Clear();window.Close();
     }
     private static async Task RichViewsRun()
     {
