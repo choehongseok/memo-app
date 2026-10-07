@@ -42,7 +42,7 @@ public partial class HistoryWindow : Window
     {
         if(closed||comparisonSources is null||LeftRevision.SelectedItem is not ComparisonChoice left||RightRevision.SelectedItem is not ComparisonChoice right||!comparisonSources.Contains(left)||!comparisonSources.Contains(right))return;
         LeftTitle.Text=left.Title;RightTitle.Text=right.Title;LeftText.Text=left.Text;RightText.Text=right.Text;
-        var result=BoundedHistoryDiff.Compare(left.Text,right.Text);DiffText.Text=result.Rendered;DiffState.Text=result.Message;
+        var result=BoundedHistoryDiff.Compare(left.Text,right.Text);DiffText.Text=result.Rendered;DiffState.Text="텍스트 비교 · "+result.Message;
         ComparisonInfo.Text=$"이전 {left.Date:yyyy-MM-dd HH:mm:ss} UTC / 이후 {right.Date:yyyy-MM-dd HH:mm:ss} UTC · 제목 {(left.Title==right.Title?"동일":"변경")} · 모드 {(left.Mode==right.Mode?"동일":"변경")} · 서식 {(left.Document==right.Document?"동일":"변경")} · {BoundedHistoryDiff.MetadataChanges(left.Metadata,right.Metadata)}";
     }
     private void Selection_Changed(object sender, SelectionChangedEventArgs e)

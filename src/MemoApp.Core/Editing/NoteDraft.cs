@@ -29,6 +29,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     public DateTimeOffset CreatedAt { get; }
     public DateTimeOffset ModifiedAt { get; private set; }
     public long EditVersion { get; private set; }
+    public long ContentVersion { get; private set; }
     public bool IsClosed { get; private set; }
     public string Mode=>mode;
     public StyledDocument? Document=>document;
@@ -47,7 +48,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     {
         EnsureEditable(); ArgumentNullException.ThrowIfNull(value);
         if (field == value) return;
-        field = value; Advance(); Notify(property);
+        field = value;if(property==nameof(Text))ContentVersion++;Advance(); Notify(property);
     }
     internal void SetMetadata(NoteMetadata value, bool allowTrash = false)
     {
@@ -56,9 +57,10 @@ public sealed class NoteDraft : INotifyPropertyChanged
         metadata = value; Advance();
         foreach (var property in new[] { nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color) }) Notify(property);
     }
-    internal void StageEvent(StoredNote source)
+    internal void StageEvent(StoredNote source,bool replaceContent=false)
     {
         if (IsClosed) throw new InvalidOperationException("Editing session is closed");
+        if(replaceContent||text!=source.Text||mode!=source.Mode||document!=source.Document)ContentVersion++;
         title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document; ModifiedAt = source.ModifiedAt; EditVersion++;
     }
     internal void PublishEvent()
@@ -71,7 +73,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     }
     internal void Close()
     {
-        IsClosed = true; title = text = ""; metadata = new();mode="plain";document=null;
+        IsClosed = true;ContentVersion++; title = text = ""; metadata = new();mode="plain";document=null;
         Notify(nameof(IsClosed)); Notify(nameof(Title)); Notify(nameof(Text)); Notify(nameof(Metadata));Notify(nameof(Mode));Notify(nameof(Document));
     }
     private void Notify(string? property) => PropertyChanged?.Invoke(this, new(property));

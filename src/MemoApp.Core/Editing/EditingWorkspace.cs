@@ -156,7 +156,7 @@ public sealed class EditingWorkspace
         var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags };
         VaultEnvelope.Validate(next);
         var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
-        foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id));
+        foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id),formats?.ContainsKey(note.Id)==true);
         if(stagedTags is not null){tags.Clear();tags.AddRange(stagedTags);}
         AcceptPrepared(next); Changed?.Invoke();
         foreach (var note in affected) { if (closed) break; note.PublishEvent(); }

@@ -279,12 +279,12 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private void CompositionUpdate(object sender,TextCompositionEventArgs e){if(!composing)CompositionStart(sender,e);}
     private void CompositionComplete(object sender,TextCompositionEventArgs e)
     {
-        if(!composing)return;long generation=projectionGeneration,token=compositionToken;var target=note;var source=target?.Document;long? version=target?.EditVersion;
+        if(!composing)return;long generation=projectionGeneration,token=compositionToken;var target=note;var source=target?.Document;long? version=target?.ContentVersion;
         Dispatcher.BeginInvoke(new Action(()=>
         {
             if(disposed||generation!=projectionGeneration||token!=compositionToken||!composing)return;
             composing=false;
-            if(Live()&&ReferenceEquals(note,target)&&ReferenceEquals(target!.Document,source)&&target.EditVersion==version)CommitNative();
+            if(Live()&&ReferenceEquals(note,target)&&ReferenceEquals(target!.Document,source)&&target.ContentVersion==version)CommitNative();
             else if(Live())Rebuild();else ClearSensitive();
         }));
     }
