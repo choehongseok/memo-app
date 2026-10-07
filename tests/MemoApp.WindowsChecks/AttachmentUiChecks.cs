@@ -24,7 +24,7 @@ internal static partial class Program
         try
         {
             using var session=new SaveCoordinator(EncryptedVault.Create(Path.Combine(root,"vault"),secret,secret),TimeProvider.System);
-            var note=session.Workspace.CreateNote();note.Text="opaque body stays unchanged";bool live=true;string status="";
+            var note=session.Workspace.CreateNote();note.Text="opaque body stays unchanged";Require(await session.SaveAsync(),"direct panel legacy baseline save");Require(session.Workspace.Capture().AttachmentRootId==Guid.Empty,"baseline has no attachment root");bool live=true;string status="";
             var panel=CreateAttachmentPanel(session,note,()=>live,message=>status=message);var window=new Window{Content=panel,Width=500,Height=400};window.Show();await Idle();
             try
             {
@@ -47,17 +47,18 @@ internal static partial class Program
     }
     private static async Task AttachmentProductionRun()
     {
-        var root=Path.Combine(Path.GetTempPath(),"memo-wpf-attachment-main-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);var path=Path.Combine(root,"synthetic-original.pdf");File.WriteAllBytes(path,[0,255,13,10,123]);var secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
+        var root=Path.Combine(Path.GetTempPath(),"memo-wpf-attachment-main-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);var path=Path.Combine(root,"synthetic-original.pdf");File.WriteAllBytes(path,[0,255,13,10,123]);var secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;string phase="create management";
         try
         {
             main=new MainWindow(Path.Combine(root,"vault"));main.Show();Invoke(main,"StartSession",EncryptedVault.Create(Path.Combine(root,"vault"),secret,secret));var session=Field<SaveCoordinator>(main,"session");var note=session.Workspace.CreateNote();Invoke(main,"RefreshNotes",note);await Idle();var host=Control<ContentControl>(main,"AttachmentHost");Require(host.Content?.GetType()==AttachmentPanelType,"management editor wires bounded attachment panel");var mainPanel=host.Content!;
-            Invoke(main,"OpenSticky",note);await Idle();var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id];var stickyHost=Control<ContentControl>(sticky,"AttachmentHost");Require(stickyHost.Content?.GetType()==AttachmentPanelType,"sticky editor has its own same-note attachment panel");var stickyPanel=stickyHost.Content!;
-            Require(await ImportAttachment(mainPanel,()=>path),"management attachment import commits");await Idle();Require(AttachmentList(mainPanel).Items.Count==1&&AttachmentList(stickyPanel).Items.Count==1,"management and sticky expose shared immutable attachment reference");
-            var other=session.Workspace.CreateNote();Invoke(main,"RefreshNotes",other);await Idle();Require(PanelDisposed(mainPanel)&&AttachmentList(mainPanel).Items.Count==0,"selection change disposes old panel and clears old labels");Require(!await ImportAttachment(mainPanel,()=>throw new Exception("old selection may not launch picker")),"old-note detached panel cannot import");
-            var list=Control<ListBox>(main,"NotesList");list.SelectAll();await Idle();Require(host.Content is null,"multiple selection has no single-note attachment authority");Invoke(main,"RefreshNotes",note);await Idle();var current=host.Content!;bool started=false;
-            Require(!await ImportAttachment(current,()=>{started=true;_=session.LockAsync();return path;})&&started,"lock inside modal callback refuses all late attachment publication");await session.LockAsync();await Idle();Require(host.Content is null&&stickyHost.Content is null&&PanelDisposed(stickyPanel)&&AttachmentList(stickyPanel).Items.Count==0,"production conceal removes both panels and all attachment labels");
+            phase="open sticky";Invoke(main,"OpenSticky",note);await Idle();var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id];var stickyHost=Control<ContentControl>(sticky,"AttachmentHost");Require(stickyHost.Content?.GetType()==AttachmentPanelType,"sticky editor has its own same-note attachment panel");var stickyPanel=stickyHost.Content!;
+            phase="management import";Require(await ImportAttachment(mainPanel,()=>path),"management attachment import commits");await Idle();Require(AttachmentList(mainPanel).Items.Count==1&&AttachmentList(stickyPanel).Items.Count==1,"management and sticky expose shared immutable attachment reference");
+            phase="change note";var other=session.Workspace.CreateNote();Invoke(main,"RefreshNotes",other);await Idle();Require(PanelDisposed(mainPanel)&&AttachmentList(mainPanel).Items.Count==0,"selection change disposes old panel and clears old labels");Require(!await ImportAttachment(mainPanel,()=>throw new Exception("old selection may not launch picker")),"old-note detached panel cannot import");
+            phase="multiple selection/reselect";var list=Control<ListBox>(main,"NotesList");list.SelectAll();await Idle();Require(host.Content is null,"multiple selection has no single-note attachment authority");Invoke(main,"RefreshNotes",note);await Idle();Require(host.Content?.GetType()==AttachmentPanelType,"reselected single note recreates live attachment authority after multiple selection");var current=host.Content!;bool started=false;
+            phase="modal lock";Require(!await ImportAttachment(current,()=>{started=true;_=session.LockAsync();return path;})&&started,"lock inside modal callback refuses all late attachment publication");await session.LockAsync();await Idle();Require(host.Content is null&&stickyHost.Content is null&&PanelDisposed(stickyPanel)&&AttachmentList(stickyPanel).Items.Count==0,"production conceal removes both panels and all attachment labels");
             Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
         }
+        catch(Exception error){throw new Exception("attachment production phase="+phase+"; "+error.GetBaseException().Message+"; "+error.GetBaseException().StackTrace,error);}
         finally{if(main is not null){var session=Field<SaveCoordinator?>(main,"session");if(session is not null&&!session.IsLocked)try{await session.LockAsync();}catch{}SetField(main,"confirmedExit",true);main.Close();session?.Dispose();}CryptographicOperations.ZeroMemory(secret);Directory.Delete(root,true);}
     }
 }

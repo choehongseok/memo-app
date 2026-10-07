@@ -49,6 +49,16 @@ internal static class AttachmentSourceChecks
             VaultChecks.ExpectFailure(()=>read(root,CancellationToken.None).Dispose(),"Directories are not opaque regular files");
             foreach(string path in new[]{"https://example.invalid/file.pdf","file:///private.pdf","\\\\server\\secret.pdf","//server/secret.pdf","bad\0file.pdf"})VaultChecks.ExpectFailure(()=>read(path,CancellationToken.None).Dispose(),"Network/device/URI/control source rejected before IO");
             using(var cancel=new CancellationTokenSource()){cancel.Cancel();bool rejected=false;try{read(Path.Combine(root,"not-opened.bin"),cancel.Token).Dispose();}catch(OperationCanceledException){rejected=true;}VaultChecks.Require(rejected,"Canceled selection is rejected before touching a missing source");}
+            if(OperatingSystem.IsWindows())
+            {
+                foreach(string name in new[]{"CON.pdf","NUL.bin","COM1.txt","LPT1.doc","raw.unknown:stream","trailing.pdf.","trailing.pdf "})VaultChecks.ExpectFailure(()=>read(Path.Combine(root,name),CancellationToken.None).Dispose(),"Windows reserved/device/ADS/ambiguous-name source is refused before open");
+                var junction=Path.Combine(root,"synthetic-junction");var start=new System.Diagnostics.ProcessStartInfo("cmd.exe"){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true,ArgumentList={"/d","/c","mklink","/J",junction,root}};
+                using(var make=System.Diagnostics.Process.Start(start)!){string output=make.StandardOutput.ReadToEnd();string error=make.StandardError.ReadToEnd();make.WaitForExit();VaultChecks.Require(make.ExitCode==0,"Synthetic Windows junction setup must succeed without installing software");}
+                VaultChecks.ExpectFailure(()=>read(Path.Combine(junction,"empty.bin"),CancellationToken.None).Dispose(),"Windows junction ancestor rejected before child lookup");Directory.Delete(junction);
+                var link=Path.Combine(root,"synthetic-linked.bin");
+                try{File.CreateSymbolicLink(link,Path.Combine(root,"empty.bin"));VaultChecks.ExpectFailure(()=>read(link,CancellationToken.None).Dispose(),"Windows linked leaf rejected before file open");File.Delete(link);}
+                catch(UnauthorizedAccessException){Console.WriteLine("LIMIT: Windows synthetic leaf symlink setup privilege unavailable; junction and reserved/ADS refusal remain required");}
+            }
             if(!OperatingSystem.IsWindows())
             {
                 var source=Path.Combine(root,"empty.bin");var link=Path.Combine(root,"linked.bin");File.CreateSymbolicLink(link,source);VaultChecks.ExpectFailure(()=>read(link,CancellationToken.None).Dispose(),"Linked leaf source rejected");
