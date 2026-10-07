@@ -20,12 +20,14 @@ public sealed record StoredNote(Guid NoteId, Guid RevisionId, Guid[] Parents, Da
 {
     public NoteMetadata Metadata { get; init; } = new();
     public StyledDocument? Document { get; init; }
+    public ImmutableArray<Guid> AttachmentIds {get;init;}=[];
 }
 public sealed record StoredRevision(Guid NoteId, Guid RevisionId, Guid[] Parents, DateTimeOffset ModifiedAt, string Title, string Text)
 {
     public NoteMetadata Metadata { get; init; } = new();
     public string Mode { get; init; } = "plain";
     public StyledDocument? Document { get; init; }
+    public ImmutableArray<Guid> AttachmentIds {get;init;}=[];
 }
 public sealed record StoredTombstone(Guid NoteId, Guid RevisionId, Guid[] Parents);
 public sealed record VaultSnapshot(int SchemaVersion, Guid DeviceId, StoredNote[] Notes)
@@ -35,4 +37,6 @@ public sealed record VaultSnapshot(int SchemaVersion, Guid DeviceId, StoredNote[
     public StoredFolder[] Folders { get; init; } = [];
     public StoredTag[] Tags { get; init; } = [];
     public StoredDeviceUi[] UiDevices { get; init; } = [];
+    public Guid AttachmentRootId {get;init;}
+    public ImmutableArray<StoredAttachmentObject> AttachmentObjects {get;init;}=[];
 }

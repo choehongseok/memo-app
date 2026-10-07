@@ -320,7 +320,7 @@ internal static class Program
                 var history=Enumerable.Range(0,byteBudget?255:512).Select(_=>new StoredRevision(id,Guid.NewGuid(),[],now,"h",byteBudget?new string('x',65536):"history")).ToArray();snapshot=snapshot with{History=history};
                 if(byteBudget)
                 {
-                    int length=JsonSerializer.SerializeToUtf8Bytes(snapshot,new JsonSerializerOptions{PropertyNamingPolicy=JsonNamingPolicy.CamelCase}).Length;
+                    int length=((byte[])typeof(VaultSnapshot).Assembly.GetType("MemoApp.Core.Storage.SnapshotSerialization")!.GetMethod("Bytes",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[snapshot])!).Length;
                     int last=65536-(length-(16*1024*1024-232-2400));Require(last is >=0 and <=65536,"WPF whole byte-boundary fixture");history[^1]=history[^1] with{Text=new string('x',last)};
                 }
                 using(var vault=EncryptedVault.Create(root,secret,secret))vault.Save(snapshot);

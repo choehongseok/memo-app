@@ -9,7 +9,7 @@ internal static class OrganizationPreflightChecks
     {
         var now=DateTimeOffset.UtcNow;var id=Guid.NewGuid();StyledDocument Document(int padding)=>new(1,"{\"nodes\":[{\"type\":\"future-node\",\"padding\":\""+new string('z',padding)+"\"}]}");
         var snapshot=new VaultSnapshot(4,Guid.NewGuid(),[new(id,Guid.NewGuid(),[],now,now,"near organization","AUTHENTICATED_TEXT","rich"){Document=Document(0)}]){History=Enumerable.Range(0,253).Select(_=>new StoredRevision(id,Guid.NewGuid(),[],now,"old",new string('x',65536))).ToArray()};
-        int padding=VaultEnvelope.MaxFile-VaultEnvelope.HeaderSize-148-8-Bytes(snapshot).Length;VaultChecks.Require(padding is >0 and <RichDocumentCodec.MaxSourceBytes,"near envelope organization fixture");snapshot=snapshot with{Notes=[snapshot.Notes.Single() with{Document=Document(padding)}]};VaultEnvelope.Validate(snapshot);return snapshot;
+        int padding=VaultEnvelope.MaxFile-VaultEnvelope.HeaderSize-148-8-SnapshotSerialization.Bytes(snapshot).Length;VaultChecks.Require(padding is >0 and <RichDocumentCodec.MaxSourceBytes,"near envelope organization fixture");snapshot=snapshot with{Notes=[snapshot.Notes.Single() with{Document=Document(padding)}]};VaultEnvelope.Validate(snapshot);return snapshot;
     }
     internal static void Run()
     {

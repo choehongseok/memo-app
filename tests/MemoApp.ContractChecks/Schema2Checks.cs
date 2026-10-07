@@ -81,7 +81,9 @@ internal static class Schema2Checks
         finally { CryptographicOperations.ZeroMemory(secret); Directory.Delete(root, true); }
     }
     internal static void StripDocumentFields(JsonObject payload)
-    {foreach(var n in payload["notes"]!.AsArray())n!.AsObject().Remove("document");foreach(var r in payload["history"]!.AsArray()){r!.AsObject().Remove("mode");r.AsObject().Remove("document");}}
+    {StripAttachmentFields(payload);foreach(var n in payload["notes"]!.AsArray())n!.AsObject().Remove("document");foreach(var r in payload["history"]!.AsArray()){r!.AsObject().Remove("mode");r.AsObject().Remove("document");}}
+    internal static void StripAttachmentFields(JsonObject payload)
+    {payload.Remove("attachmentRootId");payload.Remove("attachmentObjects");foreach(var n in payload["notes"]!.AsArray())n!.AsObject().Remove("attachmentIds");foreach(var r in payload["history"]!.AsArray())r!.AsObject().Remove("attachmentIds");}
     internal static byte[] Encode(JsonObject payload, byte[] secret)
     {
         var json = Encoding.UTF8.GetBytes(payload.ToJsonString()); var key = RandomNumberGenerator.GetBytes(32);

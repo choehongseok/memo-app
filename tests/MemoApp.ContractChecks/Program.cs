@@ -5,6 +5,7 @@ if (VaultFailureChecks.TryWorker(args)) return;
 if (args.Contains("--markdown-only")) { MarkdownChecks.Run(); return; }
 if (args.Contains("--markdown-queue-only")) { await MarkdownQueueChecks.Run(); return; }
 if (args.Contains("--content-version-only")) { ContentVersionChecks.Run(); return; }
+if (args.Contains("--attachment-contract-only")) { AttachmentContractChecks.Run(); return; }
 if (args.Contains("--org-preflight-only")) { OrganizationPreflightChecks.Run(); return; }
 if (args.Contains("--rich-only")) { RichDocumentChecks.Run(); return; }
 if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return; }
@@ -39,6 +40,7 @@ if (restored.Content.GetProperty("nodes")[3].GetProperty("opaque").GetProperty("
 Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roundtrip (in-memory only)");
 EditingChecks.Run();
 ContentVersionChecks.Run();
+AttachmentContractChecks.Run();
 RichDocumentChecks.Run();
 MarkdownChecks.Run();
 await MarkdownQueueChecks.Run();

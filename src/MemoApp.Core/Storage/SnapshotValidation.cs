@@ -6,21 +6,28 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5)) throw new InvalidDataException("Unsupported schema");
         if (version >= 2) Fields(root, ["folders", "tags"]);
         if(version>=3)Fields(root,["uiDevices"]);
+        if(version>=5)
+        {
+            Fields(root,["attachmentRootId","attachmentObjects"]);Array(root,"attachmentObjects",128);
+            foreach(var item in root.GetProperty("attachmentObjects").EnumerateArray()){Fields(item,["objectId","rootId","name","mime","length","sha256","wrappedKey","chunks"]);Array(item,"chunks",64);}
+        }
         Array(root, "notes", 100); Array(root, "history", 10000); Array(root, "tombstones", 100);
         foreach (var note in root.GetProperty("notes").EnumerateArray())
         {
             Fields(note, ["noteId", "revisionId", "parents", "createdAt", "modifiedAt", "title", "text", "mode", "scope"]);
             if (version >= 2) Metadata(note);
             if(version>=4)Document(note,false);
+            if(version>=5){Fields(note,["attachmentIds"]);Array(note,"attachmentIds",16);}
         }
         foreach (var revision in root.GetProperty("history").EnumerateArray())
         {
             Fields(revision, ["noteId", "revisionId", "parents", "modifiedAt", "title", "text"]);
             if (version >= 2) Metadata(revision);
             if(version>=4)Document(revision,true);
+            if(version>=5){Fields(revision,["attachmentIds"]);Array(revision,"attachmentIds",16);}
         }
         if(version>=3)
         {
@@ -64,7 +71,8 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        var attachmentObjects=AttachmentValidation.Objects(snapshot);
         bool legacy = snapshot.SchemaVersion == 1;
         if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
         if (legacy && (snapshot.Folders.Length != 0 || snapshot.Tags.Length != 0)) throw new InvalidDataException("Legacy schema cannot carry organization");
@@ -104,12 +112,12 @@ internal static class SnapshotValidation
         foreach (var note in snapshot.Notes)
         {
             if (note is null || note.NoteId == Guid.Empty || !ids.Add(note.NoteId) || note.RevisionId == Guid.Empty || !revisions.Add(note.RevisionId) || note.Title is null || note.Text is null || note.Title.Length > 256 || !RichDocumentCodec.IsWellFormedUnicode(note.Title) || note.Text.Length > 65536 || !Parents(note.Parents, note.RevisionId) || note.Scope != "device-only" || note.CreatedAt.Offset != TimeSpan.Zero || note.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid note fields or unsupported mode");
-            Content(note.Mode,note.Document,note.Text);Meta(note.Metadata); graph.Add(note.RevisionId, (note.NoteId, note.Parents));
+            Content(note.Mode,note.Document,note.Text);AttachmentValidation.References(note.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(note.Metadata); graph.Add(note.RevisionId, (note.NoteId, note.Parents));
         }
         foreach (var revision in snapshot.History)
         {
             if (revision is null || !ids.Contains(revision.NoteId) || revision.RevisionId == Guid.Empty || !revisions.Add(revision.RevisionId) || !Parents(revision.Parents, revision.RevisionId) || revision.Title is null || revision.Title.Length > 256 || !RichDocumentCodec.IsWellFormedUnicode(revision.Title) || revision.Text is null || revision.Text.Length > 65536 || revision.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid history");
-            Content(revision.Mode,revision.Document,revision.Text);Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
+            Content(revision.Mode,revision.Document,revision.Text);AttachmentValidation.References(revision.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
         }
         if (snapshot.History.GroupBy(r => r.NoteId).Any(g => g.Count() > 512)) throw new InvalidDataException("History limit exceeded");
         var deletedIds = new HashSet<Guid>();
@@ -146,8 +154,8 @@ internal static class SnapshotValidation
             }
         }
         // Event/import preflight must reject the same payload budget as Prepare before publishing any draft.
-        using var counter = new PayloadCounter(VaultEnvelope.MaxFile - VaultEnvelope.HeaderSize - 148);
-        JsonSerializer.Serialize(counter, snapshot, VaultEnvelope.JsonOptions);
+        using var counter = new PayloadCounter(VaultEnvelope.MaxFile - (snapshot.SchemaVersion>=5?308:232));
+        SnapshotSerialization.Write(counter,snapshot);
     }
     private sealed class PayloadCounter(int limit) : Stream
     {

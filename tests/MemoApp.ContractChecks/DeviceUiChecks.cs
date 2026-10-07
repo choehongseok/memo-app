@@ -107,7 +107,7 @@ internal static class DeviceUiChecks
         var candidate=snapshot with{UiDevices=[],History=history};
         // Build a valid payload only 8 bytes below the same bounded encrypted-payload limit.
         int limit=VaultEnvelope.MaxFile-VaultEnvelope.HeaderSize-148;
-        int length=JsonSerializer.SerializeToUtf8Bytes(candidate,VaultEnvelope.JsonOptions).Length;
+        int length=SnapshotSerialization.Bytes(candidate).Length;
         int last=history[^1].Text.Length-(length-(limit-8));VaultChecks.Require(last is >=0 and <=65536,"synthetic UI byte-boundary fixture");history[^1]=history[^1] with{Text=new string('x',last)};
         VaultEnvelope.Validate(candidate);var bounded=new EditingWorkspace(TimeProvider.System,candidate);var original=JsonSerializer.SerializeToUtf8Bytes(bounded.Capture(),VaultEnvelope.JsonOptions);int events=0;bounded.Changed+=()=>events++;
         VaultChecks.ExpectFailure(()=>bounded.SetUiPreferences(profile,new(true,18,1)),"UI profile byte-budget overflow rejects before state change");

@@ -57,6 +57,7 @@ internal static class VaultEnvelope
             SnapshotValidation.Json(document.RootElement);
             var snapshot = JsonSerializer.Deserialize<VaultSnapshot>(plaintext, JsonOptions) ?? throw new InvalidDataException("Missing snapshot");
             Validate(snapshot);
+            if(snapshot.SchemaVersion>=5)throw new InvalidDataException("Envelope1 cannot carry attachment schema5");
             return (header, snapshot);
         }
         catch (JsonException) { throw new InvalidDataException("Invalid snapshot JSON"); }
