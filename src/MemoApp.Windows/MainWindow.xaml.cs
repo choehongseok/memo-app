@@ -104,6 +104,7 @@ public partial class MainWindow : Window
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = false;
         TxtExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
+        BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=BatchRestoreButton.IsEnabled=BatchFolder.IsEnabled=false;
         ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;concealing=false;hiddenSticky=false;
     }
     private void UpdateStatus()
@@ -470,12 +471,13 @@ public partial class MainWindow : Window
     {
         if (session is not { IsLocked: false } active || SingleNote is not NoteDraft note) return;
         long epoch = uiEpoch;
-        if (!await active.SaveAsync() || epoch != uiEpoch || !ReferenceEquals(session, active) || active.IsLocked || active.IsDirty) return;
+        if (!await active.SaveAsync() || epoch != uiEpoch || !ReferenceEquals(session, active) || active.IsLocked || active.IsDirty || !ReferenceEquals(SingleNote,note) || note.IsClosed || !active.Workspace.Notes.Contains(note)) return;
+        var capturedHead=active.Workspace.Capture().Notes.Single(n=>n.NoteId==note.Id);
         var window = new HistoryWindow(note, active.Workspace.HistoryFor(note), revision =>
         {
             if (epoch != uiEpoch || !ReferenceEquals(session, active) || active.IsLocked || note.IsDeleted) return;
             active.Workspace.RestoreRevision(note, revision); RefreshNotes(note);
-        }) { Owner = this };
+        },capturedHead) { Owner = this };
         window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);historyWindows.Add(window); window.Closed += (_, _) => historyWindows.Remove(window); window.Show();
     }
     private async void Backup_Click(object sender, RoutedEventArgs e)

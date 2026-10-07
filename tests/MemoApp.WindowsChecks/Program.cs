@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Text.Json;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Windows;
@@ -19,11 +20,59 @@ internal static class Program
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {
-            try { await Run(); await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF bound editing/search/organization/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
+            try { await Run(); await BatchFailureRun();await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
             catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }
         };
         app.Run(); return result;
+    }
+    private static async Task BatchFailureRun()
+    {
+        foreach(bool byteBudget in new[]{false,true})
+        {
+            var root=Path.Combine(Path.GetTempPath(),"memo-wpf-batch-refusal-"+Guid.NewGuid().ToString("N"));var secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
+            try
+            {
+                var now=DateTimeOffset.UtcNow;var id=Guid.NewGuid();var snapshot=new VaultSnapshot(3,Guid.NewGuid(),[new(id,Guid.NewGuid(),[],now,now,"synthetic full A",byteBudget?new string('x',3000):"a"),new(Guid.NewGuid(),Guid.NewGuid(),[],now,now,"synthetic B","b")]);
+                var history=Enumerable.Range(0,byteBudget?255:512).Select(_=>new StoredRevision(id,Guid.NewGuid(),[],now,"h",byteBudget?new string('x',65536):"history")).ToArray();snapshot=snapshot with{History=history};
+                if(byteBudget)
+                {
+                    int length=JsonSerializer.SerializeToUtf8Bytes(snapshot,new JsonSerializerOptions{PropertyNamingPolicy=JsonNamingPolicy.CamelCase}).Length;
+                    int last=65536-(length-(16*1024*1024-232-2400));Require(last is >=0 and <=65536,"WPF whole byte-boundary fixture");history[^1]=history[^1] with{Text=new string('x',last)};
+                }
+                using(var vault=EncryptedVault.Create(root,secret,secret))vault.Save(snapshot);
+                main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Open(root,secret));var session=Field<SaveCoordinator>(main,"session");var first=session.Workspace.Notes[0];Invoke(main,"OpenSticky",first);await Idle();Require(await session.SaveAsync(),"WPF batch refusal UI baseline save");await Idle();
+                var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[first.Id];var list=Control<ListBox>(main,"NotesList");list.SelectAll();string before=JsonSerializer.Serialize(session.Workspace.Capture());var request=Invoke(main,"CaptureBatch",false)!;
+                await (Task)Invoke(main,"ApplyBatch",request,"delete",(object)null!)!;await Idle();
+                Require(session.Workspace.Notes.All(n=>!n.IsDeleted) && JsonSerializer.Serialize(session.Workspace.Capture())==before && list.SelectedItems.Count==2 && sticky.IsVisible && sticky.Placement!.State.Open,"failed batch history/byte preflight preserves notes/UI records/selection/open sticky");
+                Require(Control<TextBlock>(main,"Notice").Text.Contains("적용하지"),"preflight refusal must report unapplied batch");await session.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
+            }
+            finally
+            {
+                if(main is not null){SetField(main,"confirmedExit",true);main.Close();var active=Field<SaveCoordinator?>(main,"session");if(active is not null&&!active.IsBusy)active.Dispose();}
+                CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);
+            }
+        }
+        var failingRoot=Path.Combine(Path.GetTempPath(),"memo-wpf-batch-flush-"+Guid.NewGuid().ToString("N"));var failingSecret=EncryptedVault.GenerateRecoverySecret();MainWindow? failedMain=null;
+        try
+        {
+            var now=DateTimeOffset.UtcNow;using(var vault=EncryptedVault.Create(failingRoot,failingSecret,failingSecret))vault.Save(new(3,Guid.NewGuid(),[new(Guid.NewGuid(),Guid.NewGuid(),[],now,now,"fault A","a"),new(Guid.NewGuid(),Guid.NewGuid(),[],now,now,"fault B","b")]));
+            var original=File.ReadAllBytes(Path.Combine(failingRoot,"current.vault"));failedMain=new MainWindow(failingRoot);failedMain.Show();Invoke(failedMain,"StartSession",EncryptedVault.Open(failingRoot,failingSecret,files:new BatchFaultFiles()));var session=Field<SaveCoordinator>(failedMain,"session");Control<ListBox>(failedMain,"NotesList").SelectAll();var request=Invoke(failedMain,"CaptureBatch",false)!;
+            await (Task)Invoke(failedMain,"ApplyBatch",request,"delete",(object)null!)!;await Idle();
+            Require(session.Workspace.Notes.All(n=>n.IsDeleted) && session.IsDirty && Control<TextBlock>(failedMain,"Notice").Text.Contains("변경은 반영") && Control<TextBlock>(failedMain,"Notice").Text.Contains("암호 저장 실패") && File.ReadAllBytes(Path.Combine(failingRoot,"current.vault")).SequenceEqual(original),"post-apply disk failure must preserve original and report applied unsaved batch truthfully");
+            await session.LockAsync();session.Dispose();SetField(failedMain,"session",(object)null!);SetField(failedMain,"confirmedExit",true);failedMain.Close();failedMain=null;
+        }
+        finally
+        {
+            if(failedMain is not null){SetField(failedMain,"confirmedExit",true);failedMain.Close();var active=Field<SaveCoordinator?>(failedMain,"session");if(active is not null&&!active.IsBusy)active.Dispose();}
+            CryptographicOperations.ZeroMemory(failingSecret);if(Directory.Exists(failingRoot))Directory.Delete(failingRoot,true);
+        }
+    }
+    private sealed class BatchFaultFiles:IAtomicVaultFiles
+    {
+        private readonly AtomicVaultFiles real=new();public Stream CreateNew(string path)=>real.CreateNew(path);
+        public void FlushToDisk(Stream stream)=>throw new IOException("Synthetic WPF batch flush fault");
+        public void Replace(string temporary,string current,string previous)=>real.Replace(temporary,current,previous);public void Move(string temporary,string current)=>real.Move(temporary,current);
     }
     private static async Task DeviceWindowsRun()
     {
@@ -160,6 +209,7 @@ internal static class Program
             Invoke(main,"History_Click",main,new RoutedEventArgs());await WaitUntil(()=>Field<HashSet<HistoryWindow>>(main,"historyWindows").Count==1);var history=Field<HashSet<HistoryWindow>>(main,"historyWindows").Single();
             Require(Control<TextBox>(history, "PastText").Text.Length > 0, "history preview failed");
             Require(Control<ComboBox>(history,"LeftRevision").Items.Count>1 && Control<ComboBox>(history,"RightRevision").Items.Count>1 && Control<TextBox>(history,"DiffText").Text.Length>0,"history comparison must include current head and dated immutable revisions");
+            Require(Control<ComboBox>(history,"LeftRevision").Items.Count==session.Workspace.HistoryFor(first).Count+1 && (bool)Control<ComboBox>(history,"RightRevision").SelectedItem.GetType().GetProperty("Current")!.GetValue(Control<ComboBox>(history,"RightRevision").SelectedItem)! ,"comparison includes exact current head and every distinct history revision even when date labels repeat");
             string frozenRight=Control<TextBox>(history,"RightText").Text;first.Text="AFTER_HISTORY_WINDOW_SYNTHETIC";await Idle();Require(Control<TextBox>(history,"RightText").Text==frozenRight,"later draft edit cannot replace captured comparison head");first.Text="공유 포스트잇 수정";
             Control<TextBox>(main, "TagFilter").Text = "합성태그";
             var staleBatch=Invoke(main,"CaptureBatch",false)!;
@@ -173,6 +223,7 @@ internal static class Program
             Require(!sticky.IsVisible && sticky.DataContext is null && Control<TextBox>(sticky, "BodyEditor").Text == "" && !Control<TextBox>(sticky, "BodyEditor").CanUndo, "lock left sticky plaintext/undo");
             Require(!history.IsVisible && Control<TextBox>(history, "PastText").Text == "" && Control<ListBox>(history, "Revisions").Items.Count == 0, "lock left history plaintext");
             Require(Control<ComboBox>(history,"LeftRevision").Items.Count==0 && Control<ComboBox>(history,"RightRevision").Items.Count==0 && new[]{"LeftText","RightText","LeftTitle","RightTitle","DiffText"}.All(name=>Control<TextBox>(history,name).Text==""&&!Control<TextBox>(history,name).CanUndo) && Control<TextBlock>(history,"ComparisonInfo").Text=="","lock must clear both comparison sources/previews/diff/metadata/Undo");
+            Require(Field<object?>(history,"comparisonSources") is null,"lock must release cached comparison source references");
             Invoke(main, "ReleaseSettledSession");
             Invoke(main, "StartSession", EncryptedVault.Open(root, secret));
             var reopened = Field<SaveCoordinator>(main, "session");
