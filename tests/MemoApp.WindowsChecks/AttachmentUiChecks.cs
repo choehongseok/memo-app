@@ -41,6 +41,7 @@ internal static partial class Program
                 Require(!await ImportAttachment(panel,()=>throw new Exception("disposed picker must not be invoked")),"disposed panel refuses another modal file request");
             }
             finally{live=false;((IDisposable)panel).Dispose();window.Close();if(!session.IsLocked)await session.LockAsync();}
+            session.Dispose(); // Lock releases keys but deliberately retains the process writer lease until disposal.
             using var reopened=new SaveCoordinator(EncryptedVault.Open(Path.Combine(root,"vault"),secret),TimeProvider.System);var restored=reopened.Workspace.Notes.Single();Require(restored.AttachmentIds.Length==1,"actual panel save/lock/restart retains reference");var plain=(byte[])typeof(SaveCoordinator).GetMethod("ReadAttachmentBytes",BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(reopened,[restored,restored.AttachmentIds.Single(),restored.EditVersion])!;try{Require(plain.SequenceEqual(bytes),"actual panel encrypted restart restores every original byte");}finally{CryptographicOperations.ZeroMemory(plain);}await reopened.LockAsync();
         }
         finally{CryptographicOperations.ZeroMemory(secret);CryptographicOperations.ZeroMemory(bytes);Directory.Delete(root,true);}
