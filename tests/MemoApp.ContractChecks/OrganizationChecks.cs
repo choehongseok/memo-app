@@ -17,7 +17,7 @@ internal static class OrganizationChecks
         var saved = workspace.Capture(); workspace.AcceptPrepared(saved);
         first.Text = "합성 최신 본문";
         var edited = workspace.Capture(); workspace.AcceptPrepared(edited);
-        VaultChecks.Require(edited.SchemaVersion == 2 && edited.History.Single().Text == "합성 최초 본문", "v2 revision capture preserves original");
+        VaultChecks.Require(edited.SchemaVersion == 3 && edited.History.Single().Text == "합성 최초 본문", "v2 revision capture preserves original");
         workspace.SetImportant(first, true);
         var metadataEdit = workspace.Capture(); workspace.AcceptPrepared(metadataEdit);
         VaultChecks.Require(metadataEdit.History.Length == 2 && metadataEdit.Notes[0].Metadata.Important, "metadata changes must create history");

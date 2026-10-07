@@ -16,6 +16,10 @@ namespace MemoApp.Windows;
 public partial class MainWindow : Window
 {
     private readonly string root;
+    private readonly Guid uiDeviceId;
+    private readonly Dictionary<string,DateWidgetWindow> widgets=[];
+    private readonly Dictionary<Window,DesktopWindowController> placements=[];
+    private bool concealing,hiddenSticky;
     private readonly HashSet<HistoryWindow> historyWindows = [];
     private bool loadingUi = true;
     private CancellationTokenSource fileOperations = new();
@@ -32,8 +36,10 @@ public partial class MainWindow : Window
     private bool closing, confirmedExit, transitionBusy;
     private long uiEpoch;
     public MainWindow() : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MemoApp", "SyntheticTrial")) { }
-    public MainWindow(string dataRoot)
+    public MainWindow(string dataRoot) : this(dataRoot,Guid.NewGuid()) { }
+    public MainWindow(string dataRoot,Guid uiDeviceId)
     {
+        if(uiDeviceId==Guid.Empty)throw new ArgumentException("Empty UI profile");this.uiDeviceId=uiDeviceId;
         root = Path.GetFullPath(dataRoot);
         InitializeComponent(); loadingUi = false;
         timer.Tick += Timer_Tick; timer.Start();
@@ -75,12 +81,13 @@ public partial class MainWindow : Window
             long epoch = uiEpoch;
             Dispatcher.BeginInvoke(new Action(() => { if (epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked) RefreshNotes(); }));
         };
-        RefreshFolders(); RefreshNotes();
+        RefreshFolders(); RefreshNotes();ApplyUiPreferences();RestoreDeviceWindows();
         activity = DateTimeOffset.UtcNow; UpdateStatus();
     }
     private void ConcealViews()
     {
-        uiEpoch++; fileOperations.Cancel(); draggingNote = dragCandidate = null;
+        uiEpoch++; fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;
+        foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
@@ -95,7 +102,7 @@ public partial class MainWindow : Window
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = false;
         TxtExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
-        ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;
+        ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;concealing=false;hiddenSticky=false;
     }
     private void UpdateStatus()
     {
@@ -170,12 +177,80 @@ public partial class MainWindow : Window
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = Editor.IsEnabled;
         UpdateSelectedActions(); UpdateSelectedDetails();
     }
-    private void OpenSticky_Click(object sender, RoutedEventArgs e)
+    private void OpenSticky_Click(object sender,RoutedEventArgs e)
     {
-        if (session is not { IsLocked: false } || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } draft) return;
-        if (stickyWindows.TryGetValue(draft.Id, out var existing)) { existing.Activate(); return; }
-        var window = new StickyNoteWindow(draft); stickyWindows.Add(draft.Id, window);
-        window.Closed += (_, _) => stickyWindows.Remove(draft.Id); window.Show();
+        if(session is {IsLocked:false}&&NotesList.SelectedItem is NoteDraft {IsDeleted:false} note)OpenSticky(note);
+    }
+    private void OpenSticky(NoteDraft note)
+    {
+        if(session is not {IsLocked:false} active||note.IsClosed||note.IsDeleted)return;
+        if(stickyWindows.TryGetValue(note.Id,out var existing)){existing.Show();existing.Activate();return;}
+        var window=new StickyNoteWindow(note);long epoch=uiEpoch;
+        var state=(active.Workspace.GetUiDevice(uiDeviceId).Windows.FirstOrDefault(w=>w.Kind=="memo"&&w.NoteId==note.Id)??DesktopWindowController.DefaultState(window,"memo",note.Id)) with{Open=true};
+        try{active.Workspace.SetWindowLayout(uiDeviceId,state);}catch{window.Close();Notice.Text="창을 열 수 없습니다. 저장 상태/한도를 확인하세요.";return;}
+        if(epoch!=uiEpoch||!ReferenceEquals(session,active)||active.IsLocked){window.Close();return;}
+        stickyWindows.Add(note.Id,window);
+        bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&stickyWindows.TryGetValue(note.Id,out var current)&&ReferenceEquals(current,window);
+        var placement=new DesktopWindowController(window,"memo",note.Id,state,Current,layout=>PersistLayout(active,epoch,layout));
+        placements.Add(window,placement);window.SetPlacement(placement);window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
+        window.Closed+=(_,_)=>{stickyWindows.Remove(note.Id);placements.Remove(window);};window.Show();
+    }
+    private void PersistLayout(SaveCoordinator active,long epoch,StoredWindowLayout layout)
+    {
+        if(concealing||epoch!=uiEpoch||!ReferenceEquals(session,active)||active.IsLocked)return;
+        try{active.Workspace.SetWindowLayout(uiDeviceId,layout);}catch{Notice.Text="창 설정 저장 실패 — 기존 암호 자료는 보존했습니다. 저장 상태/한도를 확인하세요.";}
+    }
+    private void RestoreDeviceWindows()
+    {
+        if(session is not {IsLocked:false} active)return;
+        foreach(var state in active.Workspace.GetUiDevice(uiDeviceId).Windows.Where(w=>w.Open).ToArray())
+            if(state.Kind=="memo"&&active.Workspace.Notes.FirstOrDefault(n=>n.Id==state.NoteId&&!n.IsDeleted) is NoteDraft note)OpenSticky(note);
+            else if(state.Kind!="memo")OpenWidget(state.Kind);
+    }
+    private void OpenWidget(string kind)
+    {
+        if(session is not {IsLocked:false} active)return;
+        if(widgets.TryGetValue(kind,out var existing)){existing.Show();existing.Activate();return;}
+        var window=new DateWidgetWindow(kind);long epoch=uiEpoch;
+        var state=(active.Workspace.GetUiDevice(uiDeviceId).Windows.FirstOrDefault(w=>w.Kind==kind)??DesktopWindowController.DefaultState(window,kind,null)) with{Open=true};
+        try{active.Workspace.SetWindowLayout(uiDeviceId,state);}catch{window.Close();Notice.Text="위젯을 열 수 없습니다. 저장 상태/한도를 확인하세요.";return;}
+        if(epoch!=uiEpoch||!ReferenceEquals(session,active)||active.IsLocked){window.Close();return;}
+        widgets.Add(kind,window);
+        bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&widgets.TryGetValue(kind,out var current)&&ReferenceEquals(current,window);
+        var placement=new DesktopWindowController(window,kind,null,state,Current,layout=>PersistLayout(active,epoch,layout));placements.Add(window,placement);
+        window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);window.Closed+=(_,_)=>{widgets.Remove(kind);placements.Remove(window);};window.Show();
+    }
+    private void Calendar_Click(object sender,RoutedEventArgs e)=>OpenWidget("calendar");
+    private void Clock_Click(object sender,RoutedEventArgs e)=>OpenWidget("clock");
+    private void ToggleSticky_Click(object sender,RoutedEventArgs e)
+    {
+        if(session is not {IsLocked:false})return;hiddenSticky=!hiddenSticky;
+        foreach(var window in stickyWindows.Values)if(hiddenSticky)window.Hide();else window.Show();
+    }
+    private void ArrangeSticky_Click(object sender,RoutedEventArgs e)
+    {
+        if(session is not {IsLocked:false})return;
+        try{int index=0;foreach(var window in stickyWindows.Values)if(placements.TryGetValue(window,out var p))p.Arrange(index++);}catch{Notice.Text="창 정렬 실패 — 모니터/저장 상태를 확인하세요.";}
+    }
+    private void UiPreference_Changed(object sender,RoutedEventArgs e)=>SaveUiPreferences();
+    private void UiSlider_Changed(object sender,RoutedPropertyChangedEventArgs<double> e)=>SaveUiPreferences();
+    private void SaveUiPreferences()
+    {
+        if(loadingUi||session is not {IsLocked:false} active)return;
+        try{active.Workspace.SetUiPreferences(uiDeviceId,new(DarkToggle.IsChecked==true,FontSlider.Value,ScaleSlider.Value));ApplyUiPreferences();}
+        catch{ApplyUiPreferences();Notice.Text="표시 설정 저장 실패 — 기존 암호 자료는 보존했습니다.";}
+    }
+    private void ApplyUiPreferences()
+    {
+        if(session is not {IsLocked:false} active)return;var prefs=active.Workspace.GetUiDevice(uiDeviceId).Preferences;loadingUi=true;
+        DarkToggle.IsChecked=prefs.DarkMode;FontSlider.Value=prefs.FontSize;ScaleSlider.Value=prefs.Scale;FontSize=prefs.FontSize;UiScale.ScaleX=UiScale.ScaleY=prefs.Scale;
+        Background=prefs.DarkMode?new SolidColorBrush(Color.FromRgb(28,32,40)):Brushes.White;Foreground=prefs.DarkMode?Brushes.White:Brushes.Black;
+        Brush controlBackground=prefs.DarkMode?new SolidColorBrush(Color.FromRgb(42,47,57)):Brushes.White;
+        foreach(var type in new[]{typeof(TextBox),typeof(ListBox),typeof(ComboBox),typeof(Button)})
+        {
+            var style=new Style(type);style.Setters.Add(new Setter(Control.BackgroundProperty,controlBackground));style.Setters.Add(new Setter(Control.ForegroundProperty,Foreground));style.Setters.Add(new Setter(Control.BorderBrushProperty,Brushes.SlateGray));Resources[type]=style;
+        }
+        foreach(var window in stickyWindows.Values)window.ApplyUiPreferences(prefs);foreach(var window in widgets.Values)window.ApplyUiPreferences(prefs);foreach(var window in historyWindows)window.ApplyUiPreferences(prefs);loadingUi=false;
     }
     private void Inspect_Click(object sender, RoutedEventArgs e)
     {
@@ -349,7 +424,7 @@ public partial class MainWindow : Window
             if (epoch != uiEpoch || !ReferenceEquals(session, active) || active.IsLocked || note.IsDeleted) return;
             active.Workspace.RestoreRevision(note, revision); RefreshNotes(note);
         }) { Owner = this };
-        historyWindows.Add(window); window.Closed += (_, _) => historyWindows.Remove(window); window.Show();
+        window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);historyWindows.Add(window); window.Closed += (_, _) => historyWindows.Remove(window); window.Show();
     }
     private async void Backup_Click(object sender, RoutedEventArgs e)
     {

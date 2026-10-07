@@ -30,7 +30,7 @@ internal static class Schema2Checks
         {
             using (var vault = EncryptedVault.Create(root, secret, secret)) vault.Save(snapshot);
             using (var vault = EncryptedVault.Open(root, secret))
-                VaultChecks.Require(vault.Loaded.SchemaVersion == 2 && vault.Loaded.Folders.Single().Name == folder.Name && vault.Loaded.Tags.Length == 1, "organization encrypted restart");
+                VaultChecks.Require(vault.Loaded.SchemaVersion == 3 && vault.Loaded.Folders.Single().Name == folder.Name && vault.Loaded.Tags.Length == 1, "organization encrypted restart");
             var validJson = JsonSerializer.SerializeToUtf8Bytes(snapshot, VaultEnvelope.JsonOptions);
             void Reject(JsonObject altered, string reason) => VaultChecks.ExpectFailure(() => Decode(altered, secret), reason);
             JsonObject Fresh() => JsonNode.Parse(validJson)!.AsObject();
@@ -53,7 +53,7 @@ internal static class Schema2Checks
             // Generate an actual legacy payload with no new properties, rather than a schema2-shaped object labeled v1.
             var legacy = new VaultSnapshot(1, Guid.NewGuid(), [snapshot.Notes[0] with { Metadata = new() }]);
             var legacyJson = JsonSerializer.SerializeToNode(legacy, VaultEnvelope.JsonOptions)!.AsObject();
-            legacyJson.Remove("folders"); legacyJson.Remove("tags"); legacyJson["notes"]![0]!.AsObject().Remove("metadata");
+            legacyJson.Remove("uiDevices"); legacyJson.Remove("folders"); legacyJson.Remove("tags"); legacyJson["notes"]![0]!.AsObject().Remove("metadata");
             var legacyRoot = Path.Combine(root, "legacy"); Directory.CreateDirectory(legacyRoot);
             var original = Encode(legacyJson, secret); File.WriteAllBytes(Path.Combine(legacyRoot, "current.vault"), original);
             using (var session = new SaveCoordinator(EncryptedVault.Open(legacyRoot, secret), TimeProvider.System))
@@ -64,7 +64,7 @@ internal static class Schema2Checks
             }
             var previous = Directory.GetFiles(legacyRoot, "previous-*.vault");
             VaultChecks.Require(previous.Length == 1 && File.ReadAllBytes(previous[0]).SequenceEqual(original), "first v2 write must preserve exact legacy bytes");
-            using (var reopened = EncryptedVault.Open(legacyRoot, secret)) VaultChecks.Require(reopened.Loaded.SchemaVersion == 2, "migrated schema restart");
+            using (var reopened = EncryptedVault.Open(legacyRoot, secret)) VaultChecks.Require(reopened.Loaded.SchemaVersion == 3, "migrated schema restart");
             var failingRoot = Path.Combine(root, "failed-migration"); Directory.CreateDirectory(failingRoot); File.WriteAllBytes(Path.Combine(failingRoot, "current.vault"), original);
             using (var session = new SaveCoordinator(EncryptedVault.Open(failingRoot, secret, files: new VaultFailureChecks.FaultFiles("pre-flush")), TimeProvider.System))
             {

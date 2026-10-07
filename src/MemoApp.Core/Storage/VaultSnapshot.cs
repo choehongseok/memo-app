@@ -30,4 +30,5 @@ public sealed record VaultSnapshot(int SchemaVersion, Guid DeviceId, StoredNote[
     public StoredTombstone[] Tombstones { get; init; } = [];
     public StoredFolder[] Folders { get; init; } = [];
     public StoredTag[] Tags { get; init; } = [];
+    public StoredDeviceUi[] UiDevices { get; init; } = [];
 }

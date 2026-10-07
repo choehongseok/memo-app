@@ -2,6 +2,7 @@ using System.Text.Json;
 using MemoApp.Core;
 
 if (VaultFailureChecks.TryWorker(args)) return;
+if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
 if (args.Contains("--startup-only")) { StartupChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
 if (args.Contains("--text-only")) { TextTransferChecks.Run(); return; }
@@ -35,6 +36,7 @@ await Schema2Checks.Run();
 await BackupChecks.Run();
 TextTransferChecks.Run();
 StartupChecks.Run();
+await DeviceUiChecks.Run();
 VaultChecks.Run();
 VaultFailureChecks.Run();
 await CoordinatorChecks.Run();

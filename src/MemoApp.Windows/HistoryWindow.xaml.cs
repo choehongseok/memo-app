@@ -1,11 +1,19 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 namespace MemoApp.Windows;
 public partial class HistoryWindow : Window
 {
     private Action<Guid>? restore;
+    public void ApplyUiPreferences(UiPreferences preferences)
+    {
+        FontSize=preferences.FontSize;HistoryScale.ScaleX=HistoryScale.ScaleY=preferences.Scale;
+        Background=preferences.DarkMode?new SolidColorBrush(Color.FromRgb(28,32,40)):Brushes.White;Foreground=preferences.DarkMode?Brushes.White:Brushes.Black;
+        Brush controlBackground=preferences.DarkMode?new SolidColorBrush(Color.FromRgb(42,47,57)):Brushes.White;
+        foreach(var control in new Control[]{Revisions,PastTitle,PastText,RestoreVersion}){control.Background=controlBackground;control.Foreground=Foreground;}
+    }
     public HistoryWindow(NoteDraft note, IReadOnlyList<StoredRevision> revisions, Action<Guid> restore)
     {
         InitializeComponent(); this.restore = restore;

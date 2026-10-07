@@ -17,7 +17,7 @@ public sealed class SaveCoordinator : IDisposable
         this.vault = vault; this.clock = clock;
         Workspace = new(clock, vault.Loaded);
         Workspace.Changed += WorkspaceChanged;
-        if (vault.NeedsInitialSave || vault.Loaded.SchemaVersion == 1) generation = 1;
+        if (vault.NeedsInitialSave || vault.Loaded.SchemaVersion < 3) generation = 1;
         Status = generation == 0 ? "저장됨" : "변경됨";
     }
     public EditingWorkspace Workspace { get; private set; }

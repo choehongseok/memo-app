@@ -30,3 +30,6 @@ __pycache__/
 writer.lock
 core
 core.*
+
+ui-device.id
+pending-ui-*.id

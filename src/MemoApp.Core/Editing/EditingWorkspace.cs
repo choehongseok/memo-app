@@ -9,6 +9,7 @@ public sealed class EditingWorkspace
     private readonly NoteCollection notes = [];
     private readonly List<StoredFolder> folders = [];
     private readonly List<StoredTag> tags = [];
+    private readonly List<StoredDeviceUi> devices = [];
     private readonly Dictionary<Guid, long> acceptedVersions = [];
     private VaultSnapshot basis;
     private bool closed;
@@ -17,9 +18,9 @@ public sealed class EditingWorkspace
         this.clock = clock ?? throw new ArgumentNullException(nameof(clock)); Notes = new(notes);
         // Keep the last accepted revision basis separate from unsaved (possibly invalid) drafts.
         // Recovery supplies its entire latest organization state, not a stale vault.Loaded projection.
-        basis = initial ?? new(2, Guid.NewGuid(), []);
+        basis = initial ?? new(3, Guid.NewGuid(), []);
         var visible = displayed ?? basis;
-        folders.AddRange(visible.Folders); tags.AddRange(visible.Tags);
+        folders.AddRange(visible.Folders); tags.AddRange(visible.Tags); devices.AddRange(visible.UiDevices);
         foreach (var source in visible.Notes)
         {
             AddDraft(new(clock, source));
@@ -31,6 +32,29 @@ public sealed class EditingWorkspace
     public IReadOnlyList<StoredFolder> Folders => folders.AsReadOnly();
     public IReadOnlyList<StoredTag> Tags => tags.AsReadOnly();
     public event Action? Changed;
+    public StoredDeviceUi GetUiDevice(Guid profile)
+    {
+        EnsureOpen(); if(profile==Guid.Empty)throw new ArgumentException("Empty UI profile");
+        return devices.SingleOrDefault(d=>d.UiDeviceId==profile) ?? new(profile,new(),[]);
+    }
+    private void SetUiDevice(StoredDeviceUi next)
+    {
+        EnsureOpen(); var updated=devices.Where(d=>d.UiDeviceId!=next.UiDeviceId).Append(next).ToArray();
+        var candidate=Capture() with {UiDevices=updated}; VaultEnvelope.Validate(candidate);
+        if(devices.SingleOrDefault(d=>d.UiDeviceId==next.UiDeviceId)==next)return;
+        devices.Clear();devices.AddRange(updated);Changed?.Invoke();
+    }
+    public void SetUiPreferences(Guid profile,UiPreferences preferences)
+    {
+        var device=GetUiDevice(profile); if(device.Preferences==preferences)return;
+        SetUiDevice(device with {Preferences=preferences});
+    }
+    public void SetWindowLayout(Guid profile,StoredWindowLayout layout)
+    {
+        var device=GetUiDevice(profile);
+        if(device.Windows.Any(w=>w.Kind==layout.Kind&&w.NoteId==layout.NoteId&&w==layout))return;
+        SetUiDevice(device with {Windows=device.Windows.Where(w=>w.Kind!=layout.Kind||w.NoteId!=layout.NoteId).Append(layout).ToImmutableArray()});
+    }
     internal VaultSnapshot FrozenBasis => basis;
     private void EnsureOpen() { if (closed) throw new InvalidOperationException("Editing workspace is closed"); }
     private void RequireNote(NoteDraft note, bool allowTrash = false)
@@ -172,7 +196,7 @@ public sealed class EditingWorkspace
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(2, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray() };
+        return new(3, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray() };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
@@ -183,6 +207,6 @@ public sealed class EditingWorkspace
     {
         if (closed) return;
         closed = true; foreach (var note in notes.ToArray()) note.Close();
-        notes.Clear(); folders.Clear(); tags.Clear(); acceptedVersions.Clear(); basis = new(2, Guid.Empty, []);
+        notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear(); basis = new(3, Guid.Empty, []);
     }
 }

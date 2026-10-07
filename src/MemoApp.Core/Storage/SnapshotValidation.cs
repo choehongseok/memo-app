@@ -5,21 +5,32 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2)) throw new InvalidDataException("Unsupported schema");
-        if (version == 2) Fields(root, ["folders", "tags"]);
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3)) throw new InvalidDataException("Unsupported schema");
+        if (version >= 2) Fields(root, ["folders", "tags"]);
+        if(version==3)Fields(root,["uiDevices"]);
         Array(root, "notes", 100); Array(root, "history", 10000); Array(root, "tombstones", 100);
         foreach (var note in root.GetProperty("notes").EnumerateArray())
         {
             Fields(note, ["noteId", "revisionId", "parents", "createdAt", "modifiedAt", "title", "text", "mode", "scope"]);
-            if (version == 2) Metadata(note);
+            if (version >= 2) Metadata(note);
         }
         foreach (var revision in root.GetProperty("history").EnumerateArray())
         {
             Fields(revision, ["noteId", "revisionId", "parents", "modifiedAt", "title", "text"]);
-            if (version == 2) Metadata(revision);
+            if (version >= 2) Metadata(revision);
+        }
+        if(version==3)
+        {
+            Array(root,"uiDevices",32);
+            foreach(var device in root.GetProperty("uiDevices").EnumerateArray())
+            {
+                Fields(device,["uiDeviceId","preferences","windows"]);var prefs=device.GetProperty("preferences");Fields(prefs,["darkMode","fontSize","scale"]);
+                Array(device,"windows",102);
+                foreach(var window in device.GetProperty("windows").EnumerateArray())Fields(window,["kind","noteId","monitor","x","y","width","height","dpi","open","topmost","opacity","folded","positionLocked"]);
+            }
         }
         foreach (var tombstone in root.GetProperty("tombstones").EnumerateArray()) Fields(tombstone, ["noteId", "revisionId", "parents"]);
-        if (version == 2)
+        if (version >= 2)
         {
             Array(root, "folders", 100); Array(root, "tags", 100);
             foreach (var folder in root.GetProperty("folders").EnumerateArray()) Fields(folder, ["folderId", "parentId", "name"]);
@@ -45,8 +56,9 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
         bool legacy = snapshot.SchemaVersion == 1;
+        if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
         if (legacy && (snapshot.Folders.Length != 0 || snapshot.Tags.Length != 0)) throw new InvalidDataException("Legacy schema cannot carry organization");
         var folderMap = new Dictionary<Guid, StoredFolder>();
         foreach (var folder in snapshot.Folders)
@@ -105,6 +117,16 @@ internal static class SnapshotValidation
             visiting.Remove(revision); visitedRevisions.Add(revision);
         }
         foreach (var revision in graph.Keys) Visit(revision);
+        var deviceIds=new HashSet<Guid>();
+        foreach(var device in snapshot.UiDevices)
+        {
+            if(device is null||device.UiDeviceId==Guid.Empty||!deviceIds.Add(device.UiDeviceId)||device.Preferences is null||device.Windows.IsDefault||device.Windows.Length>102||!double.IsFinite(device.Preferences.FontSize)||device.Preferences.FontSize is <12 or >36||!double.IsFinite(device.Preferences.Scale)||device.Preferences.Scale is <0.75 or >1.75)throw new InvalidDataException("Invalid UI profile/preferences");
+            var windowIds=new HashSet<(string,Guid?)>();
+            foreach(var window in device.Windows)
+            {
+                if(window is null||window.Kind is not ("memo" or "calendar" or "clock")||!windowIds.Add((window.Kind,window.NoteId))||window.Kind=="memo"&&(window.NoteId is not Guid noteId||!ids.Contains(noteId))||window.Kind!="memo"&&window.NoteId is not null||window.Monitor is null||window.Monitor.Length is <1 or >128||window.Monitor.Any(char.IsControl)||!double.IsFinite(window.X)||window.X is <0 or >1||!double.IsFinite(window.Y)||window.Y is <0 or >1||!double.IsFinite(window.Width)||window.Width is <200 or >2000||!double.IsFinite(window.Height)||window.Height is <100 or >1600||!double.IsFinite(window.Dpi)||window.Dpi is <48 or >768||!double.IsFinite(window.Opacity)||window.Opacity is <0.3 or >1)throw new InvalidDataException("Invalid UI window fields/reference");
+            }
+        }
         // Event/import preflight must reject the same payload budget as Prepare before publishing any draft.
         using var counter = new PayloadCounter(VaultEnvelope.MaxFile - VaultEnvelope.HeaderSize - 148);
         JsonSerializer.Serialize(counter, snapshot, VaultEnvelope.JsonOptions);

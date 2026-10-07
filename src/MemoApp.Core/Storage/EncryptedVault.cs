@@ -115,7 +115,7 @@ public sealed class EncryptedVault : IDisposable
         {
             if (disposed || keysReleased || faulted) throw new InvalidOperationException("Vault session cannot prepare writes");
             VaultEnvelope.Validate(snapshot);
-            if (snapshot.SchemaVersion == 1) snapshot = snapshot with { SchemaVersion = 2 };
+            if (snapshot.SchemaVersion < 3) snapshot = snapshot with { SchemaVersion = 3 };
             if (wraps > VaultEnvelope.MaxWraps - 2 || sequence == ulong.MaxValue) throw new InvalidOperationException("Key use or sequence budget exhausted");
             // Count every attempt, including failures. Rollback of persisted counters cannot be proven.
             wraps += 2; sequence++;

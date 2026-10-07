@@ -1,10 +1,13 @@
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Threading;
+using System.Windows.Interop;
+using System.Windows.Media;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Windows;
@@ -16,12 +19,84 @@ internal static class Program
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {
-            try { await Run(); Console.WriteLine("PASS: actual Windows WPF control construction/layout, bound editing/search/folders/trash/history/sticky and lock/undo clearing (not IME/OS SessionLock/user usability)"); result = 0; }
+            try { await Run(); await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF bound editing/search/organization/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
             catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }
         };
         app.Run(); return result;
     }
+    private static async Task DeviceWindowsRun()
+    {
+        var root=Path.Combine(Path.GetTempPath(),"memo-wpf-device-"+Guid.NewGuid().ToString("N"));var secret=EncryptedVault.GenerateRecoverySecret();var profile=Guid.NewGuid();MainWindow? main=null;
+        try
+        {
+            main=new MainWindow(root,profile);main.Show();Invoke(main,"StartSession",EncryptedVault.Create(root,secret,secret));var session=Field<SaveCoordinator>(main,"session");
+            var note=session.Workspace.CreateNote();note.Title="합성 장치 창";note.Text="DEVICE_WPF_SYNTHETIC";Require(await session.SaveAsync(),"device WPF initial save");Invoke(main,"RefreshNotes",note);
+            Invoke(main,"OpenSticky",note);Invoke(main,"Calendar_Click",main,new RoutedEventArgs());Invoke(main,"Clock_Click",main,new RoutedEventArgs());
+            var oldSticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id];var stale=oldSticky.Placement!;
+            Require(session.Workspace.GetUiDevice(profile).Windows.Length==3 && session.Workspace.GetUiDevice(profile).Windows.All(w=>w.Open),"same-turn new memo/widget opening intention must precede native Loaded await");
+            await session.LockAsync();await Idle();await stale.RestoreAsync();
+            Require(!oldSticky.IsVisible && Field<Dictionary<string,DateWidgetWindow>>(main,"widgets").Count==0,"immediate lock must close native memo/date widgets");
+            Invoke(main,"ReleaseSettledSession");Invoke(main,"StartSession",EncryptedVault.Open(root,secret));session=Field<SaveCoordinator>(main,"session");await Idle();
+            Require(session.Workspace.GetUiDevice(profile).Windows.All(w=>w.Open),"real encrypted reopen proves security conceal preserved opening intention before Loaded");
+            note=session.Workspace.Notes.Single();var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id];var widgets=Field<Dictionary<string,DateWidgetWindow>>(main,"widgets");
+            Require(widgets.Count==2 && sticky.IsVisible,"current-profile unlock must reopen saved memo/calendar/clock");await sticky.Placement!.RestoreAsync();await Idle();
+            Require(sticky.Placement.State.Monitor!="DEFAULT" && sticky.Placement.State.Dpi>0,"native monitor/DPI layout must be captured");WithinWorkArea(sticky);
+            var content=session.Workspace.Capture().Notes.Single();sticky.Left+=35;sticky.Top+=20;sticky.Width=430;sticky.Height=450;await Idle();
+            Require(Math.Abs(sticky.Placement.State.Width-430)<2 && Math.Abs(sticky.Placement.State.Height-450)<2,"native move/resize stores DIP dimensions");
+            Control<CheckBox>(main,"DarkToggle").IsChecked=true;Invoke(main,"UiPreference_Changed",main,new RoutedEventArgs());Control<Slider>(main,"FontSlider").Value=18;Control<Slider>(main,"ScaleSlider").Value=1.2;await Idle();
+            Require(sticky.FontSize==18 && main.FontSize==18 && Math.Abs(Control<ScaleTransform>(sticky,"ContentScale").ScaleX-1.2)<0.001 && Field<TextBlock>(widgets["clock"],"time").FontSize==36,"global font/view scale must affect management/memo/clock");
+            var history=new HistoryWindow(note,[],_=>{});Field<HashSet<HistoryWindow>>(main,"historyWindows").Add(history);history.Show();Invoke(main,"ApplyUiPreferences");
+            Require(history.FontSize==18 && Control<ScaleTransform>(history,"HistoryScale").ScaleX==1.2 && Control<TextBox>(history,"PastText").Foreground==Brushes.White,"global preferences must reach independent history view");
+            double unfolded=sticky.Placement.State.Height;Control<CheckBox>(sticky,"FoldToggle").IsChecked=true;await Idle();
+            Require(sticky.Placement.State.Folded && sticky.Placement.State.Height==unfolded && Control<TextBox>(sticky,"BodyEditor").Visibility==Visibility.Collapsed,"fold preserves unfolded dimensions");
+            Control<CheckBox>(sticky,"FoldToggle").IsChecked=false;Control<CheckBox>(sticky,"PositionToggle").IsChecked=true;sticky.Topmost=true;sticky.Opacity=0.7;await Idle();
+            Require(sticky.ResizeMode==ResizeMode.CanMinimize && sticky.Placement.State.PositionLocked && sticky.Placement.State.Topmost && Math.Abs(sticky.Placement.State.Opacity-0.7)<0.001,"position/topmost/opacity state is independent and persisted");
+            Require(Field<HwndSource?>(sticky.Placement,"source") is not null && PositionCommandHandled(sticky,0xF010) && PositionCommandHandled(sticky,0xF000) && PositionCommandHandled(sticky,0xF030),"attached native hook must block SC_MOVE/SC_SIZE/SC_MAXIMIZE when position locked");
+            Control<CheckBox>(sticky,"PositionToggle").IsChecked=false;Require(!PositionCommandHandled(sticky,0xF010) && !PositionCommandHandled(sticky,0xF000),"unlocked native hook must leave ordinary move/size commands available");Control<CheckBox>(sticky,"PositionToggle").IsChecked=true;
+            sticky.Width=2200;sticky.Height=1800;Invoke(main,"ArrangeSticky_Click",main,new RoutedEventArgs());await Idle();WithinWorkArea(sticky);
+            Require(sticky.Placement.State.Width<=2000 && sticky.Placement.State.Height<=1600,"arrange must size actual HWND to work-area/schema bounds");
+            Invoke(main,"ToggleSticky_Click",main,new RoutedEventArgs());Require(!sticky.IsVisible,"hide all memo native windows");Invoke(main,"ToggleSticky_Click",main,new RoutedEventArgs());Require(sticky.IsVisible,"show all memo native windows");
+            Require(session.Workspace.Capture().Notes.Single()==content && session.Workspace.Capture().History.Length==0,"window/theme callbacks must not create content revisions or timestamp noise");
+            stale=sticky.Placement;sticky.Close();widgets["clock"].Close();await Idle();
+            Require(session.Workspace.GetUiDevice(profile).Windows.Where(w=>w.Kind is "memo" or "clock").All(w=>!w.Open),"user close must record closed independently of conceal");
+            Invoke(main,"OpenSticky",note);Invoke(main,"Clock_Click",main,new RoutedEventArgs());
+            Require(session.Workspace.GetUiDevice(profile).Windows.All(w=>w.Open),"same-turn closed-to-open intention precedes Loaded");await session.LockAsync();await Idle();
+            Invoke(main,"ReleaseSettledSession");Invoke(main,"StartSession",EncryptedVault.Open(root,secret));session=Field<SaveCoordinator>(main,"session");await Idle();
+            Require(Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows").Count==1 && Field<Dictionary<string,DateWidgetWindow>>(main,"widgets").Count==2,"repeat unlock must restore once without duplicate native windows");
+            var before=session.Workspace.GetUiDevice(profile);await stale.RestoreAsync();await Idle();Require(session.Workspace.GetUiDevice(profile)==before,"disposed prior-session controller cannot mutate reopened session");
+            Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id].Close();Field<Dictionary<string,DateWidgetWindow>>(main,"widgets")["clock"].Close();
+            await session.LockAsync();Invoke(main,"ReleaseSettledSession");Invoke(main,"StartSession",EncryptedVault.Open(root,secret));session=Field<SaveCoordinator>(main,"session");await Idle();
+            Require(Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows").Count==0 && Field<Dictionary<string,DateWidgetWindow>>(main,"widgets").Keys.SequenceEqual(new[]{"calendar"}),"explicit user-close must remain closed on subsequent unlock");
+            await session.LockAsync();Invoke(main,"ReleaseSettledSession");
+            SetField(main,"confirmedExit",true);main.Close();main=null;
+            main=new MainWindow(root,Guid.NewGuid());main.Show();Invoke(main,"StartSession",EncryptedVault.Open(root,secret));session=Field<SaveCoordinator>(main,"session");await Idle();
+            Require(Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows").Count==0 && Field<Dictionary<string,DateWidgetWindow>>(main,"widgets").Count==0 && main.FontSize==14,"another device profile must not inherit native windows/preferences");
+            await session.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
+        }
+        finally
+        {
+            if(main is not null){SetField(main,"confirmedExit",true);main.Close();var session=Field<SaveCoordinator?>(main,"session");if(session is not null&&!session.IsBusy)session.Dispose();}
+            CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);
+        }
+    }
+    private static bool PositionCommandHandled(StickyNoteWindow window,int command)
+    {
+        object[] arguments={new WindowInteropHelper(window).Handle,0x112,(IntPtr)command,IntPtr.Zero,false};
+        window.Placement!.GetType().GetMethod("Hook",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(window.Placement,arguments);return (bool)arguments[4];
+    }
+    private static void WithinWorkArea(Window window)
+    {
+        var handle=new WindowInteropHelper(window).Handle;Require(AreDpiAwarenessContextsEqual(GetWindowDpiAwarenessContext(handle),(IntPtr)(-4)),"actual HWND must use production PerMonitorV2 manifest");Require(GetWindowRect(handle,out var rect),"native test window rectangle");var info=new MonitorInfo{Size=Marshal.SizeOf<MonitorInfo>()};Require(GetMonitorInfo(MonitorFromWindow(handle,2),ref info),"native test monitor work area");
+        Require(rect.Left>=info.Work.Left && rect.Top>=info.Work.Top && rect.Right<=info.Work.Right+1 && rect.Bottom<=info.Work.Bottom+1,"native restore/arrange must fit the runner work area");
+    }
+    [StructLayout(LayoutKind.Sequential)]private struct NativeRect{public int Left,Top,Right,Bottom;}
+    [StructLayout(LayoutKind.Sequential)]private struct MonitorInfo{public int Size;public NativeRect Monitor,Work;public int Flags;}
+    [DllImport("user32.dll")]private static extern bool GetWindowRect(IntPtr window,out NativeRect rect);
+    [DllImport("user32.dll")]private static extern IntPtr MonitorFromWindow(IntPtr window,int flags);
+    [DllImport("user32.dll",EntryPoint="GetMonitorInfoW")]private static extern bool GetMonitorInfo(IntPtr monitor,ref MonitorInfo info);
+    [DllImport("user32.dll")]private static extern IntPtr GetWindowDpiAwarenessContext(IntPtr window);
+    [DllImport("user32.dll")]private static extern bool AreDpiAwarenessContextsEqual(IntPtr first,IntPtr second);
     private static async Task Run()
     {
         var root = Path.Combine(Path.GetTempPath(), "memo-wpf-check-" + Guid.NewGuid().ToString("N"));
