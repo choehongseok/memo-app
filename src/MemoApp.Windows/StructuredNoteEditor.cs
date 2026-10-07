@@ -46,6 +46,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private readonly DispatcherTimer transactionRetry=new(DispatcherPriority.Background){Interval=TimeSpan.FromMilliseconds(100)};
     private bool waitingTransaction;
     public RichTextBox RichInput=>native;
+    public bool IsDisposed=>disposed;
     public StructuredNoteEditor(EditingWorkspace workspace,NoteDraft note,Func<bool> current,Action<string> notice)
     {
         this.workspace=workspace;this.note=note;this.current=current;this.notice=notice;

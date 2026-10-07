@@ -193,7 +193,7 @@ public partial class MainWindow : Window
         if(selected is {Mode:"rich",IsDeleted:false}&&session is {IsLocked:false} active&&!concealing)
         {
             BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.IsUndoEnabled=false;BodyEditor.Clear();BodyEditor.IsReadOnly=true;BodyEditor.Visibility=Visibility.Collapsed;StructuredHost.Visibility=Visibility.Visible;
-            if(!ReferenceEquals(structuredNote,selected)||structuredEditor is null)
+            if(!ReferenceEquals(structuredNote,selected)||structuredEditor is null||structuredEditor.IsDisposed)
             {
                 ClearStructuredEditor();long epoch=uiEpoch;bool attached=false;StructuredNoteEditor? created=null;
                 bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&selected is {IsClosed:false,IsDeleted:false,Mode:"rich"}&&(!attached||ReferenceEquals(StructuredHost.Content,created));
@@ -210,7 +210,7 @@ public partial class MainWindow : Window
         if(selected is {Mode:"markdown",IsDeleted:false}&&session is {IsLocked:false} markdownSession&&!concealing)
         {
             MarkdownHost.Visibility=Visibility.Visible;
-            if(!ReferenceEquals(markdownNote,selected)||markdownPreview is null)
+            if(!ReferenceEquals(markdownNote,selected)||markdownPreview is null||markdownPreview.IsDisposed)
             {
                 ClearMarkdownPreview();long epoch=uiEpoch;bool attached=false;MarkdownNotePreview? created=null;
                 bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,markdownSession)&&!markdownSession.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&markdownSession.Workspace.Notes.Contains(selected)&&selected is {IsClosed:false,IsDeleted:false,Mode:"markdown"}&&(!attached||ReferenceEquals(MarkdownHost.Content,created));

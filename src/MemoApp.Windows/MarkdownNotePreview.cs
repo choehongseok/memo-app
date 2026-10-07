@@ -22,6 +22,7 @@ public sealed class MarkdownNotePreview:UserControl,IDisposable
     private readonly TextBlock state=new(){TextWrapping=TextWrapping.Wrap,Margin=new(4)};
     private readonly DispatcherTimer debounce=new(DispatcherPriority.Background){Interval=TimeSpan.FromMilliseconds(150)};
     public Task WhenIdle=>queue?.WhenIdle??Task.CompletedTask;
+    public bool IsDisposed=>disposed;
     public string? CleanupErrorCode{get;private set;}
     public MarkdownNotePreview(NoteDraft note,Func<bool> current,Func<string,MarkdownPreview>? parse=null)
     {
