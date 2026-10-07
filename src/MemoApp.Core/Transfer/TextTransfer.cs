@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
+using MemoApp.Core.Documents;
 namespace MemoApp.Core.Transfer;
 public sealed record ImportedText(string Title, string Text, string SourceSha256);
 public sealed class PreparedTextExport : IDisposable
@@ -40,6 +41,7 @@ public static class TextTransfer
     {
         ArgumentNullException.ThrowIfNull(note);
         if (note.IsClosed || note.IsDeleted) throw new InvalidOperationException("Only active unlocked notes may be exported");
+        if(note.Mode=="rich"&&(note.Document is null||!RichDocumentCodec.Inspect(note.Document).Supported))throw new InvalidOperationException("Unknown rich source has no verified complete text projection");
         string title = note.Title, text = note.Text;
         if (title.Length > 256 || text.Length > 65536 || title.Contains('\0') || text.Contains('\0')) throw new InvalidDataException("Text export limits");
         string payload = (includeTitle && title.Length != 0 ? Newlines(title) + "\n\n" : "") + Newlines(text);

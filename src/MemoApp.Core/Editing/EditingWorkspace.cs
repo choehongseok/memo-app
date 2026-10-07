@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using MemoApp.Core.Storage;
+using MemoApp.Core.Documents;
 namespace MemoApp.Core.Editing;
 
 public sealed class EditingWorkspace
@@ -18,20 +19,44 @@ public sealed class EditingWorkspace
         this.clock = clock ?? throw new ArgumentNullException(nameof(clock)); Notes = new(notes);
         // Keep the last accepted revision basis separate from unsaved (possibly invalid) drafts.
         // Recovery supplies its entire latest organization state, not a stale vault.Loaded projection.
-        basis = initial ?? new(3, Guid.NewGuid(), []);
+        basis = initial ?? new(4, Guid.NewGuid(), []);
         var visible = displayed ?? basis;
         folders.AddRange(visible.Folders); tags.AddRange(visible.Tags); devices.AddRange(visible.UiDevices);
         foreach (var source in visible.Notes)
         {
             AddDraft(new(clock, source));
             var old = basis.Notes.FirstOrDefault(n => n.NoteId == source.NoteId);
-            acceptedVersions[source.NoteId] = old is not null && old.Title == source.Title && old.Text == source.Text && old.Metadata == source.Metadata ? 0 : -1;
+            acceptedVersions[source.NoteId] = old is not null && old.Title == source.Title && old.Text == source.Text && old.Metadata == source.Metadata && old.Mode==source.Mode && old.Document==source.Document ? 0 : -1;
         }
     }
     public ReadOnlyObservableCollection<NoteDraft> Notes { get; }
     public IReadOnlyList<StoredFolder> Folders => folders.AsReadOnly();
     public IReadOnlyList<StoredTag> Tags => tags.AsReadOnly();
     public event Action? Changed;
+    public void SetRichDocument(NoteDraft note,StyledDocument document)
+    {
+        RequireNote(note);if(note.Mode!="rich"||note.Document is null||!RichDocumentCodec.Inspect(note.Document).Supported)throw new InvalidOperationException("Rich original is not editable");
+        var info=RichDocumentCodec.Inspect(document);if(!info.Supported)throw new InvalidOperationException("Unsupported new rich document");
+        if(note.Document==document)return;
+        var before=Capture();var current=before.Notes.Single(n=>n.NoteId==note.Id);var history=before.History.ToList();var now=clock.GetUtcNow();
+        bool accepted=acceptedVersions.TryGetValue(note.Id,out var version)&&version==note.EditVersion;
+        if(accepted)
+        {
+            history.Add(new(current.NoteId,current.RevisionId,(Guid[])current.Parents.Clone(),current.ModifiedAt,current.Title,current.Text){Metadata=current.Metadata,Mode=current.Mode,Document=current.Document});
+            current=current with{RevisionId=Guid.NewGuid(),Parents=[current.RevisionId]};
+        }
+        current=current with{Text=info.Text!,Document=document,ModifiedAt=now};
+        var candidate=before with{Notes=before.Notes.Select(n=>n.NoteId==note.Id?current:n).ToArray(),History=history.ToArray()};VaultEnvelope.Validate(candidate);
+        // Like plain typing, content changes remain a dirty draft until preparation. Do not freeze one history revision per keystroke.
+        note.StageEvent(current);Changed?.Invoke();if(!closed)note.PublishEvent();
+    }
+    public void ConvertMode(NoteDraft note,string mode,bool confirmedLoss=false)
+    {
+        RequireNote(note);if(mode is not ("plain" or "rich" or "markdown"))throw new ArgumentException("Unsupported document mode");if(note.Mode==mode)return;
+        if(!confirmedLoss)throw new InvalidOperationException("Explicit conversion loss acknowledgement required");
+        var document=mode=="rich"?RichDocumentCodec.FromPlain(note.Text):null;string text=document is null?note.Text:RichDocumentCodec.Inspect(document).Text!;
+        ApplyContentEvent(note,text,mode,document,note.Metadata);
+    }
     public StoredDeviceUi GetUiDevice(Guid profile)
     {
         EnsureOpen(); if(profile==Guid.Empty)throw new ArgumentException("Empty UI profile");
@@ -77,7 +102,7 @@ public sealed class EditingWorkspace
     private static string Name(string value)
     {
         ArgumentNullException.ThrowIfNull(value); value = value.Trim();
-        if (value.Length is < 1 or > 128 || value.Any(char.IsControl)) throw new ArgumentException("Name outside limits");
+        if (value.Length is < 1 or > 128 || value.Any(char.IsControl) || !RichDocumentCodec.IsWellFormedUnicode(value)) throw new ArgumentException("Name outside limits");
         return value;
     }
     public StoredFolder CreateFolder(string name, Guid? parentId = null)
@@ -110,15 +135,18 @@ public sealed class EditingWorkspace
     private int NextOrder() => notes.Count == 0 ? 0 : Math.Min(1000000, notes.Max(n => n.Metadata.Order) + 1);
     private void ApplyEvent(NoteDraft note, string title, string text, NoteMetadata metadata) =>
         ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
-    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes)
+    private void ApplyContentEvent(NoteDraft note,string text,string mode,StyledDocument? document,NoteMetadata metadata)=>
+        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,text,metadata)},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(mode,document)});
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null)
     {
         if (changes.Count == 0) return;
         var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
         var nextNotes = before.Notes.Select(previous =>
         {
             if (!changes.TryGetValue(previous.NoteId, out var change)) return previous;
-            history.Add(new(previous.NoteId, previous.RevisionId, (Guid[])previous.Parents.Clone(), previous.ModifiedAt, previous.Title, previous.Text) { Metadata = previous.Metadata });
-            return previous with { RevisionId = Guid.NewGuid(), Parents = [previous.RevisionId], ModifiedAt = clock.GetUtcNow(), Title = change.Title, Text = change.Text, Metadata = change.Metadata };
+            history.Add(new(previous.NoteId, previous.RevisionId, (Guid[])previous.Parents.Clone(), previous.ModifiedAt, previous.Title, previous.Text) { Metadata = previous.Metadata,Mode=previous.Mode,Document=previous.Document });
+            var format=formats is not null&&formats.TryGetValue(previous.NoteId,out var updated)?updated:(previous.Mode,previous.Document);
+            return previous with { RevisionId = Guid.NewGuid(), Parents = [previous.RevisionId], ModifiedAt = clock.GetUtcNow(), Title = change.Title, Text = change.Text, Metadata = change.Metadata,Mode=format.Item1,Document=format.Item2 };
         }).ToArray();
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
@@ -131,10 +159,10 @@ public sealed class EditingWorkspace
     }
     public NoteDraft ImportText(string title, string text, Guid? folderId = null) =>
         AddComplete(title,text,new() { FolderId=folderId,Order=NextOrder() });
-    private NoteDraft AddComplete(string title,string text,NoteMetadata metadata)
+    private NoteDraft AddComplete(string title,string text,NoteMetadata metadata,string mode="plain",StyledDocument? document=null)
     {
         EnsureOpen(); var before = Capture(); var now = clock.GetUtcNow();
-        var source = new StoredNote(Guid.NewGuid(), Guid.NewGuid(), [], now, now, title, text) { Metadata=metadata };
+        var source = new StoredNote(Guid.NewGuid(), Guid.NewGuid(), [], now, now, title, text,mode) { Metadata=metadata,Document=document };
         var next = before with { Notes=before.Notes.Append(source).ToArray() }; VaultEnvelope.Validate(next);
         var draft = new NoteDraft(clock,source); AddDraft(draft); AcceptPrepared(next);
         Changed?.Invoke(); if (!closed) notes.PublishAdded(draft); return draft;
@@ -185,7 +213,7 @@ public sealed class EditingWorkspace
     }
     public NoteDraft Duplicate(NoteDraft note)
     {
-        RequireNote(note); return AddComplete(note.Title,note.Text,note.Metadata with { Deleted=false,Order=NextOrder() });
+        RequireNote(note); return AddComplete(note.Title,note.Text,note.Metadata with { Deleted=false,Order=NextOrder() },note.Mode,note.Document);
     }
     public IReadOnlyList<StoredRevision> HistoryFor(NoteDraft note)
     {
@@ -196,7 +224,7 @@ public sealed class EditingWorkspace
     {
         RequireNote(note);
         var revision = basis.History.SingleOrDefault(h => h.NoteId == note.Id && h.RevisionId == revisionId) ?? throw new ArgumentException("Unknown revision");
-        ApplyEvent(note, revision.Title, revision.Text, revision.Metadata with { Deleted = false });
+        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(revision.Title,revision.Text,revision.Metadata with{Deleted=false})},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(revision.Mode,revision.Document)});
     }
     public Guid[] DescendantFolders(Guid parentId)
     {
@@ -212,12 +240,12 @@ public sealed class EditingWorkspace
         {
             var old = basis.Notes.FirstOrDefault(n => n.NoteId == draft.Id);
             if (old is not null && acceptedVersions.TryGetValue(draft.Id, out var accepted) && draft.EditVersion == accepted) return old;
-            if (old is not null) history.Add(new(old.NoteId, old.RevisionId, (Guid[])old.Parents.Clone(), old.ModifiedAt, old.Title, old.Text) { Metadata = old.Metadata });
-            return new StoredNote(draft.Id, Guid.NewGuid(), old is null ? [] : [old.RevisionId], draft.CreatedAt, draft.ModifiedAt, draft.Title, draft.Text) { Metadata = draft.Metadata };
+            if (old is not null) history.Add(new(old.NoteId, old.RevisionId, (Guid[])old.Parents.Clone(), old.ModifiedAt, old.Title, old.Text) { Metadata = old.Metadata,Mode=old.Mode,Document=old.Document });
+            return new StoredNote(draft.Id, Guid.NewGuid(), old is null ? [] : [old.RevisionId], draft.CreatedAt, draft.ModifiedAt, draft.Title, draft.Text,draft.Mode) { Metadata = draft.Metadata,Document=draft.Document };
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(3, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray() };
+        return new(4, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray() };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
@@ -228,6 +256,6 @@ public sealed class EditingWorkspace
     {
         if (closed) return;
         closed = true; foreach (var note in notes.ToArray()) note.Close();
-        notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear(); basis = new(3, Guid.Empty, []);
+        notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear(); basis = new(4, Guid.Empty, []);
     }
 }

@@ -9,6 +9,8 @@ using System.Windows.Threading;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Text.Json;
+using System.Windows.Documents;
+using MemoApp.Core.Documents;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Windows;
@@ -20,11 +22,27 @@ internal static class Program
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {
-            try { await Run(); await BatchFailureRun();await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
+            try { await RichViewsRun();await Run(); await BatchFailureRun();await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
             catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }
         };
         app.Run(); return result;
+    }
+    private static async Task RichViewsRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="공유 합성 rich";workspace.ConvertMode(note,"rich",true);bool active=true;
+        using var first=new StructuredNoteEditor(workspace,note,()=>active,_=>{});using var second=new StructuredNoteEditor(workspace,note,()=>active,_=>{});
+        var left=new Window{Content=first,Width=500,Height=400};var right=new Window{Content=second,Width=500,Height=400};left.Show();right.Show();await Idle();
+        Require(new TextRange(first.RichInput.Document.ContentStart,first.RichInput.Document.ContentEnd).Text.Contains("공유 합성 rich"),"canonical rich source must project to real WPF document");
+        first.RichInput.Selection.Select(first.RichInput.Document.ContentStart,first.RichInput.Document.ContentEnd);first.ApplyBold();await Idle();
+        Require(note.Document!.SourceJson.Contains("\"bold\":true") && new TextRange(second.RichInput.Document.ContentStart,second.RichInput.Document.ContentEnd).Text.Contains(note.Text),"formatting-only source changes propagate between independent WPF documents");
+        first.ApplyFontSize(22);await Idle();Require(note.Document!.SourceJson.Contains("22"),"font size formatting stores source value");
+        workspace.AcceptPrepared(workspace.Capture());string before=JsonSerializer.Serialize(workspace.Capture());second.ApplyPreferences(new(true,18,1.2));await Idle();Require(JsonSerializer.Serialize(workspace.Capture())==before,"theme/font/view preferences must not rewrite run source or create content revisions");
+        var unsafePaste=new DataObject();unsafePaste.SetData(DataFormats.Xaml,"<Paragraph xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Run>UNSAFE</Run></Paragraph>");unsafePaste.SetData(DataFormats.Rtf,"{\\rtf1 UNSAFE}");first.PasteData(unsafePaste);Require(JsonSerializer.Serialize(workspace.Capture())==before,"default rich clipboard formats must be refused without canonical/view mutation");
+        var safePaste=new DataObject();safePaste.SetData(DataFormats.UnicodeText,"한글👩‍💻e\u0301");first.PasteData(safePaste);await Idle();Require(note.Text.Contains("한글👩‍💻e\u0301"),"bounded UnicodeText paste updates canonical source");
+        active=false;first.ClearSensitive();second.ClearSensitive();workspace.Clear();await Idle();
+        Require(first.RichInput.Document.Blocks.Count==0 && second.RichInput.Document.Blocks.Count==0 && !first.RichInput.CanUndo && !second.RichInput.CanUndo && note.Document is null,"conceal/clear cannot save empty projection and must remove document/source/Undo");
+        left.Close();right.Close();
     }
     private static async Task BatchFailureRun()
     {

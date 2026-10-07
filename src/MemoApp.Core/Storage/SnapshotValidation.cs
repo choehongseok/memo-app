@@ -1,25 +1,28 @@
 using System.Text.Json;
+using MemoApp.Core.Documents;
 namespace MemoApp.Core.Storage;
 internal static class SnapshotValidation
 {
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4)) throw new InvalidDataException("Unsupported schema");
         if (version >= 2) Fields(root, ["folders", "tags"]);
-        if(version==3)Fields(root,["uiDevices"]);
+        if(version>=3)Fields(root,["uiDevices"]);
         Array(root, "notes", 100); Array(root, "history", 10000); Array(root, "tombstones", 100);
         foreach (var note in root.GetProperty("notes").EnumerateArray())
         {
             Fields(note, ["noteId", "revisionId", "parents", "createdAt", "modifiedAt", "title", "text", "mode", "scope"]);
             if (version >= 2) Metadata(note);
+            if(version>=4)Document(note,false);
         }
         foreach (var revision in root.GetProperty("history").EnumerateArray())
         {
             Fields(revision, ["noteId", "revisionId", "parents", "modifiedAt", "title", "text"]);
             if (version >= 2) Metadata(revision);
+            if(version>=4)Document(revision,true);
         }
-        if(version==3)
+        if(version>=3)
         {
             Array(root,"uiDevices",32);
             foreach(var device in root.GetProperty("uiDevices").EnumerateArray())
@@ -36,6 +39,11 @@ internal static class SnapshotValidation
             foreach (var folder in root.GetProperty("folders").EnumerateArray()) Fields(folder, ["folderId", "parentId", "name"]);
             foreach (var tag in root.GetProperty("tags").EnumerateArray()) Fields(tag, ["tagId", "name"]);
         }
+    }
+    private static void Document(JsonElement record,bool revision)
+    {
+        Fields(record,revision?["mode","document"]:["document"]);var document=record.GetProperty("document");
+        if(document.ValueKind!=JsonValueKind.Null)Fields(document,["schemaVersion","sourceJson"]);
     }
     private static void Fields(JsonElement element, string[] fields)
     {
@@ -56,7 +64,7 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
         bool legacy = snapshot.SchemaVersion == 1;
         if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
         if (legacy && (snapshot.Folders.Length != 0 || snapshot.Tags.Length != 0)) throw new InvalidDataException("Legacy schema cannot carry organization");
@@ -81,17 +89,27 @@ internal static class SnapshotValidation
             if (metadata is null || metadata.TagIds.IsDefault || metadata.TagIds.Length > 16 || metadata.TagIds.Distinct().Count() != metadata.TagIds.Length || metadata.TagIds.Any(t => !tagIds.Contains(t)) || metadata.FolderId is Guid f && !folderMap.ContainsKey(f) || metadata.Color is not ("yellow" or "blue" or "green" or "pink" or "white" or "purple") || metadata.Order is < 0 or > 1000000) throw new InvalidDataException("Invalid organization metadata");
             if (legacy && (metadata.FolderId is not null || metadata.TagIds.Length != 0 || metadata.Color != "yellow" || metadata.Important || metadata.Favorite || metadata.Pinned || metadata.Archived || metadata.Deleted || metadata.Order != 0)) throw new InvalidDataException("Legacy metadata not supported");
         }
+        void Content(string mode,StyledDocument? document,string text)
+        {
+            if(!RichDocumentCodec.IsWellFormedUnicode(text)||mode is not ("plain" or "markdown" or "rich")||snapshot.SchemaVersion<4&&(mode!="plain"||document is not null))throw new InvalidDataException("Invalid document mode/Unicode/version");
+            if(mode=="rich")
+            {
+                if(document is null)throw new InvalidDataException("Rich source required");var info=RichDocumentCodec.Inspect(document);
+                if(info.Supported&&!string.Equals(info.Text,text,StringComparison.Ordinal))throw new InvalidDataException("Rich projection/source mismatch");
+            }
+            else if(document is not null)throw new InvalidDataException("Plain/Markdown source must not carry rich data");
+        }
         var ids = new HashSet<Guid>(); var revisions = new HashSet<Guid>(); var graph = new Dictionary<Guid, (Guid NoteId, Guid[] Parents)>();
         bool Parents(Guid[] parents, Guid revision) => parents is not null && parents.Length <= 8 && parents.Distinct().Count() == parents.Length && !parents.Any(p => p == Guid.Empty || p == revision);
         foreach (var note in snapshot.Notes)
         {
-            if (note is null || note.NoteId == Guid.Empty || !ids.Add(note.NoteId) || note.RevisionId == Guid.Empty || !revisions.Add(note.RevisionId) || note.Title is null || note.Text is null || note.Title.Length > 256 || note.Text.Length > 65536 || !Parents(note.Parents, note.RevisionId) || note.Mode != "plain" || note.Scope != "device-only" || note.CreatedAt.Offset != TimeSpan.Zero || note.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid note fields or unsupported mode");
-            Meta(note.Metadata); graph.Add(note.RevisionId, (note.NoteId, note.Parents));
+            if (note is null || note.NoteId == Guid.Empty || !ids.Add(note.NoteId) || note.RevisionId == Guid.Empty || !revisions.Add(note.RevisionId) || note.Title is null || note.Text is null || note.Title.Length > 256 || !RichDocumentCodec.IsWellFormedUnicode(note.Title) || note.Text.Length > 65536 || !Parents(note.Parents, note.RevisionId) || note.Scope != "device-only" || note.CreatedAt.Offset != TimeSpan.Zero || note.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid note fields or unsupported mode");
+            Content(note.Mode,note.Document,note.Text);Meta(note.Metadata); graph.Add(note.RevisionId, (note.NoteId, note.Parents));
         }
         foreach (var revision in snapshot.History)
         {
-            if (revision is null || !ids.Contains(revision.NoteId) || revision.RevisionId == Guid.Empty || !revisions.Add(revision.RevisionId) || !Parents(revision.Parents, revision.RevisionId) || revision.Title is null || revision.Title.Length > 256 || revision.Text is null || revision.Text.Length > 65536 || revision.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid history");
-            Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
+            if (revision is null || !ids.Contains(revision.NoteId) || revision.RevisionId == Guid.Empty || !revisions.Add(revision.RevisionId) || !Parents(revision.Parents, revision.RevisionId) || revision.Title is null || revision.Title.Length > 256 || !RichDocumentCodec.IsWellFormedUnicode(revision.Title) || revision.Text is null || revision.Text.Length > 65536 || revision.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid history");
+            Content(revision.Mode,revision.Document,revision.Text);Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
         }
         if (snapshot.History.GroupBy(r => r.NoteId).Any(g => g.Count() > 512)) throw new InvalidDataException("History limit exceeded");
         var deletedIds = new HashSet<Guid>();
@@ -124,7 +142,7 @@ internal static class SnapshotValidation
             var windowIds=new HashSet<(string,Guid?)>();
             foreach(var window in device.Windows)
             {
-                if(window is null||window.Kind is not ("memo" or "calendar" or "clock")||!windowIds.Add((window.Kind,window.NoteId))||window.Kind=="memo"&&(window.NoteId is not Guid noteId||!ids.Contains(noteId))||window.Kind!="memo"&&window.NoteId is not null||window.Monitor is null||window.Monitor.Length is <1 or >128||window.Monitor.Any(char.IsControl)||!double.IsFinite(window.X)||window.X is <0 or >1||!double.IsFinite(window.Y)||window.Y is <0 or >1||!double.IsFinite(window.Width)||window.Width is <200 or >2000||!double.IsFinite(window.Height)||window.Height is <100 or >1600||!double.IsFinite(window.Dpi)||window.Dpi is <48 or >768||!double.IsFinite(window.Opacity)||window.Opacity is <0.3 or >1)throw new InvalidDataException("Invalid UI window fields/reference");
+                if(window is null||window.Kind is not ("memo" or "calendar" or "clock")||!windowIds.Add((window.Kind,window.NoteId))||window.Kind=="memo"&&(window.NoteId is not Guid noteId||!ids.Contains(noteId))||window.Kind!="memo"&&window.NoteId is not null||window.Monitor is null||window.Monitor.Length is <1 or >128||window.Monitor.Any(char.IsControl)||!RichDocumentCodec.IsWellFormedUnicode(window.Monitor)||!double.IsFinite(window.X)||window.X is <0 or >1||!double.IsFinite(window.Y)||window.Y is <0 or >1||!double.IsFinite(window.Width)||window.Width is <200 or >2000||!double.IsFinite(window.Height)||window.Height is <100 or >1600||!double.IsFinite(window.Dpi)||window.Dpi is <48 or >768||!double.IsFinite(window.Opacity)||window.Opacity is <0.3 or >1)throw new InvalidDataException("Invalid UI window fields/reference");
             }
         }
         // Event/import preflight must reject the same payload budget as Prepare before publishing any draft.
@@ -150,5 +168,5 @@ internal static class SnapshotValidation
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long length) => throw new NotSupportedException();
     }
-    private static bool Name(string value) => value is not null && value.Length is > 0 and <= 128 && value.Trim() == value && !value.Any(char.IsControl);
+    private static bool Name(string value) => value is not null && value.Length is > 0 and <= 128 && value.Trim() == value && !value.Any(char.IsControl)&&RichDocumentCodec.IsWellFormedUnicode(value);
 }

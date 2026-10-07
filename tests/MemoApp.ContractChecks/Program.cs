@@ -2,6 +2,8 @@ using System.Text.Json;
 using MemoApp.Core;
 
 if (VaultFailureChecks.TryWorker(args)) return;
+if (args.Contains("--rich-only")) { RichDocumentChecks.Run(); return; }
+if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return; }
 if (args.Contains("--batch-only")) { await BatchChecks.Run(); return; }
 if (args.Contains("--diff-only")) { HistoryDiffChecks.Run(); return; }
 if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
@@ -32,6 +34,8 @@ if (restored.Content.GetProperty("nodes")[3].GetProperty("opaque").GetProperty("
     throw new InvalidOperationException("Unknown node lost");
 Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roundtrip (in-memory only)");
 EditingChecks.Run();
+RichDocumentChecks.Run();
+await RichStorageChecks.Run();
 SearchChecks.Run();
 OrganizationChecks.Run();
 await BatchChecks.Run();

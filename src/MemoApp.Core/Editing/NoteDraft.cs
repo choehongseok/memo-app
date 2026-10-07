@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MemoApp.Core.Storage;
+using MemoApp.Core.Documents;
 namespace MemoApp.Core.Editing;
 
 // Unlocked shared draft. No disk I/O, keys, network or persistent search index.
@@ -8,6 +9,8 @@ public sealed class NoteDraft : INotifyPropertyChanged
 {
     private readonly TimeProvider clock;
     private string title = "", text = "";
+    private string mode="plain";
+    private StyledDocument? document;
     private NoteMetadata metadata = new();
     public event PropertyChangedEventHandler? PropertyChanged;
     internal NoteDraft(TimeProvider clock, int order = 0)
@@ -17,7 +20,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     internal NoteDraft(TimeProvider clock, StoredNote source) : this(clock)
     {
         Id = source.NoteId; CreatedAt = source.CreatedAt; ModifiedAt = source.ModifiedAt;
-        title = source.Title; text = source.Text; metadata = source.Metadata;
+        title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document;
     }
     public Guid Id { get; }
     public Guid? FolderId => metadata.FolderId;
@@ -27,8 +30,10 @@ public sealed class NoteDraft : INotifyPropertyChanged
     public DateTimeOffset ModifiedAt { get; private set; }
     public long EditVersion { get; private set; }
     public bool IsClosed { get; private set; }
+    public string Mode=>mode;
+    public StyledDocument? Document=>document;
     public string Title { get => title; set => Edit(ref title, value); }
-    public string Text { get => text; set => Edit(ref text, value); }
+    public string Text { get => text; set {if(mode=="rich")throw new InvalidOperationException("Rich content must be edited as a complete document");Edit(ref text, value);} }
     public bool Important { get => metadata.Important; set => SetMetadata(metadata with { Important = value }); }
     public bool Favorite { get => metadata.Favorite; set => SetMetadata(metadata with { Favorite = value }); }
     public bool Pinned { get => metadata.Pinned; set => SetMetadata(metadata with { Pinned = value }); }
@@ -54,11 +59,11 @@ public sealed class NoteDraft : INotifyPropertyChanged
     internal void StageEvent(StoredNote source)
     {
         if (IsClosed) throw new InvalidOperationException("Editing session is closed");
-        title = source.Title; text = source.Text; metadata = source.Metadata; ModifiedAt = source.ModifiedAt; EditVersion++;
+        title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document; ModifiedAt = source.ModifiedAt; EditVersion++;
     }
     internal void PublishEvent()
     {
-        foreach (var property in new[] { nameof(Title), nameof(Text), nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color), nameof(ModifiedAt), nameof(EditVersion) }) Notify(property);
+        foreach (var property in new[] { nameof(Title), nameof(Text),nameof(Mode),nameof(Document), nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color), nameof(ModifiedAt), nameof(EditVersion) }) Notify(property);
     }
     private void Advance()
     {
@@ -66,8 +71,8 @@ public sealed class NoteDraft : INotifyPropertyChanged
     }
     internal void Close()
     {
-        IsClosed = true; title = text = ""; metadata = new();
-        Notify(nameof(IsClosed)); Notify(nameof(Title)); Notify(nameof(Text)); Notify(nameof(Metadata));
+        IsClosed = true; title = text = ""; metadata = new();mode="plain";document=null;
+        Notify(nameof(IsClosed)); Notify(nameof(Title)); Notify(nameof(Text)); Notify(nameof(Metadata));Notify(nameof(Mode));Notify(nameof(Document));
     }
     private void Notify(string? property) => PropertyChanged?.Invoke(this, new(property));
 }

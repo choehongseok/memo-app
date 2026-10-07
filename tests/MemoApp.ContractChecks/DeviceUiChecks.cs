@@ -19,7 +19,7 @@ internal static class DeviceUiChecks
         workspace.SetUiPreferences(profile,new(true,18,1.25));
         var layout=new StoredWindowLayout("memo",note.Id,"SYNTHETIC_MONITOR",0.2,0.3,360,400,144,true,true,0.8,true,true);
         workspace.SetWindowLayout(profile,layout);var snapshot=workspace.Capture();
-        VaultChecks.Require(snapshot.SchemaVersion==3 && snapshot.UiDevices.Length==1 && snapshot.Notes[0]==before.Notes[0] && snapshot.History.Length==0 && note.EditVersion==2,"layout/preferences must not alter content revision, timestamps or draft version");
+        VaultChecks.Require(snapshot.SchemaVersion==4 && snapshot.UiDevices.Length==1 && snapshot.Notes[0]==before.Notes[0] && snapshot.History.Length==0 && note.EditVersion==2,"layout/preferences must not alter content revision, timestamps or draft version");
         VaultChecks.Require(workspace.GetUiDevice(other).Windows.Length==0 && !workspace.GetUiDevice(other).Preferences.DarkMode,"other device profile must not inherit windows/preferences");
         VaultChecks.ExpectFailure(()=>workspace.SetWindowLayout(profile,layout with{NoteId=Guid.NewGuid()}),"dangling layout note reject");
         VaultChecks.ExpectFailure(()=>workspace.SetWindowLayout(profile,layout with{X=double.NaN}),"nonfinite layout reject");
@@ -65,9 +65,10 @@ internal static class DeviceUiChecks
                 var restored=new EditingWorkspace(TimeProvider.System,reopened.Loaded);
                 VaultChecks.Require(restored.GetUiDevice(profile).Windows.Single()==layout && restored.GetUiDevice(profile).Preferences.FontSize==18,"real encrypted device restart");
             }
-            var legacy=before with{SchemaVersion=2};var payload=JsonSerializer.SerializeToNode(legacy,VaultEnvelope.JsonOptions)!.AsObject();payload.Remove("uiDevices");
+            var oldRevision=Guid.NewGuid();var oldFolder=Guid.NewGuid();var oldTag=Guid.NewGuid();var oldMeta=before.Notes[0].Metadata with{FolderId=oldFolder,TagIds=[oldTag]};
+            var legacy=before with{SchemaVersion=2,Notes=[before.Notes[0] with{Parents=[oldRevision],Metadata=oldMeta}],History=[new(note.Id,oldRevision,[],note.ModifiedAt,"old title","LEGACY_V2_HISTORY"){Metadata=oldMeta}],Folders=[new(oldFolder,null,"legacy2 folder")],Tags=[new(oldTag,"legacy2 tag")]};var payload=JsonSerializer.SerializeToNode(legacy,VaultEnvelope.JsonOptions)!.AsObject();payload.Remove("uiDevices");Schema2Checks.StripDocumentFields(payload);
             var legacyRoot=Path.Combine(root,"legacy2");Directory.CreateDirectory(legacyRoot);var original=Schema2Checks.Encode(payload,secret);File.WriteAllBytes(Path.Combine(legacyRoot,"current.vault"),original);
-            using(var session=new SaveCoordinator(EncryptedVault.Open(legacyRoot,secret),TimeProvider.System)){VaultChecks.Require(session.IsDirty && await session.SaveAsync(),"schema2 to3 migration save");await session.LockAsync();}
+            using(var session=new SaveCoordinator(EncryptedVault.Open(legacyRoot,secret),TimeProvider.System)){VaultChecks.Require(session.Workspace.Notes.Single().Mode=="plain" && session.Workspace.Notes.Single().Document is null && session.Workspace.Capture().History.Single().Text=="LEGACY_V2_HISTORY" && session.Workspace.Capture().History.Single().Mode=="plain" && session.Workspace.Capture().History.Single().Document is null && session.Workspace.Folders.Single().FolderId==oldFolder && session.Workspace.Tags.Single().TagId==oldTag,"actual legacy2 history and organization load losslessly");VaultChecks.Require(session.IsDirty && await session.SaveAsync(),"schema2 to4 migration save");await session.LockAsync();}
             VaultChecks.Require(Directory.GetFiles(legacyRoot,"previous-*.vault").Any(p=>File.ReadAllBytes(p).SequenceEqual(original)),"schema2 migration exact previous bytes");
             var failedRoot=Path.Combine(root,"failed-legacy2");Directory.CreateDirectory(failedRoot);File.WriteAllBytes(Path.Combine(failedRoot,"current.vault"),original);
             using(var session=new SaveCoordinator(EncryptedVault.Open(failedRoot,secret,files:new VaultFailureChecks.FaultFiles("pre-flush")),TimeProvider.System))
