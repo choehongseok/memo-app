@@ -6,6 +6,7 @@ if (args.Contains("--markdown-only")) { MarkdownChecks.Run(); return; }
 if (args.Contains("--markdown-queue-only")) { await MarkdownQueueChecks.Run(); return; }
 if (args.Contains("--content-version-only")) { ContentVersionChecks.Run(); return; }
 if (args.Contains("--attachment-contract-only")) { AttachmentContractChecks.Run(); return; }
+if (args.Contains("--attachment-cipher-only")) { AttachmentCipherChecks.Run(); return; }
 if (args.Contains("--org-preflight-only")) { OrganizationPreflightChecks.Run(); return; }
 if (args.Contains("--rich-only")) { RichDocumentChecks.Run(); return; }
 if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return; }
@@ -41,6 +42,7 @@ Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roun
 EditingChecks.Run();
 ContentVersionChecks.Run();
 AttachmentContractChecks.Run();
+AttachmentCipherChecks.Run();
 RichDocumentChecks.Run();
 MarkdownChecks.Run();
 await MarkdownQueueChecks.Run();

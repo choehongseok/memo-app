@@ -1,3 +1,11 @@
+# 2026-10-07 첨부 구조계약 Windows green·내부 암호 primitive 진행
+
+첨부 구조계약 fe230811/treeffe1616의 Windows run37639160360 전체SUCCESS: 원문/Python26/safety/build/fullCore/실제WPF/publish PASS, artifact upload skipped·artifacts=[]·기존818a531 시험판 유지. schema5의 immutable object/ref·전체 retained 한도와 legacy1-4 serializer 호환을 검사했지만 실제schema5쓰기/envelope1-v5읽기는 명시차단 중이다.
+
+다음 내부 attachment AES-GCM/HKDF codec은 missing-codec RED 이후 targeted/fullCore 및4프로젝트 crossbuild0경고/오류 PASS. 독립 BCL format reader·0..4MiB 원본bytes/hash·fresh UUID/DEK/wrapnonce·청크/키wrap/ID/root/vault/length/hash/순서/패딩 변조 거절·전검증후 ownedplaintext 반환을 검사했다. 독립 actualdiff 읽기검토에 이 primitive 범위 blocker없음. 영구root anchor/envelope2/첨부 restart·전체백업복구/UI는 아직미구현이다.
+
+134원장82 부분진행/50 미착수/외부형식차단1(N09)/정규화1(M06), 전수완료·사용자수용0 유지. 구조계약과 내부primitive만으로 H01-H09 사용자기능완료를 주장하지 않는다. 독립 Windows과제가 남아 계속진행한다.
+
 # 2026-10-07 서식·안전 Markdown 전체 자동검사 green
 
 code444f5099eb5492e93dc7a01b13d6309dc9ac47e6/tree06ed5cf53fff43c5c0a7e0f82a776b7a2e2b1a10, Windows https://github.com/choehongseok/memo-app/actions/runs/37630275066 전체SUCCESS. 원문/원장/Python24/safety/build/fullCore/actualWPF/publish PASS, artifact upload skipped·artifacts=[]이고 기존 유효818a531 시험판을 유지한다. source134 ID/이름/M06/27,417bytes/SHA256 불변.
