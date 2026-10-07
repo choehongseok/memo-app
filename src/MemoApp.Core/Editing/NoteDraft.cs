@@ -14,7 +14,16 @@ public sealed class NoteDraft : INotifyPropertyChanged
     private StyledDocument? document;
     private ImmutableArray<Guid> attachmentIds=[];
     private NoteMetadata metadata = new();
+    // Inert identity only: consumers may retain this token, never the live draft/event graph.
+    internal object AttachmentReadIdentity { get; } = new();
     public event PropertyChangedEventHandler? PropertyChanged;
+    // Trusted internal revocation only. Never publish UI callbacks from this boundary.
+    internal event Action? AttachmentReadInvalidating;
+    private void InvalidateAttachmentReads()
+    {
+        if (AttachmentReadInvalidating is not { } handlers) return;
+        foreach (Action handler in handlers.GetInvocationList()) { try { handler(); } catch { } }
+    }
     internal NoteDraft(TimeProvider clock, int order = 0)
     {
         this.clock = clock; metadata = new() { Order = order }; Id = Guid.NewGuid(); CreatedAt = ModifiedAt = clock.GetUtcNow();
@@ -51,18 +60,21 @@ public sealed class NoteDraft : INotifyPropertyChanged
     {
         EnsureEditable(); ArgumentNullException.ThrowIfNull(value);
         if (field == value) return;
+        InvalidateAttachmentReads();
         field = value;if(property==nameof(Text))ContentVersion++;Advance(); Notify(property);
     }
     internal void SetMetadata(NoteMetadata value, bool allowTrash = false)
     {
         if (IsClosed || IsDeleted && !allowTrash) throw new InvalidOperationException("Editing session or trash note is closed");
         if (metadata == value) return;
+        InvalidateAttachmentReads();
         metadata = value; Advance();
         foreach (var property in new[] { nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color) }) Notify(property);
     }
     internal void StageEvent(StoredNote source,bool replaceContent=false)
     {
         if (IsClosed) throw new InvalidOperationException("Editing session is closed");
+        InvalidateAttachmentReads();
         if(replaceContent||text!=source.Text||mode!=source.Mode||document!=source.Document||!attachmentIds.SequenceEqual(source.AttachmentIds))ContentVersion++;
         title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds; ModifiedAt = source.ModifiedAt; EditVersion++;
     }
@@ -76,6 +88,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     }
     internal void Close()
     {
+        InvalidateAttachmentReads();
         IsClosed = true;ContentVersion++; title = text = ""; metadata = new();mode="plain";document=null;attachmentIds=[];
         Notify(nameof(IsClosed)); Notify(nameof(Title)); Notify(nameof(Text)); Notify(nameof(Metadata));Notify(nameof(Mode));Notify(nameof(Document));Notify(nameof(AttachmentIds));
     }

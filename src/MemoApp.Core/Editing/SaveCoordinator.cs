@@ -6,6 +6,7 @@ public sealed class SaveCoordinator : IDisposable
 {
     private readonly EncryptedVault vault;
     private readonly TimeProvider clock;
+    private readonly AttachmentReadTracker attachmentReads = new();
     private bool pendingPlaintext;
     private long generation, savedGeneration, preparedGeneration, sessionEpoch;
     private Task<bool> tail = Task.FromResult(true), backupTask = Task.FromResult(true);
@@ -18,6 +19,7 @@ public sealed class SaveCoordinator : IDisposable
         this.vault = vault; this.clock = clock;
         Workspace = new(clock, vault.Loaded);
         Workspace.Changed += WorkspaceChanged;
+        Workspace.AttachmentReadInvalidating += RevokeAttachmentReads;
         if (vault.NeedsInitialSave || vault.Loaded.SchemaVersion < 4) generation = 1;
         Status = generation == 0 ? "저장됨" : "변경됨";
     }
@@ -30,6 +32,8 @@ public sealed class SaveCoordinator : IDisposable
     public string Status { get; private set; }
     public event Action? Conceal;
     public event Action? Changed;
+    public Task WhenAttachmentReadsIdle => attachmentReads.WhenIdle;
+    private void RevokeAttachmentReads(NoteDraft? source) => attachmentReads.Revoke(source?.AttachmentReadIdentity);
     private void WorkspaceChanged()
     {
         if (!IsLocked) { generation++; Status = "변경됨"; Changed?.Invoke(); }
@@ -77,6 +81,35 @@ public sealed class SaveCoordinator : IDisposable
         try{RequireAttachmentSource(note,expectedVersion,epoch);returned=true;return plaintext;}
         finally{if(!returned)System.Security.Cryptography.CryptographicOperations.ZeroMemory(plaintext);}
     }
+    public AttachmentReadLease CreateAttachmentReadLease(NoteDraft note, Guid id, long expectedVersion)
+    {
+        long epoch = sessionEpoch;
+        RequireAttachmentSource(note, expectedVersion, epoch);
+        var item = Workspace.AttachmentObject(note, id);
+        var slot = attachmentReads.Reserve(note.AttachmentReadIdentity); // No draft/event/key-owner reference escapes.
+        byte[]? plaintext = null;
+        AttachmentReadLease? lease = null;
+        bool returned = false;
+        try
+        {
+            RequireAttachmentSource(note, expectedVersion, epoch);
+            if (!ReferenceEquals(item, Workspace.AttachmentObject(note, id))) throw new InvalidOperationException("Attachment object changed");
+            plaintext = vault.DecryptAttachment(item);
+            RequireAttachmentSource(note, expectedVersion, epoch);
+            if (!ReferenceEquals(item, Workspace.AttachmentObject(note, id))) throw new InvalidOperationException("Attachment object changed");
+            lease = new AttachmentReadLease(plaintext, slot); plaintext = null;
+            if (!slot.Bind(lease)) throw new InvalidOperationException("Pending attachment read was revoked");
+            returned = true; return lease;
+        }
+        finally
+        {
+            if (!returned)
+            {
+                if (plaintext is not null) System.Security.Cryptography.CryptographicOperations.ZeroMemory(plaintext);
+                lease?.Dispose(); slot.Finish();
+            }
+        }
+    }
     internal Task<bool> EnsureAttachmentRootAsync()
     {
         if(disposed||IsLocked||vault.IsFaulted)return Task.FromResult(false);
@@ -111,6 +144,7 @@ public sealed class SaveCoordinator : IDisposable
             catch { success = false; }
         }
         if (success && ReferenceEquals(pendingCipher, prepared)) pendingCipher = null;
+        if (!success) attachmentReads.Revoke(); // Fault revocation precedes public status callbacks.
         if (!disposed && capturedEpoch == sessionEpoch && !IsLocked)
         {
             if (success) savedGeneration = Math.Max(savedGeneration, capturedGeneration);
@@ -127,6 +161,7 @@ public sealed class SaveCoordinator : IDisposable
             return settled && !pendingPlaintext && pendingCipher is null;
         }
         IsLocked = true; sessionEpoch++;
+        attachmentReads.Revoke();
         vault.RevokeAttachmentUse(); // Recovery-held keys do not authorize attachment plaintext/sealing.
         // Conceal all native windows and block input before any save, await, or key-release wait.
         Conceal?.Invoke();
@@ -168,6 +203,7 @@ public sealed class SaveCoordinator : IDisposable
         var resumed=new EditingWorkspace(clock,hiddenBasis,hiddenPlaintext);
         try{vault.ResumeAttachmentUse(secret,hiddenPlaintext);}catch{resumed.Clear();throw;}
         Workspace=resumed;Workspace.Changed += WorkspaceChanged;
+        Workspace.AttachmentReadInvalidating += RevokeAttachmentReads;
         hiddenPlaintext = hiddenBasis = null; pendingPlaintext = false; IsLocked = false; sessionEpoch++;
         preparedGeneration = savedGeneration;
         Status = "복구 대기 변경 재개 — 저장되지 않음"; Changed?.Invoke();
@@ -196,7 +232,8 @@ public sealed class SaveCoordinator : IDisposable
     {
         if (IsBusy) throw new InvalidOperationException("Await writes before disposing the writer");
         disposed = true; IsLocked = true; sessionEpoch++;
-        Workspace.Clear(); hiddenPlaintext = hiddenBasis = null; pendingCipher = null;
-        vault.Dispose();
+        attachmentReads.Revoke();
+        try { Workspace.Clear(); }
+        finally { hiddenPlaintext = hiddenBasis = null; pendingCipher = null; vault.Dispose(); }
     }
 }

@@ -1,3 +1,7 @@
+# 2026-10-07 내부 첨부 바이트 lease 진행
+
+이미지 미리보기 준비용 Core lease를 구현했다. 정확한 암호 객체를 확인하고 단일 사용·2개 용량·source/잠금/fault/해제 시 권한 폐기·실행 중 callback 종료 후 실제 buffer zero를 검사했다. 독립 코드 읽기에서 NoteDraft의 event graph를 통한 키 소유자 잔류를 발견했고, 실제 RED 회귀 뒤 inert token으로 수정했다. native decoder/preview UI는 아직 연결하지 않았고 H08 완료를 주장하지 않는다. 후속 Windows CI는 별도 확인하며 기존 85부분/47미착수/N09차단1/M06정규화1/134개·사용자수용0을 유지한다.
+
 # 2026-10-07 첨부 opaque UI Windows green·내부 PNG profile 진행
 
 원격bcdb200/treeaecb7168·Windows37683986399 전체SUCCESS: 원문/Python26/safety/build0/fullCore·새Main+Sticky/직접첨부WPF·정확원본bytes재실행·publish PASS, upload skipped·기존trial유지. 85부분/47미착수/2특수·전체134/사용자수용0 유지.

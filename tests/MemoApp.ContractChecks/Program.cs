@@ -14,6 +14,7 @@ if (args.Contains("--attachment-mutation-only")) { await AttachmentMutationCheck
 if (args.Contains("--attachment-source-only")) { AttachmentSourceChecks.Run(); return; }
 if (args.Contains("--attachment-metadata-only")) { AttachmentMetadataChecks.Run(); return; }
 if (args.Contains("--png-profile-only")) { PngProfileChecks.Run(); return; }
+if (args.Contains("--attachment-lease-only")) { await AttachmentLeaseChecks.Run(); return; }
 if (args.Contains("--org-preflight-only")) { OrganizationPreflightChecks.Run(); return; }
 if (args.Contains("--rich-only")) { RichDocumentChecks.Run(); return; }
 if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return; }
@@ -56,6 +57,7 @@ await AttachmentMutationChecks.Run();
 AttachmentSourceChecks.Run();
 AttachmentMetadataChecks.Run();
 PngProfileChecks.Run();
+await AttachmentLeaseChecks.Run();
 RichDocumentChecks.Run();
 MarkdownChecks.Run();
 await MarkdownQueueChecks.Run();

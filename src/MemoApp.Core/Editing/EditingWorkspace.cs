@@ -36,6 +36,12 @@ public sealed class EditingWorkspace
     public IReadOnlyList<StoredFolder> Folders => folders.AsReadOnly();
     public IReadOnlyList<StoredTag> Tags => tags.AsReadOnly();
     public event Action? Changed;
+    internal event Action<NoteDraft?>? AttachmentReadInvalidating;
+    private void InvalidateAttachmentReads(NoteDraft? source)
+    {
+        if (AttachmentReadInvalidating is not { } handlers) return;
+        foreach (Action<NoteDraft?> handler in handlers.GetInvocationList()) { try { handler(source); } catch { } }
+    }
     public void SetRichDocument(NoteDraft note,StyledDocument document)
     {
         RequireNote(note);if(note.Mode!="rich"||note.Document is null||!RichDocumentCodec.Inspect(note.Document).Supported)throw new InvalidOperationException("Rich original is not editable");
@@ -92,6 +98,7 @@ public sealed class EditingWorkspace
     }
     private void AddDraft(NoteDraft note)
     {
+        note.AttachmentReadInvalidating += () => InvalidateAttachmentReads(note);
         note.PropertyChanged += (_, e) => { if (!closed && e.PropertyName == nameof(NoteDraft.EditVersion)) Changed?.Invoke(); };
         notes.Register(note);
     }
@@ -283,12 +290,14 @@ public sealed class EditingWorkspace
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
-        EnsureOpen(); basis = snapshot;attachmentRootId=snapshot.AttachmentRootId;attachmentObjects=snapshot.AttachmentObjects;
+        EnsureOpen(); InvalidateAttachmentReads(null);
+        basis = snapshot;attachmentRootId=snapshot.AttachmentRootId;attachmentObjects=snapshot.AttachmentObjects;
         foreach (var draft in notes) acceptedVersions[draft.Id] = draft.EditVersion;
     }
     public void Clear()
     {
         if (closed) return;
+        InvalidateAttachmentReads(null);
         closed = true; foreach (var note in notes.ToArray()) note.Close();
         notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear();attachmentRootId=Guid.Empty;attachmentObjects=[]; basis = new(4, Guid.Empty, []);
     }
