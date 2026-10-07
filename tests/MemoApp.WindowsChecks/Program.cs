@@ -139,6 +139,7 @@ internal static class Program
             Require(first.Text == "공유 포스트잇 수정" && Control<TextBox>(main, "BodyEditor").Text == first.Text, "sticky/management shared binding failed");
             Invoke(main,"NewNote_Click", main, new RoutedEventArgs()); await Idle();
             var other = session.Workspace.Notes.Single(n=>n.Id!=first.Id); EditText(Control<TextBox>(main,"TitleEditor"),"합성 순서 메모"); await Idle();
+            Require(Control<ListBox>(main,"NotesList").SelectionMode==SelectionMode.Extended,"batch list must allow explicit Extended selection");
             Control<ComboBox>(main,"SortFilter").SelectedIndex=3; Invoke(main,"OrderUp_Click",main,new RoutedEventArgs()); await Idle();
             Require(ReferenceEquals(Control<ListBox>(main,"NotesList").Items[0],other), "UI custom order up action failed");
             session.Workspace.DeleteNote(other); Invoke(main,"RefreshNotes",first); await Idle();

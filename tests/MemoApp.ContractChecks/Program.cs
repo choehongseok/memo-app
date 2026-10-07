@@ -2,6 +2,8 @@ using System.Text.Json;
 using MemoApp.Core;
 
 if (VaultFailureChecks.TryWorker(args)) return;
+if (args.Contains("--batch-only")) { await BatchChecks.Run(); return; }
+if (args.Contains("--diff-only")) { HistoryDiffChecks.Run(); return; }
 if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
 if (args.Contains("--startup-only")) { StartupChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
@@ -32,6 +34,8 @@ Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roun
 EditingChecks.Run();
 SearchChecks.Run();
 OrganizationChecks.Run();
+await BatchChecks.Run();
+HistoryDiffChecks.Run();
 await Schema2Checks.Run();
 await BackupChecks.Run();
 TextTransferChecks.Run();

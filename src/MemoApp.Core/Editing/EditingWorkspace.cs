@@ -143,6 +143,27 @@ public sealed class EditingWorkspace
     {
         RequireNote(note); ApplyEvent(note, note.Title, note.Text, note.Metadata with { Deleted = true });
     }
+    private NoteDraft[] BatchSelection(IEnumerable<NoteDraft> selected,bool deleted)
+    {
+        EnsureOpen();ArgumentNullException.ThrowIfNull(selected);var batch=selected.Take(101).ToArray();
+        if(batch.Length is <1 or >100 || batch.Any(n=>n is null) || batch.Select(n=>n.Id).Distinct().Count()!=batch.Length)throw new ArgumentException("Invalid batch selection/count");
+        foreach(var note in batch){RequireNote(note,true);if(note.IsDeleted!=deleted)throw new InvalidOperationException("Batch contains incompatible note states");}
+        return batch;
+    }
+    public void MoveNotes(IEnumerable<NoteDraft> selected,Guid? folderId)
+    {
+        var batch=BatchSelection(selected,false);
+        if(folderId is Guid id && folders.All(f=>f.FolderId!=id))throw new ArgumentException("Unknown batch target folder");
+        ApplyEvents(batch.Where(n=>n.FolderId!=folderId).ToDictionary(n=>n.Id,n=>(n.Title,n.Text,n.Metadata with{FolderId=folderId})));
+    }
+    public void DeleteNotes(IEnumerable<NoteDraft> selected)
+    {
+        var batch=BatchSelection(selected,false);ApplyEvents(batch.ToDictionary(n=>n.Id,n=>(n.Title,n.Text,n.Metadata with{Deleted=true})));
+    }
+    public void RestoreNotes(IEnumerable<NoteDraft> selected)
+    {
+        var batch=BatchSelection(selected,true);ApplyEvents(batch.ToDictionary(n=>n.Id,n=>(n.Title,n.Text,n.Metadata with{Deleted=false})));
+    }
     public void RestoreNote(NoteDraft note)
     {
         RequireNote(note, true);

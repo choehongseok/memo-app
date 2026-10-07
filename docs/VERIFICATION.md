@@ -94,3 +94,12 @@ ZIP 결과: 63,192,131 bytes, SHA256 `744dec678cc0088b97056ab5511b7a7c4495b03650
 - portable 명시선택/unknownargs/기존기본root·linked프로그램/Data 거절PASS. 실제USB제거/권한제한/다른Windows계정미검증
 - 기존cryptographic/mutation/processKill/generation/epoch/hiddenrecovery 회귀PASS; 원문134ID·Python6·safety·build0warning/error·publish/uploadPASS
 - 실제diff 독립읽기검토에서5P1발견후수정. 검토자가 테스트를독립실행한것은아님. malicious concurrent reparse 교체의handle방어 및 이미시작한평문Write회수 보장없음
+
+
+## 2026-10-07 a91ca5e 장치별 UI 실제 Windows 검증
+- Linux Release 단일노드 solution/Core 전체 0경고/오류 PASS. strict authenticated v3 required/type/unknown/duplicate/emptyID/null/defaultImmutable/ranges/profile32/layout102; unknownnote/NaN/wholebytebudget 거절후 fullsnapshot/events/version 불변; UI만변경시 note revision/CreatedAt/ModifiedAt/history 불변; dirty draft basis 미승격/hidden UI전체복구 PASS
+- 실제 v2→v3 migration exact previous ciphertext와 pre-flush 실패 original current byte보존 PASS; v1 기존회귀도 PASS. localUI UUID restart/concurrent8/smallcorrupt preserved/ancestor+leaf Linux symlink拒 PASS
+- negative-origin/small-target/144·192DPI puregeometry가 provisional전체fit와 한 번 DIP→nativepixel 변환/clamp PASS
+- https://github.com/choehongseok/memo-app/actions/runs/37587829442 실제 Windows Server2022 전체SUCCESS. app/check-host 같은 manifest와 native HWND PerMonitorV2 assertion PASS; native window restore/resize/store/arrange workarea, same-turn new+closed-open memo/widget→lock→encrypted reopen, explicit user-close versus conceal, fold unfoldedsize/position/topmost/opacity, native hook SC_MOVE/SC_SIZE/SC_MAXIMIZE codepath, hide/show, theme/font/scale history·clock 적용, oldcontroller guard/anotherprofile isolation PASS
+- 물리 키보드/OS 메뉴/Snap·혼합DPI 실제모니터·IME/OS SessionLock/ACL/USB는 해당 자동시험이 증명하지 않는다. 처음3 UI correctness 지적은 독립 읽기 검토에서 발견후 수정됐고 검토자는 실행하지 않았다
+- 원문byte/hash/134ID/Python6/비밀휴리스틱/build/publish/upload PASS. artifact11467587240,65026133bytes,SHA256 b57371769f8516719b5093e65d9e2769cb53d6bff589640f2561cc0948d27480,expires2026-10-14T07:32:16Z. 미서명 합성시험판이며 전문보안감사/전체제품수용이 아니다

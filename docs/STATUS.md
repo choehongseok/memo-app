@@ -1,3 +1,12 @@
+# 2026-10-07 장치별 창·표시 설정·날짜 위젯 후속본
+최신 코드 a91ca5e1a8b93df108d526d70cb1909ce2e6ba25, local9d66d24와 tree ddd71137718515d94e3384e3b62ad33e426ea740 동일. development/stage-1/draft PR1만 갱신했으며 원문134 ID/byte/hash/M06 유지.
+
+Windows CI https://github.com/choehongseok/memo-app/actions/runs/37587829442 전체SUCCESS: build0경고/오류, Core 전체, 새 실제 WPF/Native HWND PerMonitorV2/위치·크기·정렬/같은turn열기→잠금→재열기/사용자닫기와concel차이/위젯/테마·글자·배율/history·clock/늦은 이전controller차단, source/Python6/safety/publish/upload PASS. artifact11467587240,65026133bytes,SHA256 b57371769f8516719b5093e65d9e2769cb53d6bff589640f2561cc0948d27480,expires2026-10-14T07:32:16Z.
+
+암호 schema3 UI profile32/창102, note/history와 분리된 장치별 위치·DIP·열림의도·fold/position/topmost/opacity·global preferences. per-account 비밀 아닌32byte 표시 UUID는 portable vault와 분리. v1/v2 첫v3저장 original ciphertext previous 보존 및 flush실패 원본유지, dirty-content basis 미승격/숨겨진복구 UI 전체보존/엄격필드·bounds·전체byte-budget/identifier 경쟁·손상·link거부 PASS. 독립 읽기 검토에서3 UI배치문제 및 표시설정누락을 발견해 수정; 검토자 독립실행/전문감사는 아님.
+
+물리 혼합DPI/다중모니터분리/Windows Snap·실제키보드 위치고정/IME/OS SessionLock/다른계정ACL은 미검증. 날짜달력·시계는 일정/알림 기능이 아니다. 전체134/사용자수용 미완료; 다음 독립 일괄처리/이력비교를 이어간다. Android SDK 약관·신규권한 경계는 관련 단계 전 확인하며 Windows 작업을 조기중단하지 않는다.
+
 # 2026-10-07 TXT/포터블/순서 후속본 및 실제 Windows 제어검사 성공
 최신 코드4af72d685b6c1dc669163bfdb986ae2e1298eee2 (로컬4bc0f9d와 tree6b427ef7 동일). 같은 development/stage-1에 공식 connector의 non-force expected-head 저장 및 일반 Git fetch/tree 대조로 확인. 원격main/visibility/인증설정 변경 없음. 로컬 이전커밋은 archive branch/bundle로 보존.
 

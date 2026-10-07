@@ -391,34 +391,64 @@
       "name": "재실행 후 메모 위치 기억",
       "normalized": "재실행 후 메모 위치 기억",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B02: 재실행 후 메모 위치 기억 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "종료·재실행 후 위치가 유지되고 모니터 분리 시 화면 안으로 복구한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B03",
       "name": "메모 창 크기 기억",
       "normalized": "메모 창 크기 기억",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B03: 메모 창 크기 기억 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B04",
@@ -435,7 +465,13 @@
       "implementation_locations": [
         "src/MemoApp.Windows/StickyNoteWindow.xaml",
         "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
-        "src/MemoApp.Core/Editing/NoteDraft.cs"
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
       ],
       "planned_module": "DesktopNotes",
       "test_evidence": [
@@ -452,9 +488,16 @@
           "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12",
           "command": "Windows build + MemoApp.ContractChecks + MemoApp.WindowsChecks + publish; https://github.com/choehongseok/memo-app/actions/runs/37581724510",
           "result": "PASS source/safety/Python6/actual encrypted-file/failure/process-kill/organization/strict TXT/atomic import-order/portable path/control-binding-search-trash-history-sticky/lock-undo/grapheme/custom-order checks. Not IME/actual SessionLock/ACL/physical drag/user acceptance"
+        },
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
         }
       ],
-      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B05",
@@ -471,7 +514,13 @@
       "implementation_locations": [
         "src/MemoApp.Windows/StickyNoteWindow.xaml",
         "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
-        "src/MemoApp.Core/Editing/NoteDraft.cs"
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
       ],
       "planned_module": "DesktopNotes",
       "test_evidence": [
@@ -481,9 +530,16 @@
           "environment": "Linux cloud x86_64 / SDK10.0.401",
           "command": "dotnet build MemoApp.slnx -c Release -m:1",
           "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        },
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
         }
       ],
-      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B06",
@@ -500,7 +556,13 @@
       "implementation_locations": [
         "src/MemoApp.Windows/StickyNoteWindow.xaml",
         "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
-        "src/MemoApp.Core/Editing/NoteDraft.cs"
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
       ],
       "planned_module": "DesktopNotes",
       "test_evidence": [
@@ -510,9 +572,16 @@
           "environment": "Linux cloud x86_64 / SDK10.0.401",
           "command": "dotnet build MemoApp.slnx -c Release -m:1",
           "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        },
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
         }
       ],
-      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B07",
@@ -565,68 +634,128 @@
       "name": "여러 메모 한 번에 숨기기·표시하기",
       "normalized": "여러 메모 한 번에 숨기기·표시하기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B09: 여러 메모 한 번에 숨기기·표시하기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B10",
       "name": "메모 화면 위치 자동 정렬",
       "normalized": "메모 화면 위치 자동 정렬",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B10: 메모 화면 위치 자동 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B11",
       "name": "여러 모니터에서 메모 위치 기억",
       "normalized": "여러 모니터에서 메모 위치 기억",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B11: 여러 모니터에서 메모 위치 기억 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "다중 모니터 배치·DPI 변경·분리 후 모든 창이 접근 가능하다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B12",
       "name": "특정 메모를 바탕화면에 고정",
       "normalized": "특정 메모를 바탕화면에 고정",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B12: 특정 메모를 바탕화면에 고정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "위치 고정은 B06 항상 위 및 D08 목록 고정과 독립적이다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "B13",
@@ -3115,34 +3244,66 @@
       "name": "바탕화면 달력",
       "normalized": "바탕화면 달력",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "R01: 바탕화면 달력 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "날짜 확인 위젯이며 일정/할 일 기능을 추가하지 않는다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "src/MemoApp.Windows/DateWidgetWindow.cs"
+      ],
       "planned_module": "Widgets",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "R02",
       "name": "바탕화면 시계",
       "normalized": "바탕화면 시계",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "R02: 바탕화면 시계 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "src/MemoApp.Windows/DateWidgetWindow.cs"
+      ],
       "planned_module": "Widgets",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "S01",
@@ -3239,51 +3400,96 @@
       "name": "다크모드",
       "normalized": "다크모드",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "S04: 다크모드 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "WindowsUI",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "S05",
       "name": "글자 크기 전체 조절",
       "normalized": "글자 크기 전체 조절",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "S05: 글자 크기 전체 조절 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "WindowsUI",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "S06",
       "name": "화면 배율 조절",
       "normalized": "화면 배율 조절",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "S06: 화면 배율 조절 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
       "planned_module": "WindowsUI",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-device-ui-and-core",
+          "commit": "a91ca5e1a8b93df108d526d70cb1909ce2e6ba25",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12; Linux Core",
+          "command": "Release build + MemoApp.ContractChecks + actual MemoApp.WindowsChecks + self-contained publish; https://github.com/choehongseok/memo-app/actions/runs/37587829442",
+          "result": "PASS strict authenticated schema3/migration-fault/hidden recovery/device isolation/content revision invariance/identifier races and bounds; actual PerMonitorV2 HWND/native placement-arrange/fold-position flags/hook-command path/open-lock-reopen/user-close/widgets/global preferences/stale callbacks. Not physical mixed-DPI/multimonitor/IME/OS SessionLock/ACL or complete feature acceptance"
+        }
+      ],
+      "blocking_reason": "장치별 암호 창상태/설정 및 날짜표시 구현과 실제 Windows 자동제어 검사. 물리 혼합DPI/다중모니터/키보드Snap/IME/OS 잠금/ACL·사용자수용 및 전체 ID 수용조건은 미검증."
     },
     {
       "id": "T08",
