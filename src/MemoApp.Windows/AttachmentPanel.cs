@@ -110,6 +110,9 @@ public sealed class AttachmentPanel : UserControl,IDisposable
     {
         if(IsDisposed)return;IsDisposed=true;var active=session;var source=note;session=null;note=null;current=null;notice=null;refreshPending=false;
         if(active is not null){active.Workspace.Changed-=Refresh;active.Conceal-=Dispose;}if(source is not null)source.PropertyChanged-=NoteChanged;
+        // Conceal this host before native collection callbacks; parents also conceal independently.
+        try{Visibility=Visibility.Collapsed;}catch{}
+        try{Content=null;}catch{}
         cancellation.Cancel();ClearLabels();add.Click-=AddClicked;detach.Click-=DetachClicked;FilesList.SelectionChanged-=SelectionChanged;cancellation.Dispose();
     }
 }

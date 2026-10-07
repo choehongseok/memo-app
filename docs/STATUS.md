@@ -1,3 +1,7 @@
+# 2026-10-07 첨부 파일UI Windows 경계 RED 수정
+
+원격5f7cc5a/tree1385706·Windows37676300144: source/Python26/build0/fullCore·이전WPF전부PASS. 직접첨부취소/repeated/원본hash/분리이력/네이티브clear예외·재진입·키해제PASS뒤 자체hide/detach RED, production은multi선택후명시singleton재선택host없음RED. 패널권한폐기후자체collapse/detach와RefreshNotes의정확캡처선택재구성을최소수정해crossbuild0경고오류; 다음Windows green대기. 새Win junction/reserved/ADS거절PASS. 85부분/47미착수/2특수·사용자수용0 유지.
+
 # 2026-10-07 로컬 파일첨부 Main+Sticky 연결·새 Windows 시험 대기
 
 원격0f405f9/tree029ca037·Windows37672914079에서 source/Python26/build0/fullCore/기존WPF전부PASS, 새missing-panel/host만예상RED·publish/upload skipped. 메타투영·이름확장자NFC검색/mid-read취소·실제inputzero는 missingAPI RED→targeted/fullCorePASS. 새Main+Sticky opaque패널·같은source권한·repeated/cancel/잠금/selection/nativeclear회귀 crossbuild0경고오류, 독립읽기 필수blocker없음(실행아님). standalone자체hide/detach 새조건은RED-stage로실제Windows관측후보강예정. H04/H05/H09부분진행85/미착수47/N09차단1/M06정규화1/전수완료·사용자수용0. 이미지·파일실행·평문export아직미연결이며계속개발.

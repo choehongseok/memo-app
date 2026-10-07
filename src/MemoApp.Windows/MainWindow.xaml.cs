@@ -427,6 +427,9 @@ public partial class MainWindow : Window
         var results = NoteSearch.Find(active.Workspace, options);
         loadingUi = true;
         NotesList.ItemsSource = results;
+        // Selector can retain matching selected objects when ItemsSource is replaced.
+        // Rebuild exactly the captured surviving set (or explicit preferred singleton).
+        NotesList.SelectedItems.Clear();
         foreach(var note in selected.Where(results.Contains))NotesList.SelectedItems.Add(note);
         if(NotesList.SelectedItems.Count==0)NotesList.SelectedItem = preferred is not null && results.Contains(preferred) ? preferred : results.FirstOrDefault();
         loadingUi = false; SelectEditor();
