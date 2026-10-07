@@ -22,11 +22,26 @@ internal static class Program
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {
-            try { await RichViewsRun();await Run(); await BatchFailureRun();await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
+            try { await RichPasteRaceRun();await RichViewsRun();await RichFidelityRun();await RichWindowsIntegrationRun();await Run(); await BatchFailureRun();await DeviceWindowsRun();Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)"); result = 0; }
             catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }
         };
         app.Run(); return result;
+    }
+    private sealed class DelayedTextData(Action access):IDataObject
+    {
+        public object GetData(string format,bool autoConvert){access();return "LATE_SYNTHETIC_PLAINTEXT";}
+        public object GetData(string format)=>GetData(format,false);public object GetData(Type format)=>GetData(format.FullName!,false);
+        public bool GetDataPresent(string format,bool autoConvert)=>format==DataFormats.UnicodeText&&!autoConvert;
+        public bool GetDataPresent(string format)=>GetDataPresent(format,false);public bool GetDataPresent(Type format)=>false;
+        public string[] GetFormats(bool autoConvert)=>[DataFormats.UnicodeText];public string[] GetFormats()=>GetFormats(false);
+        public void SetData(string format,object data,bool autoConvert)=>throw new NotSupportedException();public void SetData(string format,object data)=>throw new NotSupportedException();public void SetData(Type format,object data)=>throw new NotSupportedException();public void SetData(object data)=>throw new NotSupportedException();
+    }
+    private static async Task RichPasteRaceRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="race baseline";workspace.ConvertMode(note,"rich",true);string before=note.Document!.SourceJson;bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();
+        view.PasteData(new DelayedTextData(()=>{live=false;view.ClearSensitive();}));await Idle();Require(view.RichInput.Document.Blocks.Count==0 && !view.RichInput.CanUndo && note.Document!.SourceJson==before,"delayed OLE getter cannot reinsert plaintext into concealed/disposed view");window.Close();workspace.Clear();
+        workspace=new EditingWorkspace(TimeProvider.System);note=workspace.CreateNote();workspace.ConvertMode(note,"rich",true);live=true;using var changedView=new StructuredNoteEditor(workspace,note,()=>live,_=>{});window=new Window{Content=changedView,Width=400,Height=300};window.Show();await Idle();changedView.PasteData(new DelayedTextData(()=>workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("CONCURRENT_CANONICAL_CHANGE"))));await Idle();Require(note.Text=="CONCURRENT_CANONICAL_CHANGE","delayed OLE getter must not paste into newer canonical source/version");live=false;changedView.ClearSensitive();workspace.Clear();window.Close();
     }
     private static async Task RichViewsRun()
     {
@@ -43,6 +58,44 @@ internal static class Program
         active=false;first.ClearSensitive();second.ClearSensitive();workspace.Clear();await Idle();
         Require(first.RichInput.Document.Blocks.Count==0 && second.RichInput.Document.Blocks.Count==0 && !first.RichInput.CanUndo && !second.RichInput.CanUndo && note.Document is null,"conceal/clear cannot save empty projection and must remove document/source/Undo");
         left.Close();right.Close();
+    }
+    private static async Task RichFidelityRun()
+    {
+        const string source="""
+        {"nodes":[{"type":"paragraph","runs":[{"text":"CR\r\nLF\t한글👩‍💻é","bold":true,"underline":true,"strike":true,"fontSize":22,"fontFamily":"Segoe UI","foreground":"#123456","background":"#ffee00","link":"https://example.invalid/inert?q=synthetic"}]},{"type":"checklist","items":[{"checked":false,"runs":[{"text":"[x] literal body"}]}]},{"type":"list","ordered":true,"items":[{"runs":[{"text":"one"}]},{"runs":[{"text":"two"}]}]},{"type":"table","rows":[[{"runs":[{"text":"cell1"}]},{"runs":[{"text":"cell2","bold":true}]}]]},{"type":"paragraph","runs":[{"text":""}]}]}
+        """;
+        var document=new StyledDocument(1,source);var info=RichDocumentCodec.Inspect(document);var now=DateTimeOffset.UtcNow;var snapshot=new VaultSnapshot(4,Guid.NewGuid(),[new(Guid.NewGuid(),Guid.NewGuid(),[],now,now,"fidelity",info.Text!,"rich"){Document=document}]);var workspace=new EditingWorkspace(TimeProvider.System,snapshot);var note=workspace.Notes.Single();bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=500,Height=400};window.Show();await Idle();
+        Require(!view.RichInput.IsReadOnly && RichDocumentCodec.Inspect((StyledDocument)Invoke(view,"CaptureDocument")!).Text==info.Text,"all supported nodes/styles/link/CRLF/tab/Unicode/trailing paragraph must roundtrip before editing");
+        view.ApplyPreferences(new(true,24,1.5));((Paragraph)view.RichInput.Document.Blocks.LastBlock).Inlines.Add(new Run("after preferences"));await Idle();
+        using(var saved=JsonDocument.Parse(note.Document!.SourceJson))
+        {
+            var first=saved.RootElement.GetProperty("nodes")[0].GetProperty("runs")[0];Require(first.GetProperty("foreground").GetString()!.EndsWith("123456") && first.GetProperty("background").GetString()!.EndsWith("FFEE00") && first.GetProperty("fontSize").GetDouble()==22 && first.GetProperty("fontFamily").GetString()=="Segoe UI" && first.GetProperty("link").GetString()=="https://example.invalid/inert?q=synthetic","preference then first native typing preserves canonical explicit style/link");
+            var fresh=saved.RootElement.GetProperty("nodes")[4].GetProperty("runs").EnumerateArray().Last();Require(!fresh.TryGetProperty("foreground",out _)&&!fresh.TryGetProperty("fontSize",out _)&&!fresh.TryGetProperty("fontFamily",out _),"display inherited font/theme must not become new canonical marks");
+            Require(saved.RootElement.GetProperty("nodes")[1].GetProperty("items")[0].GetProperty("runs")[0].GetProperty("text").GetString()=="[x] literal body","checklist scaffold must not consume literal-looking body prefix");
+        }
+        workspace.AcceptPrepared(workspace.Capture());string before=note.Document!.SourceJson;var checklist=(List)view.RichInput.Document.Blocks.ElementAt(1);((Run)((Paragraph)checklist.ListItems.FirstListItem.Blocks.FirstBlock).Inlines.FirstInline).Text="";await Idle();Require(note.Document!.SourceJson==before && !view.RichInput.CanUndo,"partial checklist scaffold deletion rolls back canonical and purges Undo");
+        view.RichInput.Document.Blocks.Add(new Section(new Paragraph(new Run("unsupported native"))));await Idle();Require(note.Document!.SourceJson==before && !view.RichInput.CanUndo,"unsupported native block refuses without silent flattening");
+        live=false;view.ClearSensitive();workspace.Clear();window.Close();
+    }
+    private static async Task RichWindowsIntegrationRun()
+    {
+        var root=Path.Combine(Path.GetTempPath(),"memo-wpf-rich-main-"+Guid.NewGuid().ToString("N"));var secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
+        try
+        {
+            main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Create(root,secret,secret));var session=Field<SaveCoordinator>(main,"session");var note=session.Workspace.CreateNote();note.Text="관리창 합성 rich";Invoke(main,"RefreshNotes",note);session.Workspace.ConvertMode(note,"rich",true);await Idle();
+            var host=Control<ContentControl>(main,"StructuredHost");Require(host.Content is StructuredNoteEditor,"management editor must wire canonical rich control without plain Text binding");
+            Require(!BindingOperations.IsDataBound(Control<TextBox>(main,"BodyEditor"),TextBox.TextProperty),"rich management body must detach lossy plain-text binding");
+            Invoke(main,"OpenSticky",note);await Idle();var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id];var stickyHost=Control<ContentControl>(sticky,"StructuredHost");Require(stickyHost.Content is StructuredNoteEditor && !BindingOperations.IsDataBound(Control<TextBox>(sticky,"BodyEditor"),TextBox.TextProperty),"rich sticky must own separate canonical view and no plain binding");
+            var editor=(StructuredNoteEditor)host.Content;editor.RichInput.Selection.Select(editor.RichInput.Document.ContentStart,editor.RichInput.Document.ContentEnd);editor.ApplyBold();await Idle();Require(note.Document!.SourceJson.Contains("\"bold\":true") && new TextRange(((StructuredNoteEditor)stickyHost.Content).RichInput.Document.ContentStart,((StructuredNoteEditor)stickyHost.Content).RichInput.Document.ContentEnd).Text.Contains(note.Text),"production management formatting propagates to sticky");
+            Require(await session.SaveAsync(),"rich production WPF save");await session.LockAsync();await Idle();Require(host.Content is null && stickyHost.Content is null && editor.RichInput.Document.Blocks.Count==0 && !editor.RichInput.CanUndo,"production conceal disposes rich hosts/documents/Undo");
+            Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
+            using(var reopened=EncryptedVault.Open(root,secret))Require(reopened.Loaded.Notes.Single().Mode=="rich" && reopened.Loaded.Notes.Single().Document!.SourceJson.Contains("\"bold\":true"),"production rich actual encrypted restart");
+        }
+        finally
+        {
+            if(main is not null){var session=Field<SaveCoordinator?>(main,"session");if(session is not null&&!session.IsLocked)await session.LockAsync();SetField(main,"confirmedExit",true);main.Close();session?.Dispose();}
+            CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);
+        }
     }
     private static async Task BatchFailureRun()
     {
