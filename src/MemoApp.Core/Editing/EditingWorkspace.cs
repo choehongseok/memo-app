@@ -6,7 +6,7 @@ namespace MemoApp.Core.Editing;
 public sealed class EditingWorkspace
 {
     private readonly TimeProvider clock;
-    private readonly ObservableCollection<NoteDraft> notes = [];
+    private readonly NoteCollection notes = [];
     private readonly List<StoredFolder> folders = [];
     private readonly List<StoredTag> tags = [];
     private readonly Dictionary<Guid, long> acceptedVersions = [];
@@ -40,14 +40,15 @@ public sealed class EditingWorkspace
     }
     private void AddDraft(NoteDraft note)
     {
-        notes.Add(note);
         note.PropertyChanged += (_, e) => { if (!closed && e.PropertyName == nameof(NoteDraft.EditVersion)) Changed?.Invoke(); };
+        notes.Register(note);
     }
     public NoteDraft CreateNote()
     {
         EnsureOpen();
         if (notes.Count >= 100) throw new InvalidOperationException("Trial note limit reached (including trash)");
-        var note = new NoteDraft(clock); AddDraft(note); Changed?.Invoke(); return note;
+        var note = new NoteDraft(clock, NextOrder()); AddDraft(note);
+        Changed?.Invoke(); if (!closed) notes.PublishAdded(note); return note;
     }
     private static string Name(string value)
     {
@@ -82,19 +83,37 @@ public sealed class EditingWorkspace
         note.SetMetadata(note.Metadata with { TagIds = ids });
     }
     public void SetImportant(NoteDraft note, bool value) { RequireNote(note); note.Important = value; }
-    private void ApplyEvent(NoteDraft note, string title, string text, NoteMetadata metadata)
+    private int NextOrder() => notes.Count == 0 ? 0 : Math.Min(1000000, notes.Max(n => n.Metadata.Order) + 1);
+    private void ApplyEvent(NoteDraft note, string title, string text, NoteMetadata metadata) =>
+        ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes)
     {
-        // Preflight the entire next immutable state before changing any draft or accepted version.
-        var before = Capture(); VaultEnvelope.Validate(before);
-        var previous = before.Notes.Single(n => n.NoteId == note.Id);
-        var nextNote = previous with { RevisionId = Guid.NewGuid(), Parents = [previous.RevisionId], ModifiedAt = clock.GetUtcNow(), Title = title, Text = text, Metadata = metadata };
-        var nextNotes = before.Notes.Select(n => n.NoteId == note.Id ? nextNote : n).ToArray();
-        var history = before.History.Append(new StoredRevision(previous.NoteId, previous.RevisionId, (Guid[])previous.Parents.Clone(), previous.ModifiedAt, previous.Title, previous.Text) { Metadata = previous.Metadata }).ToArray();
+        if (changes.Count == 0) return;
+        var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
+        var nextNotes = before.Notes.Select(previous =>
+        {
+            if (!changes.TryGetValue(previous.NoteId, out var change)) return previous;
+            history.Add(new(previous.NoteId, previous.RevisionId, (Guid[])previous.Parents.Clone(), previous.ModifiedAt, previous.Title, previous.Text) { Metadata = previous.Metadata });
+            return previous with { RevisionId = Guid.NewGuid(), Parents = [previous.RevisionId], ModifiedAt = clock.GetUtcNow(), Title = change.Title, Text = change.Text, Metadata = change.Metadata };
+        }).ToArray();
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        var next = before with { Notes = nextNotes, History = history, Tombstones = tombstones };
+        var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones };
         VaultEnvelope.Validate(next);
-        note.StageEvent(nextNote); AcceptPrepared(next); note.PublishEvent();
+        var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
+        foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id));
+        AcceptPrepared(next); Changed?.Invoke();
+        foreach (var note in affected) { if (closed) break; note.PublishEvent(); }
+    }
+    public NoteDraft ImportText(string title, string text, Guid? folderId = null) =>
+        AddComplete(title,text,new() { FolderId=folderId,Order=NextOrder() });
+    private NoteDraft AddComplete(string title,string text,NoteMetadata metadata)
+    {
+        EnsureOpen(); var before = Capture(); var now = clock.GetUtcNow();
+        var source = new StoredNote(Guid.NewGuid(), Guid.NewGuid(), [], now, now, title, text) { Metadata=metadata };
+        var next = before with { Notes=before.Notes.Append(source).ToArray() }; VaultEnvelope.Validate(next);
+        var draft = new NoteDraft(clock,source); AddDraft(draft); AcceptPrepared(next);
+        Changed?.Invoke(); if (!closed) notes.PublishAdded(draft); return draft;
     }
     public void DeleteNote(NoteDraft note)
     {
@@ -106,10 +125,22 @@ public sealed class EditingWorkspace
         if (!note.IsDeleted) return;
         ApplyEvent(note, note.Title, note.Text, note.Metadata with { Deleted = false });
     }
+    public void ReorderBefore(NoteDraft note, NoteDraft target)
+    {
+        RequireNote(note); RequireNote(target);
+        if (note == target) return;
+        if (note.Pinned != target.Pinned) throw new InvalidOperationException("List-pinned and ordinary groups are separate");
+        var ordered = notes.Where(n => !n.IsDeleted).OrderBy(n => n.Metadata.Order).ThenBy(n => n.CreatedAt).ThenBy(n => n.Id).ToList();
+        var original = ordered.ToArray(); ordered.Remove(note); ordered.Insert(ordered.IndexOf(target), note);
+        if (ordered.SequenceEqual(original)) return;
+        var changes = new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)>();
+        for (int i = 0; i < ordered.Count; i++)
+            if (ordered[i].Metadata.Order != i) changes.Add(ordered[i].Id, (ordered[i].Title, ordered[i].Text, ordered[i].Metadata with { Order = i }));
+        ApplyEvents(changes);
+    }
     public NoteDraft Duplicate(NoteDraft note)
     {
-        RequireNote(note); var copy = CreateNote(); copy.Title = note.Title; copy.Text = note.Text;
-        copy.SetMetadata(note.Metadata with { Deleted = false }); return copy;
+        RequireNote(note); return AddComplete(note.Title,note.Text,note.Metadata with { Deleted=false,Order=NextOrder() });
     }
     public IReadOnlyList<StoredRevision> HistoryFor(NoteDraft note)
     {
@@ -145,12 +176,13 @@ public sealed class EditingWorkspace
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
-        basis = snapshot;
+        EnsureOpen(); basis = snapshot;
         foreach (var draft in notes) acceptedVersions[draft.Id] = draft.EditVersion;
     }
     public void Clear()
     {
-        closed = true; foreach (var note in notes) note.Close();
+        if (closed) return;
+        closed = true; foreach (var note in notes.ToArray()) note.Close();
         notes.Clear(); folders.Clear(); tags.Clear(); acceptedVersions.Clear(); basis = new(2, Guid.Empty, []);
     }
 }

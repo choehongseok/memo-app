@@ -44,6 +44,10 @@ internal static class Program
             Require(first.Title == "합성 WPF 제목", "title text-container edit did not update shared draft");
             Require(first.Text == "본문 전용 합성 WPF", "body text-container edit did not update shared draft");
             Require(BindingOperations.IsDataBound(Control<TextBox>(main, "BodyEditor"), TextBox.TextProperty), "editing removed body binding");
+            Require(Control<TextBlock>(main,"NoteInfo").Text.Contains("본문 12글자"), "Korean body character count failed");
+            EditText(Control<TextBox>(main,"BodyEditor"), "가👩‍💻e\u0301"); await Idle();
+            Require(Control<TextBlock>(main,"NoteInfo").Text.Contains("본문 3글자"), "grapheme count must not split emoji/combining character");
+            EditText(Control<TextBox>(main,"BodyEditor"),"본문 전용 합성 WPF"); await Idle();
             Control<TextBox>(main, "SearchInput").Text = "본문 전용";
             Control<ComboBox>(main, "SearchFieldFilter").SelectedIndex = 1;
             Require(Control<ListBox>(main, "NotesList").Items.Count == 0, "title-only search matched body");
@@ -58,6 +62,11 @@ internal static class Program
             var sticky = Field<Dictionary<Guid, StickyNoteWindow>>(main, "stickyWindows")[first.Id];
             await Idle(); EditText(Control<TextBox>(sticky, "BodyEditor"), "공유 포스트잇 수정"); await Idle();
             Require(first.Text == "공유 포스트잇 수정" && Control<TextBox>(main, "BodyEditor").Text == first.Text, "sticky/management shared binding failed");
+            Invoke(main,"NewNote_Click", main, new RoutedEventArgs()); await Idle();
+            var other = session.Workspace.Notes.Single(n=>n.Id!=first.Id); EditText(Control<TextBox>(main,"TitleEditor"),"합성 순서 메모"); await Idle();
+            Control<ComboBox>(main,"SortFilter").SelectedIndex=3; Invoke(main,"OrderUp_Click",main,new RoutedEventArgs()); await Idle();
+            Require(ReferenceEquals(Control<ListBox>(main,"NotesList").Items[0],other), "UI custom order up action failed");
+            session.Workspace.DeleteNote(other); Invoke(main,"RefreshNotes",first); await Idle();
             var history = new HistoryWindow(first, session.Workspace.HistoryFor(first), _ => { }) { Owner = main }; history.Show();
             Field<HashSet<HistoryWindow>>(main, "historyWindows").Add(history);
             Require(Control<TextBox>(history, "PastText").Text.Length > 0, "history preview failed");
@@ -74,10 +83,10 @@ internal static class Program
             Invoke(main, "ReleaseSettledSession");
             Invoke(main, "StartSession", EncryptedVault.Open(root, secret));
             var reopened = Field<SaveCoordinator>(main, "session");
-            Require(reopened.Workspace.Notes.Single().Text == "공유 포스트잇 수정", "WPF lock/reopen persisted latest");
-            var reopenedNote = reopened.Workspace.Notes.Single(); reopened.Workspace.DeleteNote(reopenedNote);
+            Require(reopened.Workspace.Notes.Single(n=>!n.IsDeleted).Text == "공유 포스트잇 수정", "WPF lock/reopen persisted latest");
+            var reopenedNote = reopened.Workspace.Notes.Single(n=>!n.IsDeleted); reopened.Workspace.DeleteNote(reopenedNote);
             Control<ComboBox>(main, "ViewFilter").SelectedIndex = 4; await Idle();
-            Require(Control<ListBox>(main, "NotesList").Items.Count == 1 && !Control<FrameworkElement>(main, "Editor").IsEnabled && Control<Button>(main, "RestoreButton").IsEnabled, "trash selection must show readonly content and restore action");
+            Require(Control<ListBox>(main, "NotesList").Items.Count == 2 && !Control<FrameworkElement>(main, "Editor").IsEnabled && Control<Button>(main, "RestoreButton").IsEnabled, "trash selection must show readonly content and restore action");
             reopened.Workspace.RestoreNote(reopenedNote); Control<ComboBox>(main, "ViewFilter").SelectedIndex = 0; await Idle();
             Require(Control<FrameworkElement>(main, "Editor").IsEnabled, "restored editor not usable");
             await reopened.LockAsync(); Invoke(main, "ReleaseSettledSession");

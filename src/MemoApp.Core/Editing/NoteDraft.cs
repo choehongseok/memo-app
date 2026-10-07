@@ -10,9 +10,9 @@ public sealed class NoteDraft : INotifyPropertyChanged
     private string title = "", text = "";
     private NoteMetadata metadata = new();
     public event PropertyChangedEventHandler? PropertyChanged;
-    internal NoteDraft(TimeProvider clock)
+    internal NoteDraft(TimeProvider clock, int order = 0)
     {
-        this.clock = clock; Id = Guid.NewGuid(); CreatedAt = ModifiedAt = clock.GetUtcNow();
+        this.clock = clock; metadata = new() { Order = order }; Id = Guid.NewGuid(); CreatedAt = ModifiedAt = clock.GetUtcNow();
     }
     internal NoteDraft(TimeProvider clock, StoredNote source) : this(clock)
     {

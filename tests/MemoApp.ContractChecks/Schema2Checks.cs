@@ -14,6 +14,16 @@ internal static class Schema2Checks
         workspace.MoveNote(note, folder.FolderId); workspace.SetTags(note, ["비공개 태그 ONLY_TEST"]);
         var snapshot = workspace.Capture();
         VaultEnvelope.Validate(snapshot);
+        var largeHistory = Enumerable.Range(0,270).Select(_ => new StoredRevision(note.Id, Guid.NewGuid(), [], DateTimeOffset.UtcNow, "large synthetic", new string('x',65536)) { Metadata = note.Metadata }).ToArray();
+        VaultChecks.ExpectFailure(() => VaultEnvelope.Validate(snapshot with { History = largeHistory }), "whole snapshot byte budget must reject before event mutation");
+        var boundaryId=Guid.NewGuid(); var boundaryNow=DateTimeOffset.UtcNow; string boundaryText=new string('x',65536);
+        var boundaryNotes=new[] { new StoredNote(boundaryId,Guid.NewGuid(),[],boundaryNow,boundaryNow,"boundary",boundaryText), new StoredNote(Guid.NewGuid(),Guid.NewGuid(),[],boundaryNow,boundaryNow,"other","") {Metadata=new(){Order=1}} };
+        var boundaryHistory=Enumerable.Range(0,253).Select(_=>new StoredRevision(boundaryId,Guid.NewGuid(),[],boundaryNow,"h",boundaryText)).ToArray();
+        var boundary=new VaultSnapshot(2,Guid.NewGuid(),boundaryNotes){History=boundaryHistory}; VaultEnvelope.Validate(boundary);
+        var bounded=new EditingWorkspace(TimeProvider.System,boundary); var beforeBytes=JsonSerializer.SerializeToUtf8Bytes(bounded.Capture(),VaultEnvelope.JsonOptions); int boundaryEvents=0; bounded.Changed+=()=>boundaryEvents++;
+        VaultChecks.ExpectFailure(()=>bounded.ImportText("overflow",boundaryText),"import at whole payload boundary must reject without mutation");
+        VaultChecks.ExpectFailure(()=>bounded.ReorderBefore(bounded.Notes[1],bounded.Notes[0]),"batch order at whole payload boundary must reject without mutation");
+        VaultChecks.Require(boundaryEvents==0 && JsonSerializer.SerializeToUtf8Bytes(bounded.Capture(),VaultEnvelope.JsonOptions).SequenceEqual(beforeBytes) && bounded.Notes.All(n=>n.EditVersion==0),"whole-byte-budget rejected import/order changed full snapshot or events");
         var secret = EncryptedVault.GenerateRecoverySecret();
         var root = Path.Combine(Path.GetTempPath(), "memo-schema2-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
         try

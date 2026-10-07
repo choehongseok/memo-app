@@ -39,6 +39,19 @@ internal static class OrganizationChecks
         VaultChecks.Require(copy.Id != first.Id && copy.Text == first.Text && copy.FolderId == first.FolderId && !copy.IsDeleted, "duplicate creates independent complete draft");
         copy.Text = "독립 사본";
         VaultChecks.Require(first.Text == "합성 최초 본문", "copy editing must be independent");
+        var ordered = new EditingWorkspace(TimeProvider.System); var a = ordered.CreateNote(); a.Title = "a"; var b = ordered.CreateNote(); b.Title = "b"; var c = ordered.CreateNote(); c.Title = "c";
+        ordered.AcceptPrepared(ordered.Capture()); ordered.ReorderBefore(c, a);
+        VaultChecks.Require(MemoApp.Core.Search.NoteSearch.Find(ordered, new() { Sort = MemoApp.Core.Search.SearchSort.Custom }).SequenceEqual([c,a,b]), "custom reorder before must change actual order");
+        var reordered = ordered.Capture(); ordered.AcceptPrepared(reordered); var same = reordered.Notes.Select(n => n.RevisionId).ToArray();
+        ordered.ReorderBefore(c,a); VaultChecks.Require(ordered.Capture().Notes.Select(n => n.RevisionId).SequenceEqual(same), "no-op reorder must not create history");
+        VaultChecks.ExpectFailure(() => ordered.ReorderBefore(a, first), "foreign target must reject");
+        c.Pinned=true; var pinnedBefore=ordered.Capture(); ordered.AcceptPrepared(pinnedBefore);
+        VaultChecks.ExpectFailure(()=>ordered.ReorderBefore(a,c),"list-pinned groups must not be moved together");
+        VaultChecks.Require(System.Text.Json.JsonSerializer.Serialize(ordered.Capture())==System.Text.Json.JsonSerializer.Serialize(pinnedBefore),"pinned rejection changed hidden data");
+        var eventClose=new EditingWorkspace(TimeProvider.System); var closeA=eventClose.CreateNote(); var closeB=eventClose.CreateNote(); eventClose.AcceptPrepared(eventClose.Capture()); bool cleared=false;
+        closeA.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(NoteDraft.Title)&&!cleared){cleared=true;eventClose.Clear();}};
+        eventClose.ReorderBefore(closeB,closeA);
+        VaultChecks.Require(eventClose.Notes.Count==0 && eventClose.FrozenBasis.Notes.Length==0,"batch public notification close must not enumerate/reinject plaintext after clear");
         var retained = first; workspace.Clear();
         VaultChecks.Require(workspace.Folders.Count == 0 && workspace.Tags.Count == 0 && retained.IsClosed, "clear removes organization and closes retained references");
         VaultChecks.ExpectFailure(() => workspace.CreateFolder("after lock"), "closed workspace rejects new edits");
@@ -55,8 +68,11 @@ internal static class OrganizationChecks
                 VaultChecks.ExpectFailure(() => limited.DeleteNote(limitedNote), "full-history delete must reject");
                 VaultChecks.ExpectFailure(() => limited.RestoreRevision(limitedNote, fullHistory[0].RevisionId), "full-history version restore must reject");
             }
+            var other = limited.CreateNote(); other.Title = "other"; var beforeOrder = limited.Capture(); limited.AcceptPrepared(beforeOrder);
+            if (!deletedAtLimit) VaultChecks.ExpectFailure(() => limited.ReorderBefore(other, limitedNote), "reorder history overflow rejects entire batch");
             var after = limited.Capture();
-            VaultChecks.Require(limitedNote.IsDeleted == deletedAtLimit && limitedNote.Title == "current" && limitedNote.Text == "current body" && after.Notes[0].RevisionId == head.RevisionId && after.History.Length == 512 && limitedNote.EditVersion == 0, "rejected event must not mutate draft/basis/version/history");
+            VaultChecks.Require(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(after).SequenceEqual(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(beforeOrder)),"rejected order must preserve every note/head/history/metadata");
+            VaultChecks.Require(limitedNote.IsDeleted == deletedAtLimit && limitedNote.Title == "current" && limitedNote.Text == "current body" && after.Notes[0].RevisionId == head.RevisionId && after.History.Length == 512 && limitedNote.EditVersion == 0 && after.Notes[0].Metadata.Order == head.Metadata.Order, "rejected event must not mutate draft/basis/version/history");
         }
         Console.WriteLine("PASS: folders/tags, metadata history, trash/new-revision restore, immutable originals, duplication and close");
     }

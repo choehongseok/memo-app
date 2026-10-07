@@ -53,7 +53,7 @@ public static class NoteSearch
         {
             SearchSort.Name => ordered.ThenBy(n => n.Title, StringComparer.OrdinalIgnoreCase),
             SearchSort.Created => ordered.ThenByDescending(n => n.CreatedAt),
-            SearchSort.Custom => ordered.ThenBy(n => n.Metadata.Order),
+            SearchSort.Custom => ordered.ThenBy(n => n.Metadata.Order).ThenBy(n => n.CreatedAt),
             _ => ordered.ThenByDescending(n => n.ModifiedAt)
         }).ThenBy(n => n.Id).ToArray();
     }

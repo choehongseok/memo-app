@@ -9,6 +9,8 @@ using System.Windows.Threading;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Core.Search;
+using MemoApp.Core.Transfer;
+using System.Windows.Media;
 using Microsoft.Win32;
 namespace MemoApp.Windows;
 public partial class MainWindow : Window
@@ -16,6 +18,11 @@ public partial class MainWindow : Window
     private readonly string root;
     private readonly HashSet<HistoryWindow> historyWindows = [];
     private bool loadingUi = true;
+    private CancellationTokenSource fileOperations = new();
+    private Point dragStart;
+    private Guid? draggingNote, dragCandidate;
+    private long dragCandidateEpoch;
+    private long dragEpoch;
     private sealed record FolderChoice(Guid? Id, string Name);
     private readonly Dictionary<Guid, StickyNoteWindow> stickyWindows = [];
     private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(700) };
@@ -33,7 +40,7 @@ public partial class MainWindow : Window
         InputManager.Current.PreProcessInput += Activity;
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
-        Closed += (_, _) => { timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -59,6 +66,7 @@ public partial class MainWindow : Window
     private void ShowEditing()
     {
         ClearSecretControls();
+        if (fileOperations.IsCancellationRequested) { fileOperations.Dispose(); fileOperations = new(); }
         foreach (var input in new[] { SearchInput, TagFilter, FolderName, TagsInput }) input.IsUndoEnabled = true;
         LockPanel.Visibility = Visibility.Collapsed; EditingPanel.Visibility = Visibility.Visible;
         var active = session!;
@@ -72,7 +80,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++;
+        uiEpoch++; fileOperations.Cancel(); draggingNote = dragCandidate = null;
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
@@ -84,7 +92,8 @@ public partial class MainWindow : Window
         FolderFilter.ItemsSource = MoveFolder.ItemsSource = null; FromDate.SelectedDate = UntilDate.SelectedDate = null;
         ViewFilter.SelectedIndex = SearchFieldFilter.SelectedIndex = SortFilter.SelectedIndex = 0;
         ColorPicker.SelectedIndex = -1; Counts.Text = NoteInfo.Text = ""; loadingUi = false;
-        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = false;
+        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = false;
+        TxtExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
         ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;
     }
@@ -92,7 +101,7 @@ public partial class MainWindow : Window
     {
         Notice.Text = session?.Status ?? "잠금 — 복구 비밀로 해제하세요.";
         bool enabled = session is not null && !session.IsLocked;
-        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = enabled;
+        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = enabled;
         UpdateSelectedActions();
     }
     private bool ReleaseSettledSession()
@@ -232,7 +241,7 @@ public partial class MainWindow : Window
     {
         bool unlocked = session is { IsLocked: false };
         var note = NotesList.SelectedItem as NoteDraft;
-        DuplicateButton.IsEnabled = DeleteButton.IsEnabled = unlocked && note is { IsDeleted: false };
+        DuplicateButton.IsEnabled = DeleteButton.IsEnabled = TxtExportButton.IsEnabled = unlocked && note is { IsDeleted: false };
         RestoreButton.IsEnabled = unlocked && note is { IsDeleted: true };
         HistoryButton.IsEnabled = unlocked && note is not null;
     }
@@ -349,6 +358,90 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog(this) != true || active.IsLocked) return;
         long epoch = uiEpoch; bool success = await active.BackupAsync(dialog.FileName);
         if (epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked) Notice.Text = success ? "최신 암호 백업을 새 파일로 저장했습니다. 같은 복구 비밀이 필요합니다." : "백업 실패/상태 변경 — 기존 파일 덮어쓰기 없이 현재 자료를 보존했습니다. 새 이름·경로·쓰기 권한·저장 상태를 확인하세요.";
+    }
+    private bool SameFileSession(SaveCoordinator active, long epoch, NoteDraft? note = null) =>
+        epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked && (note is null || !note.IsClosed && !note.IsDeleted && active.Workspace.Notes.Contains(note));
+    private async void TxtImport_Click(object sender, RoutedEventArgs e)
+    {
+        if (session is not { IsLocked: false } active) return;
+        long epoch = uiEpoch; var token = fileOperations.Token; Guid? folder = (FolderFilter.SelectedItem as FolderChoice)?.Id;
+        var dialog = new OpenFileDialog { Filter = "UTF8/BOM UTF16 텍스트|*.txt", CheckFileExists = true };
+        if (dialog.ShowDialog(this) != true || !SameFileSession(active, epoch)) return;
+        try
+        {
+            var imported = await Task.Run(() => TextTransfer.Read(dialog.FileName, token), token);
+            if (!SameFileSession(active, epoch)) return;
+            var note = active.Workspace.ImportText(imported.Title, imported.Text, folder);
+            if (!SameFileSession(active,epoch,note)) return;
+            ViewFilter.SelectedIndex = 0; SearchInput.Clear(); TagFilter.Clear(); RefreshNotes(note);
+            Notice.Text = "TXT 원본을 바꾸지 않고 새 메모로 가져왔습니다. UTF8/BOM UTF16만 지원하며 암호 자동 저장 상태를 확인하세요.";
+        }
+        catch (OperationCanceledException) { }
+        catch { if (SameFileSession(active, epoch)) Notice.Text = "TXT 가져오기 실패 — 로컬 일반파일·인코딩·1MiB/65536자/100개 한도·저장 상태를 확인하세요. 원본과 메모 상태는 보존했습니다."; }
+    }
+    private async void TxtExport_Click(object sender, RoutedEventArgs e)
+    {
+        if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } note) return;
+        long epoch = uiEpoch; var token = fileOperations.Token;
+        if (MessageBox.Show("TXT는 암호화되지 않은 제목·본문 사본입니다. 외부 앱·동기화 폴더·백업에 내용이 남을 수 있고 앱 잠금은 이미 저장한 TXT를 보호하지 못합니다. 평문 파일을 만들까요?", "평문 내보내기", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes || !SameFileSession(active, epoch, note)) return;
+        var dialog = new SaveFileDialog { Filter = "UTF8 텍스트|*.txt", FileName = "memo-export.txt", OverwritePrompt = true };
+        if (dialog.ShowDialog(this) != true || !SameFileSession(active, epoch, note)) return;
+        try
+        {
+            string relative = Path.GetRelativePath(root, Path.GetFullPath(dialog.FileName));
+            if (relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) && !Path.IsPathRooted(relative)) throw new IOException("Plaintext output inside active vault refused");
+            using var payload = TextTransfer.Capture(note);
+            await Task.Run(() => TextTransfer.WritePrepared(payload, dialog.FileName, token), token);
+            if (SameFileSession(active, epoch, note)) Notice.Text = "제목·본문을 새 평문 UTF8 TXT로 저장했습니다. 기존 대상은 덮어쓰지 않았습니다.";
+        }
+        catch (OperationCanceledException) { }
+        catch { if (SameFileSession(active, epoch, note)) Notice.Text = "TXT 내보내기 실패 — 새 로컬 파일 이름·권한·본문 인코딩을 확인하세요. 기존 파일은 덮어쓰지 않았으며 실패한 부분 평문 파일이 남을 수 있습니다."; }
+    }
+    private void OrderUp_Click(object sender, RoutedEventArgs e) => MoveOrder(-1);
+    private void OrderDown_Click(object sender, RoutedEventArgs e) => MoveOrder(1);
+    private void MoveOrder(int direction)
+    {
+        if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } note) return;
+        if (SortFilter.SelectedIndex != (int)SearchSort.Custom) { SortFilter.SelectedIndex = (int)SearchSort.Custom; RefreshNotes(note); }
+        var list = NotesList.Items.Cast<NoteDraft>().ToList(); int index = list.IndexOf(note), target = index + direction;
+        if (index < 0 || target < 0 || target >= list.Count) return;
+        try { if (direction < 0) active.Workspace.ReorderBefore(note, list[target]); else active.Workspace.ReorderBefore(list[target], note); RefreshNotes(note); }
+        catch { Notice.Text = "순서 변경 실패 — 목록 고정 그룹/이력·저장 한도를 확인하세요. 전체 순서는 보존했습니다."; }
+    }
+    private static ListBoxItem? NoteItem(DependencyObject? element)
+    {
+        while (element is not null && element is not ListBoxItem)
+            element=element switch {Visual visual=>VisualTreeHelper.GetParent(visual),FrameworkContentElement content=>content.Parent,ContentElement content=>ContentOperations.GetParent(content),_=>null};
+        return element as ListBoxItem;
+    }
+    private void NoteDragStart(object sender, MouseButtonEventArgs e)
+    {
+        dragStart=e.GetPosition(NotesList); dragCandidate=null;
+        if(session is {IsLocked:false} active && SortFilter.SelectedIndex==(int)SearchSort.Custom && NoteItem(e.OriginalSource as DependencyObject)?.DataContext is NoteDraft {IsDeleted:false} note && active.Workspace.Notes.Contains(note)) {dragCandidate=note.Id;dragCandidateEpoch=uiEpoch;}
+    }
+    private void NoteDragMove(object sender, MouseEventArgs e)
+    {
+        if(e.LeftButton!=MouseButtonState.Pressed){dragCandidate=null;return;}
+        if (dragCandidate is not Guid candidate || dragCandidateEpoch!=uiEpoch || session is not { IsLocked: false } active || SortFilter.SelectedIndex != (int)SearchSort.Custom) return;
+        var note=active.Workspace.Notes.FirstOrDefault(n=>n.Id==candidate&&!n.IsDeleted); if(note is null)return;
+        var now = e.GetPosition(NotesList); if (Math.Abs(now.X - dragStart.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(now.Y - dragStart.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+        draggingNote = note.Id; dragEpoch = uiEpoch;
+        try { DragDrop.DoDragDrop(NotesList, new DataObject("MemoApp.InternalNoteId", note.Id.ToString("D")), DragDropEffects.Move); }
+        finally { draggingNote = dragCandidate = null; }
+    }
+    private void NoteDragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = draggingNote is not null && dragEpoch == uiEpoch && session is { IsLocked: false } && e.Data.GetDataPresent("MemoApp.InternalNoteId", false) ? DragDropEffects.Move : DragDropEffects.None; e.Handled = true;
+    }
+    private void NoteDrop(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        if (draggingNote is not Guid internalId || dragEpoch != uiEpoch || session is not { IsLocked: false } active || !e.Data.GetDataPresent("MemoApp.InternalNoteId", false) || e.Data.GetData("MemoApp.InternalNoteId", false) is not string { Length: 36 } raw || !Guid.TryParseExact(raw,"D",out Guid id) || id != internalId) return;
+        if (NoteItem(e.OriginalSource as DependencyObject)?.DataContext is not NoteDraft target) return;
+        var source = active.Workspace.Notes.FirstOrDefault(n=>n.Id==id && !n.IsDeleted);
+        if (source is null || target.IsDeleted) return;
+        try { active.Workspace.ReorderBefore(source,target); RefreshNotes(source); }
+        catch { Notice.Text = "순서 변경 실패 — 목록 고정 그룹/이력·저장 한도를 확인하세요. 전체 순서는 보존했습니다."; }
     }
     private void ClearSecretControls()
     {

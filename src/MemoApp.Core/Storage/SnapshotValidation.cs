@@ -105,6 +105,28 @@ internal static class SnapshotValidation
             visiting.Remove(revision); visitedRevisions.Add(revision);
         }
         foreach (var revision in graph.Keys) Visit(revision);
+        // Event/import preflight must reject the same payload budget as Prepare before publishing any draft.
+        using var counter = new PayloadCounter(VaultEnvelope.MaxFile - VaultEnvelope.HeaderSize - 148);
+        JsonSerializer.Serialize(counter, snapshot, VaultEnvelope.JsonOptions);
+    }
+    private sealed class PayloadCounter(int limit) : Stream
+    {
+        private long count;
+        public override bool CanRead => false;
+        public override bool CanSeek => false;
+        public override bool CanWrite => true;
+        public override long Length => count;
+        public override long Position { get => count; set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override void Write(byte[] buffer, int offset, int size) => Write(buffer.AsSpan(offset, size));
+        public override void Write(ReadOnlySpan<byte> buffer)
+        {
+            if (buffer.Length > limit - count) throw new InvalidDataException("Snapshot payload byte budget exceeded");
+            count += buffer.Length;
+        }
+        public override int Read(byte[] buffer, int offset, int size) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long length) => throw new NotSupportedException();
     }
     private static bool Name(string value) => value is not null && value.Length is > 0 and <= 128 && value.Trim() == value && !value.Any(char.IsControl);
 }

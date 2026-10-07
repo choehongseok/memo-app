@@ -2,6 +2,9 @@ using System.Text.Json;
 using MemoApp.Core;
 
 if (VaultFailureChecks.TryWorker(args)) return;
+if (args.Contains("--startup-only")) { StartupChecks.Run(); return; }
+if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
+if (args.Contains("--text-only")) { TextTransferChecks.Run(); return; }
 
 // Synthetic in-memory contract checks; these do not prove save/encryption/sync behavior.
 using var content = JsonDocument.Parse("""
@@ -30,6 +33,8 @@ SearchChecks.Run();
 OrganizationChecks.Run();
 await Schema2Checks.Run();
 await BackupChecks.Run();
+TextTransferChecks.Run();
+StartupChecks.Run();
 VaultChecks.Run();
 VaultFailureChecks.Run();
 await CoordinatorChecks.Run();

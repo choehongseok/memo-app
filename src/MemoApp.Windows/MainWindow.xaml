@@ -14,6 +14,8 @@
    <Button x:Name="DuplicateButton" Content="복제" Click="Duplicate_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="DeleteButton" Content="휴지통으로" Click="Delete_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="RestoreButton" Content="메모 복원" Click="Restore_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
+   <Button x:Name="TxtImportButton" Content="TXT 가져오기" Click="TxtImport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
+   <Button x:Name="TxtExportButton" Content="TXT 내보내기" Click="TxtExport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="HistoryButton" Content="수정 이력" Click="History_Click" Padding="12,6" IsEnabled="False"/>
   </WrapPanel>
   <ScrollViewer x:Name="LockPanel" Grid.Row="2" VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="650" HorizontalAlignment="Left">
@@ -54,8 +56,8 @@
     <TextBlock Text="휴지통은 내용을 암호화해 보존합니다. 자동 비우기·영구삭제는 제공하지 않습니다." TextWrapping="Wrap" Foreground="Gray" Margin="0,12,0,0"/>
    </StackPanel></ScrollViewer>
    <DockPanel Grid.Column="1" Margin="0,0,16,0">
-    <StackPanel DockPanel.Dock="Top"><TextBlock Text="검색"/><TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" Margin="0,4,0,4"/><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/></ComboBox></StackPanel>
-    <ListBox x:Name="NotesList" SelectionChanged="NotesList_SelectionChanged">
+    <StackPanel DockPanel.Dock="Top"><WrapPanel><Button Content="순서 ↑" Click="OrderUp_Click" Padding="6" Margin="0,0,6,4"/><Button Content="순서 ↓" Click="OrderDown_Click" Padding="6" Margin="0,0,0,4"/></WrapPanel><TextBlock Text="검색"/><TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" Margin="0,4,0,4"/><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/></ComboBox></StackPanel>
+    <ListBox x:Name="NotesList" SelectionChanged="NotesList_SelectionChanged" AllowDrop="True" PreviewMouseLeftButtonDown="NoteDragStart" PreviewMouseMove="NoteDragMove" DragOver="NoteDragOver" Drop="NoteDrop">
      <ListBox.ItemTemplate><DataTemplate><Border Padding="8"><StackPanel><TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap"/><TextBlock Text="{Binding Text}" TextWrapping="Wrap" MaxHeight="42" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding ModifiedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss} UTC}" Foreground="Gray"/></StackPanel></Border></DataTemplate></ListBox.ItemTemplate>
     </ListBox>
    </DockPanel>
