@@ -2478,6 +2478,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "원본 opaque bytes/암호객체/refs/이력/전체백업과 source Core부분검사만. 같은커밋 WPF는 missing-panel/host RED; 후속UI/메타검색 실행은별도근거를따른다. PDF/Office파싱·이미지·실행·export·사용자수용/전체134 완료가아니다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "bcdb2001462a55b389b8720cbc9972ff97f800ef",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "실제Main+Sticky opaque 파일선택/분리/공유·cancel/repeated/source변경/선택/multi→single/modal잠금/nativeclear예외·재진입/원본byte/hash/encryptedrestart의부분자동검사. 파일/이미지파싱·외부열기/export·물리IME/OSSessionLock/ACL/사용자수용·전체134완료아님. 이미지구조preflight는별도내부단계."
         }
       ],
       "blocking_reason": null
@@ -2513,6 +2521,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "원본 opaque bytes/암호객체/refs/이력/전체백업과 source Core부분검사만. 같은커밋 WPF는 missing-panel/host RED; 후속UI/메타검색 실행은별도근거를따른다. PDF/Office파싱·이미지·실행·export·사용자수용/전체134 완료가아니다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "bcdb2001462a55b389b8720cbc9972ff97f800ef",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "실제Main+Sticky opaque 파일선택/분리/공유·cancel/repeated/source변경/선택/multi→single/modal잠금/nativeclear예외·재진입/원본byte/hash/encryptedrestart의부분자동검사. 파일/이미지파싱·외부열기/export·물리IME/OSSessionLock/ACL/사용자수용·전체134완료아님. 이미지구조preflight는별도내부단계."
         }
       ],
       "blocking_reason": null
@@ -2602,6 +2618,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "원본 opaque bytes/암호객체/refs/이력/전체백업과 source Core부분검사만. 같은커밋 WPF는 missing-panel/host RED; 후속UI/메타검색 실행은별도근거를따른다. PDF/Office파싱·이미지·실행·export·사용자수용/전체134 완료가아니다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "bcdb2001462a55b389b8720cbc9972ff97f800ef",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "실제Main+Sticky opaque 파일선택/분리/공유·cancel/repeated/source변경/선택/multi→single/modal잠금/nativeclear예외·재진입/원본byte/hash/encryptedrestart의부분자동검사. 파일/이미지파싱·외부열기/export·물리IME/OSSessionLock/ACL/사용자수용·전체134완료아님. 이미지구조preflight는별도내부단계."
         }
       ],
       "blocking_reason": null

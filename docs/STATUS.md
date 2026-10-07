@@ -1,3 +1,9 @@
+# 2026-10-07 첨부 opaque UI Windows green·내부 PNG profile 진행
+
+원격bcdb200/treeaecb7168·Windows37683986399 전체SUCCESS: 원문/Python26/safety/build0/fullCore·새Main+Sticky/직접첨부WPF·정확원본bytes재실행·publish PASS, upload skipped·기존trial유지. 85부분/47미착수/2특수·전체134/사용자수용0 유지.
+
+다음내부PNG profile은 missing-type RED 뒤strict RGB/RGBA/IHDR-IDAT-IEND·전체CRC·4MiB/4096축/pixel4194304/chunk256/정확containerEOF·입력불변·scalar-only 결과 targeted/fullCore/4프로젝트crossbuild0/Python26/134 PASS. 독립pre-code 조건중구조64KiB경계는chunk한도에의해3093bytes로지배되는것을명시. actualdiff읽기검토/후속Windows는별도gate. 압축픽셀·nativedecoder·키읽기·preview UI/image-node는미연결이고H08완료를주장하지않으며계속개발.
+
 # 2026-10-07 첨부 파일UI Windows 경계 RED 수정
 
 원격5f7cc5a/tree1385706·Windows37676300144: source/Python26/build0/fullCore·이전WPF전부PASS. 직접첨부취소/repeated/원본hash/분리이력/네이티브clear예외·재진입·키해제PASS뒤 자체hide/detach RED, production은multi선택후명시singleton재선택host없음RED. 패널권한폐기후자체collapse/detach와RefreshNotes의정확캡처선택재구성을최소수정해crossbuild0경고오류; 다음Windows green대기. 새Win junction/reserved/ADS거절PASS. 85부분/47미착수/2특수·사용자수용0 유지.
