@@ -1,3 +1,9 @@
+# 2026-10-07 첨부 구조계약·암호 primitive Windows green
+
+내부 object codec8d76a0b5/tree32c5b54 Windows37640517561 전체SUCCESS: 원문/Python26/safety/build/fullCore·독립format reader·변조검사/실제WPF/publish PASS, upload skipped·artifacts=[]·기존시험판 유지.
+
+별도 내부 envelope2는 missing-envelope와 기존schema5 image-node통과 RED 뒤 strict layout308/84·키package목적구분·UUIDBE rootpacket·엄격schema/root/EOF·전체내부object인증·임시root단일transfer/Dispose zero targeted/fullCore/4프로젝트build PASS. schema5 current/history의 image/opaque attachmentId(s)는 해석연결 전명시거절하고 legacy4원본을보존한다. 독립읽기검토에 이내부단위 blocker없음. publicenvelope2읽기/schema5쓰기·영구root anchor·시도별3wrap예약·첨부전체backup/restart/UI는 다음단계라 아직차단중이다.
+
 # 2026-10-07 첨부 구조계약 Windows green·내부 암호 primitive 진행
 
 첨부 구조계약 fe230811/treeffe1616의 Windows run37639160360 전체SUCCESS: 원문/Python26/safety/build/fullCore/실제WPF/publish PASS, artifact upload skipped·artifacts=[]·기존818a531 시험판 유지. schema5의 immutable object/ref·전체 retained 한도와 legacy1-4 serializer 호환을 검사했지만 실제schema5쓰기/envelope1-v5읽기는 명시차단 중이다.

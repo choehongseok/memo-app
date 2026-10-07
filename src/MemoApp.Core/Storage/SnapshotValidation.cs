@@ -103,6 +103,7 @@ internal static class SnapshotValidation
             if(mode=="rich")
             {
                 if(document is null)throw new InvalidDataException("Rich source required");var info=RichDocumentCodec.Inspect(document);
+                AttachmentValidation.Document(document,snapshot.SchemaVersion);
                 if(info.Supported&&!string.Equals(info.Text,text,StringComparison.Ordinal))throw new InvalidDataException("Rich projection/source mismatch");
             }
             else if(document is not null)throw new InvalidDataException("Plain/Markdown source must not carry rich data");

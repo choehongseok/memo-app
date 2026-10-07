@@ -36,4 +36,21 @@ internal static class AttachmentValidation
     }
     internal static void References(ImmutableArray<Guid> ids,HashSet<Guid> objects,int schema)
     {if(ids.IsDefault||ids.Length>MaxReferences||ids.Distinct().Count()!=ids.Length||ids.Any(id=>!objects.Contains(id))||schema<5&&ids.Length!=0)throw new InvalidDataException("Attachment references/schema");}
+    internal static void Document(StyledDocument? document,int schema)
+    {
+        if(schema<5||document is null)return;
+        // Image/opaque-reference interpretation is a later unit; never silently ignore its references.
+        using var parsed=System.Text.Json.JsonDocument.Parse(document.SourceJson,new(){MaxDepth=16});
+        var pending=new Stack<System.Text.Json.JsonElement>();pending.Push(parsed.RootElement);
+        while(pending.TryPop(out var value))
+        {
+            if(value.ValueKind==System.Text.Json.JsonValueKind.Object)
+                foreach(var property in value.EnumerateObject())
+                {
+                    if(property.Name is "attachmentId" or "attachmentIds"||property.Name=="type"&&property.Value.ValueKind==System.Text.Json.JsonValueKind.String&&string.Equals(property.Value.GetString(),"image",StringComparison.OrdinalIgnoreCase))throw new InvalidDataException("Schema5 image/opaque attachment references are not integrated yet");
+                    pending.Push(property.Value);
+                }
+            else if(value.ValueKind==System.Text.Json.JsonValueKind.Array)foreach(var child in value.EnumerateArray())pending.Push(child);
+        }
+    }
 }

@@ -52,11 +52,7 @@ internal static class VaultEnvelope
             vaultKey = Open(bytes, HeaderSize, 32, recoveryKey, [.. aad, 1]);
             dataKey = Open(bytes, HeaderSize + 60, 32, vaultKey, [.. aad, 2]);
             plaintext = Open(bytes, HeaderSize + 120, header.PayloadLength, dataKey, [.. aad, 3]);
-            using var document = JsonDocument.Parse(plaintext, new() { MaxDepth = 16 });
-            CheckDuplicates(document.RootElement);
-            SnapshotValidation.Json(document.RootElement);
-            var snapshot = JsonSerializer.Deserialize<VaultSnapshot>(plaintext, JsonOptions) ?? throw new InvalidDataException("Missing snapshot");
-            Validate(snapshot);
+            var snapshot = ReadSnapshot(plaintext);
             if(snapshot.SchemaVersion>=5)throw new InvalidDataException("Envelope1 cannot carry attachment schema5");
             return (header, snapshot);
         }
@@ -67,6 +63,13 @@ internal static class VaultEnvelope
             if (dataKey is not null) CryptographicOperations.ZeroMemory(dataKey);
             if (plaintext is not null) CryptographicOperations.ZeroMemory(plaintext);
         }
+    }
+    internal static VaultSnapshot ReadSnapshot(byte[] plaintext)
+    {
+        using var document = JsonDocument.Parse(plaintext, new() { MaxDepth = 16 });
+        CheckDuplicates(document.RootElement); SnapshotValidation.Json(document.RootElement);
+        var snapshot = JsonSerializer.Deserialize<VaultSnapshot>(plaintext, JsonOptions) ?? throw new InvalidDataException("Missing snapshot");
+        Validate(snapshot); return snapshot;
     }
     private static byte[] Open(byte[] bytes, int offset, int length, byte[] key, byte[] aad)
     {
