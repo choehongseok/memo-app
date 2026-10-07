@@ -21,9 +21,10 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private Func<bool>? current;
     private Action<string>? notice;
     private StyledDocument? projected;
-    private bool rebuilding,committing,disposed,editable,refreshPending;
+    private bool rebuilding,committing,disposed,editable,refreshPending,composing;
     private long projectionGeneration;
     private readonly TextBlock state=new(){TextWrapping=TextWrapping.Wrap,Margin=new(4)};
+    private readonly TextBox linkInput=new(){Width=190,MaxLength=2048,ToolTip="http/https 링크를 원문에 보존 (자동 실행 없음)"};
     private readonly WrapPanel toolbar=new(){Margin=new(0,0,0,4)};
     private static readonly DependencyProperty LinkProperty=DependencyProperty.RegisterAttached("CanonicalLink",typeof(string),typeof(StructuredNoteEditor),new FrameworkPropertyMetadata(null,FrameworkPropertyMetadataOptions.Inherits));
     private static readonly DependencyProperty ChecklistPrefixProperty=DependencyProperty.RegisterAttached("CanonicalChecklistPrefix",typeof(bool),typeof(StructuredNoteEditor),new(false));
@@ -49,7 +50,15 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
         transactionRetry.Tick+=(_,_)=>{transactionRetry.Stop();if(!disposed&&waitingTransaction){waitingTransaction=false;if(Live())ScheduleRefresh();else ClearSensitive();}};
         var root=new DockPanel();DockPanel.SetDock(toolbar,Dock.Top);root.Children.Add(toolbar);DockPanel.SetDock(state,Dock.Top);root.Children.Add(state);root.Children.Add(RichInput);Content=root;
         Button("굵게",ApplyBold);var sizes=new ComboBox{Width=60,ItemsSource=new double[]{8,10,12,14,16,18,22,28,36,48,72,96},SelectedItem=14d};sizes.SelectionChanged+=(_,_)=>{if(!rebuilding&&sizes.SelectedItem is double size)ApplyFontSize(size);};toolbar.Children.Add(sizes);
+        var fonts=new ComboBox{Width=140,ItemsSource=SafeFonts.Order(StringComparer.OrdinalIgnoreCase).Take(500).ToArray(),SelectedItem="Segoe UI"};fonts.SelectionChanged+=(_,_)=>{if(!rebuilding&&fonts.SelectedItem is string font)ApplyFontFamily(font);};toolbar.Children.Add(fonts);
+        Button("밑줄",ApplyUnderline);Button("취소선",ApplyStrike);
+        var foreground=new ComboBox{Width=65,ItemsSource=new[]{"#000000","#FFFFFF","#CC0000","#0044CC","#006600","#663399"},ToolTip="글자색"};foreground.SelectionChanged+=(_,_)=>{if(foreground.SelectedItem is string hex)ApplyForeground(hex);};toolbar.Children.Add(foreground);
+        var highlight=new ComboBox{Width=65,ItemsSource=new[]{"#FFFF00","#CCFFCC","#FFCCDD","#CCCCFF","#FFFFFF"},ToolTip="형광펜"};highlight.SelectionChanged+=(_,_)=>{if(highlight.SelectedItem is string hex)ApplyHighlight(hex);};toolbar.Children.Add(highlight);
+        Button("• 목록",()=>ToggleList(false));Button("1. 목록",()=>ToggleList(true));Button("체크목록",InsertChecklist);Button("체크",ToggleChecked);Button("2×2 표",()=>InsertTable(2,2));toolbar.Children.Add(linkInput);Button("링크 표시 추가",()=>ApplyLink(linkInput.Text));
         RichInput.TextChanged+=Changed;DataObject.AddPastingHandler(RichInput,Pasting);
+        RichInput.AddHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart),true);
+        RichInput.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionStart),true);
+        RichInput.AddHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete),true);
         RichInput.PreviewDragOver+=RejectDrop;RichInput.PreviewDrop+=RejectDrop;
         CommandManager.AddPreviewExecutedHandler(RichInput,PreviewCommand);
         note.PropertyChanged+=DraftChanged;PublishProjection();
@@ -94,11 +103,15 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
             }
             if(!ready)document.Blocks.Add(new Paragraph(new Run(text)));
             if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
-            var previous=projected;projected=source;editable=false;
+            var previous=projected;var oldNative=RichInput.Document;projected=source;editable=false;composing=false;
             try{RichInput.Document=document;waitingTransaction=false;transactionRetry.Stop();}
             catch(InvalidOperationException)
             {
-                // Public BeginChange can outlive nested dispatcher pumps; setter rejects it before detaching old content.
+                // A handler can conceal, change source, or throw after attachment. Only an unchanged old
+                // native document proves a pre-detach BeginChange rejection; never resurrect revoked state.
+                if(!Live()){ClearSensitive();return;}
+                if(!Same()){refreshPending=true;return;}
+                if(!ReferenceEquals(RichInput.Document,oldNative)){projected=null;refreshPending=true;return;}
                 projected=previous;waitingTransaction=true;RichInput.IsReadOnly=true;transactionRetry.Start();return;
             }
             editable=ready;
@@ -168,7 +181,10 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     private static JsonObject SerializeRun(Inline inline,string text)
     {
-        if(inline.FontStyle!=FontStyles.Normal||inline.FontWeight!=FontWeights.Normal&&inline.FontWeight!=FontWeights.Bold)throw new InvalidDataException("Unsupported native style");
+        if(text.Length>RichDocumentCodec.MaxText||!RichDocumentCodec.IsWellFormedUnicode(text))throw new InvalidDataException("Malformed native Unicode");
+        if(inline.FontStyle!=FontStyles.Normal||inline.FontStretch!=FontStretches.Normal||inline.BaselineAlignment!=BaselineAlignment.Baseline||inline.FontWeight!=FontWeights.Normal&&inline.FontWeight!=FontWeights.Bold)throw new InvalidDataException("Unsupported native style");
+        for(DependencyObject? next=inline;next is Inline ancestor;next=LogicalTreeHelper.GetParent(ancestor))
+            if(ancestor.TextDecorations?.Any(d=>d.Location is not (TextDecorationLocation.Underline or TextDecorationLocation.Strikethrough))==true)throw new InvalidDataException("Unsupported native decoration");
         var result=new JsonObject{["text"]=text};if(inline.FontWeight==FontWeights.Bold)result["bold"]=true;if(Decoration(inline,TextDecorationLocation.Underline))result["underline"]=true;if(Decoration(inline,TextDecorationLocation.Strikethrough))result["strike"]=true;
         if(Explicit(inline,TextElement.FontSizeProperty) is double size)result["fontSize"]=size;
         if(Explicit(inline,TextElement.FontFamilyProperty) is FontFamily font){if(!SafeFonts.Contains(font.Source))throw new InvalidDataException("Unsafe/uninstalled font");result["fontFamily"]=font.Source;}
@@ -255,6 +271,22 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     private void Changed(object sender,TextChangedEventArgs e)
     {
+        if(composing)return;CommitNative();
+    }
+    private void CompositionStart(object sender,TextCompositionEventArgs e){if(Live()&&editable&&!rebuilding)composing=true;}
+    private void CompositionComplete(object sender,TextCompositionEventArgs e)
+    {
+        if(!composing)return;long generation=projectionGeneration;var target=note;var source=target?.Document;long? version=target?.EditVersion;
+        Dispatcher.BeginInvoke(new Action(()=>
+        {
+            if(disposed||generation!=projectionGeneration||!composing)return;
+            composing=false;
+            if(Live()&&ReferenceEquals(note,target)&&ReferenceEquals(target!.Document,source)&&target.EditVersion==version)CommitNative();
+            else if(Live())Rebuild();else ClearSensitive();
+        }));
+    }
+    private void CommitNative()
+    {
         if(rebuilding||committing||!Live()||!editable)return;
         try{var captured=CaptureDocument();committing=true;workspace!.SetRichDocument(note!,captured);if(Live()){if(note!.Document==captured)projected=captured;else Rebuild();}}
         catch{if(Live()){Rebuild();notice?.Invoke("지원하지 않는 서식/내용 또는 한도입니다. 편집을 적용하지 않고 기존 문서와 이력을 보존했습니다.");}}
@@ -264,6 +296,59 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     {if(!Live()||!editable)return;try{RichInput.Selection.ApplyPropertyValue(property,value);RichInput.Focus();}catch{if(Live())Rebuild();}}
     public void ApplyBold()=>Format(TextElement.FontWeightProperty,RichInput.Selection.GetPropertyValue(TextElement.FontWeightProperty).Equals(FontWeights.Bold)?FontWeights.Normal:FontWeights.Bold);
     public void ApplyFontSize(double size){if(!double.IsFinite(size)||size is <8 or >96)return;Format(TextElement.FontSizeProperty,size);}
+    public void ApplyFontFamily(string name)
+    {if(SafeFontName(name)&&SafeFonts.Contains(name))Format(TextElement.FontFamilyProperty,new FontFamily(name));}
+    private void ToggleDecoration(TextDecorationLocation location)
+    {
+        if(!Live()||!editable)return;object value=RichInput.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
+        if(value==DependencyProperty.UnsetValue){notice?.Invoke("서식이 다른 영역은 한 영역씩 선택하세요. 기존 서식은 보존합니다.");return;}
+        var decorations=value is TextDecorationCollection old?old.Clone():new TextDecorationCollection();bool remove=decorations.Any(d=>d.Location==location);
+        foreach(var decoration in decorations.Where(d=>d.Location==location).ToArray())decorations.Remove(decoration);
+        if(!remove)decorations.Add(location==TextDecorationLocation.Underline?TextDecorations.Underline:TextDecorations.Strikethrough);Format(Inline.TextDecorationsProperty,decorations);
+    }
+    public void ApplyUnderline()=>ToggleDecoration(TextDecorationLocation.Underline);
+    public void ApplyStrike()=>ToggleDecoration(TextDecorationLocation.Strikethrough);
+    private void ApplyColor(string hex,DependencyProperty property)
+    {if(hex.Length is not (7 or 9)||hex[0]!='#'||hex.Skip(1).Any(c=>!char.IsAsciiHexDigit(c)))return;var brush=ColorBrush(hex);brush.Freeze();Format(property,brush);}
+    public void ApplyForeground(string hex)=>ApplyColor(hex,TextElement.ForegroundProperty);
+    public void ApplyHighlight(string hex)=>ApplyColor(hex,TextElement.BackgroundProperty);
+    public void ToggleList(bool ordered)
+    {if(!Live()||!editable)return;try{(ordered?EditingCommands.ToggleNumbering:EditingCommands.ToggleBullets).Execute(null,RichInput);}catch{if(Live())Rebuild();}}
+    private void NativeChange(Action edit)
+    {
+        if(!Live()||!editable)return;RichInput.BeginChange();try{edit();}catch{if(Live())Rebuild();}finally{RichInput.EndChange();}RichInput.Focus();
+    }
+    public void InsertChecklist()
+    {
+        if(!Live()||!editable||RichInput.Selection.Start.Paragraph is not Paragraph paragraph||paragraph.Parent is not FlowDocument document||!ReferenceEquals(document,RichInput.Document))return;
+        NativeChange(()=>
+        {
+            var list=new List{MarkerStyle=TextMarkerStyle.None,Margin=new(16,0,0,4)};list.SetValue(ChecklistProperty,true);document.Blocks.InsertBefore(paragraph,list);document.Blocks.Remove(paragraph);
+            var prefix=new Run("[ ] ");prefix.SetValue(ChecklistPrefixProperty,true);if(paragraph.Inlines.FirstInline is Inline first)paragraph.Inlines.InsertBefore(first,prefix);else paragraph.Inlines.Add(prefix);
+            list.ListItems.Add(new ListItem(paragraph));RichInput.CaretPosition=paragraph.ContentStart;
+        });
+    }
+    public void ToggleChecked()
+    {
+        if(!Live()||!editable)return;var paragraph=RichInput.CaretPosition.Paragraph;
+        if(paragraph?.Parent is not ListItem item||item.Parent is not List list||!(bool)list.GetValue(ChecklistProperty)||paragraph.Inlines.FirstInline is not Run prefix||!(bool)prefix.GetValue(ChecklistPrefixProperty)||prefix.Text is not ("[ ] " or "[x] "))return;
+        NativeChange(()=>prefix.Text=prefix.Text=="[ ] "?"[x] ":"[ ] ");
+    }
+    public void InsertTable(int rows,int columns)
+    {
+        if(!Live()||!editable||rows is <1 or >32||columns is <1 or >16)return;
+        NativeChange(()=>
+        {
+            var table=new Table{CellSpacing=0};var group=new TableRowGroup();table.RowGroups.Add(group);
+            for(int row=0;row<rows;row++){var nativeRow=new TableRow();group.Rows.Add(nativeRow);for(int column=0;column<columns;column++)nativeRow.Cells.Add(new TableCell(new Paragraph(new Run("")){Margin=new(0),TextAlignment=TextAlignment.Left,TextIndent=0}){BorderBrush=Brushes.Gray,BorderThickness=new(1),Padding=new(4)});}
+            RichInput.Document.Blocks.Add(table);RichInput.CaretPosition=group.Rows[0].Cells[0].ContentStart;
+        });
+    }
+    public void ApplyLink(string url)
+    {
+        if(!Live()||!editable||url.Length>2048||url.Any(char.IsControl)||!Uri.TryCreate(url,UriKind.Absolute,out var parsed)||parsed.Scheme is not ("http" or "https")||parsed.UserInfo.Length!=0||RichInput.Selection.IsEmpty||RichInput.Selection.Start.Paragraph!=RichInput.Selection.End.Paragraph)return;
+        NativeChange(()=>{var span=new Span(RichInput.Selection.Start,RichInput.Selection.End);span.SetValue(LinkProperty,url);});
+    }
     public void ApplyPreferences(UiPreferences preferences)
     {
         if(disposed)return;rebuilding=true;try{RichInput.Background=preferences.DarkMode?new SolidColorBrush(Color.FromRgb(42,47,57)):Brushes.White;RichInput.Foreground=RichInput.CaretBrush=preferences.DarkMode?Brushes.White:Brushes.Black;RichInput.Document.Foreground=RichInput.Foreground;RichInput.LayoutTransform=new ScaleTransform(preferences.FontSize/14,preferences.FontSize/14);}finally{rebuilding=false;}
@@ -289,8 +374,18 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     public void ClearSensitive()
     {
-        if(disposed)return;disposed=true;projectionGeneration++;refreshPending=false;waitingTransaction=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;if(note is not null)note.PropertyChanged-=DraftChanged;
-        RichInput.IsUndoEnabled=false;RichInput.IsReadOnly=true;RichInput.Document.Blocks.Clear();RichInput.DataContext=null;state.Text="";toolbar.IsEnabled=false;projected=null;note=null;workspace=null;current=null;notice=null;rebuilding=false;
+        if(disposed)return;disposed=true;projectionGeneration++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
+        var oldNote=note;projected=null;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
+        // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
+        RichInput.TextChanged-=Changed;DataObject.RemovePastingHandler(RichInput,Pasting);
+        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));
+        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionStart));
+        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete));
+        RichInput.PreviewDragOver-=RejectDrop;RichInput.PreviewDrop-=RejectDrop;CommandManager.RemovePreviewExecutedHandler(RichInput,PreviewCommand);
+        Visibility=Visibility.Collapsed;RichInput.IsUndoEnabled=false;RichInput.IsReadOnly=true;RichInput.DataContext=null;state.Text="";toolbar.IsEnabled=false;
+        linkInput.IsUndoEnabled=false;linkInput.Clear();
+        try{RichInput.Document.Blocks.Clear();}catch(InvalidOperationException){/* The concealed, detached view must not interrupt key release. */}
+        finally{rebuilding=false;}
     }
     public void Dispose()=>ClearSensitive();
 }

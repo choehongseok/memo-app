@@ -18,6 +18,8 @@ public partial class StickyNoteWindow : Window
     private string? bodyMode;
     public void SetEditingContext(EditingWorkspace owner,Func<bool> valid,Action<string> status)
     {workspace=owner;current=valid;notice=status;ConfigureBody();}
+    private void ClearStructuredEditor()
+    {var previous=structuredEditor;structuredEditor=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ConfigureBody()
     {
         if(closed)return;
@@ -35,11 +37,11 @@ public partial class StickyNoteWindow : Window
                     if(Valid()){structuredEditor=created;StructuredHost.Content=created;attached=true;}else created.Dispose();
                 }
             }
-            else{structuredEditor?.Dispose();structuredEditor=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;BodyEditor.Text=draft.Text;BodyEditor.Visibility=Visibility.Visible;}
+            else{ClearStructuredEditor();BodyEditor.Text=draft.Text;BodyEditor.Visibility=Visibility.Visible;}
         }
         else
         {
-            structuredEditor?.Dispose();structuredEditor=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;BodyEditor.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;BodyEditor.IsReadOnly=false;
+            ClearStructuredEditor();BodyEditor.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;BodyEditor.IsReadOnly=false;
             if(bodyMode!=draft.Mode){BodyEditor.IsUndoEnabled=false;BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Clear();}
             if(!BindingOperations.IsDataBound(BodyEditor,TextBox.TextProperty))BodyEditor.SetBinding(TextBox.TextProperty,new Binding(nameof(NoteDraft.Text)){UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});BodyEditor.IsUndoEnabled=true;
         }
@@ -64,7 +66,7 @@ public partial class StickyNoteWindow : Window
         draft.PropertyChanged += DraftChanged;
         Closed += (_, _) =>
         {
-            closed=true;structuredEditor?.Dispose();structuredEditor=null;StructuredHost.Content=null;workspace=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;
+            closed=true;workspace=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearStructuredEditor();
             BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
             DataContext = null; BodyEditor.Clear(); TitleEditor.Clear();
         };

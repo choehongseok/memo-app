@@ -178,7 +178,7 @@ public partial class MainWindow : Window
     private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!loadingUi) SelectEditor(); }
     private void ClearStructuredEditor()
     {
-        structuredEditor?.Dispose();structuredEditor=null;structuredNote=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;
+        var previous=structuredEditor;structuredEditor=null;structuredNote=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;previous?.Dispose();
     }
     private void SelectEditor()
     {
