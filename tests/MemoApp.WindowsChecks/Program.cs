@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Threading;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
@@ -16,7 +17,7 @@ internal static class Program
         app.Startup += async (_, _) =>
         {
             try { await Run(); Console.WriteLine("PASS: actual Windows WPF control construction/layout, bound editing/search/folders/trash/history/sticky and lock/undo clearing (not IME/OS SessionLock/user usability)"); result = 0; }
-            catch (Exception e) { Console.Error.WriteLine("FAIL: WPF synthetic checks " + e.GetType().Name + ": " + e.Message); }
+            catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }
         };
         app.Run(); return result;
@@ -34,10 +35,15 @@ internal static class Program
             Invoke(main, "CreateFolder_Click", main, new RoutedEventArgs());
             Invoke(main, "NewNote_Click", main, new RoutedEventArgs());
             var first = session.Workspace.Notes.Single();
-            Control<TextBox>(main, "TitleEditor").Text = "합성 WPF 제목";
-            Control<TextBox>(main, "BodyEditor").Text = "본문 전용 합성 WPF";
+            await Idle(); // Complete the real New-note UI/data-binding turn before text input.
+            Require(first.FolderId == session.Workspace.Folders.Single().FolderId, "new-note selected folder assignment failed");
+            Require(ReferenceEquals(Control<TextBox>(main, "TitleEditor").DataContext, first) && BindingOperations.IsDataBound(Control<TextBox>(main, "TitleEditor"), TextBox.TextProperty), "title editor binding/context was not active");
+            EditText(Control<TextBox>(main, "TitleEditor"), "합성 WPF 제목");
+            EditText(Control<TextBox>(main, "BodyEditor"), "본문 전용 합성 WPF");
             await Idle();
-            Require(first.Title == "합성 WPF 제목" && first.Text == "본문 전용 합성 WPF" && first.FolderId == session.Workspace.Folders.Single().FolderId, "bound edit/folder failed");
+            Require(first.Title == "합성 WPF 제목", "title text-container edit did not update shared draft");
+            Require(first.Text == "본문 전용 합성 WPF", "body text-container edit did not update shared draft");
+            Require(BindingOperations.IsDataBound(Control<TextBox>(main, "BodyEditor"), TextBox.TextProperty), "editing removed body binding");
             Control<TextBox>(main, "SearchInput").Text = "본문 전용";
             Control<ComboBox>(main, "SearchFieldFilter").SelectedIndex = 1;
             Require(Control<ListBox>(main, "NotesList").Items.Count == 0, "title-only search matched body");
@@ -50,7 +56,7 @@ internal static class Program
             first.Text = "현재 합성 버전"; Require(await session.SaveAsync(), "UI history save failed");
             Invoke(main, "OpenSticky_Click", main, new RoutedEventArgs());
             var sticky = Field<Dictionary<Guid, StickyNoteWindow>>(main, "stickyWindows")[first.Id];
-            Control<TextBox>(sticky, "BodyEditor").Text = "공유 포스트잇 수정"; await Idle();
+            await Idle(); EditText(Control<TextBox>(sticky, "BodyEditor"), "공유 포스트잇 수정"); await Idle();
             Require(first.Text == "공유 포스트잇 수정" && Control<TextBox>(main, "BodyEditor").Text == first.Text, "sticky/management shared binding failed");
             var history = new HistoryWindow(first, session.Workspace.HistoryFor(first), _ => { }) { Owner = main }; history.Show();
             Field<HashSet<HistoryWindow>>(main, "historyWindows").Add(history);
@@ -83,6 +89,7 @@ internal static class Program
             CryptographicOperations.ZeroMemory(secret); if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
+    private static void EditText(TextBox box, string text) { box.SelectAll(); box.SelectedText = text; }
     private static async Task Idle() => await Dispatcher.CurrentDispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
     private static T Control<T>(Window window, string name) where T : class => (window.FindName(name) as T) ?? throw new Exception("Missing WPF control " + name);
     private static T Field<T>(object target, string name) => (T)(target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(target))!;
