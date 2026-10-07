@@ -66,17 +66,36 @@
       "name": "메모 삭제",
       "normalized": "메모 삭제",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A03: 메모 삭제 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "A04",
@@ -112,17 +131,36 @@
       "name": "메모 복사·복제",
       "normalized": "메모 복사·복제",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A05: 메모 복사·복제 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "A06",
@@ -324,68 +362,116 @@
       "name": "메모별 색상 변경",
       "normalized": "메모별 색상 변경",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B04: 메모별 색상 변경 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/StickyNoteWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "B05",
       "name": "메모 투명도 조절",
       "normalized": "메모 투명도 조절",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B05: 메모 투명도 조절 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/StickyNoteWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "B06",
       "name": "항상 위에 표시",
       "normalized": "항상 위에 표시",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B06: 항상 위에 표시 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/StickyNoteWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "B07",
       "name": "메모 접기·펼치기",
       "normalized": "메모 접기·펼치기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B07: 메모 접기·펼치기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/StickyNoteWindow.xaml",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "B08",
@@ -709,17 +795,29 @@
       "name": "실행취소·다시실행",
       "normalized": "실행취소·다시실행",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "C13: 실행취소·다시실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Documents",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "C14",
@@ -772,170 +870,360 @@
       "name": "폴더 만들기",
       "normalized": "폴더 만들기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D01: 폴더 만들기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D02",
       "name": "하위 폴더 만들기",
       "normalized": "하위 폴더 만들기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D02: 하위 폴더 만들기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D03",
       "name": "메모를 폴더 간 이동",
       "normalized": "메모를 폴더 간 이동",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D03: 메모를 폴더 간 이동 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D04",
       "name": "태그 사용",
       "normalized": "태그 사용",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D04: 태그 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D05",
       "name": "메모별 색상 분류",
       "normalized": "메모별 색상 분류",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D05: 메모별 색상 분류 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D06",
       "name": "중요 메모 표시",
       "normalized": "중요 메모 표시",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D06: 중요 메모 표시 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D07",
       "name": "즐겨찾기",
       "normalized": "즐겨찾기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D07: 즐겨찾기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D08",
       "name": "메모 고정",
       "normalized": "메모 고정",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D08: 메모 고정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D09",
       "name": "보관함",
       "normalized": "보관함",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D09: 보관함 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D10",
       "name": "휴지통",
       "normalized": "휴지통",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D10: 휴지통 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D11",
@@ -976,51 +1264,108 @@
       "name": "이름순 정렬",
       "normalized": "이름순 정렬",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D13: 이름순 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D14",
       "name": "최근 수정순 정렬",
       "normalized": "최근 수정순 정렬",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D14: 최근 수정순 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D15",
       "name": "작성일순 정렬",
       "normalized": "작성일순 정렬",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D15: 작성일순 정렬 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "D16",
@@ -1044,119 +1389,252 @@
       "name": "전체 메모 검색",
       "normalized": "전체 메모 검색",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E01: 전체 메모 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E02",
       "name": "제목 검색",
       "normalized": "제목 검색",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E02: 제목 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E03",
       "name": "본문 검색",
       "normalized": "본문 검색",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E03: 본문 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E04",
       "name": "폴더별 검색",
       "normalized": "폴더별 검색",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E04: 폴더별 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E05",
       "name": "태그별 검색",
       "normalized": "태그별 검색",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E05: 태그별 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E06",
       "name": "기간 지정 검색",
       "normalized": "기간 지정 검색",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E06: 기간 지정 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E07",
       "name": "중요 메모만 검색",
       "normalized": "중요 메모만 검색",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E07: 중요 메모만 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E08",
@@ -1180,17 +1658,36 @@
       "name": "여러 조건 조합 검색",
       "normalized": "여러 조건 조합 검색",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E09: 여러 조건 조합 검색 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/SearchChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "E10",
@@ -1547,7 +2044,9 @@
       "implementation_locations": [
         "src/MemoApp.Core/Storage/EncryptedVault.cs",
         "src/MemoApp.Core/Editing/SaveCoordinator.cs",
-        "src/MemoApp.Windows/MainWindow.xaml.cs"
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs"
       ],
       "planned_module": "History",
       "test_evidence": [
@@ -1557,60 +2056,131 @@
           "environment": "Linux cloud x86_64 / SDK 10.0.401",
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
           "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        },
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
         }
       ],
-      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "M02",
       "name": "과거 버전 보기",
       "normalized": "과거 버전 보기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "M02: 과거 버전 보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "History",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "M03",
       "name": "과거 버전으로 되돌리기",
       "normalized": "과거 버전으로 되돌리기",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "M03: 과거 버전으로 되돌리기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "기존 이력을 보존한 새 리비전으로 복원하고 동기화와 충돌하지 않는다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "History",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "M04",
       "name": "삭제한 메모 복원",
       "normalized": "삭제한 메모 복원",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "M04: 삭제한 메모 복원 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "History",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "M05",
@@ -1889,17 +2459,37 @@
       "name": "수동 백업",
       "normalized": "수동 백업",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O05: 수동 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "tests/MemoApp.ContractChecks/BackupChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "O06",
@@ -1998,17 +2588,36 @@
       "name": "한 PC에서만 사용",
       "normalized": "한 PC에서만 사용",
       "phase": 1,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "P01: 한 PC에서만 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "네트워크·계정·서버 없이 핵심 흐름이 동작한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Sync",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "core-behavior",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401 runtime10.0.12",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
+          "result": "PASS actual synthetic search/organization/schema2/trash/revision/backup restart and failure tests; Windows UI/IME/OS/ACL not covered"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "P02",
@@ -2240,7 +2849,10 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Windows/MainWindow.xaml",
-        "src/MemoApp.Windows/StickyNoteWindow.xaml"
+        "src/MemoApp.Windows/StickyNoteWindow.xaml",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "WindowsUI",
       "test_evidence": [
@@ -2250,9 +2862,16 @@
           "environment": "Linux cloud x86_64 / SDK 10.0.401",
           "command": "dotnet build MemoApp.slnx -c Release",
           "result": "PASS compile only; Windows GUI 미실행"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
         }
       ],
-      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "S02",
@@ -2268,7 +2887,10 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Windows/MainWindow.xaml",
-        "src/MemoApp.Windows/StickyNoteWindow.xaml"
+        "src/MemoApp.Windows/StickyNoteWindow.xaml",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
       ],
       "planned_module": "WindowsUI",
       "test_evidence": [
@@ -2278,9 +2900,16 @@
           "environment": "Linux cloud x86_64 / SDK 10.0.401",
           "command": "dotnet build MemoApp.slnx -c Release",
           "result": "PASS compile only; Windows GUI 미실행"
+        },
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
         }
       ],
-      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "S04",
@@ -2355,34 +2984,58 @@
       "name": "메모 글자 수",
       "normalized": "메모 글자 수",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "T09: 메모 글자 수 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "LocalIntelligence",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "T10",
       "name": "전체 메모 개수",
       "normalized": "전체 메모 개수",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "T10: 전체 메모 개수 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "LocalIntelligence",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "cross-build-only",
+          "commit": "116912fa712aaebdf04ffcf32d9d2acafb0149ce",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet build MemoApp.slnx -c Release -m:1",
+          "result": "PASS 0 warnings/errors; WPF WindowsChecks compiled, execution pending Windows CI"
+        }
+      ],
+      "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
     },
     {
       "id": "T12",

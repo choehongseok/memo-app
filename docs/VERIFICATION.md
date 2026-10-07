@@ -73,3 +73,16 @@ ZIP 결과: 63,192,131 bytes, SHA256 `744dec678cc0088b97056ab5511b7a7c4495b03650
 - 7d13a12의 run37504500668: 실제 Windows blob/checkout 모두27,417 bytes/원래 SHA256 일치. 후속 `charmap codec can't decode byte 0x9d` 실패. UTF-8 원장 파일의 cp1252 decode에서 같은 종류 오류 재현. Python 검사와 회귀 파일 읽기에 UTF-8을 명시, 기존6 회귀/원장/민감정보/diff PASS. 제품 코드 변경/검사 완화 없음.
 - a8915328d42db319504b4b457f58a64f8d454c7d의 https://github.com/choehongseok/memo-app/actions/runs/37504683119 성공(Windows Server2022, SDK10.0.401): blob/checkout 원래 byte/hash 일치, 134 ID/M06, Python6, 민감정보, build 경고·오류0, 모든 합성 계약 검사, self-contained Windows x64 publish 및 artifact 업로드. 계약 로그는 실제 암호 파일/복구/잘못된 비밀/writer, 변조19/절단7/엄격parser/파일오류/충돌/후보보존, 다른프로세스 writer/실제Kill4/평문·키 검사, generation/epoch/직렬저장/즉시잠금/실패 경쟁 PASS.
 - Artifact ID11430249406,64,957,037 bytes,SHA256 5b079cee5e1071b4a0b9b6c488e75954e604f813168549cc667f783223e04b2c, expires2026-10-13. Windows GUI/IME/OS SessionLock/ACL/다른 계정 사용자 시나리오는 실행하지 않았다. 독립 코드 감사/전체134 기능 수용을 증명하지 않는다.
+
+## 2026-10-07 코드116912f 조직/검색/휴지통/이력/백업
+환경: 별도 cloud Linux Debian13 x86_64, Microsoft 공식 SDK10.0.401 SHA512검증설치, runtime10.0.12. NuGet 기본 cache는 read-only여서 /tmp 작업cache를 지정했다. 직접 제품 PackageReference 추가 없음.
+
+- 원문134 ID/byte/hash/M06 검사 및 Python6 회귀 PASS
+- 신규 검색/조직/버전2/백업 시험은 미구현 stub 실패를 실제 확인한 뒤 구현. rapid delete→restore 사건누락, history512 실패시 변이, backup완료전 Lock반환을 실패시험으로 재현하고 수정했다
+- Core전체 실제 파일/19변조/7절단/프로세스Kill4/경쟁/키·평문 scan 회귀 PASS. 신규 엄격 schema2필수필드/metadata/unknown/version/foldercycle/reference/삭제-tombstone, encrypted restart/immutableTag, 실제legacy payload migration previous exact bytes와 pre-flush 실패원본보존 PASS
+- revision metadata변경과 삭제/명시복원은 새revision; 빠른반복사건 유지. 한도거절시 draft/EditVersion/basis/head/content/deleted/history 불변 PASS
+- hidden recovery는 최신 준비 basis와 invalid unsaved drafts/폴더/태그를 분리보존하고 수정해저장; invalid draft를immutable history로 넣지 않음 PASS
+- 수동백업 최신저장→정확current ciphertext create-new/flush→별도root authenticate/open/save; 기존대상 overwrite거절/flush실패 원본유지/잠금중즉시concel+keyrelease/늦은성공거절/종료전cipher I/O대기 PASS
+- dotnet build MemoApp.slnx -c Release -m:1: WPF포함4프로젝트 PASS 0 warnings/errors. 기본parallel solution 명령은 진단상 프로젝트 target시작전 오류0의실패였으며 direct project 및 single-node성공; 해결되지 않은환경특성으로 기록
+- git diff --cached --check 및 추적파일 비밀/산출물 휴리스틱 PASS. 전문감사 아님
+- WindowsChecks는 Linux교차compile만. WindowsGUI/IME/OS SessionLock/ACL/다른계정/다중모니터실기기 검사아님. 원격push승인차단으로 새WindowsCI실행은 아직 없음

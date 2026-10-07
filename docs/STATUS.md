@@ -1,3 +1,14 @@
+# 2026-10-07 독립 Windows 기능 확장 (진행 중)
+코드 commit 116912fa712aaebdf04ffcf32d9d2acafb0149ce, development/stage-1. 기존 원문 byte/hash와 134 ID/이름/M06 보존. 최종 종료가 아니며 다음 독립 Windows 기능을 계속한다.
+
+구현: 암호 schema2 폴더/하위폴더/태그, 이동, 중요/즐겨찾기/목록고정/보관/색, 메모 복제, NFC literal 복합검색(제목/본문/폴더하위/태그/수정일/중요/즐겨찾기), 정렬, 암호 휴지통·삭제사건/새 리비전 복원, 과거내용 보기/새 리비전 되돌리기, 최신 수동암호백업. 포스트잇 색/세션 투명도/항상위/접기, native 텍스트 Undo/Redo 및 잠금 Undo purge 연결. 전체134 기능 미완료, 사용자 수용 미확인.
+
+실제 Linux Core 원문/Python6/계약·파일·변조·프로세스Kill·잠금경쟁 PASS. 새 schema2 엄격 필드/참조/cycle, v1→v2 첫저장 exact previous 보존/마이그레이션 실패원본 유지, rapid delete/restore 삭제사건, history512 거절시 draft/basis 무변화, full hidden recovery history/folder/tag/latestdraft 보존, 실제백업 다른root복구/no-overwrite/flush실패/즉시잠금 경쟁 PASS. WPF4프로젝트 교차 build -m:1 PASS 0 warnings/errors. 이 환경 기본 parallel solution build는 오류코드만 실패했고 single-node/direct project는 성공; 기능시험 결과와 분리한다.
+
+독립 설계 및 실제diff 읽기전용 검토: 엄격schema·metadata/tombstone·immutable tag·fingerprint 백업·FrozenBasis·epoch·Undo·transactional preflight 조건을 반영했고 변경범위 잔여 blocker 없음. 검토자는 테스트코드/작성자 증거를 읽었지만 독립실행·전문감사·전체제품검증은 아니다.
+
+WindowsChecks를 CI에 추가했으며 실제 WPF control/layout/binding/search/folder/trash/history/sticky/lock/undo 시험 예정이다. 아직 runner 실행전이며 실제 IME/OS SessionLock/ACL/다른계정/다중모니터 사용자검증은 여전히 없다. 공식 Git clone과 SDK검증설치 성공. Git push는 검토자가 명시 외부업로드 승인을 요구해 차단되었고 동일 대상 원문승인 확인 대기; 대체 원격쓰기/우회 없음. 기존 draft PR1은 원격HEAD86e633e로 확인, main 미병합.
+
 # 현재 상태
 ## 2026-10-06 원격 저장 및 Windows CI 갱신
 아래 2026-10-02 상태는 당시 기록이다. 일반 Git push로 main/preparation/stage-0=be6dbed, development/stage-1 이력을 저장했고 draft PR https://github.com/choehongseok/memo-app/pull/1 을 생성했다(미병합).
