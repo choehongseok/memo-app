@@ -86,3 +86,11 @@ ZIP 결과: 63,192,131 bytes, SHA256 `744dec678cc0088b97056ab5511b7a7c4495b03650
 - dotnet build MemoApp.slnx -c Release -m:1: WPF포함4프로젝트 PASS 0 warnings/errors. 기본parallel solution 명령은 진단상 프로젝트 target시작전 오류0의실패였으며 direct project 및 single-node성공; 해결되지 않은환경특성으로 기록
 - git diff --cached --check 및 추적파일 비밀/산출물 휴리스틱 PASS. 전문감사 아님
 - WindowsChecks는 Linux교차compile만. WindowsGUI/IME/OS SessionLock/ACL/다른계정/다중모니터실기기 검사아님. 원격push승인차단으로 새WindowsCI실행은 아직 없음
+
+## 2026-10-07 후속4af72d6 실제Windows/Core 검증
+- 공식connector 저장(새인증/토큰읽기없이) 및 Git원격HEAD/tree 검증. 로컬4bc0f9d와 원격4af72d6 tree동일
+- https://github.com/choehongseok/memo-app/actions/runs/37581724510 Windows Server2022 전체SUCCESS. 실제 WPF control/binding/search/folders/tags/trash/history/sharedsticky/lockUndo·grapheme count·custom order 제어검사PASS, 실제IME/OS SessionLock/물리드래그아님
+- TXT UTF8BOM/UTF16LE·BE/UTF32·NUL·odd·malformed·pre-normalization 한도/소스보존hash/overwrite거절/부분flush실패/CreateNew중취소0payload/linkancestor; import알림편집/즉시Clear; 100notes/256title/65536body·history512·실제whole-byteboundary import/reorder 전체불변PASS
+- portable 명시선택/unknownargs/기존기본root·linked프로그램/Data 거절PASS. 실제USB제거/권한제한/다른Windows계정미검증
+- 기존cryptographic/mutation/processKill/generation/epoch/hiddenrecovery 회귀PASS; 원문134ID·Python6·safety·build0warning/error·publish/uploadPASS
+- 실제diff 독립읽기검토에서5P1발견후수정. 검토자가 테스트를독립실행한것은아님. malicious concurrent reparse 교체의handle방어 및 이미시작한평문Write회수 보장없음

@@ -1,3 +1,14 @@
+# 2026-10-07 TXT/포터블/순서 후속본 및 실제 Windows 제어검사 성공
+최신 코드4af72d685b6c1dc669163bfdb986ae2e1298eee2 (로컬4bc0f9d와 tree6b427ef7 동일). 같은 development/stage-1에 공식 connector의 non-force expected-head 저장 및 일반 Git fetch/tree 대조로 확인. 원격main/visibility/인증설정 변경 없음. 로컬 이전커밋은 archive branch/bundle로 보존.
+
+Windows CI https://github.com/choehongseok/memo-app/actions/runs/37581724510 성공: 원문byte/hash·134ID·Python6·비밀검사·Windows빌드0warning/error·전체실제Core·새WPF제어시험·self-contained publish/upload. artifact11464773365,65004246bytes,SHA2568c68df0a6d1eacdd5d99a2161a5efe9136c649baf3dd8248ff5048c815e56a33,만료2026-10-14. 미서명합성자료용이며 IME/실제SessionLock/다른계정ACL/물리drag/USB미검증.
+
+새로연결한 흐름: strict/bounded UTF8·BOMUTF16 TXT수입(원본hash/보존/전체snapshot 원자preflight), 명시위험확인 후 새평문TXT내보내기(no overwrite/flush/취소/부분파일), 명시 --portable exe옆Data와 링크·네트워크거절, 사용자순서/내부UUID drag/위아래버튼/그룹고정보존. 신규Counter가 전체16MiB 예산을 event/import staging 전에검사. callback편집/close 재진입·CreateNew동안취소0bytes·전체history/bytebudget 실패불변 회귀PASS.
+
+처음 WPF검사는 bound TextBox.Text를 시험에서 직접덮어 실패했고 데이터바인딩활성후 실제text-container 편집으로 같은조건을 시험해 수정했다. 첫확장5441b5e의 https://github.com/choehongseok/memo-app/actions/runs/37578265896 와 이번후속본 모두 제어실행PASS. 빌드만으로GUI검증을 주장하지 않는다. 독립읽기설계/code검토에서 발견한5P1 지적은 수정됐으며 전문감사/전체134완성/사용자수용이 아니다.
+
+다음: 남은 기기별 창위치·크기·재열기·설정/위젯 등의 독립Windows 기능을 이어간다. Android/암호동기화/로컬엔진 최종범위 유지. Google SDK 사용약관/추가도구·실기기 등 새결정이 필요할 수 있으나 현재Windows 작업은 계속가능하다. 이단위는 최종중단조건이 아니다.
+
 # 2026-10-07 독립 Windows 기능 확장 (진행 중)
 코드 commit 116912fa712aaebdf04ffcf32d9d2acafb0149ce, development/stage-1. 기존 원문 byte/hash와 134 ID/이름/M06 보존. 최종 종료가 아니며 다음 독립 Windows 기능을 계속한다.
 
