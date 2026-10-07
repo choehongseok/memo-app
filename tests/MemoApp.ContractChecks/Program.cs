@@ -26,6 +26,10 @@ if (restored.Content.GetProperty("nodes")[3].GetProperty("opaque").GetProperty("
     throw new InvalidOperationException("Unknown node lost");
 Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roundtrip (in-memory only)");
 EditingChecks.Run();
+SearchChecks.Run();
+OrganizationChecks.Run();
+await Schema2Checks.Run();
+await BackupChecks.Run();
 VaultChecks.Run();
 VaultFailureChecks.Run();
 await CoordinatorChecks.Run();

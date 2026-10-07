@@ -67,6 +67,21 @@ internal static class CoordinatorChecks
                 invalid.Workspace.Notes[0].Title = "합성 복구 제목";
                 VaultChecks.Require(await invalid.LockAsync() && invalid.KeysReleased, "correct secret must allow fixing hidden draft then saving and locking");
             }
+            using (var hidden = new SaveCoordinator(EncryptedVault.Open(root, secret), TimeProvider.System))
+            {
+                var draft = hidden.Workspace.Notes[0]; draft.Text = "PREPARED_HISTORY_SYNTHETIC";
+                VaultChecks.Require(await hidden.SaveAsync(), "prepare hidden-history basis");
+                var folder = hidden.Workspace.CreateFolder("HIDDEN_FOLDER_SYNTHETIC");
+                hidden.Workspace.MoveNote(draft, folder.FolderId); hidden.Workspace.SetTags(draft, ["HIDDEN_TAG_SYNTHETIC"]);
+                draft.Text = "UNSAVED_HIDDEN_SYNTHETIC"; draft.Title = new string('z', 257);
+                await hidden.LockAsync(); hidden.ResumeHidden(secret);
+                var resumed = hidden.Workspace.Notes[0]; resumed.Title = "fixed hidden synthetic";
+                VaultChecks.Require(hidden.Workspace.Folders.Single().FolderId == folder.FolderId && hidden.Workspace.Tags.Any(t => t.Name == "HIDDEN_TAG_SYNTHETIC") && resumed.Text == "UNSAVED_HIDDEN_SYNTHETIC", "hidden recovery must preserve full organization/latest draft");
+                VaultChecks.Require(await hidden.SaveAsync(), "fixed hidden snapshot must save without invalid draft becoming history");
+                var history = hidden.Workspace.HistoryFor(resumed);
+                VaultChecks.Require(history.Any(h => h.Text == "PREPARED_HISTORY_SYNTHETIC") && history.All(h => h.Title.Length <= 256), "hidden recovery preserves latest prepared history but never makes invalid unsaved draft immutable");
+                await hidden.LockAsync();
+            }
             Console.WriteLine("PASS: generation/epoch, queued latest save, immediate lock during blocked I/O, late completion, locked write/encryption failures");
         }
         finally { CryptographicOperations.ZeroMemory(secret); Directory.Delete(root, true); }

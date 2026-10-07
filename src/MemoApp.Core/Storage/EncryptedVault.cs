@@ -115,6 +115,7 @@ public sealed class EncryptedVault : IDisposable
         {
             if (disposed || keysReleased || faulted) throw new InvalidOperationException("Vault session cannot prepare writes");
             VaultEnvelope.Validate(snapshot);
+            if (snapshot.SchemaVersion == 1) snapshot = snapshot with { SchemaVersion = 2 };
             if (wraps > VaultEnvelope.MaxWraps - 2 || sequence == ulong.MaxValue) throw new InvalidOperationException("Key use or sequence budget exhausted");
             // Count every attempt, including failures. Rollback of persisted counters cannot be proven.
             wraps += 2; sequence++;
@@ -172,6 +173,28 @@ public sealed class EncryptedVault : IDisposable
             catch { state = "unreadable-preserved"; }
             return new CandidateState(Path.GetFileName(path), state);
         }).ToArray();
+    }
+    public void ExportCommitted(string path, IAtomicVaultFiles? backupFiles = null)
+    {
+        path = Path.GetFullPath(path);
+        string relative = Path.GetRelativePath(root, path);
+        if (relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) && !Path.IsPathRooted(relative)) throw new IOException("Backup destination must be outside the active vault");
+        RejectLinkedAncestors(Path.GetDirectoryName(path)!);
+        lock (commitGate)
+        {
+            lock (gate)
+                if (disposed || keysReleased || faulted || lastKnownBase is null) throw new InvalidOperationException("No active authenticated committed snapshot");
+            var bytes = ReadBounded(Path.Combine(root, "current.vault"));
+            if (!Equal(lastKnownBase, SHA256.HashData(bytes))) throw new IOException("Committed snapshot changed; backup refused");
+            var outputFiles = backupFiles ?? new AtomicVaultFiles();
+            using (var output = outputFiles.CreateNew(path)) { output.Write(bytes); outputFiles.FlushToDisk(output); }
+            if (!Equal(SHA256.HashData(ReadBounded(path)), lastKnownBase)) throw new IOException("Backup outcome uncertain");
+        }
+    }
+    private static void RejectLinkedAncestors(string directory)
+    {
+        for (var current = new DirectoryInfo(directory); current is not null; current = current.Parent)
+            if (current.Exists && (current.Attributes & FileAttributes.ReparsePoint) != 0) throw new IOException("Linked backup directory refused");
     }
     public void ReleaseKeys()
     {

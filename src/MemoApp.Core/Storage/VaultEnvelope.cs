@@ -54,11 +54,7 @@ internal static class VaultEnvelope
             plaintext = Open(bytes, HeaderSize + 120, header.PayloadLength, dataKey, [.. aad, 3]);
             using var document = JsonDocument.Parse(plaintext, new() { MaxDepth = 16 });
             CheckDuplicates(document.RootElement);
-            foreach (var required in new[] { "schemaVersion", "deviceId", "notes", "history", "tombstones" })
-                if (!document.RootElement.TryGetProperty(required, out _)) throw new InvalidDataException("Missing schema field");
-            if (document.RootElement.GetProperty("notes").GetArrayLength() > 100 ||
-                document.RootElement.GetProperty("history").ValueKind != JsonValueKind.Array || document.RootElement.GetProperty("history").GetArrayLength() > 10000 ||
-                document.RootElement.GetProperty("tombstones").GetArrayLength() > 100) throw new InvalidDataException("Record limit exceeded");
+            SnapshotValidation.Json(document.RootElement);
             var snapshot = JsonSerializer.Deserialize<VaultSnapshot>(plaintext, JsonOptions) ?? throw new InvalidDataException("Missing snapshot");
             Validate(snapshot);
             return (header, snapshot);
@@ -121,52 +117,5 @@ internal static class VaultEnvelope
         }
         else if (element.ValueKind == JsonValueKind.Array) foreach (var item in element.EnumerateArray()) CheckDuplicates(item);
     }
-    internal static void Validate(VaultSnapshot snapshot)
-    {
-        if (snapshot.SchemaVersion != 1 || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100) throw new InvalidDataException("Unsupported snapshot or note limit");
-        var ids = new HashSet<Guid>();
-        var revisions = new HashSet<Guid>();
-        var graph = new Dictionary<Guid, (Guid NoteId, Guid[] Parents)>();
-        foreach (var note in snapshot.Notes)
-        {
-            if (note is null || note.NoteId == Guid.Empty || !ids.Add(note.NoteId) || note.RevisionId == Guid.Empty || !revisions.Add(note.RevisionId) ||
-                note.Title is null || note.Text is null || note.Title.Length > 256 || note.Text.Length > 65536 || note.Parents is null || note.Parents.Length > 8 ||
-                note.Parents.Any(p => p == Guid.Empty || p == note.RevisionId) || note.Parents.Distinct().Count() != note.Parents.Length ||
-                note.Mode != "plain" || note.Scope != "device-only" || note.CreatedAt.Offset != TimeSpan.Zero || note.ModifiedAt.Offset != TimeSpan.Zero)
-                throw new InvalidDataException("Invalid note fields or unsupported mode");
-            graph.Add(note.RevisionId, (note.NoteId, note.Parents));
-        }
-        foreach (var revision in snapshot.History)
-        {
-            if (revision is null || !ids.Contains(revision.NoteId) || revision.RevisionId == Guid.Empty || !revisions.Add(revision.RevisionId) ||
-                revision.Parents is null || revision.Parents.Length > 8 || revision.Title is null || revision.Title.Length > 256 ||
-                revision.Text is null || revision.Text.Length > 65536 || revision.ModifiedAt.Offset != TimeSpan.Zero)
-                throw new InvalidDataException("Invalid history");
-            graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
-        }
-        if (snapshot.History.GroupBy(r => r.NoteId).Any(g => g.Count() > 512)) throw new InvalidDataException("History limit exceeded");
-        var deletedIds = new HashSet<Guid>();
-        foreach (var deleted in snapshot.Tombstones)
-        {
-            if (deleted is null || deleted.NoteId == Guid.Empty || ids.Contains(deleted.NoteId) || !deletedIds.Add(deleted.NoteId) ||
-                deleted.RevisionId == Guid.Empty || !revisions.Add(deleted.RevisionId) || deleted.Parents is null || deleted.Parents.Length != 0)
-                throw new InvalidDataException("Unsupported or invalid tombstone");
-        }
-        foreach (var pair in graph)
-        {
-            var parents = pair.Value.Parents;
-            if (parents.Distinct().Count() != parents.Length || parents.Any(p => p == pair.Key || !graph.TryGetValue(p, out var parent) || parent.NoteId != pair.Value.NoteId))
-                throw new InvalidDataException("Invalid revision relation");
-        }
-        var visited = new HashSet<Guid>();
-        var visiting = new HashSet<Guid>();
-        void Visit(Guid revision)
-        {
-            if (visited.Contains(revision)) return;
-            if (!visiting.Add(revision)) throw new InvalidDataException("Revision cycle");
-            foreach (var parent in graph[revision].Parents) Visit(parent);
-            visiting.Remove(revision); visited.Add(revision);
-        }
-        foreach (var revision in graph.Keys) Visit(revision);
-    }
+    internal static void Validate(VaultSnapshot snapshot) => SnapshotValidation.Validate(snapshot);
 }

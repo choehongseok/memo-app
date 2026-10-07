@@ -49,6 +49,8 @@ jobs:
         run: dotnet build MemoApp.slnx -c Release
       - name: Synthetic contract checks
         run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build
+      - name: Actual Windows WPF synthetic control checks
+        run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
       - name: Publish unsigned synthetic-data Windows x64 trial
         run: dotnet publish src/MemoApp.Windows -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
