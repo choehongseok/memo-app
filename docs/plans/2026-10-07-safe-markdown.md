@@ -43,6 +43,6 @@
 ### Task3: Windows read-only preview
 **Files:** src/MemoApp.Windows/MarkdownNotePreview.cs; MainWindow.xaml(.cs); StickyNoteWindow.xaml.cs; tests/MemoApp.WindowsChecks/Program.cs
 **Interfaces:** readonly preview control with same-session/epoch/note/source/EditVersion checks; clear source/output/tasks on revoke; never writes into NoteDraft.Text
-- [ ] Add Windows red-first raw-source/two-view/late-lock/selection-change/large-source tests once approved CI upload resumes
-- [ ] Implement debounce/background parsing/read-only safe WPF spans and clear behavior
+- [x] Add Windows red-first raw-source/two-view/late-lock/selection-change/large-source tests once approved CI upload resumes
+- [x] Implement debounce/background parsing/read-only safe WPF spans and clear behavior
 - [ ] Run full actual Windows suite; keep physical IME/OS-lock/ACL/user acceptance separate

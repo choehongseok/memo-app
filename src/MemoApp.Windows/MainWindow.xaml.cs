@@ -36,6 +36,8 @@ public partial class MainWindow : Window
     private DateTimeOffset activity = DateTimeOffset.UtcNow;
     private bool closing, confirmedExit, transitionBusy;
     private long uiEpoch;
+    private MarkdownNotePreview? markdownPreview;
+    private NoteDraft? markdownNote;
     private StructuredNoteEditor? structuredEditor;
     private NoteDraft? structuredNote;
     private string? selectedBodyMode;
@@ -97,7 +99,7 @@ public partial class MainWindow : Window
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
-        EditingPanel.Visibility = Visibility.Collapsed;ClearStructuredEditor();
+        EditingPanel.Visibility = Visibility.Collapsed;ClearMarkdownPreview();ClearStructuredEditor();
         Editor.DataContext = null; Editor.IsEnabled = false; NotesList.ItemsSource = null;
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false; BodyEditor.Clear(); TitleEditor.Clear();
         loadingUi = true;
@@ -176,6 +178,8 @@ public partial class MainWindow : Window
     private async void Save_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.SaveAsync(); }
     private async void Lock_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.LockAsync(); else ClearSecretControls(); }
     private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!loadingUi) SelectEditor(); }
+    private void ClearMarkdownPreview()
+    {var previous=markdownPreview;markdownPreview=null;markdownNote=null;MarkdownHost.Content=null;MarkdownHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ClearStructuredEditor()
     {
         var previous=structuredEditor;structuredEditor=null;structuredNote=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;previous?.Dispose();
@@ -203,6 +207,17 @@ public partial class MainWindow : Window
             if(selected?.Mode=="rich"){BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Text=selected.Text;}
             else if(!BindingOperations.IsDataBound(BodyEditor,TextBox.TextProperty))BodyEditor.SetBinding(TextBox.TextProperty,new Binding(nameof(NoteDraft.Text)){UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});
         }
+        if(selected is {Mode:"markdown",IsDeleted:false}&&session is {IsLocked:false} markdownSession&&!concealing)
+        {
+            MarkdownHost.Visibility=Visibility.Visible;
+            if(!ReferenceEquals(markdownNote,selected)||markdownPreview is null)
+            {
+                ClearMarkdownPreview();long epoch=uiEpoch;bool attached=false;MarkdownNotePreview? created=null;
+                bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,markdownSession)&&!markdownSession.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&markdownSession.Workspace.Notes.Contains(selected)&&selected is {IsClosed:false,IsDeleted:false,Mode:"markdown"}&&(!attached||ReferenceEquals(MarkdownHost.Content,created));
+                created=new(selected,Current);if(Current()){markdownPreview=created;markdownNote=selected;MarkdownHost.Content=created;MarkdownHost.Visibility=Visibility.Visible;attached=true;created.ApplyPreferences(markdownSession.Workspace.GetUiDevice(uiDeviceId).Preferences);}else created.Dispose();
+            }
+        }
+        else ClearMarkdownPreview();
         bool loading=loadingUi;loadingUi=true;ModeChoice.SelectedItem=ModeChoice.Items.Cast<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==selected?.Mode);loadingUi=loading;
         MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();
     }
@@ -287,7 +302,7 @@ public partial class MainWindow : Window
         {
             var style=new Style(type);style.Setters.Add(new Setter(Control.BackgroundProperty,controlBackground));style.Setters.Add(new Setter(Control.ForegroundProperty,Foreground));style.Setters.Add(new Setter(Control.BorderBrushProperty,Brushes.SlateGray));Resources[type]=style;
         }
-        structuredEditor?.ApplyPreferences(prefs);foreach(var window in stickyWindows.Values)window.ApplyUiPreferences(prefs);foreach(var window in widgets.Values)window.ApplyUiPreferences(prefs);foreach(var window in historyWindows)window.ApplyUiPreferences(prefs);loadingUi=false;
+        structuredEditor?.ApplyPreferences(prefs);markdownPreview?.ApplyPreferences(prefs);foreach(var window in stickyWindows.Values)window.ApplyUiPreferences(prefs);foreach(var window in widgets.Values)window.ApplyUiPreferences(prefs);foreach(var window in historyWindows)window.ApplyUiPreferences(prefs);loadingUi=false;
     }
     private void Inspect_Click(object sender, RoutedEventArgs e)
     {

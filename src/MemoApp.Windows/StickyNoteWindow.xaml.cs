@@ -14,10 +14,13 @@ public partial class StickyNoteWindow : Window
     private EditingWorkspace? workspace;
     private Func<bool>? current;
     private Action<string>? notice;
+    private MarkdownNotePreview? markdownPreview;
     private StructuredNoteEditor? structuredEditor;
     private string? bodyMode;
     public void SetEditingContext(EditingWorkspace owner,Func<bool> valid,Action<string> status)
     {workspace=owner;current=valid;notice=status;ConfigureBody();}
+    private void ClearMarkdownPreview()
+    {var previous=markdownPreview;markdownPreview=null;MarkdownHost.Content=null;MarkdownHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ClearStructuredEditor()
     {var previous=structuredEditor;structuredEditor=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ConfigureBody()
@@ -45,6 +48,16 @@ public partial class StickyNoteWindow : Window
             if(bodyMode!=draft.Mode){BodyEditor.IsUndoEnabled=false;BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Clear();}
             if(!BindingOperations.IsDataBound(BodyEditor,TextBox.TextProperty))BodyEditor.SetBinding(TextBox.TextProperty,new Binding(nameof(NoteDraft.Text)){UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});BodyEditor.IsUndoEnabled=true;
         }
+        if(draft.Mode=="markdown"&&workspace is not null&&current?.Invoke()==true&&!draft.IsClosed&&!draft.IsDeleted)
+        {
+            MarkdownHost.Visibility=Visibility.Visible;if(markdownPreview is null)
+            {
+                var owner=workspace;bool attached=false;MarkdownNotePreview? created=null;
+                bool Valid()=>!closed&&ReferenceEquals(workspace,owner)&&current?.Invoke()==true&&owner.Notes.Contains(draft)&&draft is {IsClosed:false,IsDeleted:false,Mode:"markdown"}&&(!attached||ReferenceEquals(MarkdownHost.Content,created));
+                created=new(draft,Valid);if(Valid()){markdownPreview=created;MarkdownHost.Content=created;attached=true;}else created.Dispose();
+            }
+        }
+        else ClearMarkdownPreview();
         bodyMode=draft.Mode;
     }
     public void SetPlacement(DesktopWindowController controller)
@@ -55,7 +68,7 @@ public partial class StickyNoteWindow : Window
     }
     public void ApplyUiPreferences(MemoApp.Core.Storage.UiPreferences preferences)
     {
-        FontSize=preferences.FontSize;ContentScale.ScaleX=ContentScale.ScaleY=preferences.Scale;structuredEditor?.ApplyPreferences(preferences);
+        FontSize=preferences.FontSize;ContentScale.ScaleX=ContentScale.ScaleY=preferences.Scale;structuredEditor?.ApplyPreferences(preferences);markdownPreview?.ApplyPreferences(preferences);
         Foreground=preferences.DarkMode?Brushes.White:Brushes.Black;dark=preferences.DarkMode;UpdateColor();
         foreach(var input in new[]{TitleEditor,BodyEditor}){input.Background=Background;input.Foreground=Foreground;input.CaretBrush=Foreground;}
     }
@@ -66,7 +79,7 @@ public partial class StickyNoteWindow : Window
         draft.PropertyChanged += DraftChanged;
         Closed += (_, _) =>
         {
-            closed=true;workspace=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearStructuredEditor();
+            closed=true;workspace=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearMarkdownPreview();ClearStructuredEditor();
             BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
             DataContext = null; BodyEditor.Clear(); TitleEditor.Clear();
         };

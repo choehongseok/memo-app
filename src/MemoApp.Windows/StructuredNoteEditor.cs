@@ -21,6 +21,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private Func<bool>? current;
     private Action<string>? notice;
     private StyledDocument? projected;
+    private long projectedContentVersion;
     private bool rebuilding,committing,disposed,editable,refreshPending,composing;
     private long projectionGeneration;
     private long compositionToken;
@@ -74,7 +75,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private void DraftChanged(object? sender,PropertyChangedEventArgs e)
     {
         if(disposed)return;if(!Live()){ClearSensitive();return;}
-        if(!committing && e.PropertyName is nameof(NoteDraft.Document) or nameof(NoteDraft.Mode) && projected!=note!.Document)Rebuild();
+        if(!committing && e.PropertyName is nameof(NoteDraft.Document) or nameof(NoteDraft.Mode) && (projected!=note!.Document||projectedContentVersion!=note.ContentVersion))Rebuild();
     }
     private void Rebuild()
     {
@@ -105,7 +106,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
             }
             if(!ready)document.Blocks.Add(new Paragraph(new Run(text)));
             if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
-            var previous=projected;var oldNative=RichInput.Document;projected=source;editable=false;composing=false;
+            var previous=projected;long previousContentVersion=projectedContentVersion;var oldNative=RichInput.Document;projected=source;projectedContentVersion=target.ContentVersion;editable=false;composing=false;
             try{RichInput.Document=document;waitingTransaction=false;transactionRetry.Stop();}
             catch(InvalidOperationException)
             {
@@ -114,7 +115,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
                 if(!Live()){ClearSensitive();return;}
                 if(!Same()){refreshPending=true;return;}
                 if(!ReferenceEquals(RichInput.Document,oldNative)){projected=null;refreshPending=true;return;}
-                projected=previous;waitingTransaction=true;RichInput.IsReadOnly=true;transactionRetry.Start();return;
+                projected=previous;projectedContentVersion=previousContentVersion;waitingTransaction=true;RichInput.IsReadOnly=true;transactionRetry.Start();return;
             }
             editable=ready;
             // A native setter raises external handlers. Never reattach this local document after that boundary.
@@ -291,7 +292,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private void CommitNative()
     {
         if(rebuilding||committing||!Live()||!editable)return;
-        try{var captured=CaptureDocument();committing=true;workspace!.SetRichDocument(note!,captured);if(Live()){if(note!.Document==captured)projected=captured;else Rebuild();}}
+        try{var captured=CaptureDocument();long expected=note!.ContentVersion+(note.Document==captured?0:1);committing=true;workspace!.SetRichDocument(note,captured);if(Live()){if(note!.Document==captured&&note.ContentVersion==expected){projected=captured;projectedContentVersion=expected;}else Rebuild();}}
         catch{if(Live()){Rebuild();notice?.Invoke("지원하지 않는 서식/내용 또는 한도입니다. 편집을 적용하지 않고 기존 문서와 이력을 보존했습니다.");}}
         finally{committing=false;}
     }
@@ -378,7 +379,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     public void ClearSensitive()
     {
         if(disposed)return;disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
-        var oldNote=note;projected=null;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
+        var oldNote=note;projected=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
         // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
         RichInput.TextChanged-=Changed;DataObject.RemovePastingHandler(RichInput,Pasting);
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));

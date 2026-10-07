@@ -84,9 +84,9 @@
      <WrapPanel><TextBlock Text="문서 모드 " VerticalAlignment="Center"/><ComboBox x:Name="ModeChoice" Width="180" SelectionChanged="Mode_Changed"><ComboBoxItem Content="일반 텍스트" Tag="plain"/><ComboBoxItem Content="서식 문서" Tag="rich"/><ComboBoxItem Content="Markdown 원문" Tag="markdown"/></ComboBox></WrapPanel>
      <TextBlock Text="Ctrl+Z 실행취소 / Ctrl+Y 다시실행 · 모드 전환은 원본을 이력에 보존합니다" TextWrapping="Wrap"/>
     </StackPanel>
-    <Grid x:Name="BodyPanel">
+    <Grid x:Name="BodyPanel"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <TextBox x:Name="BodyEditor" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8" IsUndoEnabled="True" UndoLimit="100"/>
-    <ContentControl x:Name="StructuredHost" Visibility="Collapsed"/>
+    <ContentControl x:Name="StructuredHost" Grid.RowSpan="2" Visibility="Collapsed"/><ContentControl x:Name="MarkdownHost" Grid.Row="1" MaxHeight="280" MinHeight="80" Margin="0,8,0,0" Visibility="Collapsed"/>
     </Grid>
    </DockPanel>
   </Grid>
