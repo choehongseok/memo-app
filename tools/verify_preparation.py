@@ -32,6 +32,10 @@ def verify_ledger(source,ledger):
    assert r['normalized']==r['name'],'무단 정규화/제외'
  return len(rows)
 MARKDIG_CONTENT_HASH='lLhaiI/mNDTNzgLqnmknhf4LjgTqOAyjx5+GNz0X3AxYMxUhmFppF2WVMdER+SDqwhE5wUF1pzs/cuLwFxs7xA=='
+def verify_ci_scope(text):
+ events=text.split('on:\n',1)[1].split('permissions:\n',1)[0]
+ assert '  push:\n    branches: [main, preparation/stage-0]\n  pull_request:\n' in events,'개발 PR의 중복 push/PR 전체검사 금지'
+ assert '  workflow_dispatch:\n' in events and 'default: false' in events,'명시적 기본off trial upload 유지'
 def verify_dependencies(root):
  root=Path(root).resolve()
  manifest_path=root/'docs/DEPENDENCY_ALLOWLIST.json'
@@ -106,6 +110,7 @@ def main():
  sdk=json.loads((ROOT/'global.json').read_text(encoding='utf-8'))['sdk']
  assert sdk=={'version':'10.0.401','rollForward':'disable','allowPrerelease':False}
  verify_dependencies(ROOT)
+ verify_ci_scope((ROOT/'.github/workflows/preparation.yml').read_text(encoding='utf-8'))
  for entry in ['*.db','*.key','*.pfx','user-data/','models/']: assert entry in (ROOT/'.gitignore').read_text(encoding='utf-8')
  print(f'PASS: original 27417 bytes/SHA256, {count} exact IDs/names, M06 normalization, scope invariants')
  print('LIMIT: this source/ledger check does not test app behavior; see the runtime checks')

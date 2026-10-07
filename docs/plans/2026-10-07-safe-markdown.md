@@ -45,4 +45,6 @@
 **Interfaces:** readonly preview control with same-session/epoch/note/source/EditVersion checks; clear source/output/tasks on revoke; never writes into NoteDraft.Text
 - [x] Add Windows red-first raw-source/two-view/late-lock/selection-change/large-source tests once approved CI upload resumes
 - [x] Implement debounce/background parsing/read-only safe WPF spans and clear behavior
-- [ ] Run full actual Windows suite; keep physical IME/OS-lock/ACL/user acceptance separate
+- [x] Run full actual Windows suite; keep physical IME/OS-lock/ACL/user acceptance separate
+
+Actual Windows verification: commit444f5099eb5492e93dc7a01b13d6309dc9ac47e6, run37630275066, full Core/WPF/publish PASS; upload skipped. Later attachment code is a separate reviewed storage unit.

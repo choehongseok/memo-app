@@ -1,6 +1,7 @@
 name: Preparation checks
 on:
   push:
+    branches: [main, preparation/stage-0]
   pull_request:
   workflow_dispatch:
     inputs:

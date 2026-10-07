@@ -812,6 +812,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -843,6 +851,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -874,6 +890,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -905,6 +929,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -936,6 +968,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -967,6 +1007,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -998,6 +1046,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -1029,6 +1085,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -1060,6 +1124,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -1091,6 +1163,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -1122,6 +1202,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -1153,6 +1241,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null
@@ -1189,6 +1285,14 @@
           "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12",
           "command": "Windows build + MemoApp.ContractChecks + MemoApp.WindowsChecks + publish; https://github.com/choehongseok/memo-app/actions/runs/37581724510",
           "result": "PASS source/safety/Python6/actual encrypted-file/failure/process-kill/organization/strict TXT/atomic import-order/portable path/control-binding-search-trash-history-sticky/lock-undo/grapheme/custom-order checks. Not IME/actual SessionLock/ACL/physical drag/user acceptance"
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": "합성자료용 schema2 조직/검색/휴지통/이력/암호백업 확장. 해당 Core 시험만 통과; Windows 제어 smoke/GUI/IME/OS SessionLock/ACL 및 전체 ID 수용조건은 미검증. 포스트잇 위/투명도/접기는 이번 세션 UI 설정이며 위치/기기별 보존은 후속."
@@ -1218,6 +1322,14 @@
           "environment": "Linux cloud x86_64 / SDK 10.0.401",
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
           "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
@@ -1241,7 +1353,10 @@
         "src/MemoApp.Windows/StructuredNoteEditor.cs",
         "src/MemoApp.Core/Documents/SafeMarkdown.cs",
         "docs/DEPENDENCY_ALLOWLIST.json",
-        "tests/MemoApp.ContractChecks/MarkdownChecks.cs"
+        "tests/MemoApp.ContractChecks/MarkdownChecks.cs",
+        "src/MemoApp.Core/Documents/MarkdownPreviewQueue.cs",
+        "src/MemoApp.Windows/MarkdownNotePreview.cs",
+        "tests/MemoApp.ContractChecks/MarkdownQueueChecks.cs"
       ],
       "planned_module": "Documents",
       "test_evidence": [
@@ -1252,6 +1367,14 @@
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "전체134 완료/사용자수용이 아니다. known/opaque schema4 문서·암호이력 보존 계약의 부분시험. 실제 서식 명령·Markdown preview·물리IME 검증은 후속 근거를 따른다."
+        },
+        {
+          "kind": "partial-contract",
+          "commit": "444f5099eb5492e93dc7a01b13d6309dc9ac47e6",
+          "environment": "Windows Server2022 .NET10.0.401",
+          "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
+          "result": "PASS",
+          "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         }
       ],
       "blocking_reason": null

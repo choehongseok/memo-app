@@ -1,3 +1,11 @@
+# 2026-10-07 서식·안전 Markdown 전체 자동검사 green
+
+code444f5099eb5492e93dc7a01b13d6309dc9ac47e6/tree06ed5cf53fff43c5c0a7e0f82a776b7a2e2b1a10, Windows https://github.com/choehongseok/memo-app/actions/runs/37630275066 전체SUCCESS. 원문/원장/Python24/safety/build/fullCore/actualWPF/publish PASS, artifact upload skipped·artifacts=[]이고 기존 유효818a531 시험판을 유지한다. source134 ID/이름/M06/27,417bytes/SHA256 불변.
+
+실제 rich 명령·두창 공유·full-content 이력/복원·Native Undo/Redo·unknown read-only·Unicode/미지원서식 거절·synthetic composition/token/metadata·동일내용/재진입 restore Undo 무효화·예외중 purge/key-release·native nested boundaries/Main+Sticky PASS. 실제 Markdown read-only 두창·inert HTML/image/link labels·한글/emoji/combining·exact raw CRLF/revision 불변·global parser1/latest pending1·slow UI completedResult/posted1·이미게시/실행중 결과 revoke·Main+Sticky 저장/잠금/restart·same-turn plain/rich/Markdown 재생성 PASS. 렌더 검사는 TextBlock complex inline의 실제 TextRange를 읽는다. 관리형 메모리의 즉시완전삭제/전문암호감사/물리IME/OS SessionLock/다른계정ACL/혼합DPI/사용자수용은 주장하지 않는다.
+
+134원장82 부분진행/50 미착수/외부형식차단1(N09)/정규화1(M06), 전수완료·사용자수용0. 독립 Windows과제와 암호첨부 저장·백업/복구가 남아있으므로 현재단위는 최종중단이 아니다. 다음 bounded attachment storage는 key lifetime·root anchor·strict envelope2/schema5·전체 backup/reference 보존 설계 조건을 독립 검토한뒤 진행하며 파일/이미지 open/clipboard/drop 경계는 별도로 검증한다.
+
 # 2026-10-07 서식 편집·안전 Markdown Core 진행
 
 원격 cbe164d2e10aebdc19f136d28ecf501a687798a8, Windows CI37620850833: build/fullCore/source/Python/safety PASS. 실제 rich 공유편집·원문충실도·글꼴/크기/굵게/밑줄/취소선/색/형광펜/목록/체크/표/비활성링크 명령·Undo/Redo·native Unicode/미지원스타일 거절·Main/Sticky·기존plain/batch/device PASS. 원래 publish/clear 예외 purge2개와 isolated nested-worker도 PASS. URL입력창 clear 예외·완료A 뒤 새compositionB·동일본문 서식이력 표시는 RED이며 해당 후속수정/새 metadata-composition 회귀를 진행한다. 실제물리IME/OS SessionLock/다른계정ACL/혼합DPI/사용자수용은 미검증. 신규 trial upload 없음.
