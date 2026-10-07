@@ -13,6 +13,8 @@ public sealed class EditingWorkspace
     private readonly List<StoredDeviceUi> devices = [];
     private readonly Dictionary<Guid, long> acceptedVersions = [];
     private VaultSnapshot basis;
+    private Guid attachmentRootId;
+    private ImmutableArray<StoredAttachmentObject> attachmentObjects=[];
     private bool closed;
     public EditingWorkspace(TimeProvider clock, VaultSnapshot? initial = null, VaultSnapshot? displayed = null)
     {
@@ -21,12 +23,13 @@ public sealed class EditingWorkspace
         // Recovery supplies its entire latest organization state, not a stale vault.Loaded projection.
         basis = initial ?? new(4, Guid.NewGuid(), []);
         var visible = displayed ?? basis;
+        attachmentRootId=visible.AttachmentRootId;attachmentObjects=visible.AttachmentObjects;
         folders.AddRange(visible.Folders); tags.AddRange(visible.Tags); devices.AddRange(visible.UiDevices);
         foreach (var source in visible.Notes)
         {
             AddDraft(new(clock, source));
             var old = basis.Notes.FirstOrDefault(n => n.NoteId == source.NoteId);
-            acceptedVersions[source.NoteId] = old is not null && old.Title == source.Title && old.Text == source.Text && old.Metadata == source.Metadata && old.Mode==source.Mode && old.Document==source.Document ? 0 : -1;
+            acceptedVersions[source.NoteId] = old is not null && old.Title == source.Title && old.Text == source.Text && old.Metadata == source.Metadata && old.Mode==source.Mode && old.Document==source.Document&&old.AttachmentIds.SequenceEqual(source.AttachmentIds) ? 0 : -1;
         }
     }
     public ReadOnlyObservableCollection<NoteDraft> Notes { get; }
@@ -42,7 +45,7 @@ public sealed class EditingWorkspace
         bool accepted=acceptedVersions.TryGetValue(note.Id,out var version)&&version==note.EditVersion;
         if(accepted)
         {
-            history.Add(new(current.NoteId,current.RevisionId,(Guid[])current.Parents.Clone(),current.ModifiedAt,current.Title,current.Text){Metadata=current.Metadata,Mode=current.Mode,Document=current.Document});
+            history.Add(new(current.NoteId,current.RevisionId,(Guid[])current.Parents.Clone(),current.ModifiedAt,current.Title,current.Text){Metadata=current.Metadata,Mode=current.Mode,Document=current.Document,AttachmentIds=current.AttachmentIds});
             current=current with{RevisionId=Guid.NewGuid(),Parents=[current.RevisionId]};
         }
         current=current with{Text=info.Text!,Document=document,ModifiedAt=now};
@@ -140,33 +143,34 @@ public sealed class EditingWorkspace
         ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
     private void ApplyContentEvent(NoteDraft note,string text,string mode,StyledDocument? document,NoteMetadata metadata)=>
         ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,text,metadata)},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(mode,document)});
-    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null)
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null)
     {
         if (changes.Count == 0) return;
         var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
         var nextNotes = before.Notes.Select(previous =>
         {
             if (!changes.TryGetValue(previous.NoteId, out var change)) return previous;
-            history.Add(new(previous.NoteId, previous.RevisionId, (Guid[])previous.Parents.Clone(), previous.ModifiedAt, previous.Title, previous.Text) { Metadata = previous.Metadata,Mode=previous.Mode,Document=previous.Document });
+            history.Add(new(previous.NoteId, previous.RevisionId, (Guid[])previous.Parents.Clone(), previous.ModifiedAt, previous.Title, previous.Text) { Metadata = previous.Metadata,Mode=previous.Mode,Document=previous.Document,AttachmentIds=previous.AttachmentIds });
             var format=formats is not null&&formats.TryGetValue(previous.NoteId,out var updated)?updated:(previous.Mode,previous.Document);
-            return previous with { RevisionId = Guid.NewGuid(), Parents = [previous.RevisionId], ModifiedAt = clock.GetUtcNow(), Title = change.Title, Text = change.Text, Metadata = change.Metadata,Mode=format.Item1,Document=format.Item2 };
+            var refs=attachments is not null&&attachments.TryGetValue(previous.NoteId,out var nextRefs)?nextRefs:previous.AttachmentIds;
+            return previous with { RevisionId = Guid.NewGuid(), Parents = [previous.RevisionId], ModifiedAt = clock.GetUtcNow(), Title = change.Title, Text = change.Text, Metadata = change.Metadata,Mode=format.Item1,Document=format.Item2,AttachmentIds=refs };
         }).ToArray();
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
         var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags };
         VaultEnvelope.Validate(next);
         var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
-        foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id),formats?.ContainsKey(note.Id)==true);
+        foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id),formats?.ContainsKey(note.Id)==true||attachments?.ContainsKey(note.Id)==true);
         if(stagedTags is not null){tags.Clear();tags.AddRange(stagedTags);}
         AcceptPrepared(next); Changed?.Invoke();
         foreach (var note in affected) { if (closed) break; note.PublishEvent(); }
     }
     public NoteDraft ImportText(string title, string text, Guid? folderId = null) =>
         AddComplete(title,text,new() { FolderId=folderId,Order=NextOrder() });
-    private NoteDraft AddComplete(string title,string text,NoteMetadata metadata,string mode="plain",StyledDocument? document=null)
+    private NoteDraft AddComplete(string title,string text,NoteMetadata metadata,string mode="plain",StyledDocument? document=null,ImmutableArray<Guid> attachments=default)
     {
         EnsureOpen(); var before = Capture(); var now = clock.GetUtcNow();
-        var source = new StoredNote(Guid.NewGuid(), Guid.NewGuid(), [], now, now, title, text,mode) { Metadata=metadata,Document=document };
+        var source = new StoredNote(Guid.NewGuid(), Guid.NewGuid(), [], now, now, title, text,mode) { Metadata=metadata,Document=document,AttachmentIds=attachments.IsDefault?[]:attachments };
         var next = before with { Notes=before.Notes.Append(source).ToArray() }; VaultEnvelope.Validate(next);
         var draft = new NoteDraft(clock,source); AddDraft(draft); AcceptPrepared(next);
         Changed?.Invoke(); if (!closed) notes.PublishAdded(draft); return draft;
@@ -217,7 +221,7 @@ public sealed class EditingWorkspace
     }
     public NoteDraft Duplicate(NoteDraft note)
     {
-        RequireNote(note); return AddComplete(note.Title,note.Text,note.Metadata with { Deleted=false,Order=NextOrder() },note.Mode,note.Document);
+        RequireNote(note); return AddComplete(note.Title,note.Text,note.Metadata with { Deleted=false,Order=NextOrder() },note.Mode,note.Document,note.AttachmentIds);
     }
     public IReadOnlyList<StoredRevision> HistoryFor(NoteDraft note)
     {
@@ -228,7 +232,7 @@ public sealed class EditingWorkspace
     {
         RequireNote(note);
         var revision = basis.History.SingleOrDefault(h => h.NoteId == note.Id && h.RevisionId == revisionId) ?? throw new ArgumentException("Unknown revision");
-        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(revision.Title,revision.Text,revision.Metadata with{Deleted=false})},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(revision.Mode,revision.Document)});
+        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(revision.Title,revision.Text,revision.Metadata with{Deleted=false})},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(revision.Mode,revision.Document)},attachments:new Dictionary<Guid,ImmutableArray<Guid>>{[note.Id]=revision.AttachmentIds});
     }
     public Guid[] DescendantFolders(Guid parentId)
     {
@@ -244,22 +248,22 @@ public sealed class EditingWorkspace
         {
             var old = basis.Notes.FirstOrDefault(n => n.NoteId == draft.Id);
             if (old is not null && acceptedVersions.TryGetValue(draft.Id, out var accepted) && draft.EditVersion == accepted) return old;
-            if (old is not null) history.Add(new(old.NoteId, old.RevisionId, (Guid[])old.Parents.Clone(), old.ModifiedAt, old.Title, old.Text) { Metadata = old.Metadata,Mode=old.Mode,Document=old.Document });
-            return new StoredNote(draft.Id, Guid.NewGuid(), old is null ? [] : [old.RevisionId], draft.CreatedAt, draft.ModifiedAt, draft.Title, draft.Text,draft.Mode) { Metadata = draft.Metadata,Document=draft.Document };
+            if (old is not null) history.Add(new(old.NoteId, old.RevisionId, (Guid[])old.Parents.Clone(), old.ModifiedAt, old.Title, old.Text) { Metadata = old.Metadata,Mode=old.Mode,Document=old.Document,AttachmentIds=old.AttachmentIds });
+            return new StoredNote(draft.Id, Guid.NewGuid(), old is null ? [] : [old.RevisionId], draft.CreatedAt, draft.ModifiedAt, draft.Title, draft.Text,draft.Mode) { Metadata = draft.Metadata,Document=draft.Document,AttachmentIds=draft.AttachmentIds };
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(4, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray() };
+        return new(attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
-        EnsureOpen(); basis = snapshot;
+        EnsureOpen(); basis = snapshot;attachmentRootId=snapshot.AttachmentRootId;attachmentObjects=snapshot.AttachmentObjects;
         foreach (var draft in notes) acceptedVersions[draft.Id] = draft.EditVersion;
     }
     public void Clear()
     {
         if (closed) return;
         closed = true; foreach (var note in notes.ToArray()) note.Close();
-        notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear(); basis = new(4, Guid.Empty, []);
+        notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear();attachmentRootId=Guid.Empty;attachmentObjects=[]; basis = new(4, Guid.Empty, []);
     }
 }

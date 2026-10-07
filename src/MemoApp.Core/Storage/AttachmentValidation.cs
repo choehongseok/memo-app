@@ -36,6 +36,8 @@ internal static class AttachmentValidation
     }
     internal static void References(ImmutableArray<Guid> ids,HashSet<Guid> objects,int schema)
     {if(ids.IsDefault||ids.Length>MaxReferences||ids.Distinct().Count()!=ids.Length||ids.Any(id=>!objects.Contains(id))||schema<5&&ids.Length!=0)throw new InvalidDataException("Attachment references/schema");}
+    internal static bool SameObject(StoredAttachmentObject left,StoredAttachmentObject right)=>
+        left.ObjectId==right.ObjectId&&left.RootId==right.RootId&&left.Name==right.Name&&left.Mime==right.Mime&&left.Length==right.Length&&left.Sha256==right.Sha256&&left.WrappedKey==right.WrappedKey&&left.Chunks.SequenceEqual(right.Chunks);
     internal static void Document(StyledDocument? document,int schema)
     {
         if(schema<5||document is null)return;

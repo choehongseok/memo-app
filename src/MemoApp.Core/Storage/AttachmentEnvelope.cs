@@ -8,7 +8,7 @@ internal sealed class DecodedAttachmentEnvelope : IDisposable
     private byte[]? rootKey;
     internal EnvelopeHeader Header { get; }
     internal VaultSnapshot Snapshot { get; }
-    internal DecodedAttachmentEnvelope(EnvelopeHeader header, VaultSnapshot snapshot, byte[] rootKey)
+    internal DecodedAttachmentEnvelope(EnvelopeHeader header, VaultSnapshot snapshot, byte[]? rootKey)
     { Header=header; Snapshot=snapshot; this.rootKey=rootKey; }
     internal byte[] TakeRootKey()
     { return Interlocked.Exchange(ref rootKey,null)??throw new InvalidOperationException("Attachment root ownership ended"); }
@@ -16,7 +16,7 @@ internal sealed class DecodedAttachmentEnvelope : IDisposable
     { var owned=Interlocked.Exchange(ref rootKey,null);if(owned is not null)CryptographicOperations.ZeroMemory(owned); }
 }
 
-// Separate strict v2 layout. Existing public vault paths continue to reject this format until root integration.
+// Separate strict v2 layout; the vault owner alone keeps a transferred root beyond synchronous decoding.
 internal static class AttachmentEnvelope
 {
     internal const int Overhead=308;

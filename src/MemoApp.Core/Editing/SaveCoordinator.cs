@@ -9,6 +9,7 @@ public sealed class SaveCoordinator : IDisposable
     private bool pendingPlaintext;
     private long generation, savedGeneration, preparedGeneration, sessionEpoch;
     private Task<bool> tail = Task.FromResult(true), backupTask = Task.FromResult(true);
+    private Task<bool> rootTask=Task.FromResult(false);
     private PreparedSnapshot? pendingCipher;
     private VaultSnapshot? hiddenPlaintext, hiddenBasis;
     private bool disposed;
@@ -24,7 +25,7 @@ public sealed class SaveCoordinator : IDisposable
     public bool IsLocked { get; private set; }
     public bool IsDirty => generation > savedGeneration;
     public bool KeysReleased => vault.KeysReleased;
-    public bool IsBusy => !tail.IsCompleted || !backupTask.IsCompleted;
+    public bool IsBusy => !tail.IsCompleted || !backupTask.IsCompleted || !rootTask.IsCompleted;
     public string PendingKind => pendingPlaintext ? "plaintext-hidden" : pendingCipher is not null ? "ciphertext" : "none";
     public string Status { get; private set; }
     public event Action? Conceal;
@@ -53,6 +54,31 @@ public sealed class SaveCoordinator : IDisposable
             Status = "암호화 준비 실패 — 변경 유지"; Changed?.Invoke(); return Task.FromResult(false);
         }
     }
+    internal Task<bool> EnsureAttachmentRootAsync()
+    {
+        if(disposed||IsLocked||vault.IsFaulted)return Task.FromResult(false);
+        if(!rootTask.IsCompleted)return rootTask;
+        if(vault.AttachmentRootAnchored)return Task.FromResult(true);
+        var completion=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        rootTask=completion.Task;_ = CompleteRootAsync(completion,sessionEpoch);return rootTask;
+    }
+    private async Task CompleteRootAsync(TaskCompletionSource<bool> completion,long epoch)
+    {bool success;try{success=await AnchorRootAsync(epoch);}catch{success=false;}completion.TrySetResult(success);}
+    private async Task<bool> AnchorRootAsync(long epoch)
+    {
+        bool accepted=false;
+        try
+        {
+            var snapshot=vault.InitializeAttachmentRoot(Workspace.Capture());
+            var prepared=vault.Prepare(snapshot);Workspace.AcceptPrepared(snapshot);accepted=true;
+            generation++;preparedGeneration=generation;pendingCipher=prepared;
+            tail=WriteAsync(tail,prepared,generation,epoch);
+            Status="첨부 저장 준비 중";Changed?.Invoke();
+            if(!await tail)return false;
+            return !disposed&&!IsLocked&&epoch==sessionEpoch&&vault.AttachmentRootAnchored;
+        }
+        catch{if(!accepted)vault.CancelUnpreparedAttachmentRoot();if(!disposed&&!IsLocked&&epoch==sessionEpoch){Status="첨부 저장 준비 실패 — 기존 자료 유지";Changed?.Invoke();}return false;}
+    }
     private async Task<bool> WriteAsync(Task<bool> previous, PreparedSnapshot prepared, long capturedGeneration, long capturedEpoch)
     {
         bool success = false;
@@ -74,10 +100,11 @@ public sealed class SaveCoordinator : IDisposable
     {
         if (IsLocked)
         {
-            bool settled = await tail; await backupTask;
+            bool settled = await tail; await backupTask; await rootTask;
             return settled && !pendingPlaintext && pendingCipher is null;
         }
         IsLocked = true; sessionEpoch++;
+        vault.RevokeAttachmentUse(); // Recovery-held keys do not authorize attachment plaintext/sealing.
         // Conceal all native windows and block input before any save, await, or key-release wait.
         Conceal?.Invoke();
         Status = "잠금 처리 중"; Changed?.Invoke();
@@ -104,6 +131,7 @@ public sealed class SaveCoordinator : IDisposable
         Changed?.Invoke();
         bool result = await tail;
         await backupTask; // Native conceal/key release above are immediate; close/dispose waits for ciphertext I/O.
+        await rootTask;
         Status = pendingPlaintext ? "잠금 — 숨겨진 복구 대기(메모리 키 보유)" :
             pendingCipher is not null ? "잠금 — 미저장 암호문 보류, 키 종료됨" : "잠금 — 키 종료됨";
         Changed?.Invoke();
@@ -113,8 +141,10 @@ public sealed class SaveCoordinator : IDisposable
     {
         if (!IsLocked || !pendingPlaintext || hiddenPlaintext is null || IsBusy || !vault.VerifyRecoverySecret(secret))
             throw new InvalidOperationException("Hidden recovery requires the correct secret and a settled writer");
-        Workspace = new(clock, hiddenBasis, hiddenPlaintext);
-        Workspace.Changed += WorkspaceChanged;
+        vault.ValidateHiddenRoot(hiddenPlaintext);
+        var resumed=new EditingWorkspace(clock,hiddenBasis,hiddenPlaintext);
+        try{vault.ResumeAttachmentUse(secret,hiddenPlaintext);}catch{resumed.Clear();throw;}
+        Workspace=resumed;Workspace.Changed += WorkspaceChanged;
         hiddenPlaintext = hiddenBasis = null; pendingPlaintext = false; IsLocked = false; sessionEpoch++;
         preparedGeneration = savedGeneration;
         Status = "복구 대기 변경 재개 — 저장되지 않음"; Changed?.Invoke();

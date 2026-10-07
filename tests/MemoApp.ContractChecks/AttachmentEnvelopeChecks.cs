@@ -56,7 +56,7 @@ internal static class AttachmentEnvelopeChecks
             VaultChecks.ExpectFailure(()=>encrypt(plain,vaultKey,secret,header with{Sequence=0},rootId,rootKey),"Envelope2 invalid sequence");
             VaultChecks.ExpectFailure(()=>encrypt(plain,vaultKey,secret,header with{VaultId=Guid.Empty},rootId,rootKey),"Envelope2 invalid header identity");
             VaultChecks.ExpectFailure(()=>encrypt(plain,vaultKey,secret,header,Guid.Empty,rootKey),"Envelope2 empty root identity");
-            VaultChecks.ExpectFailure(()=>VaultEnvelope.Decrypt(bytes,secret),"Existing public vault read remains blocked until owned-root integration");
+            VaultChecks.ExpectFailure(()=>VaultEnvelope.ParseHeader(bytes),"Legacy envelope1 parser never silently accepts envelope2");
             Repack(snapshot with{AttachmentRootId=Guid.NewGuid(),AttachmentObjects=[] ,Notes=[]},"Root packet/snapshot identity mismatch");
             Repack(snapshot with{SchemaVersion=4,AttachmentRootId=Guid.Empty,AttachmentObjects=[],Notes=[]},"Envelope2 only carries schema5");
             Repack(snapshot with{AttachmentObjects=[item with{Chunks=item.Chunks.SetItem(0,Flip(item.Chunks[0]))}]},"Valid outer envelope still rejects unauthenticated internal object before open");
@@ -69,7 +69,7 @@ internal static class AttachmentEnvelopeChecks
             void Reject(byte[] candidate,string reason)=>VaultChecks.ExpectFailure(()=>decrypt(candidate,secret).Dispose(),reason);
             void Repack(VaultSnapshot candidate,string reason){var payload=SnapshotSerialization.Bytes(candidate);try{Reject(encrypt(payload,vaultKey,secret,header with{PayloadLength=payload.Length},rootId,rootKey),reason);}finally{CryptographicOperations.ZeroMemory(payload);}}
             void RepackJson(string json,string reason){var payload=Encoding.UTF8.GetBytes(json);try{Reject(encrypt(payload,vaultKey,secret,header with{PayloadLength=payload.Length},rootId,rootKey),reason);}finally{CryptographicOperations.ZeroMemory(payload);}}
-            Console.WriteLine("PASS: internal strict envelope2, independent BCL layout/purpose/root reader, temporary-root transfer/dispose zeroing, package/header/EOF/schema/root/object tamper refusal (public vault remains blocked; not durable root anchoring)");
+            Console.WriteLine("PASS: strict envelope2, independent BCL layout/purpose/root reader, temporary-root transfer/dispose zeroing, package/header/EOF/schema/root/object tamper refusal (separate from durable root anchoring tests)");
         }
         finally{foreach(var key in new[]{rootKey,vaultKey,secret,originalRoot,originalVault,originalSecret,original,plain})CryptographicOperations.ZeroMemory(key);}
     }

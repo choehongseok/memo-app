@@ -43,6 +43,15 @@ internal static class VaultEnvelope
     }
     internal static (EnvelopeHeader Header, VaultSnapshot Snapshot) Decrypt(byte[] bytes, byte[] recoveryKey)
     {
+        using var decoded=DecryptOwned(bytes,recoveryKey);return(decoded.Header,decoded.Snapshot);
+    }
+    internal static DecodedAttachmentEnvelope DecryptOwned(byte[] bytes,byte[] recoveryKey)
+    {
+        if(bytes.Length>=8&&bytes.AsSpan(0,8).SequenceEqual("MEMOV002"u8))return AttachmentEnvelope.Decrypt(bytes,recoveryKey);
+        var decoded=DecryptLegacy(bytes,recoveryKey);return new(decoded.Header,decoded.Snapshot,null);
+    }
+    private static (EnvelopeHeader Header, VaultSnapshot Snapshot) DecryptLegacy(byte[] bytes, byte[] recoveryKey)
+    {
         if (recoveryKey.Length != 32) throw new ArgumentException("Recovery secret must be 32 bytes");
         var header = ParseHeader(bytes);
         byte[]? vaultKey = null, dataKey = null, plaintext = null;

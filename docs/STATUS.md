@@ -1,3 +1,11 @@
+# 2026-10-07 첨부 root/원본복구 Core 진행
+
+내부 envelope2 a9de8de/tree3051bec Windows37643744953 전체SUCCESS: 원문/Python26/safety/build/fullCore/실제WPF/publish PASS, upload skipped·artifacts=[]·기존818a531 시험판 유지. GitHub ref갱신 서버오류는 currenthead를 확인하며 재시도해 해결됐고 local동일tree 이력을 archive로보존했다.
+
+후속 private root 소유권/시도별3wrap예약·성공current fingerprint anchor·키사용권한/보유분리·schema5 전체object/ref 보존을 실제Core에연결했다. 정확원본v1-4 previous·firstprepare/flush/잠금/늦은commit·hidden wrongUUID/누락root·복구용키보유중seal/open거절·gate대기전conceal·crypto중revoke후반환거절·원자task재진입·root준비실패후legacy저장/잠금/재시도·실제다른디렉터리전체암호백업복구·동일ID metadata/cipher변경 및retained자동탈락거절 회귀가PASS다. 전체Core/Python26/134byte/hash/M06/4프로젝트crossbuild0경고오류 PASS. 독립 실제diff 읽기검토에 남은blocker없으며 이최신root통합의Windows자동실행은 후속CI결과를따른다.
+
+첨부 add/detach 원자모델변경·파일선택UI·이미지preview/clipboard/drop·external open/export는아직없다. H01-H09 사용기능완료를주장하지않으며 원장82부분/50미착수/N09차단1/M06정규화1·전수완료/수용0 유지. 다음독립단위로계속진행한다.
+
 # 2026-10-07 첨부 구조계약·암호 primitive Windows green
 
 내부 object codec8d76a0b5/tree32c5b54 Windows37640517561 전체SUCCESS: 원문/Python26/safety/build/fullCore·독립format reader·변조검사/실제WPF/publish PASS, upload skipped·artifacts=[]·기존시험판 유지.
