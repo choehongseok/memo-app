@@ -1,4 +1,5 @@
 using System.IO;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -10,6 +11,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Text.Json;
 using System.Windows.Documents;
+using System.Windows.Input;
 using MemoApp.Core.Documents;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
@@ -25,7 +27,9 @@ internal static class Program
             try
             {
                 var failures=new List<string>();
-                foreach(var group in new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-two-views",RichViewsRun),("rich-fidelity",RichFidelityRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun)})
+                var groups=new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-post-handler-race",RichPostHandlerRaceRun),("rich-two-views",RichViewsRun),("rich-formatting-commands",RichFormattingCommandsRun),("rich-fidelity",RichFidelityRun),("rich-native-style-refusal",RichNativeStyleRun),("rich-native-malformed-unicode",RichMalformedNativeRun),("rich-composition-boundary",RichCompositionRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun),("rich-nested-native-worker",RichNestedNativeProcessRun)};
+                if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
+                foreach(var group in groups)
                 {
                     try{await group.Run();Console.WriteLine("PASS: WPF group "+group.Name);}
                     catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);}
@@ -70,6 +74,25 @@ internal static class Program
         }
         Require(errors.Count==0,string.Join(" / ",errors));
     }
+    private static async Task RichPostHandlerRaceRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="ordinary before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
+        view.RichInput.TextChanged+=(_,_)=>{if(armed){armed=false;workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("POST_HANDLER_B"));}};
+        ((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.Add(new Run("_A"));await Idle();Require(note.Text=="POST_HANDLER_B" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("POST_HANDLER_B") && !view.RichInput.CanUndo,"external routed TextChanged handler after own handler must defer latest source publish until native event unwinds");live=false;view.ClearSensitive();workspace.Clear();window.Close();
+    }
+    private static async Task RichNestedNativeProcessRun()
+    {
+        var start=new ProcessStartInfo(Environment.ProcessPath!){UseShellExecute=false,RedirectStandardOutput=true,RedirectStandardError=true,CreateNoWindow=true};if(Path.GetFileNameWithoutExtension(Environment.ProcessPath!).Equals("dotnet",StringComparison.OrdinalIgnoreCase))start.ArgumentList.Add(Assembly.GetExecutingAssembly().Location);start.ArgumentList.Add("--nested-native-worker");
+        using var child=Process.Start(start)!;var stdout=child.StandardOutput.ReadToEndAsync();var stderr=child.StandardError.ReadToEndAsync();try{await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));}catch{if(!child.HasExited)child.Kill(true);throw new Exception("isolated synthetic nested native worker timed out");}string output=await stdout+await stderr;Require(child.ExitCode==0,"isolated nested native publish worker exit="+child.ExitCode+" "+string.Join(" / ",output.Split('\n').Where(l=>l.Contains("FAIL:")||l.Contains("Process terminated")||l.Contains("Unrecoverable"))));
+    }
+    private static async Task RichNestedNativeWorker()
+    {
+        void Pump(){var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>frame.Continue=false));Dispatcher.PushFrame(frame);}
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="nested before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
+        view.RichInput.TextChanged+=(_,_)=>{if(armed){armed=false;workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("NESTED_HANDLER_B"));Pump();}};
+        ((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.Add(new Run("_A"));await Idle();Require(note.Text=="NESTED_HANDLER_B" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("NESTED_HANDLER_B"),"nested dispatcher pump must not replace Document inside outer native TextChanged");
+        view.RichInput.BeginChange();try{workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("OPEN_TRANSACTION_C"));Pump();}finally{view.RichInput.EndChange();}await Task.Delay(250);await Idle();Require(note.Text=="OPEN_TRANSACTION_C" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("OPEN_TRANSACTION_C")&&!view.RichInput.CanUndo,"open native transaction rejection must safely retry latest after empty EndChange");live=false;view.ClearSensitive();workspace.Clear();window.Close();
+    }
     private static async Task RichCommitRaceRun()
     {
         var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
@@ -86,6 +109,8 @@ internal static class Program
         first.RichInput.Selection.Select(first.RichInput.Document.ContentStart,first.RichInput.Document.ContentEnd);first.ApplyBold();await Idle();
         Require(note.Document!.SourceJson.Contains("\"bold\":true") && new TextRange(second.RichInput.Document.ContentStart,second.RichInput.Document.ContentEnd).Text.Contains(note.Text),"formatting-only source changes propagate between independent WPF documents");
         first.ApplyFontSize(22);await Idle();Require(note.Document!.SourceJson.Contains("22"),"font size formatting stores source value");
+        Require(first.RichInput.CanUndo,"own native rich edit must retain real Undo");first.RichInput.Undo();await Idle();Require(!note.Document!.SourceJson.Contains("\"fontSize\":22") && first.RichInput.CanRedo,"native Undo must update shared canonical without losing Redo");first.RichInput.Redo();await Idle();Require(note.Document!.SourceJson.Contains("\"fontSize\":22"),"native Redo must update canonical source");
+        second.RichInput.Selection.Select(second.RichInput.Document.ContentStart,second.RichInput.Document.ContentEnd);second.ApplyBold();await Idle();Require(!first.RichInput.CanUndo&&!first.RichInput.CanRedo,"external canonical change must invalidate stale first-view Undo/Redo");
         workspace.AcceptPrepared(workspace.Capture());string before=JsonSerializer.Serialize(workspace.Capture());second.ApplyPreferences(new(true,18,1.2));await Idle();Require(JsonSerializer.Serialize(workspace.Capture())==before,"theme/font/view preferences must not rewrite run source or create content revisions");
         var unsafePaste=new DataObject();unsafePaste.SetData(DataFormats.Xaml,"<Paragraph xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Run>UNSAFE</Run></Paragraph>");unsafePaste.SetData(DataFormats.Rtf,"{\\rtf1 UNSAFE}");first.PasteData(unsafePaste);Require(JsonSerializer.Serialize(workspace.Capture())==before,"default rich clipboard formats must be refused without canonical/view mutation");
         var safePaste=new DataObject();safePaste.SetData(DataFormats.UnicodeText,"한글👩‍💻e\u0301");first.PasteData(safePaste);await Idle();Require(note.Text.Contains("한글👩‍💻e\u0301"),"bounded UnicodeText paste updates canonical source");
@@ -110,6 +135,54 @@ internal static class Program
         workspace.AcceptPrepared(workspace.Capture());string before=note.Document!.SourceJson;var checklist=(List)view.RichInput.Document.Blocks.ElementAt(1);((Run)((Paragraph)checklist.ListItems.FirstListItem.Blocks.FirstBlock).Inlines.FirstInline).Text="";await Idle();Require(note.Document!.SourceJson==before && !view.RichInput.CanUndo,"partial checklist scaffold deletion rolls back canonical and purges Undo");
         view.RichInput.Document.Blocks.Add(new Section(new Paragraph(new Run("unsupported native"))));await Idle();Require(note.Document!.SourceJson==before && !view.RichInput.CanUndo,"unsupported native block refuses without silent flattening");
         live=false;view.ClearSensitive();workspace.Clear();window.Close();
+    }
+    private static async Task RichFormattingCommandsRun()
+    {
+        var errors=new List<string>();
+        var cases=new (string Method,object[] Arguments,string Expected)[]{("ApplyFontFamily",["Arial"],"Arial"),("ApplyUnderline",[],"\"underline\":true"),("ApplyStrike",[],"\"strike\":true"),("ApplyForeground",["#123456"],"123456"),("ApplyHighlight",["#FFEE00"],"FFEE00"),("ToggleList",[false],"\"ordered\":false"),("ToggleList",[true],"\"ordered\":true"),("InsertChecklist",[],"\"type\":\"checklist\""),("InsertTable",[2,2],"\"type\":\"table\""),("ApplyLink",["https://example.invalid/user-link"],"https://example.invalid/user-link")};
+        foreach(var item in cases)
+        {
+            var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="alpha";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=500,Height=400};window.Show();await Idle();
+            try
+            {
+                var paragraph=(Paragraph)view.RichInput.Document.Blocks.FirstBlock;view.RichInput.Selection.Select(paragraph.ContentStart,paragraph.ContentEnd);
+                var command=typeof(StructuredNoteEditor).GetMethod(item.Method,BindingFlags.Instance|BindingFlags.Public)??throw new NotImplementedException("Missing canonical command "+item.Method);command.Invoke(view,item.Arguments);await Idle();Require(note.Document!.SourceJson.Contains(item.Expected),"canonical formatting command stores source: "+item.Method);
+                if(item.Method=="InsertChecklist")
+                {
+                    var toggle=typeof(StructuredNoteEditor).GetMethod("ToggleChecked",BindingFlags.Instance|BindingFlags.Public)??throw new NotImplementedException("Missing canonical command ToggleChecked");toggle.Invoke(view,[]);await Idle();Require(note.Document!.SourceJson.Contains("\"checked\":true"),"checklist toggle stores bool/source not only glyph");
+                }
+                if(item.Method=="InsertTable")
+                {
+                    var table=view.RichInput.Document.Blocks.OfType<Table>().Single();((Run)((Paragraph)table.RowGroups[0].Rows[0].Cells[0].Blocks.FirstBlock).Inlines.FirstInline).Text="표 합성 👩‍💻";await Idle();Require(note.Text.Contains("표 합성 👩‍💻") && note.Document!.SourceJson.Contains("table"),"native table cell edit updates complete canonical table");
+                }
+                Console.WriteLine("PASS: rich command "+item.Method);
+            }
+            catch(Exception error){errors.Add(item.Method+": "+error.GetBaseException().Message);}
+            finally{live=false;view.ClearSensitive();workspace.Clear();window.Close();}
+        }
+        Require(errors.Count==0,string.Join(" / ",errors));
+    }
+    private static async Task RichNativeStyleRun()
+    {
+        foreach(int kind in new[]{0,1,2})
+        {
+            var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="style refusal";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();string before=note.Document!.SourceJson;var run=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;
+            if(kind==0)run.FontStretch=FontStretches.Condensed;else if(kind==1)run.BaselineAlignment=BaselineAlignment.Subscript;else run.TextDecorations=TextDecorations.OverLine;await Idle();
+            var restored=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;Require(note.Document!.SourceJson==before && restored.FontStretch==FontStretches.Normal && restored.BaselineAlignment==BaselineAlignment.Baseline && restored.TextDecorations?.Any(d=>d.Location==TextDecorationLocation.OverLine)!=true && !view.RichInput.CanUndo,"unsupported native stretch/baseline/overline must rollback view/source and purge Undo");live=false;view.ClearSensitive();workspace.Clear();window.Close();
+        }
+    }
+    private static async Task RichMalformedNativeRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="malformed before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();string before=note.Document!.SourceJson;
+        ((Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline).Text="MALFORMED_\uD800";await Idle();Require(note.Document!.SourceJson==before && note.Text=="malformed before" && !view.RichInput.CanUndo && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("malformed before"),"malformed native Unicode must reject before JSON can replace it with U+FFFD");live=false;view.ClearSensitive();workspace.Clear();window.Close();
+    }
+    private static async Task RichCompositionRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="composition before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();
+        void Raise(RoutedEvent routed)=>view.RichInput.RaiseEvent(new TextCompositionEventArgs(Keyboard.PrimaryDevice,new TextComposition(InputManager.Current,view.RichInput,"",TextCompositionAutoComplete.Off)){RoutedEvent=routed});
+        Raise(TextCompositionManager.PreviewTextInputStartEvent);var run=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;run.Text="TRANSIENT_\uD800";await Idle();Require(note.Text=="composition before" && ReferenceEquals(((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline,run),"composition transient Unicode must remain local without canonical mutation or destructive rollback");
+        run.Text="완성👩‍💻é";Raise(TextCompositionManager.PreviewTextInputEvent);await Idle();Require(note.Text=="완성👩‍💻é","completed composition event must validate and publish complete Unicode source");
+        Raise(TextCompositionManager.PreviewTextInputStartEvent);run=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;run.Text="LATE_COMPOSITION";Raise(TextCompositionManager.PreviewTextInputEvent);live=false;view.ClearSensitive();workspace.Clear();await Idle();Require(view.RichInput.Document.Blocks.Count==0 && !view.RichInput.CanUndo && note.Document is null,"queued composition completion cannot revive concealed content");window.Close();
     }
     private static async Task RichWindowsIntegrationRun()
     {

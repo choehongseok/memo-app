@@ -20,7 +20,8 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private Func<bool>? current;
     private Action<string>? notice;
     private StyledDocument? projected;
-    private bool rebuilding,committing,disposed,editable;
+    private bool rebuilding,committing,disposed,editable,refreshPending;
+    private long projectionGeneration;
     private readonly TextBlock state=new(){TextWrapping=TextWrapping.Wrap,Margin=new(4)};
     private readonly WrapPanel toolbar=new(){Margin=new(0,0,0,4)};
     private static readonly DependencyProperty LinkProperty=DependencyProperty.RegisterAttached("CanonicalLink",typeof(string),typeof(StructuredNoteEditor),new FrameworkPropertyMetadata(null,FrameworkPropertyMetadataOptions.Inherits));
@@ -36,11 +37,14 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
         RichInput.TextChanged+=Changed;DataObject.AddPastingHandler(RichInput,Pasting);
         RichInput.PreviewDragOver+=RejectDrop;RichInput.PreviewDrop+=RejectDrop;
         CommandManager.AddPreviewExecutedHandler(RichInput,PreviewCommand);
-        note.PropertyChanged+=DraftChanged;Rebuild();
+        note.PropertyChanged+=DraftChanged;PublishProjection();
     }
     private void Button(string label,Action action){var button=new Button{Content=label,Padding=new(6,3,6,3),Margin=new(0,0,4,0),Focusable=false};button.Click+=(_,_)=>action();toolbar.Children.Add(button);}
     private static bool SafeFontName(string name)=>name.Length is >0 and <=128&&RichDocumentCodec.IsWellFormedUnicode(name)&&name.All(c=>char.IsLetterOrDigit(c)||c is ' ' or '-' or '_' or '.');
-    private bool Live()=>!disposed&&note is {IsClosed:false,IsDeleted:false,Mode:"rich"}&&current?.Invoke()==true;
+    private bool Live()
+    {
+        var target=note;return !disposed&&target is {IsClosed:false,IsDeleted:false,Mode:"rich"}&&current?.Invoke()==true&&!disposed&&ReferenceEquals(note,target)&&target is {IsClosed:false,IsDeleted:false,Mode:"rich"};
+    }
     private void DraftChanged(object? sender,PropertyChangedEventArgs e)
     {
         if(disposed)return;if(!Live()){ClearSensitive();return;}
@@ -48,23 +52,51 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     private void Rebuild()
     {
-        if(!Live()){ClearSensitive();return;}rebuilding=true;
+        if(!Live()){ClearSensitive();return;}refreshPending=true;ScheduleRefresh();
+    }
+    private void PublishProjection()
+    {
+        if(!Live()){ClearSensitive();return;}
+        if(rebuilding){refreshPending=true;return;}
+        var target=note!;var owner=workspace!;var source=target.Document!;string text=target.Text;long version=target.EditVersion,generation=++projectionGeneration;
+        bool Same()=>Live()&&generation==projectionGeneration&&ReferenceEquals(note,target)&&ReferenceEquals(workspace,owner)&&ReferenceEquals(target.Document,source)&&target.EditVersion==version;
+        rebuilding=true;refreshPending=false;
         try
         {
-            RichInput.IsUndoEnabled=false;projected=note!.Document;editable=false;
+            // Build and verify a detached document before its single native publish.
             var document=new FlowDocument{FontFamily=new FontFamily("Segoe UI"),FontSize=14,PagePadding=new(0),Foreground=RichInput.Foreground};
-            var info=RichDocumentCodec.Inspect(projected!);string limitation=info.Limitation;
+            var info=RichDocumentCodec.Inspect(source);bool ready=false;string limitation=info.Limitation;
             if(info.Supported)
             {
-                using var json=JsonDocument.Parse(projected!.SourceJson,new(){MaxDepth=16});
-                try{foreach(var block in json.RootElement.GetProperty("nodes").EnumerateArray())document.Blocks.Add(RenderBlock(block));RichInput.Document=document;editable=Equivalent(projected,CaptureDocument());if(!editable){document.Blocks.Clear();limitation="이 PC에서 정확히 표현하지 못하는 문서 — 원문을 보존하며 읽기 전용입니다.";}}
+                using var json=JsonDocument.Parse(source.SourceJson,new(){MaxDepth=16});
+                try
+                {
+                    foreach(var block in json.RootElement.GetProperty("nodes").EnumerateArray())document.Blocks.Add(RenderBlock(block));
+                    ready=Equivalent(source,CaptureNativeDocument(document));
+                    if(!ready){document.Blocks.Clear();limitation="이 PC에서 정확히 표현하지 못하는 문서 — 원문을 보존하며 읽기 전용입니다.";}
+                }
                 catch(InvalidDataException){document.Blocks.Clear();limitation="이 PC의 미지원 글꼴/서식 — 전체 원문을 보존하며 읽기 전용입니다.";}
             }
-            if(!editable)document.Blocks.Add(new Paragraph(new Run(note.Text)));
-            RichInput.Document=document;RichInput.IsReadOnly=!editable;toolbar.IsEnabled=editable;state.Text=editable?"서식 원문을 암호 저장합니다. 외부 링크·이미지는 자동 실행하지 않습니다.":limitation;
-            RichInput.IsUndoEnabled=editable;
+            if(!ready)document.Blocks.Add(new Paragraph(new Run(text)));
+            if(!Same()){refreshPending=Live();return;}
+            RichInput.IsUndoEnabled=false;if(!Same()){refreshPending=Live();return;}
+            projected=source;editable=ready;RichInput.Document=document;
+            // A native setter raises external handlers. Never reattach this local document after that boundary.
+            if(!Same()){refreshPending=Live();return;}
+            RichInput.IsReadOnly=!ready;toolbar.IsEnabled=ready;state.Text=ready?"서식 원문을 암호 저장합니다. 외부 링크·이미지는 자동 실행하지 않습니다.":limitation;
+            if(Same())RichInput.IsUndoEnabled=ready;else refreshPending=Live();
         }
-        finally{rebuilding=false;}
+        finally
+        {
+            rebuilding=false;
+            if(refreshPending&&!disposed)ScheduleRefresh();
+        }
+    }
+    private void ScheduleRefresh()
+    {
+        if(disposed)return;long scheduled=projectionGeneration;editable=false;RichInput.IsReadOnly=true;
+        // RichTextBox cannot replace Document while its TextChanged PendingUndoAction is active.
+        Dispatcher.BeginInvoke(new Action(()=>{if(scheduled==projectionGeneration&&!disposed){refreshPending=false;if(Live())PublishProjection();else ClearSensitive();}}));
     }
     private static SolidColorBrush ColorBrush(string hex)
     {
@@ -169,10 +201,11 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
         }
         return JsonNode.DeepEquals(Normalize(left),Normalize(right));
     }
-    private StyledDocument CaptureDocument()
+    private StyledDocument CaptureDocument()=>CaptureNativeDocument(RichInput.Document);
+    private static StyledDocument CaptureNativeDocument(FlowDocument document)
     {
         var nodes=new JsonArray();int count=0;
-        foreach(var block in RichInput.Document.Blocks)
+        foreach(var block in document.Blocks)
         {
             if(++count>1024)throw new InvalidDataException("Native block budget");
             switch(block)
@@ -198,7 +231,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private void Changed(object sender,TextChangedEventArgs e)
     {
         if(rebuilding||committing||!Live()||!editable)return;
-        try{var captured=CaptureDocument();committing=true;workspace!.SetRichDocument(note!,captured);if(Live())projected=note!.Document;}
+        try{var captured=CaptureDocument();committing=true;workspace!.SetRichDocument(note!,captured);if(Live()){if(note!.Document==captured)projected=captured;else Rebuild();}}
         catch{if(Live()){Rebuild();notice?.Invoke("지원하지 않는 서식/내용 또는 한도입니다. 편집을 적용하지 않고 기존 문서와 이력을 보존했습니다.");}}
         finally{committing=false;}
     }
@@ -231,7 +264,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     public void ClearSensitive()
     {
-        if(disposed)return;disposed=true;rebuilding=true;if(note is not null)note.PropertyChanged-=DraftChanged;
+        if(disposed)return;disposed=true;projectionGeneration++;refreshPending=false;editable=false;rebuilding=true;if(note is not null)note.PropertyChanged-=DraftChanged;
         RichInput.IsUndoEnabled=false;RichInput.IsReadOnly=true;RichInput.Document.Blocks.Clear();RichInput.DataContext=null;state.Text="";toolbar.IsEnabled=false;projected=null;note=null;workspace=null;current=null;notice=null;rebuilding=false;
     }
     public void Dispose()=>ClearSensitive();

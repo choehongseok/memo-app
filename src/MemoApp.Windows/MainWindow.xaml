@@ -83,7 +83,10 @@
      <TextBlock x:Name="NoteInfo" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
      <TextBlock Text="일반 텍스트 본문 (Ctrl+Z 실행취소 / Ctrl+Y 다시실행)"/>
     </StackPanel>
+    <Grid x:Name="BodyPanel">
     <TextBox x:Name="BodyEditor" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8" IsUndoEnabled="True" UndoLimit="100"/>
+    <ContentControl x:Name="StructuredHost" Visibility="Collapsed"/>
+    </Grid>
    </DockPanel>
   </Grid>
  </Grid></ScrollViewer>
