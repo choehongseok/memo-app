@@ -54,6 +54,29 @@ public sealed class SaveCoordinator : IDisposable
             Status = "암호화 준비 실패 — 변경 유지"; Changed?.Invoke(); return Task.FromResult(false);
         }
     }
+    private void RequireAttachmentSource(NoteDraft note,long expectedVersion,long epoch)
+    {
+        if(disposed||IsLocked||epoch!=sessionEpoch||vault.IsFaulted||note.EditVersion!=expectedVersion)throw new InvalidOperationException("Attachment source authority changed");
+        Workspace.RequireAttachmentNote(note);
+    }
+    public Task<bool> PrepareAttachmentsAsync()=>EnsureAttachmentRootAsync();
+    public Guid AttachBytes(NoteDraft note,ReadOnlySpan<byte> bytes,string name,string mime,long expectedVersion)
+    {
+        long epoch=sessionEpoch;RequireAttachmentSource(note,expectedVersion,epoch);
+        var item=vault.EncryptAttachment(bytes,name,mime);
+        RequireAttachmentSource(note,expectedVersion,epoch);Workspace.AddAttachment(note,item);return item.ObjectId;
+    }
+    public void DetachAttachment(NoteDraft note,Guid id,long expectedVersion)
+    {
+        RequireAttachmentSource(note,expectedVersion,sessionEpoch);Workspace.DetachAttachment(note,id);
+    }
+    internal byte[] ReadAttachmentBytes(NoteDraft note,Guid id,long expectedVersion)
+    {
+        long epoch=sessionEpoch;RequireAttachmentSource(note,expectedVersion,epoch);
+        var plaintext=vault.DecryptAttachment(Workspace.AttachmentObject(note,id));bool returned=false;
+        try{RequireAttachmentSource(note,expectedVersion,epoch);returned=true;return plaintext;}
+        finally{if(!returned)System.Security.Cryptography.CryptographicOperations.ZeroMemory(plaintext);}
+    }
     internal Task<bool> EnsureAttachmentRootAsync()
     {
         if(disposed||IsLocked||vault.IsFaulted)return Task.FromResult(false);

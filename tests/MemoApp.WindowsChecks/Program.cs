@@ -16,7 +16,7 @@ using MemoApp.Core.Documents;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Windows;
-internal static class Program
+internal static partial class Program
 {
     [STAThread]
     private static int Main()
@@ -34,6 +34,7 @@ internal static class Program
                 groups=groups.Append(("markdown-slow-delivery",(Func<Task>)MarkdownSlowDeliveryRun)).ToArray();
                 groups=groups.Append(("rich-own-same-restore",(Func<Task>)RichOwnSameRestoreRun)).ToArray();
                 groups=groups.Append(("rich-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("rich")))).Append(("markdown-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("markdown")))).ToArray();
+                groups=groups.Append(("attachment-panel-boundaries",(Func<Task>)AttachmentPanelRun)).Append(("attachment-production",(Func<Task>)AttachmentProductionRun)).ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {

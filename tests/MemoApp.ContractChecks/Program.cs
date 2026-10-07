@@ -2,6 +2,7 @@ using System.Text.Json;
 using MemoApp.Core;
 
 if (VaultFailureChecks.TryWorker(args)) return;
+if (AttachmentSourceChecks.TryWorker(args)) return;
 if (args.Contains("--markdown-only")) { MarkdownChecks.Run(); return; }
 if (args.Contains("--markdown-queue-only")) { await MarkdownQueueChecks.Run(); return; }
 if (args.Contains("--content-version-only")) { ContentVersionChecks.Run(); return; }
@@ -9,6 +10,8 @@ if (args.Contains("--attachment-contract-only")) { AttachmentContractChecks.Run(
 if (args.Contains("--attachment-cipher-only")) { AttachmentCipherChecks.Run(); return; }
 if (args.Contains("--attachment-envelope-only")) { AttachmentEnvelopeChecks.Run(); return; }
 if (args.Contains("--attachment-root-only")) { await AttachmentRootChecks.Run(); return; }
+if (args.Contains("--attachment-mutation-only")) { await AttachmentMutationChecks.Run(); return; }
+if (args.Contains("--attachment-source-only")) { AttachmentSourceChecks.Run(); return; }
 if (args.Contains("--org-preflight-only")) { OrganizationPreflightChecks.Run(); return; }
 if (args.Contains("--rich-only")) { RichDocumentChecks.Run(); return; }
 if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return; }
@@ -47,6 +50,8 @@ AttachmentContractChecks.Run();
 AttachmentCipherChecks.Run();
 AttachmentEnvelopeChecks.Run();
 await AttachmentRootChecks.Run();
+await AttachmentMutationChecks.Run();
+AttachmentSourceChecks.Run();
 RichDocumentChecks.Run();
 MarkdownChecks.Run();
 await MarkdownQueueChecks.Run();

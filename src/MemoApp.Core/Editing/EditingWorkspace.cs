@@ -143,7 +143,7 @@ public sealed class EditingWorkspace
         ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
     private void ApplyContentEvent(NoteDraft note,string text,string mode,StyledDocument? document,NoteMetadata metadata)=>
         ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,text,metadata)},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(mode,document)});
-    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null)
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null,ImmutableArray<StoredAttachmentObject>? stagedObjects=null)
     {
         if (changes.Count == 0) return;
         var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
@@ -157,7 +157,7 @@ public sealed class EditingWorkspace
         }).ToArray();
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags };
+        var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags,AttachmentObjects=stagedObjects??before.AttachmentObjects };
         VaultEnvelope.Validate(next);
         var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
         foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id),formats?.ContainsKey(note.Id)==true||attachments?.ContainsKey(note.Id)==true);
@@ -240,6 +240,26 @@ public sealed class EditingWorkspace
         var ids = new HashSet<Guid> { parentId };
         bool added; do { added = false; foreach (var f in folders) if (f.ParentId is Guid p && ids.Contains(p)) added |= ids.Add(f.FolderId); } while (added);
         return ids.ToArray();
+    }
+    internal void RequireAttachmentNote(NoteDraft note)=>RequireNote(note);
+    internal void AddAttachment(NoteDraft note,StoredAttachmentObject item)
+    {
+        RequireNote(note);ArgumentNullException.ThrowIfNull(item);
+        if(attachmentRootId==Guid.Empty||attachmentObjects.Any(x=>x.ObjectId==item.ObjectId))throw new InvalidOperationException("Attachment root/object identity unavailable or reused");
+        AttachmentValidation.Object(item,attachmentRootId);
+        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,note.Text,note.Metadata)},attachments:new Dictionary<Guid,ImmutableArray<Guid>>{[note.Id]=note.AttachmentIds.Add(item.ObjectId)},stagedObjects:attachmentObjects.Add(item));
+    }
+    internal void DetachAttachment(NoteDraft note,Guid id)
+    {
+        RequireNote(note);
+        if(!note.AttachmentIds.Contains(id))throw new ArgumentException("Unknown active attachment reference");
+        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,note.Text,note.Metadata)},attachments:new Dictionary<Guid,ImmutableArray<Guid>>{[note.Id]=note.AttachmentIds.Remove(id)});
+    }
+    internal StoredAttachmentObject AttachmentObject(NoteDraft note,Guid id)
+    {
+        RequireNote(note);
+        if(!note.AttachmentIds.Contains(id))throw new InvalidOperationException("Attachment reference is not in this active note");
+        return attachmentObjects.Single(item=>item.ObjectId==id);
     }
     public VaultSnapshot Capture()
     {

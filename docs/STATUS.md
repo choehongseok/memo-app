@@ -1,3 +1,15 @@
+# 2026-10-07 첨부 원자모델 보존·UI RED 회귀 준비
+
+18:29UTC 보존코드 source/mutation targeted실행 PASS, 4프로젝트crossbuild0경고오류·Python26·134원문 PASS. 별도 source경계 읽기검토에필수blocker없음(독립실행아님), 동시파일교체/동일길이변경/Linux공유잠금/동기IO취소한계기록. 실제Main+Sticky 첨부패널회귀를 구현전추가했으며Windows missing-panel RED관측후UI연결예정. 파일파싱/실행/이미지/내보내기미연결·134사용자수용0 유지.
+
+# 2026-10-07 첨부 원자변경·원본 파일 읽기 Core 진행
+
+Root통합83dccda/tree d1f8a343의 Windows37649032054 전체SUCCESS: source/Python26/safety/build/fullCore·새 root회귀/실제WPF/publish PASS, upload skipped·artifacts=[]·기존시험판 유지.
+
+Add/detach는전체object+note refs+새revision/history를원자preflight후발행하며detach해도이력/복제/backup용암호객체를보존한다. active동일note/sessionEpoch/EditVersion을crypto전후확인하고거절된plaintext는zero한다. missing-add RED뒤history512/ref16/object128/aggregate8MiB/payload16MiB 거절불변·실제append save/restart/다른폴더backup복구·flush실패원본cipher보존/암호pending 실제복구 PASS. Opaque source reader도missing-reader RED뒤단일length4MiB검사·원본binary/name/hash보존·extension MIME추정·입력bufferzero/dispose·cancel/network/URI/linked-path거절 PASS. parsing/launch/export 없음, full path를model에보관하지않는다.
+
+최신전체Core/Python26/134byte/hash/M06/4프로젝트crossbuild0경고오류 PASS. 원자모델과source경계의독립읽기검토/후속Windows결과를기록하며파일선택UI는아직연결전이다. 82부분/50미착수/N09차단1/M06정규화1·전수완료/수용0 유지하고이어간다.
+
 # 2026-10-07 첨부 root/원본복구 Core 진행
 
 내부 envelope2 a9de8de/tree3051bec Windows37643744953 전체SUCCESS: 원문/Python26/safety/build/fullCore/실제WPF/publish PASS, upload skipped·artifacts=[]·기존818a531 시험판 유지. GitHub ref갱신 서버오류는 currenthead를 확인하며 재시도해 해결됐고 local동일tree 이력을 archive로보존했다.
