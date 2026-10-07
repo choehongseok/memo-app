@@ -75,13 +75,14 @@
    </DockPanel>
    <DockPanel x:Name="Editor" Grid.Column="2" IsEnabled="False">
     <StackPanel DockPanel.Dock="Top">
-     <TextBlock Text="일반 텍스트 · 100개(휴지통 포함) · 제목 256자/본문 65,536자 · 파일 16 MiB. 약 0.7초마다 암호 저장." Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
+     <TextBlock Text="문서 모드 · 100개(휴지통 포함) · 제목 256자/본문 65,536자 · 파일 16 MiB. 약 0.7초마다 암호 저장." Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
      <WrapPanel Margin="0,0,0,8"><Button Content="포스트잇 열기" Click="OpenSticky_Click" Padding="6" Margin="0,0,8,0"/><CheckBox Content="중요" IsChecked="{Binding Important}" Margin="0,4,8,0"/><CheckBox Content="즐겨찾기" IsChecked="{Binding Favorite}" Margin="0,4,8,0"/><CheckBox Content="목록 고정" IsChecked="{Binding Pinned}" Margin="0,4,8,0"/><CheckBox Content="보관" IsChecked="{Binding Archived}" Margin="0,4,8,0"/></WrapPanel>
      <WrapPanel Margin="0,0,0,8"><TextBlock Text="폴더 " VerticalAlignment="Center"/><ComboBox x:Name="MoveFolder" Width="180" DisplayMemberPath="Name" SelectionChanged="MoveFolder_Changed" Margin="0,0,8,0"/><TextBlock Text="색 " VerticalAlignment="Center"/><ComboBox x:Name="ColorPicker" Width="100" SelectionChanged="Color_Changed"><ComboBoxItem Content="노랑" Tag="yellow"/><ComboBoxItem Content="파랑" Tag="blue"/><ComboBoxItem Content="초록" Tag="green"/><ComboBoxItem Content="분홍" Tag="pink"/><ComboBoxItem Content="흰색" Tag="white"/><ComboBoxItem Content="보라" Tag="purple"/></ComboBox></WrapPanel>
      <DockPanel Margin="0,0,0,8"><Button DockPanel.Dock="Right" Content="태그 적용" Click="ApplyTags_Click" Padding="6"/><TextBox x:Name="TagsInput" MaxLength="2048" ToolTip="쉼표로 구분한 태그 (메모당 최대 16개)"/></DockPanel>
      <TextBlock Text="제목"/><TextBox x:Name="TitleEditor" MaxLength="256" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" Padding="6"/>
      <TextBlock x:Name="NoteInfo" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
-     <TextBlock Text="일반 텍스트 본문 (Ctrl+Z 실행취소 / Ctrl+Y 다시실행)"/>
+     <WrapPanel><TextBlock Text="문서 모드 " VerticalAlignment="Center"/><ComboBox x:Name="ModeChoice" Width="180" SelectionChanged="Mode_Changed"><ComboBoxItem Content="일반 텍스트" Tag="plain"/><ComboBoxItem Content="서식 문서" Tag="rich"/><ComboBoxItem Content="Markdown 원문" Tag="markdown"/></ComboBox></WrapPanel>
+     <TextBlock Text="Ctrl+Z 실행취소 / Ctrl+Y 다시실행 · 모드 전환은 원본을 이력에 보존합니다" TextWrapping="Wrap"/>
     </StackPanel>
     <Grid x:Name="BodyPanel">
     <TextBox x:Name="BodyEditor" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8" IsUndoEnabled="True" UndoLimit="100"/>

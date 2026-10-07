@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using MemoApp.Core.Documents;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
@@ -28,10 +29,24 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private static readonly DependencyProperty ChecklistPrefixProperty=DependencyProperty.RegisterAttached("CanonicalChecklistPrefix",typeof(bool),typeof(StructuredNoteEditor),new(false));
     private static readonly DependencyProperty ChecklistProperty=DependencyProperty.RegisterAttached("CanonicalChecklist",typeof(bool),typeof(StructuredNoteEditor),new(false));
     private static readonly HashSet<string> SafeFonts=Fonts.SystemFontFamilies.Select(f=>f.Source).Where(SafeFontName).ToHashSet(StringComparer.OrdinalIgnoreCase);
-    public RichTextBox RichInput{get;}=new(){AllowDrop=false,IsUndoEnabled=true,UndoLimit=100,AcceptsTab=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Padding=new(8)};
+    private sealed class NativeRichTextBox:RichTextBox
+    {
+        internal int EventDepth{get;private set;}
+        internal Action? EventFinished;
+        protected override void OnTextChanged(TextChangedEventArgs e)
+        {
+            EventDepth++;try{base.OnTextChanged(e);}finally{EventDepth--;if(EventDepth==0)EventFinished?.Invoke();}
+        }
+    }
+    private readonly NativeRichTextBox native=new(){AllowDrop=false,IsUndoEnabled=true,UndoLimit=100,AcceptsTab=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Padding=new(8)};
+    private readonly DispatcherTimer transactionRetry=new(DispatcherPriority.Background){Interval=TimeSpan.FromMilliseconds(100)};
+    private bool waitingTransaction;
+    public RichTextBox RichInput=>native;
     public StructuredNoteEditor(EditingWorkspace workspace,NoteDraft note,Func<bool> current,Action<string> notice)
     {
         this.workspace=workspace;this.note=note;this.current=current;this.notice=notice;
+        native.EventFinished=()=>{if(!disposed&&(refreshPending||waitingTransaction))QueueRefresh();};
+        transactionRetry.Tick+=(_,_)=>{transactionRetry.Stop();if(!disposed&&waitingTransaction){waitingTransaction=false;if(Live())ScheduleRefresh();else ClearSensitive();}};
         var root=new DockPanel();DockPanel.SetDock(toolbar,Dock.Top);root.Children.Add(toolbar);DockPanel.SetDock(state,Dock.Top);root.Children.Add(state);root.Children.Add(RichInput);Content=root;
         Button("굵게",ApplyBold);var sizes=new ComboBox{Width=60,ItemsSource=new double[]{8,10,12,14,16,18,22,28,36,48,72,96},SelectedItem=14d};sizes.SelectionChanged+=(_,_)=>{if(!rebuilding&&sizes.SelectedItem is double size)ApplyFontSize(size);};toolbar.Children.Add(sizes);
         RichInput.TextChanged+=Changed;DataObject.AddPastingHandler(RichInput,Pasting);
@@ -57,14 +72,14 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     private void PublishProjection()
     {
         if(!Live()){ClearSensitive();return;}
-        if(rebuilding){refreshPending=true;return;}
+        if(rebuilding||native.EventDepth!=0){refreshPending=true;return;}
         var target=note!;var owner=workspace!;var source=target.Document!;string text=target.Text;long version=target.EditVersion,generation=++projectionGeneration;
         bool Same()=>Live()&&generation==projectionGeneration&&ReferenceEquals(note,target)&&ReferenceEquals(workspace,owner)&&ReferenceEquals(target.Document,source)&&target.EditVersion==version;
         rebuilding=true;refreshPending=false;
         try
         {
             // Build and verify a detached document before its single native publish.
-            var document=new FlowDocument{FontFamily=new FontFamily("Segoe UI"),FontSize=14,PagePadding=new(0),Foreground=RichInput.Foreground};
+            var document=new FlowDocument{FontFamily=new FontFamily("Segoe UI"),FontSize=14,PagePadding=new(0),TextAlignment=TextAlignment.Left,Foreground=RichInput.Foreground};
             var info=RichDocumentCodec.Inspect(source);bool ready=false;string limitation=info.Limitation;
             if(info.Supported)
             {
@@ -78,13 +93,19 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
                 catch(InvalidDataException){document.Blocks.Clear();limitation="이 PC의 미지원 글꼴/서식 — 전체 원문을 보존하며 읽기 전용입니다.";}
             }
             if(!ready)document.Blocks.Add(new Paragraph(new Run(text)));
-            if(!Same()){refreshPending=Live();return;}
-            RichInput.IsUndoEnabled=false;if(!Same()){refreshPending=Live();return;}
-            projected=source;editable=ready;RichInput.Document=document;
+            if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
+            var previous=projected;projected=source;editable=false;
+            try{RichInput.Document=document;waitingTransaction=false;transactionRetry.Stop();}
+            catch(InvalidOperationException)
+            {
+                // Public BeginChange can outlive nested dispatcher pumps; setter rejects it before detaching old content.
+                projected=previous;waitingTransaction=true;RichInput.IsReadOnly=true;transactionRetry.Start();return;
+            }
+            editable=ready;
             // A native setter raises external handlers. Never reattach this local document after that boundary.
-            if(!Same()){refreshPending=Live();return;}
+            if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
             RichInput.IsReadOnly=!ready;toolbar.IsEnabled=ready;state.Text=ready?"서식 원문을 암호 저장합니다. 외부 링크·이미지는 자동 실행하지 않습니다.":limitation;
-            if(Same())RichInput.IsUndoEnabled=ready;else refreshPending=Live();
+            if(Same())RichInput.IsUndoEnabled=ready;else if(!Live())ClearSensitive();else refreshPending=true;
         }
         finally
         {
@@ -94,8 +115,12 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     private void ScheduleRefresh()
     {
-        if(disposed)return;long scheduled=projectionGeneration;editable=false;RichInput.IsReadOnly=true;
-        // RichTextBox cannot replace Document while its TextChanged PendingUndoAction is active.
+        if(disposed)return;editable=false;RichInput.IsReadOnly=true;QueueRefresh();
+    }
+    private void QueueRefresh()
+    {
+        if(disposed)return;long scheduled=projectionGeneration;
+        // EventDepth guards the full native routed event even through nested dispatcher/OLE pumps.
         Dispatcher.BeginInvoke(new Action(()=>{if(scheduled==projectionGeneration&&!disposed){refreshPending=false;if(Live())PublishProjection();else ClearSensitive();}}));
     }
     private static SolidColorBrush ColorBrush(string hex)
@@ -120,13 +145,13 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     {
         switch(node.GetProperty("type").GetString())
         {
-            case "paragraph":var paragraph=new Paragraph{Margin=new(0,0,0,4)};RenderRuns(paragraph,node);return paragraph;
+            case "paragraph":var paragraph=new Paragraph{Margin=new(0,0,0,4),TextAlignment=TextAlignment.Left,TextIndent=0};RenderRuns(paragraph,node);return paragraph;
             case "list":case "checklist":
                 bool checklist=node.GetProperty("type").GetString()=="checklist";var list=new List{MarkerStyle=checklist?TextMarkerStyle.None:node.GetProperty("ordered").GetBoolean()?TextMarkerStyle.Decimal:TextMarkerStyle.Disc,Margin=new(16,0,0,4)};list.SetValue(ChecklistProperty,checklist);
-                foreach(var item in node.GetProperty("items").EnumerateArray()){var line=new Paragraph{Margin=new(0)};if(checklist){var prefix=new Run(item.GetProperty("checked").GetBoolean()?"[x] ":"[ ] ");prefix.SetValue(ChecklistPrefixProperty,true);line.Inlines.Add(prefix);}RenderRuns(line,item);list.ListItems.Add(new ListItem(line));}return list;
+                foreach(var item in node.GetProperty("items").EnumerateArray()){var line=new Paragraph{Margin=new(0),TextAlignment=TextAlignment.Left,TextIndent=0};if(checklist){var prefix=new Run(item.GetProperty("checked").GetBoolean()?"[x] ":"[ ] ");prefix.SetValue(ChecklistPrefixProperty,true);line.Inlines.Add(prefix);}RenderRuns(line,item);list.ListItems.Add(new ListItem(line));}return list;
             case "table":
                 var table=new Table{CellSpacing=0,Margin=new(0,0,0,4)};var group=new TableRowGroup();table.RowGroups.Add(group);
-                foreach(var row in node.GetProperty("rows").EnumerateArray()){var native=new TableRow();group.Rows.Add(native);foreach(var cell in row.EnumerateArray()){var line=new Paragraph{Margin=new(0)};RenderRuns(line,cell);native.Cells.Add(new TableCell(line){BorderBrush=Brushes.Gray,BorderThickness=new(1),Padding=new(4)});}}return table;
+                foreach(var row in node.GetProperty("rows").EnumerateArray()){var native=new TableRow();group.Rows.Add(native);foreach(var cell in row.EnumerateArray()){var line=new Paragraph{Margin=new(0),TextAlignment=TextAlignment.Left,TextIndent=0};RenderRuns(line,cell);native.Cells.Add(new TableCell(line){BorderBrush=Brushes.Gray,BorderThickness=new(1),Padding=new(4)});}}return table;
             default:throw new InvalidDataException("Unsupported rich node");
         }
     }
@@ -153,7 +178,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     private static JsonArray ReadRuns(Paragraph paragraph,ref int count,Run? scaffold=null)
     {
-        if(paragraph.TextAlignment!=TextAlignment.Left||paragraph.TextIndent!=0)throw new InvalidDataException("Unsupported paragraph layout");
+        if(paragraph.TextAlignment!=TextAlignment.Left||paragraph.TextIndent!=0)throw new InvalidDataException($"Unsupported paragraph layout (alignment={paragraph.TextAlignment}, indent={paragraph.TextIndent})");
         var result=new JsonArray();var stack=new Stack<(Inline Element,int Depth)>();foreach(var child in paragraph.Inlines.Reverse())stack.Push((child,0));
         while(stack.TryPop(out var entry))
         {
@@ -264,7 +289,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
     }
     public void ClearSensitive()
     {
-        if(disposed)return;disposed=true;projectionGeneration++;refreshPending=false;editable=false;rebuilding=true;if(note is not null)note.PropertyChanged-=DraftChanged;
+        if(disposed)return;disposed=true;projectionGeneration++;refreshPending=false;waitingTransaction=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;if(note is not null)note.PropertyChanged-=DraftChanged;
         RichInput.IsUndoEnabled=false;RichInput.IsReadOnly=true;RichInput.Document.Blocks.Clear();RichInput.DataContext=null;state.Text="";toolbar.IsEnabled=false;projected=null;note=null;workspace=null;current=null;notice=null;rebuilding=false;
     }
     public void Dispose()=>ClearSensitive();

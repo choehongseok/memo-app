@@ -27,7 +27,7 @@ internal static class Program
             try
             {
                 var failures=new List<string>();
-                var groups=new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-post-handler-race",RichPostHandlerRaceRun),("rich-two-views",RichViewsRun),("rich-formatting-commands",RichFormattingCommandsRun),("rich-fidelity",RichFidelityRun),("rich-native-style-refusal",RichNativeStyleRun),("rich-native-malformed-unicode",RichMalformedNativeRun),("rich-composition-boundary",RichCompositionRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun),("rich-nested-native-worker",RichNestedNativeProcessRun)};
+                var groups=new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-post-handler-race",RichPostHandlerRaceRun),("rich-exception-purge",RichExceptionPurgeRun),("rich-clear-exception",RichClearExceptionRun),("rich-two-views",RichViewsRun),("rich-formatting-commands",RichFormattingCommandsRun),("rich-fidelity",RichFidelityRun),("rich-link-split",RichLinkSplitRun),("rich-history-mode",RichHistoryRun),("rich-native-style-refusal",RichNativeStyleRun),("rich-native-malformed-unicode",RichMalformedNativeRun),("rich-composition-boundary",RichCompositionRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun),("rich-nested-native-worker",RichNestedNativeProcessRun)};
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {
@@ -99,6 +99,26 @@ internal static class Program
         ((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.Add(new Run("_A"));await Idle();Require(note.Text=="NESTED_HANDLER_B" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("NESTED_HANDLER_B"),"nested dispatcher pump must not replace Document inside outer native TextChanged");
         view.RichInput.BeginChange();try{workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("OPEN_TRANSACTION_C"));Pump();}finally{view.RichInput.EndChange();}await Task.Delay(250);await Idle();Require(note.Text=="OPEN_TRANSACTION_C" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("OPEN_TRANSACTION_C")&&!view.RichInput.CanUndo,"open native transaction rejection must safely retry latest after empty EndChange");live=false;view.ClearSensitive();workspace.Clear();window.Close();
     }
+    private static async Task RichExceptionPurgeRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="exception before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
+        view.RichInput.TextChanged+=(_,_)=>{if(armed){armed=false;live=false;view.ClearSensitive();throw new InvalidOperationException("SYNTHETIC_POST_ATTACH_HANDLER_FAILURE");}};
+        workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("exception next"));await Idle();Require(Field<StyledDocument?>(view,"projected") is null && !Field<DispatcherTimer>(view,"transactionRetry").IsEnabled && view.RichInput.Document.Blocks.Count==0&&!view.RichInput.CanUndo,"post-attach exception after conceal must not resurrect cached source or transaction timer");workspace.Clear();window.Close();
+    }
+    private static async Task RichClearExceptionRun()
+    {
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="clear synthetic";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();view.RichInput.TextChanged+=(_,_)=>{if(Field<bool>(view,"disposed"))throw new InvalidOperationException("SYNTHETIC_THROW_ON_CLEAR");};bool threw=false;live=false;try{view.ClearSensitive();}catch{threw=true;}Require(!threw && Field<StyledDocument?>(view,"projected") is null && Field<NoteDraft?>(view,"note") is null && Field<EditingWorkspace?>(view,"workspace") is null && Field<Func<bool>?>(view,"current") is null && !Field<DispatcherTimer>(view,"transactionRetry").IsEnabled && view.RichInput.Document.Blocks.Count==0&&!view.RichInput.CanUndo,"native clear exception must not interrupt reference/observer/Undo purge");workspace.Clear();window.Close();
+        var root=Path.Combine(Path.GetTempPath(),"memo-wpf-clear-throw-"+Guid.NewGuid().ToString("N"));var secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
+        try
+        {
+            main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Create(root,secret,secret));var session=Field<SaveCoordinator>(main,"session");var draft=session.Workspace.CreateNote();draft.Text="production clear synthetic";Invoke(main,"RefreshNotes",draft);session.Workspace.ConvertMode(draft,"rich",true);await Idle();var host=Control<ContentControl>(main,"StructuredHost");var editor=(StructuredNoteEditor)host.Content;editor.RichInput.TextChanged+=(_,_)=>{if(Field<bool>(editor,"disposed"))throw new InvalidOperationException("SYNTHETIC_THROW_ON_PRODUCTION_CLEAR");};Require(await session.SaveAsync(),"clear exception fixture baseline save");bool locked=false;try{locked=await session.LockAsync();}catch{}await Idle();Require(locked&&session.KeysReleased&&host.Content is null&&Field<StructuredNoteEditor?>(main,"structuredEditor") is null&&Field<StyledDocument?>(editor,"projected") is null&&Field<EditingWorkspace?>(editor,"workspace") is null,"native clear exception must not interrupt parent detach or key-releasing LockAsync");Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
+        }
+        finally
+        {
+            if(main is not null){var session=Field<SaveCoordinator?>(main,"session");if(session is not null&&!session.IsLocked)try{await session.LockAsync();}catch{}SetField(main,"confirmedExit",true);main.Close();session?.Dispose();}
+            CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);
+        }
+    }
     private static async Task RichCommitRaceRun()
     {
         var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
@@ -167,6 +187,17 @@ internal static class Program
             finally{live=false;view.ClearSensitive();workspace.Clear();window.Close();}
         }
         Require(errors.Count==0,string.Join(" / ",errors));
+    }
+    private static async Task RichLinkSplitRun()
+    {
+        var json=System.Text.Json.Nodes.JsonNode.Parse(RichDocumentCodec.FromPlain("alpha beta gamma").SourceJson)!;json["nodes"]![0]!["runs"]![0]!["link"]="https://example.invalid/split-link";var document=new StyledDocument(1,json.ToJsonString());var now=DateTimeOffset.UtcNow;var snapshot=new VaultSnapshot(4,Guid.NewGuid(),[new(Guid.NewGuid(),Guid.NewGuid(),[],now,now,"link split","alpha beta gamma","rich"){Document=document}]);var workspace=new EditingWorkspace(TimeProvider.System,snapshot);var note=workspace.Notes.Single();bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=500,Height=400};window.Show();await Idle();Require(!view.RichInput.IsReadOnly,"supported linked source must allow editing");
+        var run=(Run)((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.FirstInline;view.RichInput.Selection.Select(run.ContentStart.GetPositionAtOffset(6)!,run.ContentStart.GetPositionAtOffset(10)!);view.ApplyBold();await Idle();
+        using(var saved=JsonDocument.Parse(note.Document!.SourceJson)){var runs=saved.RootElement.GetProperty("nodes")[0].GetProperty("runs").EnumerateArray().Where(r=>r.GetProperty("text").GetString()!.Length!=0).ToArray();Require(runs.Length>=2 && runs.All(r=>r.TryGetProperty("link",out var link)&&link.GetString()=="https://example.invalid/split-link") && note.Text=="alpha beta gamma","native run splitting must retain every link-marked fragment and exact text");}
+        live=false;view.ClearSensitive();workspace.Clear();window.Close();
+    }
+    private static async Task RichHistoryRun()
+    {
+        var plain=RichDocumentCodec.FromPlain("same projected body");var json=System.Text.Json.Nodes.JsonNode.Parse(plain.SourceJson)!;json["nodes"]![0]!["runs"]![0]!["bold"]=true;var bold=new StyledDocument(1,json.ToJsonString());var now=DateTimeOffset.UtcNow;var id=Guid.NewGuid();var old=Guid.NewGuid();var snapshot=new VaultSnapshot(4,Guid.NewGuid(),[new(id,Guid.NewGuid(),[old],now,now,"same title","same projected body","rich"){Document=plain}]){History=[new(id,old,[],now,"same title","same projected body"){Mode="rich",Document=bold}]};var workspace=new EditingWorkspace(TimeProvider.System,snapshot);var note=workspace.Notes.Single();var history=new HistoryWindow(note,snapshot.History,_=>{},snapshot.Notes.Single());history.Show();await Idle();Require(Control<TextBlock>(history,"ComparisonInfo").Text.Contains("서식 변경") && Control<TextBlock>(history,"DiffState").Text.Contains("텍스트"),"history must distinguish rich format changes when projected text is identical");history.Close();Require(Field<object?>(history,"comparisonSources") is null,"closed rich history must release full source comparison records");workspace.Clear();
     }
     private static async Task RichNativeStyleRun()
     {

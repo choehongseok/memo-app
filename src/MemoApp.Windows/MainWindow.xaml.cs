@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 using MemoApp.Core.Editing;
@@ -35,6 +36,9 @@ public partial class MainWindow : Window
     private DateTimeOffset activity = DateTimeOffset.UtcNow;
     private bool closing, confirmedExit, transitionBusy;
     private long uiEpoch;
+    private StructuredNoteEditor? structuredEditor;
+    private NoteDraft? structuredNote;
+    private string? selectedBodyMode;
     private NoteDraft? SingleNote=>NotesList.SelectedItems.Count==1?NotesList.SelectedItem as NoteDraft:null;
     private sealed record BatchRequest(SaveCoordinator Session,long Epoch,NoteDraft[] Notes,bool Deleted);
     public MainWindow() : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MemoApp", "SyntheticTrial")) { }
@@ -88,19 +92,19 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++; fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;
+        uiEpoch++; fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
-        EditingPanel.Visibility = Visibility.Collapsed;
+        EditingPanel.Visibility = Visibility.Collapsed;ClearStructuredEditor();
         Editor.DataContext = null; Editor.IsEnabled = false; NotesList.ItemsSource = null;
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false; BodyEditor.Clear(); TitleEditor.Clear();
         loadingUi = true;
         foreach (var input in new[] { SearchInput, TagFilter, FolderName, TagsInput }) { input.IsUndoEnabled = false; input.Clear(); }
         FolderFilter.ItemsSource = MoveFolder.ItemsSource = BatchFolder.ItemsSource = null; FromDate.SelectedDate = UntilDate.SelectedDate = null;
         ViewFilter.SelectedIndex = SearchFieldFilter.SelectedIndex = SortFilter.SelectedIndex = 0;
-        ColorPicker.SelectedIndex = -1; Counts.Text = NoteInfo.Text = ""; loadingUi = false;
+        ColorPicker.SelectedIndex = ModeChoice.SelectedIndex = -1; Counts.Text = NoteInfo.Text = ""; loadingUi = false;
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = false;
         TxtExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
@@ -172,14 +176,43 @@ public partial class MainWindow : Window
     private async void Save_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.SaveAsync(); }
     private async void Lock_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.LockAsync(); else ClearSecretControls(); }
     private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!loadingUi) SelectEditor(); }
+    private void ClearStructuredEditor()
+    {
+        structuredEditor?.Dispose();structuredEditor=null;structuredNote=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;
+    }
     private void SelectEditor()
     {
-        if (!ReferenceEquals(Editor.DataContext, SingleNote)) BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
-        Editor.DataContext = SingleNote;
-        Editor.IsEnabled = session is { IsLocked: false } && SingleNote is NoteDraft { IsDeleted: false };
-        BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = Editor.IsEnabled;
-        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=Editor.IsEnabled;
-        UpdateSelectedActions(); UpdateSelectedDetails();
+        var selected=SingleNote;bool changed=!ReferenceEquals(Editor.DataContext,selected)||selectedBodyMode!=selected?.Mode;
+        if(changed){BodyEditor.IsUndoEnabled=TitleEditor.IsUndoEnabled=false;BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Clear();}
+        Editor.DataContext=selected;Editor.IsEnabled=session is {IsLocked:false}&&!concealing&&selected is {IsDeleted:false};
+        TitleEditor.IsUndoEnabled=Editor.IsEnabled;selectedBodyMode=selected?.Mode;
+        if(selected is {Mode:"rich",IsDeleted:false}&&session is {IsLocked:false} active&&!concealing)
+        {
+            BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.IsUndoEnabled=false;BodyEditor.Clear();BodyEditor.IsReadOnly=true;BodyEditor.Visibility=Visibility.Collapsed;StructuredHost.Visibility=Visibility.Visible;
+            if(!ReferenceEquals(structuredNote,selected)||structuredEditor is null)
+            {
+                ClearStructuredEditor();long epoch=uiEpoch;bool attached=false;StructuredNoteEditor? created=null;
+                bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&selected is {IsClosed:false,IsDeleted:false,Mode:"rich"}&&(!attached||ReferenceEquals(StructuredHost.Content,created));
+                created=new(active.Workspace,selected,Current,message=>{if(Current())Notice.Text=message;});
+                if(Current()){structuredEditor=created;structuredNote=selected;StructuredHost.Content=created;StructuredHost.Visibility=Visibility.Visible;attached=true;created.ApplyPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);}else created.Dispose();
+            }
+        }
+        else
+        {
+            ClearStructuredEditor();BodyEditor.Visibility=Visibility.Visible;BodyEditor.IsReadOnly=!Editor.IsEnabled||selected?.Mode=="rich";BodyEditor.IsUndoEnabled=Editor.IsEnabled&&selected?.Mode!="rich";
+            if(selected?.Mode=="rich"){BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Text=selected.Text;}
+            else if(!BindingOperations.IsDataBound(BodyEditor,TextBox.TextProperty))BodyEditor.SetBinding(TextBox.TextProperty,new Binding(nameof(NoteDraft.Text)){UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});
+        }
+        bool loading=loadingUi;loadingUi=true;ModeChoice.SelectedItem=ModeChoice.Items.Cast<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==selected?.Mode);loadingUi=loading;
+        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();
+    }
+    private void Mode_Changed(object sender,SelectionChangedEventArgs e)
+    {
+        if(loadingUi||concealing||session is not {IsLocked:false} active||SingleNote is not {IsDeleted:false} note||ModeChoice.SelectedItem is not ComboBoxItem{Tag:string mode}||mode==note.Mode)return;
+        long epoch=uiEpoch,version=note.EditVersion;var source=note.Document;string original=note.Mode;
+        if(MessageBox.Show("모드 전환은 원래 문서 전체를 이력에 남깁니다. 서식은 단순 본문으로 바뀔 수 있고, 서식 모드로 바꿀 때 CR/LF는 LF로 정규화됩니다. 미지원 문서의 전체 내용을 단순 본문으로 보존할 수는 없습니다. 전환할까요?","문서 모드 전환",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)!=MessageBoxResult.Yes){SelectEditor();return;}
+        if(concealing||epoch!=uiEpoch||!ReferenceEquals(session,active)||active.IsLocked||!ReferenceEquals(SingleNote,note)||note.IsClosed||note.IsDeleted||note.EditVersion!=version||note.Mode!=original||!ReferenceEquals(note.Document,source)){if(!concealing)SelectEditor();return;}
+        try{active.Workspace.ConvertMode(note,mode,true);SelectEditor();}catch{SelectEditor();Notice.Text="모드 전환을 적용하지 않았습니다. 문서·전체 저장용량·이력 한도를 확인하세요.";}
     }
     private void OpenSticky_Click(object sender,RoutedEventArgs e)
     {
@@ -196,7 +229,7 @@ public partial class MainWindow : Window
         stickyWindows.Add(note.Id,window);
         bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&stickyWindows.TryGetValue(note.Id,out var current)&&ReferenceEquals(current,window);
         var placement=new DesktopWindowController(window,"memo",note.Id,state,Current,layout=>PersistLayout(active,epoch,layout));
-        placements.Add(window,placement);window.SetPlacement(placement);window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
+        placements.Add(window,placement);window.SetPlacement(placement);window.SetEditingContext(active.Workspace,Current,message=>{if(Current())Notice.Text=message;});window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
         window.Closed+=(_,_)=>{stickyWindows.Remove(note.Id);placements.Remove(window);};window.Show();
     }
     private void PersistLayout(SaveCoordinator active,long epoch,StoredWindowLayout layout)
@@ -254,7 +287,7 @@ public partial class MainWindow : Window
         {
             var style=new Style(type);style.Setters.Add(new Setter(Control.BackgroundProperty,controlBackground));style.Setters.Add(new Setter(Control.ForegroundProperty,Foreground));style.Setters.Add(new Setter(Control.BorderBrushProperty,Brushes.SlateGray));Resources[type]=style;
         }
-        foreach(var window in stickyWindows.Values)window.ApplyUiPreferences(prefs);foreach(var window in widgets.Values)window.ApplyUiPreferences(prefs);foreach(var window in historyWindows)window.ApplyUiPreferences(prefs);loadingUi=false;
+        structuredEditor?.ApplyPreferences(prefs);foreach(var window in stickyWindows.Values)window.ApplyUiPreferences(prefs);foreach(var window in widgets.Values)window.ApplyUiPreferences(prefs);foreach(var window in historyWindows)window.ApplyUiPreferences(prefs);loadingUi=false;
     }
     private void Inspect_Click(object sender, RoutedEventArgs e)
     {
