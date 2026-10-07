@@ -1,2 +1,4 @@
 # Preserve the attached specification byte for byte on every checkout.
 docs/SOURCE_PROMPT.txt -text
+# The reviewed full dependency notice is also byte-hashed and copied unchanged.
+docs/licenses/Markdig1.4.0.txt -text
