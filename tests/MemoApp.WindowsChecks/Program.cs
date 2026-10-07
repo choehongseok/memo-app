@@ -42,6 +42,12 @@ internal static class Program
         };
         app.Run(); return result;
     }
+    private static string SyntheticRenderDiagnostic(StyledDocument source)
+    {
+        using var json=JsonDocument.Parse(source.SourceJson);var document=new FlowDocument{FontFamily=new FontFamily("Segoe UI"),FontSize=14,PagePadding=new(0),Foreground=Brushes.Black};
+        foreach(var node in json.RootElement.GetProperty("nodes").EnumerateArray())document.Blocks.Add((Block)typeof(StructuredNoteEditor).GetMethod("RenderBlock",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[node])!);
+        return ((StyledDocument)typeof(StructuredNoteEditor).GetMethod("CaptureNativeDocument",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[document])!).SourceJson;
+    }
     private sealed class DelayedTextData(Action access):IDataObject
     {
         public object GetData(string format,bool autoConvert){access();return "LATE_SYNTHETIC_PLAINTEXT";}
@@ -53,7 +59,7 @@ internal static class Program
     }
     private static async Task RichPasteRaceRun()
     {
-        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="race baseline";workspace.ConvertMode(note,"rich",true);string before=note.Document!.SourceJson;bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();
+        var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="race baseline";workspace.ConvertMode(note,"rich",true);string before=note.Document!.SourceJson;bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();Require(!view.RichInput.IsReadOnly,"minimal rich preflight unexpectedly read-only; synthetic original="+note.Document!.SourceJson+" native="+SyntheticRenderDiagnostic(note.Document));
         view.PasteData(new DelayedTextData(()=>{live=false;view.ClearSensitive();}));await Idle();Require(view.RichInput.Document.Blocks.Count==0 && !view.RichInput.CanUndo && note.Document!.SourceJson==before,"delayed OLE getter cannot reinsert plaintext into concealed/disposed view");window.Close();workspace.Clear();
         workspace=new EditingWorkspace(TimeProvider.System);note=workspace.CreateNote();workspace.ConvertMode(note,"rich",true);live=true;using var changedView=new StructuredNoteEditor(workspace,note,()=>live,_=>{});window=new Window{Content=changedView,Width=400,Height=300};window.Show();await Idle();changedView.PasteData(new DelayedTextData(()=>workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("CONCURRENT_CANONICAL_CHANGE"))));await Idle();Require(note.Text=="CONCURRENT_CANONICAL_CHANGE","delayed OLE getter must not paste into newer canonical source/version");live=false;changedView.ClearSensitive();workspace.Clear();window.Close();
     }
@@ -124,7 +130,7 @@ internal static class Program
         {"nodes":[{"type":"paragraph","runs":[{"text":"CR\r\nLF\t한글👩‍💻é","bold":true,"underline":true,"strike":true,"fontSize":22,"fontFamily":"Segoe UI","foreground":"#123456","background":"#ffee00","link":"https://example.invalid/inert?q=synthetic"}]},{"type":"checklist","items":[{"checked":false,"runs":[{"text":"[x] literal body"}]}]},{"type":"list","ordered":true,"items":[{"runs":[{"text":"one"}]},{"runs":[{"text":"two"}]}]},{"type":"table","rows":[[{"runs":[{"text":"cell1"}]},{"runs":[{"text":"cell2","bold":true}]}]]},{"type":"paragraph","runs":[{"text":""}]}]}
         """;
         var document=new StyledDocument(1,source);var info=RichDocumentCodec.Inspect(document);var now=DateTimeOffset.UtcNow;var snapshot=new VaultSnapshot(4,Guid.NewGuid(),[new(Guid.NewGuid(),Guid.NewGuid(),[],now,now,"fidelity",info.Text!,"rich"){Document=document}]);var workspace=new EditingWorkspace(TimeProvider.System,snapshot);var note=workspace.Notes.Single();bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=500,Height=400};window.Show();await Idle();
-        Require(!view.RichInput.IsReadOnly && RichDocumentCodec.Inspect((StyledDocument)Invoke(view,"CaptureDocument")!).Text==info.Text,"all supported nodes/styles/link/CRLF/tab/Unicode/trailing paragraph must roundtrip before editing");
+        Require(!view.RichInput.IsReadOnly && RichDocumentCodec.Inspect((StyledDocument)Invoke(view,"CaptureDocument")!).Text==info.Text,"all supported nodes/styles/link/CRLF/tab/Unicode/trailing paragraph must roundtrip before editing; synthetic native="+SyntheticRenderDiagnostic(document));
         view.ApplyPreferences(new(true,24,1.5));((Paragraph)view.RichInput.Document.Blocks.LastBlock).Inlines.Add(new Run("after preferences"));await Idle();
         using(var saved=JsonDocument.Parse(note.Document!.SourceJson))
         {

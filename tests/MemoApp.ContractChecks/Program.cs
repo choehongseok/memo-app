@@ -2,6 +2,7 @@ using System.Text.Json;
 using MemoApp.Core;
 
 if (VaultFailureChecks.TryWorker(args)) return;
+if (args.Contains("--org-preflight-only")) { OrganizationPreflightChecks.Run(); return; }
 if (args.Contains("--rich-only")) { RichDocumentChecks.Run(); return; }
 if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return; }
 if (args.Contains("--batch-only")) { await BatchChecks.Run(); return; }
@@ -38,6 +39,7 @@ RichDocumentChecks.Run();
 await RichStorageChecks.Run();
 SearchChecks.Run();
 OrganizationChecks.Run();
+OrganizationPreflightChecks.Run();
 await BatchChecks.Run();
 HistoryDiffChecks.Run();
 await Schema2Checks.Run();

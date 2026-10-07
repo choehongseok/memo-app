@@ -109,7 +109,9 @@ public sealed class EditingWorkspace
     {
         EnsureOpen(); name = Name(name);
         if (folders.Count >= 100 || parentId is not null && folders.All(f => f.FolderId != parentId) || folders.Any(f => f.ParentId == parentId && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase))) throw new InvalidOperationException("Folder parent/name/limit rejected");
-        var folder = new StoredFolder(Guid.NewGuid(), parentId, name); folders.Add(folder); Changed?.Invoke(); return folder;
+        var folder = new StoredFolder(Guid.NewGuid(), parentId, name);
+        VaultEnvelope.Validate(Capture() with{Folders=folders.Append(folder).ToArray()});
+        folders.Add(folder); Changed?.Invoke(); return folder;
     }
     public void MoveNote(NoteDraft note, Guid? folderId)
     {
@@ -122,14 +124,15 @@ public sealed class EditingWorkspace
         RequireNote(note); ArgumentNullException.ThrowIfNull(names);
         var requested = names.Select(Name).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         if (requested.Length > 16 || tags.Count + requested.Count(n => tags.All(t => !string.Equals(t.Name, n, StringComparison.OrdinalIgnoreCase))) > 100) throw new InvalidOperationException("Tag budget exceeded");
+        var staged=tags.ToList();
         var ids = requested.Select(name =>
         {
-            var existing = tags.FirstOrDefault(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (existing is null) { existing = new(Guid.NewGuid(), name); tags.Add(existing); }
+            var existing = staged.FirstOrDefault(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (existing is null) { existing = new(Guid.NewGuid(), name); staged.Add(existing); }
             return existing.TagId;
         }).Order().ToImmutableArray();
         if (note.Metadata.TagIds.SequenceEqual(ids)) return;
-        note.SetMetadata(note.Metadata with { TagIds = ids });
+        ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,note.Text,note.Metadata with{TagIds=ids})},stagedTags:staged.ToArray());
     }
     public void SetImportant(NoteDraft note, bool value) { RequireNote(note); note.Important = value; }
     private int NextOrder() => notes.Count == 0 ? 0 : Math.Min(1000000, notes.Max(n => n.Metadata.Order) + 1);
@@ -137,7 +140,7 @@ public sealed class EditingWorkspace
         ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
     private void ApplyContentEvent(NoteDraft note,string text,string mode,StyledDocument? document,NoteMetadata metadata)=>
         ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,text,metadata)},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(mode,document)});
-    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null)
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null)
     {
         if (changes.Count == 0) return;
         var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
@@ -150,10 +153,11 @@ public sealed class EditingWorkspace
         }).ToArray();
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones };
+        var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags };
         VaultEnvelope.Validate(next);
         var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
         foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id));
+        if(stagedTags is not null){tags.Clear();tags.AddRange(stagedTags);}
         AcceptPrepared(next); Changed?.Invoke();
         foreach (var note in affected) { if (closed) break; note.PublishEvent(); }
     }

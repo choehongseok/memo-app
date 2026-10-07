@@ -17,14 +17,14 @@ internal static class OrganizationChecks
         var saved = workspace.Capture(); workspace.AcceptPrepared(saved);
         first.Text = "합성 최신 본문";
         var edited = workspace.Capture(); workspace.AcceptPrepared(edited);
-        VaultChecks.Require(edited.SchemaVersion == 4 && edited.History.Single().Text == "합성 최초 본문", "v2 revision capture preserves original");
+        VaultChecks.Require(edited.SchemaVersion == 4 && edited.History.Length==saved.History.Length+1 && edited.History.Last().Text == "합성 최초 본문", "v2 revision capture preserves original");
         workspace.SetImportant(first, true);
         var metadataEdit = workspace.Capture(); workspace.AcceptPrepared(metadataEdit);
-        VaultChecks.Require(metadataEdit.History.Length == 2 && metadataEdit.Notes[0].Metadata.Important, "metadata changes must create history");
+        VaultChecks.Require(metadataEdit.History.Length == saved.History.Length+2 && metadataEdit.Notes[0].Metadata.Important, "metadata changes must create history");
         workspace.DeleteNote(first);
         VaultChecks.ExpectFailure(() => first.Text = "should reject", "trash note editor must reject direct edits");
         var deleted = workspace.Capture(); workspace.AcceptPrepared(deleted);
-        VaultChecks.Require(first.IsDeleted && deleted.Tombstones.Single().RevisionId == deleted.Notes[0].RevisionId && deleted.History.Length == 3, "delete retains note content and current tombstone");
+        VaultChecks.Require(first.IsDeleted && deleted.Tombstones.Single().RevisionId == deleted.Notes[0].RevisionId && deleted.History.Length == saved.History.Length+3, "delete retains note content and current tombstone");
         workspace.RestoreNote(first);
         var restored = workspace.Capture(); workspace.AcceptPrepared(restored);
         VaultChecks.Require(!first.IsDeleted && first.Text == "합성 최신 본문" && restored.Tombstones.Length == 0 && restored.History.Last().Metadata.Deleted, "restore must retain immutable deletion history");
