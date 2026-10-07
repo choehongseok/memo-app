@@ -12,9 +12,9 @@ public static class BoundedHistoryDiff
         TextComparison Refuse(string budget)=>new(false,$"{budget} 비교 한도 초과 — 양쪽 원문은 그대로 유지합니다.","");
         if(left.Length>MaxText||right.Length>MaxText)return Refuse("입력");
         var a=Lines(left);var b=Lines(right);if(a is null||b is null)return Refuse("라인");
-        long cells=checked((long)(a.Length+1)*(b.Length+1));if(cells>MaxCells)return Refuse("계산/메모리");
-        var lcs=new int[a.Length+1,b.Length+1];
-        for(int i=a.Length-1;i>=0;i--)for(int j=b.Length-1;j>=0;j--)lcs[i,j]=a[i]==b[j]?lcs[i+1,j+1]+1:Math.Max(lcs[i+1,j],lcs[i,j+1]);
+        bool identical=left==right;long cells=checked((long)(a.Length+1)*(b.Length+1));if(!identical&&cells>MaxCells)return Refuse("계산/메모리");
+        var lcs=identical?null:new int[a.Length+1,b.Length+1];
+        if(lcs is not null)for(int i=a.Length-1;i>=0;i--)for(int j=b.Length-1;j>=0;j--)lcs[i,j]=a[i]==b[j]?lcs[i+1,j+1]+1:Math.Max(lcs[i+1,j],lcs[i,j+1]);
         var output=new StringBuilder(Math.Min(left.Length+right.Length+32,1024));int x=0,y=0;
         bool Add(string prefix,Line line)
         {
@@ -26,7 +26,7 @@ public static class BoundedHistoryDiff
         {
             bool fits;
             if(x<a.Length&&y<b.Length&&a[x]==b[y]){fits=Add("  ",a[x++]);y++;}
-            else if(x<a.Length&&(y==b.Length||lcs[x+1,y]>=lcs[x,y+1]))fits=Add("- ",a[x++]);
+            else if(x<a.Length&&(y==b.Length||lcs![x+1,y]>=lcs[x,y+1]))fits=Add("- ",a[x++]);
             else fits=Add("+ ",b[y++]);
             if(!fits)return Refuse("출력");
         }

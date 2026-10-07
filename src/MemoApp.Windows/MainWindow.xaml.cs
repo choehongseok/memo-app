@@ -35,6 +35,8 @@ public partial class MainWindow : Window
     private DateTimeOffset activity = DateTimeOffset.UtcNow;
     private bool closing, confirmedExit, transitionBusy;
     private long uiEpoch;
+    private NoteDraft? SingleNote=>NotesList.SelectedItems.Count==1?NotesList.SelectedItem as NoteDraft:null;
+    private sealed record BatchRequest(SaveCoordinator Session,long Epoch,NoteDraft[] Notes,bool Deleted);
     public MainWindow() : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MemoApp", "SyntheticTrial")) { }
     public MainWindow(string dataRoot) : this(dataRoot,Guid.NewGuid()) { }
     public MainWindow(string dataRoot,Guid uiDeviceId)
@@ -96,7 +98,7 @@ public partial class MainWindow : Window
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false; BodyEditor.Clear(); TitleEditor.Clear();
         loadingUi = true;
         foreach (var input in new[] { SearchInput, TagFilter, FolderName, TagsInput }) { input.IsUndoEnabled = false; input.Clear(); }
-        FolderFilter.ItemsSource = MoveFolder.ItemsSource = null; FromDate.SelectedDate = UntilDate.SelectedDate = null;
+        FolderFilter.ItemsSource = MoveFolder.ItemsSource = BatchFolder.ItemsSource = null; FromDate.SelectedDate = UntilDate.SelectedDate = null;
         ViewFilter.SelectedIndex = SearchFieldFilter.SelectedIndex = SortFilter.SelectedIndex = 0;
         ColorPicker.SelectedIndex = -1; Counts.Text = NoteInfo.Text = ""; loadingUi = false;
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = false;
@@ -171,15 +173,16 @@ public partial class MainWindow : Window
     private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!loadingUi) SelectEditor(); }
     private void SelectEditor()
     {
-        if (!ReferenceEquals(Editor.DataContext, NotesList.SelectedItem)) BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
-        Editor.DataContext = NotesList.SelectedItem;
-        Editor.IsEnabled = session is { IsLocked: false } && NotesList.SelectedItem is NoteDraft { IsDeleted: false };
+        if (!ReferenceEquals(Editor.DataContext, SingleNote)) BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
+        Editor.DataContext = SingleNote;
+        Editor.IsEnabled = session is { IsLocked: false } && SingleNote is NoteDraft { IsDeleted: false };
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = Editor.IsEnabled;
+        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=Editor.IsEnabled;
         UpdateSelectedActions(); UpdateSelectedDetails();
     }
     private void OpenSticky_Click(object sender,RoutedEventArgs e)
     {
-        if(session is {IsLocked:false}&&NotesList.SelectedItem is NoteDraft {IsDeleted:false} note)OpenSticky(note);
+        if(session is {IsLocked:false}&&SingleNote is NoteDraft {IsDeleted:false} note)OpenSticky(note);
     }
     private void OpenSticky(NoteDraft note)
     {
@@ -315,10 +318,13 @@ public partial class MainWindow : Window
     private void UpdateSelectedActions()
     {
         bool unlocked = session is { IsLocked: false };
-        var note = NotesList.SelectedItem as NoteDraft;
+        var note = SingleNote;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = TxtExportButton.IsEnabled = unlocked && note is { IsDeleted: false };
         RestoreButton.IsEnabled = unlocked && note is { IsDeleted: true };
         HistoryButton.IsEnabled = unlocked && note is not null;
+        var selected=NotesList.SelectedItems.Cast<NoteDraft>().ToArray();bool any=unlocked&&selected.Length>0;
+        BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=any&&selected.All(n=>!n.IsDeleted);
+        BatchRestoreButton.IsEnabled=any&&selected.All(n=>n.IsDeleted);BatchFolder.IsEnabled=BatchMoveButton.IsEnabled;
     }
     private void RefreshFolders()
     {
@@ -334,11 +340,13 @@ public partial class MainWindow : Window
         loadingUi = true;
         FolderFilter.ItemsSource = new[] { new FolderChoice(null, "모든 폴더") }.Concat(folders).ToArray();
         FolderFilter.SelectedItem = ((FolderChoice[])FolderFilter.ItemsSource).FirstOrDefault(f => f.Id == selected) ?? ((FolderChoice[])FolderFilter.ItemsSource)[0];
-        MoveFolder.ItemsSource = new[] { new FolderChoice(null, "미분류") }.Concat(folders).ToArray(); loadingUi = false;
+        MoveFolder.ItemsSource = new[] { new FolderChoice(null, "미분류") }.Concat(folders).ToArray();
+        BatchFolder.ItemsSource=MoveFolder.ItemsSource;BatchFolder.SelectedIndex=0;loadingUi = false;
     }
     private void RefreshNotes(NoteDraft? preferred = null)
     {
         if (session is not { IsLocked: false } active || loadingUi) return;
+        var selected=preferred is null?NotesList.SelectedItems.Cast<NoteDraft>().ToArray():[preferred];
         preferred ??= NotesList.SelectedItem as NoteDraft;
         var options = new SearchOptions
         {
@@ -351,7 +359,9 @@ public partial class MainWindow : Window
         };
         var results = NoteSearch.Find(active.Workspace, options);
         loadingUi = true;
-        NotesList.ItemsSource = results; NotesList.SelectedItem = preferred is not null && results.Contains(preferred) ? preferred : results.FirstOrDefault();
+        NotesList.ItemsSource = results;
+        foreach(var note in selected.Where(results.Contains))NotesList.SelectedItems.Add(note);
+        if(NotesList.SelectedItems.Count==0)NotesList.SelectedItem = preferred is not null && results.Contains(preferred) ? preferred : results.FirstOrDefault();
         loadingUi = false; SelectEditor();
         int trash = active.Workspace.Notes.Count(n => n.IsDeleted), archive = active.Workspace.Notes.Count(n => !n.IsDeleted && n.Archived);
         Counts.Text = $"전체 {active.Workspace.Notes.Count} · 활성 {active.Workspace.Notes.Count - trash - archive} · 보관 {archive} · 휴지통 {trash} · 결과 {results.Length}";
@@ -359,7 +369,12 @@ public partial class MainWindow : Window
     }
     private void UpdateSelectedDetails()
     {
-        if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft note) { NoteInfo.Text = ""; return; }
+        if (session is not { IsLocked: false } active || SingleNote is not NoteDraft note)
+        {
+            loadingUi=true;TagsInput.IsUndoEnabled=false;TagsInput.Clear();MoveFolder.SelectedIndex=ColorPicker.SelectedIndex=-1;loadingUi=false;
+            NoteInfo.Text=NotesList.SelectedItems.Count>1?$"{NotesList.SelectedItems.Count}개 선택 — 일괄 명령을 사용하세요":"";return;
+        }
+        TagsInput.IsUndoEnabled=true;
         loadingUi = true;
         if (MoveFolder.ItemsSource is FolderChoice[] choices) MoveFolder.SelectedItem = choices.FirstOrDefault(f => f.Id == note.FolderId);
         if (!TagsInput.IsKeyboardFocusWithin) TagsInput.Text = string.Join(", ", active.Workspace.Tags.Where(t => note.Metadata.TagIds.Contains(t.TagId)).Select(t => t.Name));
@@ -381,42 +396,79 @@ public partial class MainWindow : Window
     }
     private void MoveFolder_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (loadingUi || session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } note || MoveFolder.SelectedItem is not FolderChoice folder) return;
+        if (loadingUi || session is not { IsLocked: false } active || SingleNote is not NoteDraft { IsDeleted: false } note || MoveFolder.SelectedItem is not FolderChoice folder) return;
         try { active.Workspace.MoveNote(note, folder.Id); } catch { Notice.Text = "폴더 이동 실패 — 현재 자료를 유지했습니다."; }
+    }
+    private BatchRequest? CaptureBatch(bool deleted)
+    {
+        if(session is not {IsLocked:false} active)return null;var notes=NotesList.SelectedItems.Cast<NoteDraft>().Take(101).ToArray();
+        if(notes.Length is <1 or >100||notes.Any(n=>n.IsClosed||n.IsDeleted!=deleted||!active.Workspace.Notes.Contains(n)))return null;
+        return new(active,uiEpoch,notes,deleted);
+    }
+    private bool CurrentBatch(BatchRequest request)=>SameFileSession(request.Session,request.Epoch)&&request.Notes.All(n=>!n.IsClosed&&n.IsDeleted==request.Deleted&&request.Session.Workspace.Notes.Contains(n));
+    private async Task ApplyBatch(BatchRequest request,string operation,Guid? folder)
+    {
+        if(!CurrentBatch(request))return;var versions=request.Notes.Select(n=>n.EditVersion).ToArray();
+        try
+        {
+            switch(operation){case "move":request.Session.Workspace.MoveNotes(request.Notes,folder);break;case "delete":request.Session.Workspace.DeleteNotes(request.Notes);break;case "restore":request.Session.Workspace.RestoreNotes(request.Notes);break;default:throw new ArgumentException("Unknown batch action");}
+            if(!SameFileSession(request.Session,request.Epoch))return;
+            RefreshNotes();bool saved=await request.Session.SaveAsync();
+            if(SameFileSession(request.Session,request.Epoch))Notice.Text=saved?$"{request.Notes.Length}개 일괄 처리 저장됨" : $"{request.Notes.Length}개 일괄 변경은 반영됐지만 암호 저장 실패 — 변경 유지, 저장 상태를 확인하세요.";
+        }
+        catch
+        {
+            if(!SameFileSession(request.Session,request.Epoch))return;
+            bool applied=request.Notes.Where((n,i)=>n.EditVersion!=versions[i]).Any();
+            Notice.Text=applied?"일괄 변경 적용 후 표시/저장 오류 — 현재 변경과 기존 암호 자료를 유지합니다. 저장 상태를 확인하세요.":"일괄 처리 거절 — 대상/폴더/이력·자료 한도를 확인하세요. 전체 변경을 적용하지 않았습니다.";
+        }
+    }
+    private async void BatchMove_Click(object sender,RoutedEventArgs e)
+    {
+        if(CaptureBatch(false) is BatchRequest request&&BatchFolder.SelectedItem is FolderChoice folder)await ApplyBatch(request,"move",folder.Id);
+    }
+    private async void BatchDelete_Click(object sender,RoutedEventArgs e)
+    {
+        if(CaptureBatch(false) is not BatchRequest request)return;
+        if(MessageBox.Show($"선택한 {request.Notes.Length}개 메모를 암호 휴지통으로 이동할까요? 내용/이력을 보존하고 복원할 수 있습니다.","일괄 휴지통",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes)await ApplyBatch(request,"delete",null);
+    }
+    private async void BatchRestore_Click(object sender,RoutedEventArgs e)
+    {
+        if(CaptureBatch(true) is BatchRequest request)await ApplyBatch(request,"restore",null);
     }
     private void Color_Changed(object sender, SelectionChangedEventArgs e)
     {
-        if (!loadingUi && session is { IsLocked: false } && NotesList.SelectedItem is NoteDraft { IsDeleted: false } note && ColorPicker.SelectedItem is ComboBoxItem { Tag: string color }) note.Color = color;
+        if (!loadingUi && session is { IsLocked: false } && SingleNote is NoteDraft { IsDeleted: false } note && ColorPicker.SelectedItem is ComboBoxItem { Tag: string color }) note.Color = color;
     }
     private void ApplyTags_Click(object sender, RoutedEventArgs e)
     {
-        try { if (session is { IsLocked: false } active && NotesList.SelectedItem is NoteDraft note) { active.Workspace.SetTags(note, TagsInput.Text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); UpdateSelectedDetails(); } }
+        try { if (session is { IsLocked: false } active && SingleNote is NoteDraft note) { active.Workspace.SetTags(note, TagsInput.Text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); UpdateSelectedDetails(); } }
         catch { Notice.Text = "태그 적용 실패 — 태그당 128자/메모당 16개/전체 100개 한도를 확인하세요."; }
     }
     private void Duplicate_Click(object sender, RoutedEventArgs e)
     {
-        try { if (session is { IsLocked: false } active && NotesList.SelectedItem is NoteDraft note) RefreshNotes(active.Workspace.Duplicate(note)); }
+        try { if (session is { IsLocked: false } active && SingleNote is NoteDraft note) RefreshNotes(active.Workspace.Duplicate(note)); }
         catch { Notice.Text = "복제 실패 — 휴지통 포함 100개 한도를 확인하세요."; }
     }
     private async void Delete_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } note) return;
-            if (MessageBox.Show("이 메모를 암호 휴지통으로 이동할까요? 내용과 이력은 보존하고 복원할 수 있습니다.", "휴지통", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes || active.IsLocked) return;
-            if (stickyWindows.TryGetValue(note.Id, out var window)) { window.Hide(); window.Close(); }
+            if (session is not { IsLocked: false } active || SingleNote is not NoteDraft { IsDeleted: false } note) return;
+            long epoch=uiEpoch;
+            if (MessageBox.Show("이 메모를 암호 휴지통으로 이동할까요? 내용과 이력은 보존하고 복원할 수 있습니다.", "휴지통", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes || !SameFileSession(active, epoch, note)) return;
             active.Workspace.DeleteNote(note); RefreshNotes(); await active.SaveAsync();
         }
         catch { Notice.Text = "휴지통 이동 실패 — 저장/이력 한도와 잠금 상태를 확인하세요."; }
     }
     private async void Restore_Click(object sender, RoutedEventArgs e)
     {
-        try { if (session is { IsLocked: false } active && NotesList.SelectedItem is NoteDraft { IsDeleted: true } note) { active.Workspace.RestoreNote(note); RefreshNotes(); await active.SaveAsync(); } }
+        try { if (session is { IsLocked: false } active && SingleNote is NoteDraft { IsDeleted: true } note) { active.Workspace.RestoreNote(note); RefreshNotes(); await active.SaveAsync(); } }
         catch { Notice.Text = "메모 복원 실패 — 기존 자료를 유지합니다."; }
     }
     private async void History_Click(object sender, RoutedEventArgs e)
     {
-        if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft note) return;
+        if (session is not { IsLocked: false } active || SingleNote is not NoteDraft note) return;
         long epoch = uiEpoch;
         if (!await active.SaveAsync() || epoch != uiEpoch || !ReferenceEquals(session, active) || active.IsLocked || active.IsDirty) return;
         var window = new HistoryWindow(note, active.Workspace.HistoryFor(note), revision =>
@@ -456,7 +508,7 @@ public partial class MainWindow : Window
     }
     private async void TxtExport_Click(object sender, RoutedEventArgs e)
     {
-        if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } note) return;
+        if (session is not { IsLocked: false } active || SingleNote is not NoteDraft { IsDeleted: false } note) return;
         long epoch = uiEpoch; var token = fileOperations.Token;
         if (MessageBox.Show("TXT는 암호화되지 않은 제목·본문 사본입니다. 외부 앱·동기화 폴더·백업에 내용이 남을 수 있고 앱 잠금은 이미 저장한 TXT를 보호하지 못합니다. 평문 파일을 만들까요?", "평문 내보내기", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes || !SameFileSession(active, epoch, note)) return;
         var dialog = new SaveFileDialog { Filter = "UTF8 텍스트|*.txt", FileName = "memo-export.txt", OverwritePrompt = true };
@@ -476,7 +528,7 @@ public partial class MainWindow : Window
     private void OrderDown_Click(object sender, RoutedEventArgs e) => MoveOrder(1);
     private void MoveOrder(int direction)
     {
-        if (session is not { IsLocked: false } active || NotesList.SelectedItem is not NoteDraft { IsDeleted: false } note) return;
+        if (session is not { IsLocked: false } active || SingleNote is not NoteDraft { IsDeleted: false } note) return;
         if (SortFilter.SelectedIndex != (int)SearchSort.Custom) { SortFilter.SelectedIndex = (int)SearchSort.Custom; RefreshNotes(note); }
         var list = NotesList.Items.Cast<NoteDraft>().ToList(); int index = list.IndexOf(note), target = index + direction;
         if (index < 0 || target < 0 || target >= list.Count) return;
@@ -492,12 +544,13 @@ public partial class MainWindow : Window
     private void NoteDragStart(object sender, MouseButtonEventArgs e)
     {
         dragStart=e.GetPosition(NotesList); dragCandidate=null;
+        if(NotesList.SelectedItems.Count!=1)return;
         if(session is {IsLocked:false} active && SortFilter.SelectedIndex==(int)SearchSort.Custom && NoteItem(e.OriginalSource as DependencyObject)?.DataContext is NoteDraft {IsDeleted:false} note && active.Workspace.Notes.Contains(note)) {dragCandidate=note.Id;dragCandidateEpoch=uiEpoch;}
     }
     private void NoteDragMove(object sender, MouseEventArgs e)
     {
         if(e.LeftButton!=MouseButtonState.Pressed){dragCandidate=null;return;}
-        if (dragCandidate is not Guid candidate || dragCandidateEpoch!=uiEpoch || session is not { IsLocked: false } active || SortFilter.SelectedIndex != (int)SearchSort.Custom) return;
+        if (NotesList.SelectedItems.Count!=1 || dragCandidate is not Guid candidate || dragCandidateEpoch!=uiEpoch || session is not { IsLocked: false } active || SortFilter.SelectedIndex != (int)SearchSort.Custom) return;
         var note=active.Workspace.Notes.FirstOrDefault(n=>n.Id==candidate&&!n.IsDeleted); if(note is null)return;
         var now = e.GetPosition(NotesList); if (Math.Abs(now.X - dragStart.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(now.Y - dragStart.Y) < SystemParameters.MinimumVerticalDragDistance) return;
         draggingNote = note.Id; dragEpoch = uiEpoch;
@@ -511,7 +564,7 @@ public partial class MainWindow : Window
     private void NoteDrop(object sender, DragEventArgs e)
     {
         e.Handled = true;
-        if (draggingNote is not Guid internalId || dragEpoch != uiEpoch || session is not { IsLocked: false } active || !e.Data.GetDataPresent("MemoApp.InternalNoteId", false) || e.Data.GetData("MemoApp.InternalNoteId", false) is not string { Length: 36 } raw || !Guid.TryParseExact(raw,"D",out Guid id) || id != internalId) return;
+        if (NotesList.SelectedItems.Count!=1 || draggingNote is not Guid internalId || dragEpoch != uiEpoch || session is not { IsLocked: false } active || !e.Data.GetDataPresent("MemoApp.InternalNoteId", false) || e.Data.GetData("MemoApp.InternalNoteId", false) is not string { Length: 36 } raw || !Guid.TryParseExact(raw,"D",out Guid id) || id != internalId) return;
         if (NoteItem(e.OriginalSource as DependencyObject)?.DataContext is not NoteDraft target) return;
         var source = active.Workspace.Notes.FirstOrDefault(n=>n.Id==id && !n.IsDeleted);
         if (source is null || target.IsDeleted) return;

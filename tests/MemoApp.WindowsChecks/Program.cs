@@ -140,13 +140,29 @@ internal static class Program
             Invoke(main,"NewNote_Click", main, new RoutedEventArgs()); await Idle();
             var other = session.Workspace.Notes.Single(n=>n.Id!=first.Id); EditText(Control<TextBox>(main,"TitleEditor"),"합성 순서 메모"); await Idle();
             Require(Control<ListBox>(main,"NotesList").SelectionMode==SelectionMode.Extended,"batch list must allow explicit Extended selection");
+            Require(await session.SaveAsync(),"batch WPF starting basis save");
+            var list=Control<ListBox>(main,"NotesList");Control<ComboBox>(main,"FolderFilter").SelectedIndex=0;list.SelectedItems.Clear();list.SelectedItems.Add(other);list.SelectedItems.Add(first);await Idle();
+            Require(Control<FrameworkElement>(main,"Editor").DataContext is null && !Control<FrameworkElement>(main,"Editor").IsEnabled && !Control<Button>(main,"DuplicateButton").IsEnabled,"multiple selection must revoke singleton editor/binding/actions");
+            int countBefore=session.Workspace.Notes.Count;var singleBefore=session.Workspace.Capture();
+            foreach(string handler in new[]{"Duplicate_Click","ApplyTags_Click","OrderUp_Click","OpenSticky_Click","History_Click"})Invoke(main,handler,main,new RoutedEventArgs());
+            Control<ComboBox>(main,"MoveFolder").SelectedIndex=0;Control<ComboBox>(main,"ColorPicker").SelectedIndex=2;await Idle();
+            Require(session.Workspace.Notes.Count==countBefore && session.Workspace.Capture().Notes.SequenceEqual(singleBefore.Notes) && Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows").Count==1 && Field<HashSet<HistoryWindow>>(main,"historyWindows").Count==0,"direct singleton handlers must reject multiple selection without notes/windows/history changes");
+            var batchFolder=session.Workspace.CreateFolder("합성 batch 목표");Invoke(main,"RefreshFolders");await Idle();var batchTarget=Control<ComboBox>(main,"BatchFolder");batchTarget.SelectedItem=batchTarget.Items.Cast<object>().Single(item=>(Guid?)item.GetType().GetProperty("Id")!.GetValue(item)==batchFolder.FolderId);
+            Invoke(main,"BatchMove_Click",main,new RoutedEventArgs());await WaitUntil(()=>!session.IsBusy);await Idle();
+            Require(first.FolderId==batchFolder.FolderId && other.FolderId==batchFolder.FolderId && list.SelectedItems.Count==2,"actual batch move control preserves surviving selection and moves all selected drafts");
+            var request=Invoke(main,"CaptureBatch",false)!;await (Task)Invoke(main,"ApplyBatch",request,"delete",(object)null!)!;await Idle();
+            Require(first.IsDeleted && other.IsDeleted && !sticky.IsVisible,"batch delete must close sticky only after successful Deleted publication");
+            Control<ComboBox>(main,"ViewFilter").SelectedIndex=4;list.SelectAll();request=Invoke(main,"CaptureBatch",true)!;await (Task)Invoke(main,"ApplyBatch",request,"restore",(object)null!)!;
+            Control<ComboBox>(main,"ViewFilter").SelectedIndex=0;list.SelectedItems.Clear();list.SelectedItem=other;await Idle();
             Control<ComboBox>(main,"SortFilter").SelectedIndex=3; Invoke(main,"OrderUp_Click",main,new RoutedEventArgs()); await Idle();
             Require(ReferenceEquals(Control<ListBox>(main,"NotesList").Items[0],other), "UI custom order up action failed");
             session.Workspace.DeleteNote(other); Invoke(main,"RefreshNotes",first); await Idle();
-            var history = new HistoryWindow(first, session.Workspace.HistoryFor(first), _ => { }) { Owner = main }; history.Show();
-            Field<HashSet<HistoryWindow>>(main, "historyWindows").Add(history);
+            Invoke(main,"History_Click",main,new RoutedEventArgs());await WaitUntil(()=>Field<HashSet<HistoryWindow>>(main,"historyWindows").Count==1);var history=Field<HashSet<HistoryWindow>>(main,"historyWindows").Single();
             Require(Control<TextBox>(history, "PastText").Text.Length > 0, "history preview failed");
+            Require(Control<ComboBox>(history,"LeftRevision").Items.Count>1 && Control<ComboBox>(history,"RightRevision").Items.Count>1 && Control<TextBox>(history,"DiffText").Text.Length>0,"history comparison must include current head and dated immutable revisions");
+            string frozenRight=Control<TextBox>(history,"RightText").Text;first.Text="AFTER_HISTORY_WINDOW_SYNTHETIC";await Idle();Require(Control<TextBox>(history,"RightText").Text==frozenRight,"later draft edit cannot replace captured comparison head");first.Text="공유 포스트잇 수정";
             Control<TextBox>(main, "TagFilter").Text = "합성태그";
+            var staleBatch=Invoke(main,"CaptureBatch",false)!;
             await session.LockAsync(); await Idle();
             Require(first.IsClosed && first.Text == "" && session.KeysReleased, "Core lock revocation failed");
             Require(Control<FrameworkElement>(main, "EditingPanel").Visibility == Visibility.Collapsed && Control<ListBox>(main, "NotesList").Items.Count == 0, "lock left results visible/bound");
@@ -156,9 +172,11 @@ internal static class Program
             Require(Control<ComboBox>(main, "FolderFilter").Items.Count == 0 && Control<TextBlock>(main, "Counts").Text == "", "lock left organization/counts");
             Require(!sticky.IsVisible && sticky.DataContext is null && Control<TextBox>(sticky, "BodyEditor").Text == "" && !Control<TextBox>(sticky, "BodyEditor").CanUndo, "lock left sticky plaintext/undo");
             Require(!history.IsVisible && Control<TextBox>(history, "PastText").Text == "" && Control<ListBox>(history, "Revisions").Items.Count == 0, "lock left history plaintext");
+            Require(Control<ComboBox>(history,"LeftRevision").Items.Count==0 && Control<ComboBox>(history,"RightRevision").Items.Count==0 && new[]{"LeftText","RightText","LeftTitle","RightTitle","DiffText"}.All(name=>Control<TextBox>(history,name).Text==""&&!Control<TextBox>(history,name).CanUndo) && Control<TextBlock>(history,"ComparisonInfo").Text=="","lock must clear both comparison sources/previews/diff/metadata/Undo");
             Invoke(main, "ReleaseSettledSession");
             Invoke(main, "StartSession", EncryptedVault.Open(root, secret));
             var reopened = Field<SaveCoordinator>(main, "session");
+            await (Task)Invoke(main,"ApplyBatch",staleBatch,"delete",(object)null!)!;
             Require(reopened.Workspace.Notes.Single(n=>!n.IsDeleted).Text == "공유 포스트잇 수정", "WPF lock/reopen persisted latest");
             var reopenedNote = reopened.Workspace.Notes.Single(n=>!n.IsDeleted); reopened.Workspace.DeleteNote(reopenedNote);
             Control<ComboBox>(main, "ViewFilter").SelectedIndex = 4; await Idle();
@@ -176,6 +194,10 @@ internal static class Program
     }
     private static void EditText(TextBox box, string text) { box.SelectAll(); box.SelectedText = text; }
     private static async Task Idle() => await Dispatcher.CurrentDispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+    private static async Task WaitUntil(Func<bool> ready)
+    {
+        var deadline=DateTime.UtcNow.AddSeconds(10);while(!ready()){if(DateTime.UtcNow>deadline)throw new Exception("WPF synthetic wait timed out");await Task.Delay(10);}await Idle();
+    }
     private static T Control<T>(Window window, string name) where T : class => (window.FindName(name) as T) ?? throw new Exception("Missing WPF control " + name);
     private static T Field<T>(object target, string name) => (T)(target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(target))!;
     private static void SetField(object target, string name, object value) => target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(target, value);
