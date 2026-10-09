@@ -2,13 +2,14 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Media;
+using MemoApp.Core.Transfer;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
-using MemoApp.Core.Transfer;
 using Microsoft.Win32;
 namespace MemoApp.Windows;
 
-// Opaque original files only. This panel never decodes, launches or exports content.
+// Opaque originals plus explicit selected bounded PNG display; no external launch/export.
 public sealed class AttachmentPanel : UserControl,IDisposable
 {
     private SaveCoordinator? session;
@@ -19,23 +20,102 @@ public sealed class AttachmentPanel : UserControl,IDisposable
     private readonly Button add=new(){Content="파일 첨부",Padding=new(6,3,6,3),Margin=new(0,0,6,0)};
     private readonly Button detach=new(){Content="선택 첨부 분리",Padding=new(6,3,6,3),IsEnabled=false};
     private bool busy,refreshing,refreshPending;
+    private readonly ImagePreviewBackend previewBackend;
+    private CancellationTokenSource? previewCancellation;
+    private long previewGeneration,observedPreviewEpoch;
+    private readonly Button preview=new(){Content="선택 이미지 미리보기",Padding=new(6,3,6,3),Margin=new(6,0,0,0),IsEnabled=false};
+    public Image PreviewImage{get;}=new(){MaxWidth=1024,MaxHeight=240,Stretch=Stretch.Uniform,Visibility=Visibility.Collapsed};
     private sealed record Entry(Guid Id,string Label);
     public ListBox FilesList{get;}=new(){MaxHeight=110,MinHeight=24,DisplayMemberPath="Label",Margin=new(0,4,0,0)};
     public bool IsDisposed{get;private set;}
     public AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice)
+        :this(session,note,current,notice,new ImagePreviewBackend()){}
+    internal AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend)
     {
-        this.session=session;this.note=note;this.current=current;this.notice=notice;
-        var content=new StackPanel();var buttons=new WrapPanel();buttons.Children.Add(add);buttons.Children.Add(detach);content.Children.Add(buttons);
-        content.Children.Add(new TextBlock{Text="원본 파일 4 MiB · 메모당 16개 · 보존 파일 합계 8 MiB · 자동 실행 없음",TextWrapping=TextWrapping.Wrap});content.Children.Add(FilesList);Content=content;
-        add.Click+=AddClicked;detach.Click+=DetachClicked;FilesList.SelectionChanged+=SelectionChanged;
-        session.Workspace.Changed+=Refresh;session.Conceal+=Dispose;note.PropertyChanged+=NoteChanged;Refresh();
+        Dispatcher.VerifyAccess();previewBackend=backend;
+        this.session=session;this.note=note;this.current=current;this.notice=notice;observedPreviewEpoch=session.AttachmentPreviewEpoch;
+        var content=new StackPanel();var buttons=new WrapPanel();buttons.Children.Add(add);buttons.Children.Add(detach);buttons.Children.Add(preview);content.Children.Add(buttons);
+        content.Children.Add(new TextBlock{Text="원본 파일 4 MiB · 메모당 16개 · 보존 파일 합계 8 MiB · 자동 실행 없음",TextWrapping=TextWrapping.Wrap});content.Children.Add(FilesList);content.Children.Add(new TextBlock{Text="미리보기: 제한된 PNG만 지원 · 선택 후 버튼으로 표시 · 원본 파일은 유지",TextWrapping=TextWrapping.Wrap});content.Children.Add(PreviewImage);Content=content;
+        add.Click+=AddClicked;detach.Click+=DetachClicked;preview.Click+=PreviewClicked;FilesList.SelectionChanged+=SelectionChanged;Dispatcher.ShutdownStarted+=DispatcherClosing;
+        session.Workspace.Changed+=Refresh;session.Conceal+=Dispose;session.Changed+=PreviewStateChanged;CompositionTarget.Rendering+=PreviewRendering;note.PropertyChanged+=NoteChanged;Refresh();
     }
     private bool Current()=>!IsDisposed&&session is {IsLocked:false} active&&note is {IsClosed:false,IsDeleted:false} source&&active.Workspace.Notes.Contains(source)&&current?.Invoke()==true;
     private bool Same(SaveCoordinator active,NoteDraft source,long version)=>Current()&&ReferenceEquals(session,active)&&ReferenceEquals(note,source)&&source.EditVersion==version;
     private void Report(string message){if(Current())notice?.Invoke(message);}
     private void NoteChanged(object? sender,PropertyChangedEventArgs e)
-    {if(e.PropertyName is nameof(NoteDraft.IsClosed) or nameof(NoteDraft.IsDeleted)){if(!Current())Dispose();}}
-    private void SelectionChanged(object sender,SelectionChangedEventArgs e)=>detach.IsEnabled=Current()&&!busy&&FilesList.SelectedItem is Entry;
+    {InvalidatePreview();if(e.PropertyName is nameof(NoteDraft.IsClosed) or nameof(NoteDraft.IsDeleted)){if(!Current())Dispose();}}
+    private void SelectionChanged(object sender,SelectionChangedEventArgs e)
+    {InvalidatePreview();detach.IsEnabled=preview.IsEnabled=Current()&&!busy&&FilesList.SelectedItem is Entry;}
+    private void PreviewRendering(object? sender,EventArgs e)=>PreviewStateChanged();
+    private void PreviewStateChanged()
+    {
+        Dispatcher.VerifyAccess();if(session is not { } active)return;
+        if(observedPreviewEpoch!=active.AttachmentPreviewEpoch){observedPreviewEpoch=active.AttachmentPreviewEpoch;InvalidatePreview();}
+    }
+    private void DispatcherClosing(object? sender,EventArgs e)=>Dispose();
+    private async void PreviewClicked(object sender,RoutedEventArgs e)=>await PreviewSelectedAsync();
+    internal void InvalidatePreview()
+    {
+        Dispatcher.VerifyAccess();previewGeneration++;var cancel=previewCancellation;previewCancellation=null;
+        ImagePreviewAdmission.Forget(this);
+        try{cancel?.Cancel();}catch{}
+        try{PreviewImage.Visibility=Visibility.Collapsed;}catch{}
+        try{PreviewImage.Source=null;}catch{}
+    }
+    public Task<bool> PreviewSelectedAsync()
+    {
+        Dispatcher.VerifyAccess();
+        if(!Current()||busy||FilesList.SelectedItem is not Entry selected)return Task.FromResult(false);
+        if(!ImagePreviewAdmission.TryEnter(Dispatcher)){Report("다른 이미지 처리 중입니다. 처리 후 다시 미리보기를 눌러 주세요.");return Task.FromResult(false);}
+        AttachmentReadLease? lease=null;CancellationTokenSource? cancel=null;
+        try
+        {
+            ImagePreviewAdmission.ClearDisplayed();InvalidatePreview();
+            var active=session!;var source=note!;long version=source.EditVersion,epoch=active.AttachmentPreviewEpoch,generation=previewGeneration;observedPreviewEpoch=epoch;
+            cancel=new();previewCancellation=cancel;var token=cancel.Token;
+            bool Allowed()=>Same(active,source,version)&&!token.IsCancellationRequested&&generation==previewGeneration&&FilesList.SelectedItem is Entry item&&item.Id==selected.Id&&active.IsAttachmentPreviewCurrent(source,selected.Id,version,epoch);
+            if(!Allowed())throw new OperationCanceledException();
+            lease=active.CreateAttachmentReadLease(source,selected.Id,version);
+            if(!Allowed())throw new OperationCanceledException();
+            // Worker receives only the backend, lease and token. The authority closure stays in the UI callback.
+            return RunPreviewAsync(previewBackend,lease,cancel,Dispatcher,Allowed);
+        }
+        catch
+        {
+            lease?.Dispose();cancel?.Dispose();if(ReferenceEquals(previewCancellation,cancel))previewCancellation=null;
+            ImagePreviewAdmission.Exit();return Task.FromResult(false);
+        }
+    }
+    private static Task<OwnedBgraRaster> DecodeAsync(ImagePreviewBackend backend,AttachmentReadLease lease,CancellationToken token)=>Task.Run(()=>backend.Decode(lease,token));
+    private async Task<bool> RunPreviewAsync(ImagePreviewBackend backend,AttachmentReadLease lease,CancellationTokenSource cancel,Dispatcher context,Func<bool> allowed)
+    {
+        OwnedBgraRaster? raster=null;var token=cancel.Token;
+        try
+        {
+            raster=await DecodeAsync(backend,lease,token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();var detached=raster;
+            return await context.InvokeAsync(()=>
+            {
+                if(!allowed())return false;
+                var bitmap=backend.Create(detached);
+                if(!allowed())return false;
+                ImagePreviewAdmission.PublishHost(this);
+                PreviewImage.Width=bitmap.PixelWidth;PreviewImage.Height=bitmap.PixelHeight;
+                PreviewImage.Source=bitmap;
+                if(!allowed()){InvalidatePreview();return false;}
+                PreviewImage.Visibility=Visibility.Visible;
+                if(!allowed()){InvalidatePreview();return false;}
+                return true;
+            },DispatcherPriority.Background,token).Task.ConfigureAwait(false);
+        }
+        catch
+        {
+            if(!context.HasShutdownStarted)
+                try{await context.InvokeAsync(()=>{InvalidatePreview();Report("이 이미지를 표시하지 못했습니다. 제한된 PNG 형식·크기를 확인하세요. 원본은 보존했습니다.");},DispatcherPriority.Background).Task.ConfigureAwait(false);}catch{}
+            return false;
+        }
+        finally{raster?.Dispose();lease.Dispose();cancel.Dispose();ImagePreviewAdmission.Exit();}
+    }
     private async void AddClicked(object sender,RoutedEventArgs e)
     {
         await ImportFileAsync(()=>
@@ -91,7 +171,7 @@ public sealed class AttachmentPanel : UserControl,IDisposable
             if(!Same(active,source,version)){ClearLabels();return;}
             FilesList.SelectedItem=entries.FirstOrDefault(item=>item.Id==selected);
             if(!Same(active,source,version)){ClearLabels();return;}
-            add.IsEnabled=!busy;detach.IsEnabled=!busy&&FilesList.SelectedItem is Entry;
+            add.IsEnabled=!busy;detach.IsEnabled=preview.IsEnabled=!busy&&FilesList.SelectedItem is Entry;
         }
         catch{if(!IsDisposed)ClearLabels();}
         finally
@@ -105,14 +185,15 @@ public sealed class AttachmentPanel : UserControl,IDisposable
         try{FilesList.ItemsSource=null;}catch{}
         try{add.IsEnabled=false;}catch{}
         try{detach.IsEnabled=false;}catch{}
+        try{preview.IsEnabled=false;}catch{}
     }
     public void Dispose()
     {
-        if(IsDisposed)return;IsDisposed=true;var active=session;var source=note;session=null;note=null;current=null;notice=null;refreshPending=false;
-        if(active is not null){active.Workspace.Changed-=Refresh;active.Conceal-=Dispose;}if(source is not null)source.PropertyChanged-=NoteChanged;
+        Dispatcher.VerifyAccess();if(IsDisposed)return;IsDisposed=true;InvalidatePreview();var active=session;var source=note;session=null;note=null;current=null;notice=null;refreshPending=false;
+        if(active is not null){active.Workspace.Changed-=Refresh;active.Conceal-=Dispose;active.Changed-=PreviewStateChanged;}if(source is not null)source.PropertyChanged-=NoteChanged;
         // Conceal this host before native collection callbacks; parents also conceal independently.
         try{Visibility=Visibility.Collapsed;}catch{}
         try{Content=null;}catch{}
-        cancellation.Cancel();ClearLabels();add.Click-=AddClicked;detach.Click-=DetachClicked;FilesList.SelectionChanged-=SelectionChanged;cancellation.Dispose();
+        cancellation.Cancel();ClearLabels();add.Click-=AddClicked;detach.Click-=DetachClicked;FilesList.SelectionChanged-=SelectionChanged;preview.Click-=PreviewClicked;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=PreviewRendering;cancellation.Dispose();
     }
 }

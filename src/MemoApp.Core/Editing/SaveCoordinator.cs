@@ -33,7 +33,18 @@ public sealed class SaveCoordinator : IDisposable
     public event Action? Conceal;
     public event Action? Changed;
     public Task WhenAttachmentReadsIdle => attachmentReads.WhenIdle;
-    private void RevokeAttachmentReads(NoteDraft? source) => attachmentReads.Revoke(source?.AttachmentReadIdentity);
+    public long AttachmentPreviewEpoch { get; private set; }
+    private void RevokeAttachmentReads(NoteDraft? source)
+    {
+        AttachmentPreviewEpoch++;
+        attachmentReads.Revoke(source?.AttachmentReadIdentity);
+    }
+    public bool IsAttachmentPreviewCurrent(NoteDraft note,Guid id,long expectedVersion,long expectedEpoch)
+    {
+        if(expectedEpoch!=AttachmentPreviewEpoch)return false;
+        try{RequireAttachmentSource(note,expectedVersion,sessionEpoch);_=Workspace.AttachmentObject(note,id);return true;}
+        catch{return false;}
+    }
     private void WorkspaceChanged()
     {
         if (!IsLocked) { generation++; Status = "변경됨"; Changed?.Invoke(); }
@@ -144,7 +155,7 @@ public sealed class SaveCoordinator : IDisposable
             catch { success = false; }
         }
         if (success && ReferenceEquals(pendingCipher, prepared)) pendingCipher = null;
-        if (!success) attachmentReads.Revoke(); // Fault revocation precedes public status callbacks.
+        if (!success) RevokeAttachmentReads(null); // Fault revocation precedes public status callbacks.
         if (!disposed && capturedEpoch == sessionEpoch && !IsLocked)
         {
             if (success) savedGeneration = Math.Max(savedGeneration, capturedGeneration);
@@ -161,7 +172,7 @@ public sealed class SaveCoordinator : IDisposable
             return settled && !pendingPlaintext && pendingCipher is null;
         }
         IsLocked = true; sessionEpoch++;
-        attachmentReads.Revoke();
+        RevokeAttachmentReads(null);
         vault.RevokeAttachmentUse(); // Recovery-held keys do not authorize attachment plaintext/sealing.
         // Conceal all native windows and block input before any save, await, or key-release wait.
         Conceal?.Invoke();
@@ -232,7 +243,7 @@ public sealed class SaveCoordinator : IDisposable
     {
         if (IsBusy) throw new InvalidOperationException("Await writes before disposing the writer");
         disposed = true; IsLocked = true; sessionEpoch++;
-        attachmentReads.Revoke();
+        RevokeAttachmentReads(null);
         try { Workspace.Clear(); }
         finally { hiddenPlaintext = hiddenBasis = null; pendingCipher = null; vault.Dispose(); }
     }

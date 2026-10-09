@@ -26,13 +26,14 @@ internal static partial class Program
             var visual=new Image{Source=bitmap,Stretch=Stretch.None};visual.Measure(new Size(2,1));visual.Arrange(new Rect(0,0,2,1));var rendered=new RenderTargetBitmap(2,1,96,96,PixelFormats.Pbgra32);rendered.Render(visual);var native=new byte[8];rendered.CopyPixels(native,8,0);Require(native.SequenceEqual(new byte[]{0,0,255,255,128,0,0,128}),"Independent WPF native rendering oracle preserves alpha and channel order");visual.Source=null;
             Require(await PreviewSelected(second)&&image.Source is null&&PreviewImage(second).Source is BitmapSource,"Only one visible image globally; second host replaces first");
             AttachmentList(second).SelectedIndex=1;Require(PreviewImage(second).Source is null&&!await PreviewSelected(second),"Selected opaque bad bytes clear old image and spoofed MIME cannot activate generic decoder");
+            Require(System.Text.Json.JsonSerializer.Serialize(session.Workspace.Capture())==before,"Preview success/failure preserves exact snapshot/ciphertext/refs/history");
             AttachmentList(first).SelectedIndex=0;pending=PreviewSelected(first);AttachmentList(first).SelectedIndex=1;Require(!await pending&&image.Source is null,"Selection changes before posted publication discard result");
             AttachmentList(first).SelectedIndex=0;pending=PreviewSelected(first);note.Title="changed while decoding";Require(!await pending&&image.Source is null,"Edit version changes discard result and source authority");
             Require(await session.SaveAsync(),"Image mutation saved");AttachmentList(first).SelectedIndex=0;Require(await PreviewSelected(first),"Preview retry after invalidation returns capacity");
             Require(System.Text.Json.JsonSerializer.Serialize(session.Workspace.Capture()).Contains(id.ToString()),"Original reference survives preview");
             AttachmentList(first).SelectedIndex=0;pending=PreviewSelected(first);await session.LockAsync();Require(image.Source is null&&PreviewImage(second).Source is null&&!await pending,"Lock immediately clears both WPF images and rejects late publication");await session.WhenAttachmentReadsIdle;
             Require(PanelDisposed(first)&&PanelDisposed(second),"Conceal closes both hosts");
-            _=before;
+
         }
         finally{window?.Close();CryptographicOperations.ZeroMemory(secret);Directory.Delete(root,true);}
     }

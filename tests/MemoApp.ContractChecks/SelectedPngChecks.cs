@@ -15,13 +15,18 @@ internal static class SelectedPngChecks
         try
         {
             using var owner=new SaveCoordinator(EncryptedVault.Create(root,secret,secret),TimeProvider.System);var note=owner.Workspace.CreateNote();VaultChecks.Require(await owner.PrepareAttachmentsAsync(),"PNG bridge root");
+            var epochProperty=typeof(SaveCoordinator).GetProperty("AttachmentPreviewEpoch");VaultChecks.Require(epochProperty is not null,"Preview publication invalidation epoch missing");
+            long Epoch()=>(long)epochProperty!.GetValue(owner)!;
+            var valid=typeof(SaveCoordinator).GetMethod("IsAttachmentPreviewCurrent")!;
             Guid id=owner.AttachBytes(note,Png,"spoof.txt","application/octet-stream",note.EditVersion);VaultChecks.Require(await owner.SaveAsync(),"PNG bridge baseline");
+            long epoch=Epoch();VaultChecks.Require((bool)valid.Invoke(owner,[note,id,note.EditVersion,epoch])!,"Fresh selected source authority");
             using(var lease=owner.CreateAttachmentReadLease(note,id,note.EditVersion))using(var raster=decode(lease,default))
             {
                 VaultChecks.Require(raster.Width==2&&raster.Height==1&&raster.Stride==8&&owner.WhenAttachmentReadsIdle.IsCompleted,"Detached PNG dimensions and source grant drained");
                 VaultChecks.Require(raster.ConsumePixels(p=>VaultChecks.Require(p.SequenceEqual(new byte[]{0,0,255,255,255,0,0,128}),"Independent literal RGB/alpha oracle")),"Single borrowed raster consumed");
                 VaultChecks.ExpectFailure(()=>decode(lease,default).Dispose(),"Bridge refuses consumed source");
             }
+            var snapshot=owner.Workspace.Capture();owner.Workspace.AcceptPrepared(snapshot);VaultChecks.Require(Epoch()!=epoch&&!(bool)valid.Invoke(owner,[note,id,note.EditVersion,epoch])!,"Unchanged-version AcceptPrepared invalidates detached publication authority");
             using(var lease=owner.CreateAttachmentReadLease(note,id,note.EditVersion)){bool canceled=false;try{decode(lease,new CancellationToken(true)).Dispose();}catch(OperationCanceledException){canceled=true;}VaultChecks.Require(canceled,"Canceled bridge refuses transfer");VaultChecks.Require(owner.WhenAttachmentReadsIdle.IsCompleted,"Canceled bridge drains owned source");}
             using(var lease=owner.CreateAttachmentReadLease(note,id,note.EditVersion)){note.Title="invalidate";VaultChecks.ExpectFailure(()=>decode(lease,default).Dispose(),"Revoked source cannot decode");}
             VaultChecks.Require(await owner.SaveAsync(),"Bridge mutation saved");await owner.LockAsync();
