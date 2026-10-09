@@ -28,6 +28,7 @@ if (args.Contains("--diff-only")) { HistoryDiffChecks.Run(); return; }
 if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
 if (args.Contains("--startup-only")) { StartupChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
+if (args.Contains("--batch-text-only")) { BatchTextTransferChecks.Run(); return; }
 if (args.Contains("--text-only")) { TextTransferChecks.Run(); return; }
 
 // Synthetic in-memory contract checks; these do not prove save/encryption/sync behavior.
@@ -77,6 +78,7 @@ HistoryDiffChecks.Run();
 await Schema2Checks.Run();
 await BackupChecks.Run();
 TextTransferChecks.Run();
+BatchTextTransferChecks.Run();
 StartupChecks.Run();
 await DeviceUiChecks.Run();
 await LocalIdentityCreationChecks.Run();
