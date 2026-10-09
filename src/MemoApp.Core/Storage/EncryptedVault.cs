@@ -202,6 +202,7 @@ public sealed class EncryptedVault : IDisposable
             return new CandidateState(Path.GetFileName(path), state);
         }).ToArray();
     }
+    internal Guid Identity=>vaultId;
     public void ExportCommitted(string path,IAtomicVaultFiles? backupFiles=null)
     {
         using var prepared=CaptureCommittedCopy();prepared.WriteTo(path,backupFiles);
@@ -212,13 +213,24 @@ public sealed class EncryptedVault : IDisposable
     {
         lock(commitGate)
         {
+            byte[] expected;
             lock(gate)
             {
                 if(disposed||faulted||lastKnownBase is null||keysReleased!=requireReleased)throw new InvalidOperationException("No authenticated committed copy authority");
-                var bytes=ReadBounded(Path.Combine(root,"current.vault"));
-                if(!Equal(lastKnownBase,SHA256.HashData(bytes)))throw new IOException("Committed snapshot changed; backup refused");
-                return new(bytes,root);
+                expected=lastKnownBase.ToArray();
             }
+            byte[]? bytes=null;bool returned=false;
+            try
+            {
+                // Source I/O does not hold the key gate: release may proceed while disk is slow.
+                bytes=ReadBounded(Path.Combine(root,"current.vault"));if(!Equal(expected,SHA256.HashData(bytes)))throw new IOException("Committed snapshot changed; backup refused");
+                lock(gate)
+                {
+                    if(disposed||faulted||keysReleased!=requireReleased||lastKnownBase is null||!Equal(expected,lastKnownBase))throw new InvalidOperationException("Committed copy authority ended");
+                    var copy=new PreparedEncryptedCopy(bytes,root);returned=true;return copy;
+                }
+            }
+            finally{CryptographicOperations.ZeroMemory(expected);if(!returned&&bytes is not null)CryptographicOperations.ZeroMemory(bytes);}
         }
     }
     private static void RejectLinkedAncestors(string directory)

@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
-        Closed += (_, _) => { windowClosed=true;ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true;ClearAutomaticBackupViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -70,7 +70,8 @@ public partial class MainWindow : Window
         var active = session;
         if (active is null || active.IsLocked || active.IsBusy || closing) return;
         if (DateTimeOffset.UtcNow - activity > TimeSpan.FromMinutes(5)) { await active.LockAsync(); return; }
-        if (active.IsDirty) await active.SaveAsync();
+        bool saved=active.IsDirty&&await active.SaveAsync();
+        if(ReferenceEquals(session,active)&&!active.IsLocked)await RunAutomaticBackupAsync(saved);
     }
     private void StartSession(EncryptedVault vault)
     {
@@ -97,7 +98,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++;concealing=true; ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
+        uiEpoch++;concealing=true;ClearAutomaticBackupViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
@@ -178,7 +179,7 @@ public partial class MainWindow : Window
         }
         catch { Notice.Text = "새 메모를 만들 수 없습니다. 시험판은 최대 100개입니다."; }
     }
-    private async void Save_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.SaveAsync(); }
+    private async void Save_Click(object sender, RoutedEventArgs e) { if (session is {IsLocked:false} active){bool dirty=active.IsDirty;bool saved=await active.SaveAsync();if(ReferenceEquals(session,active)&&!active.IsLocked&&dirty&&saved)await RunAutomaticBackupAsync(true);} }
     private async void Lock_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.LockAsync(); else ClearSecretControls(); }
     private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!loadingUi) SelectEditor(); }
     private void ClearMarkdownPreview()
@@ -652,7 +653,7 @@ public partial class MainWindow : Window
         {
             if (session is not null)
             {
-                await session.LockAsync();
+                if(!await LockForCloseAsync(session))return;
                 if (!ReleaseSettledSession()) return;
             }
             confirmedExit = true;

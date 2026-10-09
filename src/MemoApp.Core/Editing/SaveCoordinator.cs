@@ -25,6 +25,7 @@ public sealed class SaveCoordinator : IDisposable
     }
     public EditingWorkspace Workspace { get; private set; }
     public bool IsLocked { get; private set; }
+    public Guid VaultIdentity=>vault.Identity;
     public bool IsDirty => generation > savedGeneration;
     public bool KeysReleased => vault.KeysReleased;
     public bool IsBusy => !tail.IsCompleted || !backupTask.IsCompleted || !rootTask.IsCompleted;
@@ -237,7 +238,7 @@ public sealed class SaveCoordinator : IDisposable
     private static Task WriteDetachedBackupAsync(PreparedEncryptedCopy prepared,string path,IAtomicVaultFiles? files)=>Task.Run(()=>prepared.WriteTo(path,files));
     public Task<bool> LockWithBackupAsync(string path,IAtomicVaultFiles? files=null)
     {
-        if(disposed||IsLocked||!backupTask.IsCompleted)return Task.FromResult(false);
+        if(disposed||IsLocked)return Task.FromResult(false);
         // Lock synchronously conceals/releases keys and snapshots the old backup task before this assignment.
         var locking=LockAsync();backupTask=LockedBackupCoreAsync(locking,path,files,sessionEpoch);return backupTask;
     }

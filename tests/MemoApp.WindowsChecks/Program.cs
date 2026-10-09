@@ -334,7 +334,7 @@ internal static partial class Program
                     int last=65536-(length-(16*1024*1024-232-2400));Require(last is >=0 and <=65536,"WPF whole byte-boundary fixture");history[^1]=history[^1] with{Text=new string('x',last)};
                 }
                 using(var vault=EncryptedVault.Create(root,secret,secret))vault.Save(snapshot);
-                main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Open(root,secret));var session=Field<SaveCoordinator>(main,"session");var first=session.Workspace.Notes[0];Invoke(main,"OpenSticky",first);await Idle();Require(await session.SaveAsync(),"WPF batch refusal UI baseline save");await Idle();
+                main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Open(root,secret));var session=Field<SaveCoordinator>(main,"session");var first=session.Workspace.Notes[0];Invoke(main,"OpenSticky",first);await Idle();Field<DispatcherTimer>(main,"timer").Stop();await Field<Task>(main,"recentTask");Require(await session.SaveAsync(),"WPF batch refusal baseline including settled recent UI save");await Idle();
                 var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[first.Id];var list=Control<ListBox>(main,"NotesList");list.SelectAll();string before=JsonSerializer.Serialize(session.Workspace.Capture());var request=Invoke(main,"CaptureBatch",false)!;
                 await (Task)Invoke(main,"ApplyBatch",request,"delete",(object)null!)!;await Idle();
                 Require(session.Workspace.Notes.All(n=>!n.IsDeleted) && JsonSerializer.Serialize(session.Workspace.Capture())==before && list.SelectedItems.Count==2 && sticky.IsVisible && sticky.Placement!.State.Open,"failed batch history/byte preflight preserves notes/UI records/selection/open sticky");
@@ -342,7 +342,7 @@ internal static partial class Program
             }
             finally
             {
-                if(main is not null){SetField(main,"confirmedExit",true);main.Close();var active=Field<SaveCoordinator?>(main,"session");if(active is not null&&!active.IsBusy)active.Dispose();}
+                if(main is not null){var active=Field<SaveCoordinator?>(main,"session");if(active is not null){await active.LockAsync();active.Dispose();SetField(main,"session",null!);}SetField(main,"confirmedExit",true);main.Close();}
                 CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);
             }
         }
@@ -357,7 +357,7 @@ internal static partial class Program
         }
         finally
         {
-            if(failedMain is not null){SetField(failedMain,"confirmedExit",true);failedMain.Close();var active=Field<SaveCoordinator?>(failedMain,"session");if(active is not null&&!active.IsBusy)active.Dispose();}
+            if(failedMain is not null){var active=Field<SaveCoordinator?>(failedMain,"session");if(active is not null){await active.LockAsync();active.Dispose();SetField(failedMain,"session",null!);}SetField(failedMain,"confirmedExit",true);failedMain.Close();}
             CryptographicOperations.ZeroMemory(failingSecret);if(Directory.Exists(failingRoot))Directory.Delete(failingRoot,true);
         }
     }
