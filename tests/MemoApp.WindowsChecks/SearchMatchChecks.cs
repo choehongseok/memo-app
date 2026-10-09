@@ -1,4 +1,7 @@
 using System.IO;
+using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Windows.Threading;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows;
@@ -23,6 +26,13 @@ internal static partial class Program
             note.Text="new changed source without hit";Require(All()==""&&!preview.IsVisible,"Post-mutation source event clears old excerpt synchronously before queued refresh");await Idle();
             note.Text="Cafe\u0301 literal .* <script>";query.Text="CAFÉ";await Idle();Require(Match().Text=="Café","Actual NFC/case match uses inert display projection");query.Text=".*";await Idle();Require(Match().Text==".*"&&All().Contains("<script>"),"Native UI treats HTML/regex-looking body as literal text");
             query.Clear();Require(All()==""&&!preview.IsVisible,"Clearing query clears native derived text immediately");query.Text=".*";await Idle();Require(preview.IsVisible,"Preview returns for current match");
+            Field<DispatcherTimer>(main,"timer").Stop();Require(await session.PrepareAttachmentsAsync(),"Attachment-name highlight fixture root");session.AttachBytes(note,new byte[]{1,2,3},"source-match-old.txt","application/octet-stream",note.EditVersion);Require(await session.SaveAsync(),"Exact attachment baseline saved");
+            var original=session.Workspace.Capture();var replaced=original with{AttachmentObjects=original.AttachmentObjects.Select(item=>item with{Name="source-match-new.txt"}).ToImmutableArray()};
+            Control<ComboBox>(main,"SearchFieldFilter").SelectedIndex=3;query.Text="source-match";await Idle();Require(preview.IsVisible&&All().Contains("old.txt"),"Filename match reads metadata only");version=note.EditVersion;
+            session.Workspace.AcceptPrepared(replaced);await Idle();Invoke(main,"SearchPreviewRendering",null!,EventArgs.Empty);Require(!All().Contains("old.txt")&&note.EditVersion==version,"Unchanged-version attachment replacement discards old filename before next render");session.Workspace.AcceptPrepared(original);Invoke(main,"RenderSearchResultPreview");
+            bool fired=false;var descriptor=DependencyPropertyDescriptor.FromProperty(System.Windows.Documents.Run.TextProperty,typeof(Run));EventHandler replacement=(_,_)=>{if(!fired&&Match().Text.Length>0){fired=true;session.Workspace.AcceptPrepared(replaced);}};descriptor.AddValueChanged(Match(),replacement);
+            try{Invoke(main,"RenderSearchResultPreview");Require(fired&&!preview.IsVisible&&All()=="","Replacement during native matched Run setter cannot publish stale filename");}finally{descriptor.RemoveValueChanged(Match(),replacement);session.Workspace.AcceptPrepared(original);}
+            Control<ComboBox>(main,"SearchFieldFilter").SelectedIndex=0;query.Text=".*";await Idle();Require(preview.IsVisible,"Current body excerpt after original attachment restoration");
             var pending=session.LockAsync();Require(All()==""&&!preview.IsVisible,"Immediate lock clears result text before any save wait");await pending;
         }
         finally{if(main is not null){var session=Field<SaveCoordinator?>(main,"session");if(session is not null&&!session.IsLocked)await session.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();}CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);}

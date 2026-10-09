@@ -56,7 +56,8 @@ public partial class MainWindow : Window
         InputManager.Current.PreProcessInput += Activity;
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
-        Closed += (_, _) => { windowClosed=true; fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        CompositionTarget.Rendering+=SearchPreviewRendering;
+        Closed += (_, _) => { windowClosed=true;CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -96,7 +97,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++; fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
+        uiEpoch++; ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
@@ -237,7 +238,7 @@ public partial class MainWindow : Window
         else ClearMarkdownPreview();
         ConfigureAttachmentPanel(selected);
         bool loading=loadingUi;loadingUi=true;ModeChoice.SelectedItem=ModeChoice.Items.Cast<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==selected?.Mode);loadingUi=loading;
-        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();
+        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();RenderSearchResultPreview();
     }
     private void Mode_Changed(object sender,SelectionChangedEventArgs e)
     {
