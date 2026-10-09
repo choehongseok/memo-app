@@ -13,7 +13,7 @@ public static class OfficeTextTransfer
     {
         ArgumentNullException.ThrowIfNull(selection);if(!Enum.IsDefined(format))throw new ArgumentException("Office export format");var notes=selection.Take(101).ToArray();if(notes.Length is <1 or >100||notes.Select(n=>n.Id).Distinct().Count()!=notes.Length)throw new ArgumentException("Office export selection limits");
         int total=0;foreach(var note in notes){using var validated=TextTransfer.Capture(note);total=checked(total+validated.Bytes.Length);if(total>16*1024*1024)throw new InvalidDataException("Office source byte limit");XmlConvert.VerifyXmlChars(note.Title);XmlConvert.VerifyXmlChars(note.Text);}
-        using var output=new MemoryStream();
+        using var output=new BoundedOfficeBuffer();
         try
         {
             using(var zip=new ZipArchive(output,ZipArchiveMode.Create,true))
@@ -31,6 +31,18 @@ public static class OfficeTextTransfer
             if(output.Length>16*1024*1024)throw new InvalidDataException("Office package limit");return new(output.ToArray());
         }
         finally{CryptographicOperations.ZeroMemory(output.GetBuffer());}
+    }
+    private sealed class BoundedOfficeBuffer:MemoryStream
+    {
+        private const long Limit=16*1024*1024;private bool cleared;
+        private static void Check(long value){if(value<0||value>Limit)throw new IOException("Office construction limit");}
+        public override long Position{get=>base.Position;set{Check(value);base.Position=value;}}
+        public override void SetLength(long value){Check(value);base.SetLength(value);}
+        public override long Seek(long offset,SeekOrigin origin){long position=checked((origin switch{SeekOrigin.Begin=>0,SeekOrigin.Current=>Position,SeekOrigin.End=>Length,_=>throw new ArgumentException("Seek origin")})+offset);Check(position);return base.Seek(offset,origin);}
+        public override void Write(byte[] buffer,int offset,int count){Check(checked(Position+count));base.Write(buffer,offset,count);}
+        public override void Write(ReadOnlySpan<byte> buffer){Check(checked(Position+buffer.Length));base.Write(buffer);}
+        public override void WriteByte(byte value){Check(checked(Position+1));base.WriteByte(value);}
+        protected override void Dispose(bool disposing){if(disposing&&!cleared){cleared=true;CryptographicOperations.ZeroMemory(GetBuffer());}base.Dispose(disposing);}
     }
     private static void XmlPart(ZipArchive zip,string name,Action<XmlWriter> content)
     {
