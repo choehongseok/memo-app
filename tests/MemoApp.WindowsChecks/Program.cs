@@ -35,6 +35,7 @@ internal static partial class Program
                 groups=groups.Append(("rich-own-same-restore",(Func<Task>)RichOwnSameRestoreRun)).ToArray();
                 groups=groups.Append(("rich-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("rich")))).Append(("markdown-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("markdown")))).ToArray();
                 groups=groups.Append(("attachment-panel-boundaries",(Func<Task>)AttachmentPanelRun)).Append(("attachment-production",(Func<Task>)AttachmentProductionRun)).ToArray();
+                groups=groups.Append(("image-selected-png",(Func<Task>)ImagePreviewRun)).ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {

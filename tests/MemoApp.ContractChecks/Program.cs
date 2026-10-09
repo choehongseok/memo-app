@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MemoApp.Core;
 
+if (args.Contains("--selected-png-only")) { await SelectedPngChecks.Run(); return; }
 if (LocalIdentityCreationChecks.TryWorker(args)) return;
 if (args.Contains("--identity-only")) { await LocalIdentityCreationChecks.Run(); return; }
 if (VaultFailureChecks.TryWorker(args)) return;
@@ -80,3 +81,5 @@ await LocalIdentityCreationChecks.Run();
 VaultChecks.Run();
 VaultFailureChecks.Run();
 await CoordinatorChecks.Run();
+
+await SelectedPngChecks.Run();
