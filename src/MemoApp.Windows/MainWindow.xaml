@@ -3,7 +3,7 @@
  <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"><Grid x:Name="ViewRoot" Margin="20" MinWidth="1000" MinHeight="650"><Grid.LayoutTransform><ScaleTransform x:Name="UiScale"/></Grid.LayoutTransform>
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
   <Border Background="#FFF3CD" Padding="12" Margin="0,0,0,12"><StackPanel>
-   <Menu><MenuItem Header="_파일"><MenuItem x:Name="TrayMenu" Header="트레이 상주 (이번 실행)" IsCheckable="True" IsChecked="False" Click="TrayMenu_Click"/><MenuItem x:Name="ExitMenu" Header="완전히 종료" Click="Exit_Click"/></MenuItem></Menu>
+   <Menu><MenuItem Header="_파일"><MenuItem x:Name="StartupMenu" Header="Windows 로그인 시 잠긴 트레이로 실행" IsCheckable="True" IsChecked="False" IsEnabled="False" Click="StartupMenu_Click"/><MenuItem x:Name="TrayMenu" Header="트레이 상주 (이번 실행)" IsCheckable="True" IsChecked="False" Click="TrayMenu_Click"/><MenuItem x:Name="ExitMenu" Header="완전히 종료" Click="Exit_Click"/></MenuItem></Menu>
    <TextBlock Text="합성 자료용 · 서명 없는 개발 시험판입니다. 실제 개인정보를 사용하지 마세요. 실제 IME·OS 잠금·다중모니터 사용자 검증을 기다립니다." TextWrapping="Wrap" Foreground="DarkRed"/>
    <TextBlock Foreground="Black" x:Name="Notice" Text="잠금 — 복구 비밀로 해제하세요." TextWrapping="Wrap" FontWeight="Bold" Margin="0,8,0,0"/>
   </StackPanel></Border>

@@ -29,7 +29,7 @@ if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return;
 if (args.Contains("--batch-only")) { await BatchChecks.Run(); return; }
 if (args.Contains("--diff-only")) { HistoryDiffChecks.Run(); return; }
 if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
-if (args.Contains("--startup-only")) { StartupChecks.Run(); return; }
+if (args.Contains("--startup-only")) { StartupChecks.Run(); StartupRegistrationChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
 if (args.Contains("--device-search-activation-only")) { await DeviceSearchActivationChecks.Run(); return; }
 if (args.Contains("--device-search-state-only")) { DeviceSearchStateChecks.Run(); return; }
@@ -104,7 +104,7 @@ await ExcelImportChecks.Run();
 AutomaticBackupPolicyChecks.Run();
 TextTransferChecks.Run();
 BatchTextTransferChecks.Run();
-StartupChecks.Run();
+StartupChecks.Run();StartupRegistrationChecks.Run();
 await DeviceUiChecks.Run();
 DeviceSearchStateChecks.Run();
 await DeviceSearchActivationChecks.Run();

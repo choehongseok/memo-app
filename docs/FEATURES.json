@@ -2767,34 +2767,62 @@
       "name": "시스템 트레이 상주",
       "normalized": "시스템 트레이 상주",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L02: 시스템 트레이 상주 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/NativeTrayIcon.cs",
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/App.xaml.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "native-tray-windows",
+          "commit": "c6ef11ac8083ea93ea21c152800c6e0427bf5099",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Windows whole regression; https://github.com/choehongseok/memo-app/actions/runs/37955393341",
+          "result": "PASS actual Shell_NotifyIcon registration=True/Unicode976ABI; guarded genuine hidden save/new-note/recent sticky/same-version source/native focus-lock/creation-hide reentry/icon loss/full-exit/session-ending flag/installed package. Physical tray or Explorer restart/OS shutdown/user acceptance not verified."
+        }
+      ],
+      "blocking_reason": "이번 실행 opt-in/default OFF 트레이. 실제 native 등록 bool·generic icon/tooltip(no titles/balloons)·Closing unwind hide·등록 유실 visible fallback·hidden 저장 timer·full exit/OS ending bypass·bounded recent title DTO/lock/sourceepoch pre-paint 폐기. 설정 재실행 유지/physical tray keyboard/Explorer restart/actual OS ending 및 사용자 수용은 미확인."
     },
     {
       "id": "L03",
       "name": "창을 닫아도 트레이에서 계속 실행",
       "normalized": "창을 닫아도 트레이에서 계속 실행",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L03: 창을 닫아도 트레이에서 계속 실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/NativeTrayIcon.cs",
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/App.xaml.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "native-tray-windows",
+          "commit": "c6ef11ac8083ea93ea21c152800c6e0427bf5099",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Windows whole regression; https://github.com/choehongseok/memo-app/actions/runs/37955393341",
+          "result": "PASS actual Shell_NotifyIcon registration=True/Unicode976ABI; guarded genuine hidden save/new-note/recent sticky/same-version source/native focus-lock/creation-hide reentry/icon loss/full-exit/session-ending flag/installed package. Physical tray or Explorer restart/OS shutdown/user acceptance not verified."
+        }
+      ],
+      "blocking_reason": "이번 실행 opt-in/default OFF 트레이. 실제 native 등록 bool·generic icon/tooltip(no titles/balloons)·Closing unwind hide·등록 유실 visible fallback·hidden 저장 timer·full exit/OS ending bypass·bounded recent title DTO/lock/sourceepoch pre-paint 폐기. 설정 재실행 유지/physical tray keyboard/Explorer restart/actual OS ending 및 사용자 수용은 미확인."
     },
     {
       "id": "L04",
@@ -2836,34 +2864,62 @@
       "name": "트레이 우클릭으로 새 메모",
       "normalized": "트레이 우클릭으로 새 메모",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L05: 트레이 우클릭으로 새 메모 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/NativeTrayIcon.cs",
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/App.xaml.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "native-tray-windows",
+          "commit": "c6ef11ac8083ea93ea21c152800c6e0427bf5099",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Windows whole regression; https://github.com/choehongseok/memo-app/actions/runs/37955393341",
+          "result": "PASS actual Shell_NotifyIcon registration=True/Unicode976ABI; guarded genuine hidden save/new-note/recent sticky/same-version source/native focus-lock/creation-hide reentry/icon loss/full-exit/session-ending flag/installed package. Physical tray or Explorer restart/OS shutdown/user acceptance not verified."
+        }
+      ],
+      "blocking_reason": "이번 실행 opt-in/default OFF 트레이. 실제 native 등록 bool·generic icon/tooltip(no titles/balloons)·Closing unwind hide·등록 유실 visible fallback·hidden 저장 timer·full exit/OS ending bypass·bounded recent title DTO/lock/sourceepoch pre-paint 폐기. 설정 재실행 유지/physical tray keyboard/Explorer restart/actual OS ending 및 사용자 수용은 미확인."
     },
     {
       "id": "L06",
       "name": "트레이에서 최근 메모 바로 열기",
       "normalized": "트레이에서 최근 메모 바로 열기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L06: 트레이에서 최근 메모 바로 열기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/NativeTrayIcon.cs",
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/App.xaml.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "native-tray-windows",
+          "commit": "c6ef11ac8083ea93ea21c152800c6e0427bf5099",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Windows whole regression; https://github.com/choehongseok/memo-app/actions/runs/37955393341",
+          "result": "PASS actual Shell_NotifyIcon registration=True/Unicode976ABI; guarded genuine hidden save/new-note/recent sticky/same-version source/native focus-lock/creation-hide reentry/icon loss/full-exit/session-ending flag/installed package. Physical tray or Explorer restart/OS shutdown/user acceptance not verified."
+        }
+      ],
+      "blocking_reason": "이번 실행 opt-in/default OFF 트레이. 실제 native 등록 bool·generic icon/tooltip(no titles/balloons)·Closing unwind hide·등록 유실 visible fallback·hidden 저장 timer·full exit/OS ending bypass·bounded recent title DTO/lock/sourceepoch pre-paint 폐기. 설정 재실행 유지/physical tray keyboard/Explorer restart/actual OS ending 및 사용자 수용은 미확인."
     },
     {
       "id": "L07",
@@ -4379,9 +4435,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "2df8f9381cff9a99a15c4d7c4751dc50350e2c1e",
-    "implemented_or_partial_in_progress": 110,
-    "not_started": 22,
+    "as_of_code": "c6ef11ac8083ea93ea21c152800c6e0427bf5099",
+    "implemented_or_partial_in_progress": 114,
+    "not_started": 18,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4394,6 +4450,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "110개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수22/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
+    "note": "114개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수18/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
   }
 }
