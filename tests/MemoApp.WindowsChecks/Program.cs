@@ -41,7 +41,7 @@ internal static partial class Program
                 foreach(var group in groups)
                 {
                     try{await group.Run();Console.WriteLine("PASS: WPF group "+group.Name);}
-                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);}
+                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);if(group.Name=="trial-installer")Console.Error.WriteLine(e.ToString());}
                     finally{foreach(var window in app.Windows.Cast<Window>().Where(w=>w.Content is StructuredNoteEditor or MarkdownNotePreview).ToArray()){((IDisposable)window.Content).Dispose();window.Close();}}
                 }
                 if(failures.Count==0){Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)");result=0;}
