@@ -4390,14 +4390,21 @@
       "name": "OCR로 이미지 글자 추출",
       "normalized": "OCR로 이미지 글자 추출",
       "phase": 5,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "T12: OCR로 이미지 글자 추출 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "로컬 OCR 실제 엔진으로 한글 합성 이미지를 처리하고 통신·정확도를 확인한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/WindowsOcrBundle.cs",
+        "src/MemoApp.Core/Transfer/LocalOcrProcess.cs",
+        "src/MemoApp.Windows/InstalledOcrBackend.cs",
+        "src/MemoApp.Windows/AttachmentPanel.Ocr.cs",
+        "tests/MemoApp.WindowsChecks/OcrProductChecks.cs",
+        "tools/build_native_ocr.py"
+      ],
       "planned_module": "LocalIntelligence",
       "test_evidence": [
         {
@@ -4406,9 +4413,16 @@
           "environment": "GitHub Windows Server2022, existing MSVC19.44/CMake3.31.6, fixed Tesseract5.5.3/Leptonica1.87.0 official kor+eng; Linux boundary checks separate",
           "command": "Windows whole app37986588306 + native OCR37986588361; LocalOcrChecks NativeProbe/Input/ProcessChecks",
           "result": "PASS internal owned PPM/process/settlement, actual source-built Korean/English synthetic OCR215ms, PE dependencies KERNEL32.dll. Product UI/model installation/app-wide admission/lock publication/encrypted OCR apply/runtime communication/user acceptance not connected or verified; feature remains not started."
+        },
+        {
+          "kind": "windows-control-and-core",
+          "commit": "baeba805967c290e2adb9d5eede3a7db76189a40",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12 / fixed source-built Tesseract5.5.3 Leptonica1.87.0 kor+eng",
+          "command": "Windows whole gate37991107459; actual WPF ocr-product-native/ocr-shared-settlement, fullCore, publish, 413-file installed package; https://github.com/choehongseok/memo-app/actions/runs/37991107459",
+          "result": "PASS explicit public model installation/selection defaultoff, actual Korean/English fixture OCR, read-only preview/original Markdown invariant, separate plain encrypted note/body search/restart, cancellation/lock/native disable/path DTO exception cleanup, notice failure/unsettled global slot refusal. Runtime network observation/general accuracy and physical user acceptance remain unverified. No artifact uploaded."
         }
       ],
-      "blocking_reason": "내부 준비와 실제 native 합성 OCR 근거만 확보. 제품 엔진 전체 구성물·라이선스·assembly expected hash·사용자 모델설치 선택, 전역 이미지 admission settlement, lock/selection/epoch discard·미리보기/명시 새메모 암호 적용·검색·통신관찰은 후속 구현. 기존 계획 docs/plans/2026-10-09-local-ocr-windows-integration.md에서 이어간다."
+      "blocking_reason": "제한 PNG 실제 로컬 OCR 제품 연결·암호 적용·검색·재실행 자동 Windows 확인. 단일 합성 이미지 정확성/일부 수명 경계만 검증; runtime 통신관찰·다양한 입력 정확도·추가 selection/epoch/느린 실행/native setter/실제 사용자 수용은 후속 검증. 원장 전체 완료를 주장하지 않는다."
     },
     {
       "id": "T13",
