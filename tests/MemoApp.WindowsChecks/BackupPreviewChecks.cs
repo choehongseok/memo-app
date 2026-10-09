@@ -8,8 +8,16 @@ using MemoApp.Core.Storage;
 using MemoApp.Windows;
 internal static partial class Program
 {
+    private static void BackupPreviewReentry()
+    {
+        var data=new EncryptedBackupPreview(1,0,0,0,[new(Guid.NewGuid(),"합성 title","합성 body",false,false,0)]);bool live=true;using var viewer=new BackupPreviewWindow(()=>live);bool armed=true;var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty,typeof(ListBox));EventHandler changing=(_,_)=>{if(armed){armed=false;live=false;viewer.Dispose();}};descriptor.AddValueChanged(viewer.NotesList,changing);
+        try{Require(!viewer.Publish(data)&&viewer.IsRevoked&&!viewer.IsVisible&&viewer.NotesList.Items.Count==0&&viewer.ExcerptView.Text.Length==0&&viewer.TitleView.Text.Length==0&&viewer.Owner is null&&Field<Func<bool>?>(viewer,"current") is null,"Native list publication revocation independently clears all preview fields");}finally{descriptor.RemoveValueChanged(viewer.NotesList,changing);}
+        live=true;using var throwing=new BackupPreviewWindow(()=>live);throwing.TitleView.TextChanged+=(_,_)=>throw new IOException("Synthetic preview native setter fault");Require(!throwing.Publish(data)&&throwing.IsRevoked&&!throwing.IsVisible&&throwing.NotesList.Items.Count==0&&throwing.ExcerptView.Text.Length==0&&throwing.TitleView.Text.Length==0,"Throwing native title callback hides and clears preview");
+        live=true;using var closing=new BackupPreviewWindow(()=>live);Require(closing.Publish(data),"User-close preview setup");closing.Close();Require(closing.IsRevoked&&closing.NotesList.Items.Count==0&&closing.ExcerptView.Text.Length==0,"User close revokes before independent clears");
+    }
     private static async Task BackupPreviewRun()
     {
+        BackupPreviewReentry();
         string root=Path.Combine(Path.GetTempPath(),"memo-wpf-backup-preview-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);byte[] secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
         try
         {

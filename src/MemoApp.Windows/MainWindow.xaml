@@ -12,6 +12,7 @@
    <Button x:Name="SaveButton" Content="지금 저장" Click="Save_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="LockButton" Content="잠금" Click="Lock_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="WholeTransferButton" Content="전체 자료 이전 파일" Click="WholeTransfer_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
+   <Button x:Name="BackupPreviewButton" Content="암호 백업 미리보기" Click="BackupPreview_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="BackupButton" Content="암호 백업" Click="Backup_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="DuplicateButton" Content="복제" Click="Duplicate_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="DeleteButton" Content="휴지통으로" Click="Delete_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
