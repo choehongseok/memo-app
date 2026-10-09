@@ -34,7 +34,7 @@ public partial class MainWindow : Window
     private SaveCoordinator? session;
     private byte[]? generatedSecret;
     private DateTimeOffset activity = DateTimeOffset.UtcNow;
-    private bool closing, confirmedExit, transitionBusy;
+    private bool closing, confirmedExit, windowClosed, transitionBusy;
     private long uiEpoch;
     private MarkdownNotePreview? markdownPreview;
     private NoteDraft? markdownNote;
@@ -56,7 +56,7 @@ public partial class MainWindow : Window
         InputManager.Current.PreProcessInput += Activity;
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
-        Closed += (_, _) => { fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true; fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -664,7 +664,7 @@ public partial class MainWindow : Window
             confirmedExit = true;
             // A locked/no-session close can complete synchronously inside Closing.
             // WPF forbids recursive Close while that event is still unwinding.
-            _ = Dispatcher.BeginInvoke(new Action(()=>{if(IsLoaded&&!Dispatcher.HasShutdownStarted)Close();}));
+            _ = Dispatcher.BeginInvoke(new Action(()=>{if(!windowClosed&&!Dispatcher.HasShutdownStarted)Close();}));
         }
         finally { closing = false; }
     }
