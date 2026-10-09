@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "726038083e3a383ec577a8279040062a239ba834",
-    "working_tree": "dirty changes included only where explicitly described; no invented commit for uncommitted code",
+    "head": "5db5d8a5247b2b4d72d04743de12c364a34fcd45",
+    "working_tree": "5db5d8a Windows38002826135 in progress; later working changes not represented as already committed or accepted.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "726038 actual Windows37999870635: fullCore/build/nativeOCR PASS; rich-checklist-enter PASS, rich-checklist-enter-boundary FAIL(source change during native EndChange). rich-explicit-link/markdown-preview/png-scalar-metadata/manual-encrypted-backup/ocr-product-native/ocr-shared-settlement PASS; package/install/upload SKIPPED. 후속 dirty C10 final-EndChange authority guard, N04 canonical Word route and retired plaintext-buffer zeroing, N07 lexical numeric/boolean XLSX import: Linux targeted GREEN/build0warnings0errors. schema9 Core default-off policy targeted GREEN; 강화 검사/Windows opt-in restoration/root identity는 진행 중. 새 Windows gate 전 전체 SUCCESS/새 artifact를 주장하지 않는다. 후속 actual Linux fullCore+strong hidden9/attachment/archive/Python39/original134 PASS; independent canonical rich OpenXML3.4.1 errors0. Windows post-review3Importantfixed/no remainingImportant, actualWindows pending.",
+    "current_change_verification": "5db5d8a actual Windows38002826135 native/build0w0e/fullCore PASS; original Enter boundary+PNG+Word rich+root-binding PASS, additional Excel writer-lock reopen fixture/policy preflight-day expectation/empty item Undo exact-source FAIL. publish/install/upload SKIPPED. Follow-up independent cipher-copy reopen, committed-day failure semantics + true sourcecommit failure, projection exact-source Undo fixes; explicit Excel sheet/column mapping and installed-ownPID network snapshot added. Actual Linux new fullCore/crossbuild0w0e/Python39/source134 PASS; next actual Windows gate pending, no new artifact/wholecompletion claims.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "726038 + explicitly identified uncommitted changes"
+    "supplemental_source": "5db5d8a committed source; explicit later Excel mapping/P01 observation working changes"
   },
   "summary": {
     "original_id_count": 134,
@@ -33,15 +33,15 @@
     },
     "in_progress_audit_category_counts": {
       "decision": 1,
-      "independent-code": 9,
-      "independent-test": 9,
+      "independent-code": 8,
+      "independent-test": 10,
       "physical-user": 100
     },
     "all_category_counts": {
       "blocked-format": 1,
       "decision": 1,
-      "independent-code": 22,
-      "independent-test": 9,
+      "independent-code": 21,
+      "independent-test": 10,
       "normalized": 1,
       "physical-user": 100
     },
@@ -911,7 +911,7 @@
     {
       "id": "C10",
       "implemented": "Canonical checklist checked states and actual Windows37999870635 three-item native Enter/styles/siblings/UndoRedo PASS. Same native operation source-version boundary FAIL; dirty final EndChange authority guard and empty-item/same-item selected Enter follow-up in progress. Dirty same-item body selection Enter 및 빈 항목 first/middle/last 종료를 canonical/Undo unit 안에 연결했다; prefix/cross-item 선택은 안전 거절, actual Windows gate pending.",
-      "remaining": "새 Windows gate에서 Title change/Lock 경계와 빈 항목 종료·동일 항목 선택 Enter 검사. prefix/다른 항목을 포함한 선택은 안전 거절하며 실제 IME/사용자 수용은 별도.",
+      "remaining": "Original Enter/source-version/lock boundary actual Windows38002826135 PASS. Empty item first/middle/last Undo exact-source completion FAIL; original projection SourceJson restoration implemented with strict Equivalent/UndoAction guard, awaiting Windows. No loosened scaffold/style validation.",
       "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
@@ -2622,9 +2622,9 @@
     },
     {
       "id": "N07",
-      "implemented": "Bounded first-sheet title/body XLSX import extended in dirty code to exact lexical numeric scalars and TRUE/FALSE; no float conversion, date serial remains numeric. Actual ZIP reader+atomic import Linux GREEN; actual WPF/encrypted restart test added pending Windows.",
-      "remaining": "선택 시트·열 지정 UI는 미연결, 날짜 서식은 해석하지 않는다. 수식·macros·외부 links 실행 없음. 새 Windows scalar encrypted restart 및 물리 사용자 수용은 별도.",
-      "category": "independent-code",
+      "implemented": "Bounded first-sheet title/body XLSX import extended in dirty code to exact lexical numeric scalars and TRUE/FALSE; no float conversion, date serial remains numeric. Actual ZIP reader+atomic import Linux GREEN; actual WPF/encrypted restart test added pending Windows. Follow-up explicit sheet/column mapping and source SHA binding Core fullGREEN, actual modal revoke/worker ownership/encrypted snapshot tests pending newWindows.",
+      "remaining": "明示 sheet/title/bodycolumn/firstrow skip + known-template choice now connected; SHA-bound source/whole-candidate Core GREEN. Actual Windows mapped import/modal-lock/native controls/source changes/cipher-copy reopen verification pending. Date serial remains raw, formulas refused, .xls not supported; all possible Excel formats are not required.",
+      "category": "independent-test",
       "minimum_user_action": "None. Synthetic/public XLSX fixtures and ordinary schema choices are sufficient; no personal workbook needed.",
       "evidence": [
         "src/MemoApp.Core/Transfer/ExcelTextTransfer.cs",
@@ -2634,18 +2634,20 @@
         "tests/MemoApp.WindowsChecks/ExcelImportChecks.cs",
         "src/MemoApp.Core/Transfer/SpreadsheetScalarText.cs",
         "tests/MemoApp.ContractChecks/SpreadsheetScalarChecks.cs",
-        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs"
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs",
+        "src/MemoApp.Core/Transfer/WorkbookImportSelection.cs",
+        "src/MemoApp.Windows/ExcelImportSelectionDialog.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetMappingChecks.cs",
+        "tests/MemoApp.WindowsChecks/ExcelMappingChecks.cs"
       ],
       "name": "Excel 가져오기",
       "normalized": "Excel 가져오기",
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "임의 제목·본문 열 매핑과 명시 선택 시트를 bounded/safe XLSX reader에 추가한다."
-        ],
+        "code": [],
         "inspection": [
-          "새 WPF numeric/boolean/date-serial source exact/encrypted restart gate를 확인한다."
+          "다음 Windows source gate에서 old scalar reopen fixture와 새 mapping/modal lock/hash/wholecandidate 검사를 실제 확인한다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2657,7 +2659,7 @@
     {
       "id": "N08",
       "implemented": "Single strict UTF8 .md raw-file adapter, labeled Obsidian raw Markdown; preserves exact CRLF/CR/LF/extensions/HTML, no interpretation/fetch, whole-candidate save/source/lock tests.",
-      "remaining": "Original requires confirmed actual app/format/version adapter. Tests use synthetic raw .md, with no recorded actual Obsidian-produced fixture/version compatibility evidence. Obtain/document a public or wholly synthetic export from a known Obsidian version and expected mapping. Whole vault/plugins/attachments/relationships and every other app are explicitly not required universally; do not inflate them into a must-block.",
+      "remaining": "Known producer/version fixture evidence still missing. Official Obsidian data-storage/import Markdown docs confirm local .md format and official obsidian-help README confirms locales are vaults, but neither proves a file was saved by a specific version. Official Desktop1.13.7 Public release(2026-08-12) confirmed independently; no actual fixture bytes/hash/producer-version obtained. Sandbox web restricted URL and shell official GitHub API Tunnel403 were stopped. Whole vault/plugins/attachments are not required universally.",
       "category": "independent-test",
       "minimum_user_action": "None for researching public confirmed format evidence; never request personal vault. User desktop acceptance later optional.",
       "evidence": [
@@ -2674,14 +2676,22 @@
       "additional_actions": {
         "code": [],
         "inspection": [
-          "Original requires confirmed actual app/format/version adapter. Tests use synthetic raw .md, with no recorded actual Obsidian-produced fixture/version compatibility evidence. Obtain/document a public or wholly synthetic export from a known Obsidian version and expected mapping. Whole vault/plugins/attachments/relationships and every other app are explicitly not required universally; do not inflate them into a must-block."
+          "정식 접근 가능한 공식/전적으로 합성된 실제 Obsidian 저장 파일 하나의 생성 버전·SHA256·raw mapping 근거를 확보해 기존 어댑터로 검사한다. 제공되지 않은 파일을 직접 생성해 실제 앱 출력으로 표시하지 않는다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
         ],
         "decision": [],
-        "access": []
-      }
+        "access": [
+          "공식 public corpus 조회 restricted URL/Tunnel403중단. 우회없이 정식 접근 가능한 fixture 또는 버전이 확인된 앱의 합성 저장 증거가 필요하다."
+        ]
+      },
+      "format_references": [
+        "https://obsidian.md/help/data-storage",
+        "https://obsidian.md/help/import/markdown",
+        "https://github.com/obsidianmd/obsidian-help",
+        "https://obsidian.md/changelog/2026-08-12-desktop-v1.13.7/"
+      ]
     },
     {
       "id": "N09",
@@ -2741,7 +2751,7 @@
     {
       "id": "O01",
       "implemented": "Opt-in after-successful-save encrypted automatic backup, latest committed detached bytes and bounded owned capacity. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
-      "remaining": "Windows 정책 저장 성공 뒤 활성화·OFF 경쟁·hidden resume 비활성·명시 복구 전체 정책 제거·root ID·일일 예약 저장과 재시작/clock rollback 회귀가 남아 있다.",
+      "remaining": "Persistent policy code connected, root-native identity actualWindows PASS. Additional policy group failed a preflight-rejected uncommitted-day expectation; exact committed-day semantics and actual sourcecommit fault fixture corrected, pending Windows persistence/restart/OFF/rejected-config/hidden/recovery proof.",
       "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
@@ -2769,7 +2779,7 @@
     {
       "id": "O02",
       "implemented": "Opt-in final dirty-state exit backup after immediate lock/key release; settles previous backup without self-deadlock. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
-      "remaining": "Windows 정책 저장 성공 뒤 활성화·OFF 경쟁·hidden resume 비활성·명시 복구 전체 정책 제거·root ID·일일 예약 저장과 재시작/clock rollback 회귀가 남아 있다.",
+      "remaining": "Persistent policy code connected, root-native identity actualWindows PASS. Additional policy group failed a preflight-rejected uncommitted-day expectation; exact committed-day semantics and actual sourcecommit fault fixture corrected, pending Windows persistence/restart/OFF/rejected-config/hidden/recovery proof.",
       "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
@@ -2797,7 +2807,7 @@
     {
       "id": "O03",
       "implemented": "UTC-day automatic backup while running/unlocked, failed-day attempt throttle and latest-save gate. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
-      "remaining": "Windows 정책 저장 성공 뒤 활성화·OFF 경쟁·hidden resume 비활성·명시 복구 전체 정책 제거·root ID·일일 예약 저장과 재시작/clock rollback 회귀가 남아 있다.",
+      "remaining": "Persistent policy code connected, root-native identity actualWindows PASS. Additional policy group failed a preflight-rejected uncommitted-day expectation; exact committed-day semantics and actual sourcecommit fault fixture corrected, pending Windows persistence/restart/OFF/rejected-config/hidden/recovery proof.",
       "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
@@ -2991,7 +3001,7 @@
     },
     {
       "id": "P01",
-      "implemented": "Offline device-only notes/vault, per-user local paths, memory-only search, no runtime sync/account service needed.",
+      "implemented": "Offline device-only notes/vault, per-user local paths, memory-only search, no runtime sync/account service needed. Follow-up installed app original launch2 snapshots ownPID TCP/UDP4/6 with positive synthetic listener self-check added; nativeWindows runtime pending. Observation is sampled evidence only, not full traffic blocking/absence proof.",
       "remaining": "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID.",
       "category": "independent-test",
       "minimum_user_action": null,
@@ -2999,7 +3009,9 @@
         "src/MemoApp.Core/Storage/VaultSnapshot.cs",
         "src/MemoApp.Core/Lifecycle/StartupPaths.cs",
         "src/MemoApp.Core/Search/NoteSearch.cs",
-        "docs/PRODUCT_SPEC.md"
+        "docs/PRODUCT_SPEC.md",
+        "tests/MemoApp.WindowsChecks/InstalledNetworkObservation.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
       ],
       "name": "한 PC에서만 사용",
       "normalized": "한 PC에서만 사용",
@@ -3008,7 +3020,8 @@
       "additional_actions": {
         "code": [],
         "inspection": [
-          "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID."
+          "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID.",
+          "기존 설치 launch만 사용한 new native owningPID socket snapshot/self-positive 검사를 실제 Windows에서 확인한다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."

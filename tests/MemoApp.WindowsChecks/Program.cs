@@ -49,6 +49,7 @@ internal static partial class Program
                 groups=groups.Append(("clipboard-png-input",(Func<Task>)ClipboardPngRun)).ToArray();
                 groups=groups.Append(("png-scalar-metadata",(Func<Task>)PngMetadataRun)).ToArray();
                 groups=groups.Append(("excel-text-import",(Func<Task>)ExcelImportRun)).ToArray();
+                groups=groups.Append(("excel-sheet-column-mapping",(Func<Task>)ExcelMappingRun)).ToArray();
                 groups=groups.Append(("pdf-plaintext-export",(Func<Task>)PdfExportRun)).ToArray();
                 groups=groups.Append(("office-plaintext-export",(Func<Task>)OfficeExportRun)).ToArray();
                 groups=groups.Append(("whole-encrypted-transfer",(Func<Task>)WholeTransferRun)).ToArray();

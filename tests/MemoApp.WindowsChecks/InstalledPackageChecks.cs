@@ -13,6 +13,7 @@ internal static partial class Program
         Process? process=null;
         try
         {
+            InstalledNetworkObservation.VerifySyntheticSockets();
             string installed=Path.Combine(root,"한글 설치 폴더");TrialInstaller.Install(Path.GetFullPath(package),installed);
             using var manifest=JsonDocument.Parse(File.ReadAllBytes(Path.Combine(package,"installation-manifest.json")));
             foreach(var entry in manifest.RootElement.GetProperty("files").EnumerateArray())
@@ -25,14 +26,18 @@ internal static partial class Program
             TrialInstaller.CreateShortcut(installed,Path.Combine(root,"MemoApp Synthetic Trial.lnk"));
             var start=new ProcessStartInfo(Path.Combine(installed,"MemoApp.Windows.exe")){UseShellExecute=false,WorkingDirectory=installed};start.ArgumentList.Add("--portable");
             process=Process.Start(start)??throw new IOException("Installed process missing");
-            var timer=Stopwatch.StartNew();while(timer.Elapsed<TimeSpan.FromSeconds(30)){process.Refresh();if(process.HasExited||process.MainWindowHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
+            var network=new InstalledNetworkObservation.ChildMonitor(process,"default-locked");
+            var timer=Stopwatch.StartNew();while(timer.Elapsed<TimeSpan.FromSeconds(30)){network.Sample();process.Refresh();if(process.HasExited||process.MainWindowHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
             Require(!process.HasExited&&process.MainWindowHandle!=IntPtr.Zero&&process.MainWindowTitle=="메모앱 — 합성 자료용 시험판","Installed EXE opens actual production main window rather than an error dialog");
             Require(process.Modules.Cast<ProcessModule>().Any(module=>module.ModuleName.Equals("coreclr.dll",StringComparison.OrdinalIgnoreCase)&&Path.GetFullPath(module.FileName).Equals(Path.Combine(installed,"coreclr.dll"),StringComparison.OrdinalIgnoreCase)),"Installed process actually loads its packaged runtime rather than runner SDK runtime");
+            Require(network.WaitForInputIdle(10000),"Installed default locked app settles GUI startup");network.ObserveIdle();
             Require(process.CloseMainWindow()&&process.WaitForExit(15000)&&process.ExitCode==0,"Installed locked production app closes normally");
             process.Dispose();process=null;
             var trayStart=new ProcessStartInfo(Path.Combine(installed,"MemoApp.Windows.exe")){UseShellExecute=false,WorkingDirectory=installed};trayStart.ArgumentList.Add("--portable");trayStart.ArgumentList.Add("--tray-start");process=Process.Start(trayStart)??throw new IOException("Installed tray-start process missing");
-            IntPtr lockedHandle=IntPtr.Zero;timer.Restart();while(timer.Elapsed<TimeSpan.FromSeconds(30)){process.Refresh();if(process.HasExited)break;lockedHandle=InstalledWindow(process.Id);if(lockedHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
-            Require(!process.HasExited&&lockedHandle!=IntPtr.Zero&&process.WaitForInputIdle(10000),"Installed EXE accepts explicit tray startup and settles GUI startup");
+            network=new InstalledNetworkObservation.ChildMonitor(process,"tray-start-locked");
+            IntPtr lockedHandle=IntPtr.Zero;timer.Restart();while(timer.Elapsed<TimeSpan.FromSeconds(30)){network.Sample();process.Refresh();if(process.HasExited)break;lockedHandle=InstalledWindow(process.Id);if(lockedHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
+            Require(!process.HasExited&&lockedHandle!=IntPtr.Zero&&network.WaitForInputIdle(10000),"Installed EXE accepts explicit tray startup and settles GUI startup");
+            network.ObserveIdle();
             var windows=InstalledWindows(process.Id);Require(windows.Length is >0 and <=32,"Bounded synthetic child top-level windows");Console.WriteLine("SYNTHETIC_CHILD_WINDOWS "+string.Join(";",windows.Select(w=>w.Class+":"+w.TitleKind+":thread="+w.Thread)));
             // Send OS-ending messages to this synthetic child only. No system/session shutdown.
             int replies=0;var queryTimer=Stopwatch.StartNew();foreach(var window in windows)
@@ -44,7 +49,7 @@ internal static partial class Program
             }
             bool exited=process.WaitForExit(15000);Require(exited,$"Locked resident child session query timed out; candidates={windows.Length} acceptedReplies={replies}");Require(process.ExitCode==0,$"Locked resident child session query exit={process.ExitCode}; candidates={windows.Length} acceptedReplies={replies}");
             Require(!Directory.EnumerateFiles(installed,"*.vault",SearchOption.AllDirectories).Any(),"Launching untouched trial does not create a vault or recovery secret");
-            Console.WriteLine("PASS: actual self-contained package installed/hash-checked/native shortcut/production EXE/default and locked tray-start/session-ending child boundary/clean exit; temporary app/vault path, shared CI account non-secret UI ID; not actual login/user-PC trust/ACL acceptance");return 0;
+            Console.WriteLine("NETWORK_OBSERVATION_LIMIT: PID-owned TCP/UDP v4/v6 snapshots cover these two default locked startup/idle intervals only; short-lived sockets between snapshots, packet contents, other processes, later actions and future traffic are not covered; no firewall/blocking proof.\nPASS: actual self-contained package installed/hash-checked/native shortcut/production EXE/default and locked tray-start/session-ending child boundary/clean exit; temporary app/vault path, shared CI account non-secret UI ID; not actual login/user-PC trust/ACL acceptance");return 0;
         }
         catch(Exception error){Console.Error.WriteLine("FAIL: actual installed package "+error);return 1;}
         finally

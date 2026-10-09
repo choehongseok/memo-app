@@ -12,6 +12,7 @@ if (args.Contains("--structured-word-only")) { StructuredWordChecks.Run(); retur
 if (args.Contains("--schema9-only")) { await Schema9Checks.Run(); await Schema9HiddenChecks.Run(); return; }
 if (args.Contains("--spreadsheet-scalar-only")) { SpreadsheetScalarChecks.Run(); return; }
 if (args.Contains("--spreadsheet-scalar-import-only")) { SpreadsheetScalarImportChecks.Run(); return; }
+if (args.Contains("--spreadsheet-mapping-only")) { SpreadsheetMappingChecks.Run(); return; }
 if (args.Contains("--automatic-trash-only")) { AutomaticTrashChecks.Run(); return; }
 if (args.Contains("--trash-lineage-only")) { TrashLineageChecks.Run(); return; }
 if (args.Contains("--ocr-input-only")) { LocalOcrChecks.Input(); return; }
@@ -87,6 +88,7 @@ Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roun
 LocalOcrChecks.Input();
 await LocalOcrChecks.ProcessChecks();
 EditingChecks.Run();
+SpreadsheetMappingChecks.Run();
 await Schema9Checks.Run();
 await Schema9HiddenChecks.Run();
 ContentVersionChecks.Run();

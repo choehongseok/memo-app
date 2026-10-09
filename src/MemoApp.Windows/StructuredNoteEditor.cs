@@ -21,6 +21,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     private Func<bool>? current;
     private Action<string>? notice;
     private StyledDocument? projected;
+    private StyledDocument? projectionSource;
     private long projectedContentVersion;
     private bool rebuilding,committing,disposed,editable,refreshPending,composing;
     private long projectionGeneration;
@@ -121,6 +122,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
             editable=ready;
             // A native setter raises external handlers. Never reattach this local document after that boundary.
             if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
+            projectionSource=source;
             RichInput.IsReadOnly=!ready;toolbar.IsEnabled=ready;state.Text=ready?"서식 원문을 암호 저장합니다. 외부 링크·이미지는 자동 실행하지 않습니다.":limitation;
             if(Same())RichInput.IsUndoEnabled=ready;else if(!Live())ClearSensitive();else refreshPending=true;
         }
@@ -275,7 +277,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     private void Changed(object sender,TextChangedEventArgs e)
     {
-        if(composing||checklistEnterActive)return;CommitNative();
+        if(composing||checklistEnterActive)return;CommitNative(e.UndoAction is UndoAction.Undo or UndoAction.Redo);
     }
     private void CompositionStart(object sender,TextCompositionEventArgs e){if(Live()&&editable&&!rebuilding){compositionToken++;composing=true;}}
     private void CompositionUpdate(object sender,TextCompositionEventArgs e){if(!composing)CompositionStart(sender,e);}
@@ -290,10 +292,15 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
             else if(Live())Rebuild();else ClearSensitive();
         }));
     }
-    private void CommitNative()
+    private void CommitNative(bool restoreProjectionSource=false)
     {
         if(rebuilding||committing||!Live()||!editable)return;
-        try{var captured=CaptureDocument();long expected=note!.ContentVersion+(note.Document==captured?0:1);committing=true;workspace!.SetRichDocument(note,captured);if(Live()){if(note!.Document==captured&&note.ContentVersion==expected){projected=captured;projectedContentVersion=expected;}else Rebuild();}}
+        try{var captured=CaptureDocument();
+            // Native Undo restores the model, but capture has its own JSON field order/run
+            // normalization. Returning to the projection's original model must restore
+            // its owned source bytes, including styled empty runs and JSON field order.
+            if(restoreProjectionSource&&projectionSource is { } original&&Equivalent(original,captured))captured=original;
+            long expected=note!.ContentVersion+(note.Document==captured?0:1);committing=true;workspace!.SetRichDocument(note,captured);if(Live()){if(note!.Document==captured&&note.ContentVersion==expected){projected=captured;projectedContentVersion=expected;}else Rebuild();}}
         catch{if(Live()){Rebuild();notice?.Invoke("지원하지 않는 서식/내용 또는 한도입니다. 편집을 적용하지 않고 기존 문서와 이력을 보존했습니다.");}}
         finally{committing=false;}
     }
@@ -382,7 +389,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     public void ClearSensitive()
     {
         if(disposed)return;disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
-        var oldNote=note;projected=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
+        var oldNote=note;projected=projectionSource=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
         // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
         RichInput.TextChanged-=Changed;DataObject.RemovePastingHandler(RichInput,Pasting);
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));

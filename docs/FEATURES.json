@@ -1193,9 +1193,10 @@
           "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
-        }
+        },
+        "5db5d8a actual Windows38002826135: rich-checklist-enter and source-version/Lock rich-checklist-enter-boundary PASS. New empty-item native Undo completion FAIL; exact initial projection source restoration and synthetic diagnostics follow-up pending gate."
       ],
-      "blocking_reason": null
+      "blocking_reason": "새 empty-item/same-item-selection Undo/Redo gate pending; original Enter/source-change/Lock boundary actualPASS. 사용자 수용 미확인."
     },
     {
       "id": "C11",
@@ -3394,7 +3395,8 @@
       "planned_module": "ImportExport",
       "test_evidence": [
         "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe.",
-        "후속 dirty: canonical rich Word run styles/fonts/color/list/checklist/table/inert URL route Linux target GREEN; aggregate XML/package16MiB and retired plaintext zeroing RED→GREEN. independent OpenXML SDK3.4.1 actual rich package schema/relationship errors0. 실제 새 WPF gate 및 Word viewer 수용 대기."
+        "후속 dirty: canonical rich Word run styles/fonts/color/list/checklist/table/inert URL route Linux target GREEN; aggregate XML/package16MiB and retired plaintext zeroing RED→GREEN. independent OpenXML SDK3.4.1 actual rich package schema/relationship errors0. 실제 새 WPF gate 및 Word viewer 수용 대기.",
+        "5db5d8a Windows38002826135 office-plaintext-export group PASS includes actual canonical rich Word run/list/table/checkstate/inertURL and source preservation. Fullgate fails separategroups; Word viewer acceptance remains unverified."
       ],
       "blocking_reason": "지원 canonical 글자·목록·체크 상태·표를 내보내며 링크는 inert주소문자. 첨부 그림·rendered Markdown 미연결, 실제 Word viewer 수용 별도; 새 Windows gate 대기."
     },
@@ -3480,7 +3482,9 @@
         "src/MemoApp.Core/Editing/EditingWorkspace.ImportTexts.cs",
         "src/MemoApp.Windows/MainWindow.ExcelImport.cs",
         "src/MemoApp.Core/Transfer/SpreadsheetScalarText.cs",
-        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs"
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs",
+        "src/MemoApp.Core/Transfer/WorkbookImportSelection.cs",
+        "src/MemoApp.Windows/ExcelImportSelectionDialog.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
@@ -3491,7 +3495,7 @@
         },
         "후속 dirty: actual XLSX ZIP numeric lexical long integer/boolean exact import and source preservation Linux target GREEN. date serial raw numeric only/no display-date inference; new WPF encrypted restart test pending Windows."
       ],
-      "blocking_reason": "첫 시트/제목·본문2열 또는앱5열; 문자열·숫자원문·boolean 지원. 선택 시트·열 매핑 미연결, 날짜서식 해석/수식실행 없음. 새 WPF gate·실제 사용자 수용 별도."
+      "blocking_reason": "명시 시트/제목·본문 열 매핑·firstrow skip·기존templatechoice 및 SHA bound read 연결, CoretargetGREEN. 새 WPF/modalLock/재열기 gate 대기; 수식실행·날짜표시해석·xls 없음, 사용자 수용 별도."
     },
     {
       "id": "N08",
@@ -3597,7 +3601,8 @@
       "planned_module": "Recovery",
       "test_evidence": [
         "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
-        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant."
+        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant.",
+        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged."
       ],
       "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
     },
@@ -3625,7 +3630,8 @@
       "planned_module": "Recovery",
       "test_evidence": [
         "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
-        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant."
+        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant.",
+        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged."
       ],
       "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
     },
@@ -3653,7 +3659,8 @@
       "planned_module": "Recovery",
       "test_evidence": [
         "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
-        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant."
+        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant.",
+        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged."
       ],
       "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
     },

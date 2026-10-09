@@ -424,3 +424,12 @@ N04 성장 MemoryStream retired plaintext array zeroing 실제 RED→guarded Cap
 schema9 missing policy RED→default-off DTO/strict fields/prechange8 fixture/sticky guards target GREEN. unpaired UTF16를 JsonValue로 serialize하면 replacement가 되는 fixture 오류는 DTO 직접 validation으로 바꾸고 실제 well-formed Unicode guard를 유지했다. Core+Windows 강화 검증 진행 중이며 새로운 전체 GREEN이나 최종 산출물을 주장하지 않는다.
 
 후속 강화 실제 fullCore GREEN: schema9 exact prechange8 fixture2357B SHA96845312b47eca214aaf8a72fa5a41c650f18dc3be0c516791257375daf5925f; schema1..8 omit/null refusal·prepared/loaded downgrade·D11 sticky9·hidden unprepared9 최신source/policy/discarded witness/root/attachment·original8 previous ciphertext·encrypted9 archive 복구 PASS. 기존 future9 회귀 actualRED DeviceSearchActivationChecks→명시10으로 갱신 후 fullGREEN. 마지막 FilePathLink future10 타깃PASS. crossbuild0warnings/errors, Python39/source134 PASS; Core 불필요 중복실행 없음. 새 canonical rich DOCX를 공식 OpenXML SDK3.4.1로 검사해 schema/relationship 오류0. Windows 정책후속 독립 Important3(earlyrevision stale runtime/day/exit, OFF await stale command, worker Current ownergraph)를 수정하고 재검토 중요결함없음; adapter token-only·sourcepolicyidentity·명시OFF/rejectedsetting·knowncurrent only restore·allprofile recovery sanitize 실제 WPF 검사는 pending이다.
+
+
+## 5db5d8a actual Windows38002826135 실패와 후속 경계
+
+job114064705439 actual 전체FAIL, native/build0w0e/fullCore PASS. 원본37999870635의 rich-checklist-enter-boundary는 PASS로 해소됐고 rich-checklist-enter/PNG metadata/Word rich route/root-binding 그룹도 PASS. 새 excel-text-import는 active root writer.lock 유지 중 같은root 재열기라 IOException, automatic-backup-persistence는 atomic candidate validation 전에 거절된 예약 날짜가 저장됐다고 가정해 FAIL, rich-checklist-enter-completion은 empty exit Undo exactJSON원본 기대FAIL. publish/install/upload SKIPPED, 중간artifact 없음.
+
+후속 Excel 재열기는 실제current 암호사본을 독립root에서 열며 writer exclusivity는 유지한다. 예약 검사에서는 atomic preflight failure와 validpolicy 암호화 뒤 실제 sourcecommit CreateNew 실패를 구분하고 no-backup/현재실행day throttle/마지막committedday 재실행을 확인한다. 날짜저장 성공 뒤 copyfailure의 재실행day보존 기대는 유지하며 실패한 예약 자체의 재실행보존을 주장하지 않는다. C10 native Undo/Redo가 최초 projection과 Equivalent인 경우 한 개 원본 StyledDocument를 사용해 exactsource순서를 보존하고 clear/lock참조제거; 실제 Undo 실패의 diagnostic을 보강해 다음Windows gate에서 확인한다. 기대값 완화·CustomDP scaffold검사 제거 없음.
+
+N07 Inspect catalog missingAPI 실제RED→명시 시트/열 mapping+원본SHA bound read Coretarget GREEN. 추가 선택열 밖 formula·XFD열·한도·모달잠금/changedsource/workerDTO·독립 암호copy 재열기를 보강했다. P01 기존 설치 앱 launch2회 유지하며 owningPID TCP/UDP v4/v6 snapshot과 synthetic listener positive self-check를 추가했다; Linux에서 실제 native 성공을 주장하지 않는다.

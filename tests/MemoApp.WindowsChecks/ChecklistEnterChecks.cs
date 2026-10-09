@@ -18,7 +18,7 @@ internal static partial class Program
             for(int index=0;index<3;index++)items.Add(new JsonObject{["checked"]=index!=0,["runs"]=new JsonArray(new JsonObject{["text"]=index==emptyIndex?"":"[x] literal "+index,["bold"]=true,["foreground"]="#FF123456"})});
             var nodes=new JsonArray(new JsonObject{["type"]="paragraph",["runs"]=new JsonArray(new JsonObject{["text"]="before"})},new JsonObject{["type"]="checklist",["items"]=items.DeepClone()},new JsonObject{["type"]="paragraph",["runs"]=new JsonArray(new JsonObject{["text"]="after"})});
             var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();workspace.ConvertMode(note,"rich",true);workspace.SetRichDocument(note,new StyledDocument(1,new JsonObject{["nodes"]=nodes}.ToJsonString()));
-            using var view=new StructuredNoteEditor(workspace,note,()=>true,_=>{});var window=new Window{Content=view};
+            string notice="";using var view=new StructuredNoteEditor(workspace,note,()=>true,message=>notice=message);var window=new Window{Content=view};
             try
             {
                 window.Show();await Idle();string baseline=note.Document!.SourceJson;
@@ -34,7 +34,7 @@ internal static partial class Program
                 var prefixProperty=(DependencyProperty)typeof(StructuredNoteEditor).GetField("ChecklistPrefixProperty",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!.GetValue(null)!;
                 Require(view.RichInput.Document.Blocks.OfType<NativeList>().SelectMany(list=>list.ListItems).All(item=>((Paragraph)item.Blocks.FirstBlock).Inlines.FirstInline is Run prefix&&(bool)prefix.GetValue(prefixProperty)&&prefix.Text is "[ ] " or "[x] "),"Exit preserves each remaining native item's owned scaffold flag");
                 Require(view.RichInput.CaretPosition.Paragraph?.Parent is FlowDocument&&new TextRange(view.RichInput.CaretPosition.Paragraph.ContentStart,view.RichInput.CaretPosition.Paragraph.ContentEnd).Text.TrimEnd('\r','\n')=="","Empty exit caret is outside checklist and contains no own prefix");
-                string exited=note.Document.SourceJson;Require(view.RichInput.CanUndo,"Empty-item exit has native Undo");view.RichInput.Undo();await Idle();Require(note.Document!.SourceJson==baseline&&view.RichInput.CanRedo,"Undo empty-item exit restores exact canonical source");view.RichInput.Redo();await Idle();Require(note.Document!.SourceJson==exited,"Redo empty-item exit restores exact canonical source");
+                string exited=note.Document.SourceJson;Require(view.RichInput.CanUndo,"Empty-item exit has native Undo");view.RichInput.Undo();await Idle();Require(note.Document!.SourceJson==baseline&&view.RichInput.CanRedo,"Undo empty-item exit restores exact canonical source; index="+emptyIndex+", redo="+view.RichInput.CanRedo+", notice="+notice+", expected="+baseline+", actual="+note.Document.SourceJson);view.RichInput.Redo();await Idle();Require(note.Document!.SourceJson==exited,"Redo empty-item exit restores exact canonical source; index="+emptyIndex);
             }
             finally{view.ClearSensitive();workspace.Clear();window.Close();}
         }
