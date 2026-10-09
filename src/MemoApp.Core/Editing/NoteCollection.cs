@@ -5,6 +5,13 @@ namespace MemoApp.Core.Editing;
 internal sealed class NoteCollection : ObservableCollection<NoteDraft>
 {
     internal void Register(NoteDraft note) => Items.Add(note);
+    internal void Unregister(NoteDraft note)=>Items.Remove(note);
+    internal void PublishReset()
+    {
+        OnPropertyChanged(new(nameof(Count)));
+        OnPropertyChanged(new("Item[]"));
+        OnCollectionChanged(new(NotifyCollectionChangedAction.Reset));
+    }
     internal void PublishAdded(NoteDraft note)
     {
         if (!Contains(note)) return;

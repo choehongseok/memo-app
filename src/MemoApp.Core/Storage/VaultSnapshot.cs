@@ -31,10 +31,13 @@ public sealed record StoredRevision(Guid NoteId, Guid RevisionId, Guid[] Parents
     public ImmutableArray<Guid> AttachmentIds {get;init;}=[];
 }
 public sealed record StoredTombstone(Guid NoteId, Guid RevisionId, Guid[] Parents);
+// Contentless causal evidence for discarded notes; never carries source content or attachment references.
+public sealed record StoredDiscardedRevision(Guid NoteId, Guid RevisionId, Guid[] Parents);
 public sealed record VaultSnapshot(int SchemaVersion, Guid DeviceId, StoredNote[] Notes)
 {
     public StoredRevision[] History { get; init; } = [];
     public StoredTombstone[] Tombstones { get; init; } = [];
+    public StoredDiscardedRevision[] DiscardedRevisions { get; init; } = [];
     public StoredFolder[] Folders { get; init; } = [];
     public StoredTag[] Tags { get; init; } = [];
     public StoredDeviceUi[] UiDevices { get; init; } = [];

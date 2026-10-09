@@ -61,6 +61,9 @@
     <ComboBox x:Name="AutoBackupMode" SelectedIndex="0" Margin="0,4,0,4"><ComboBoxItem Content="자동 백업 꺼짐"/><ComboBoxItem Content="저장 후 백업"/><ComboBoxItem Content="UTC 하루 한 번"/></ComboBox>
     <CheckBox x:Name="AutoBackupExit" Content="완전 종료 때 백업"/><TextBlock Text="보관 한도 1~100개 (가득 차면 중단)" TextWrapping="Wrap"/><TextBox x:Name="AutoBackupCapacity" Text="20" MaxLength="3"/>
     <Button Content="조건 확인 후 백업 폴더 선택" Click="AutoBackupChoose_Click"/><Button Content="자동 백업 설정 해제" Click="AutoBackupDisable_Click" Margin="0,0,0,12"/>
+    <TextBlock Text="암호 백업 후 휴지통 자동 정리 · 기본 꺼짐" TextWrapping="Wrap"/><TextBlock x:Name="AutoTrashDirectory" TextWrapping="Wrap"/>
+    <ComboBox x:Name="AutoTrashDays" SelectedIndex="1" Margin="0,4,0,4"><ComboBoxItem Content="7일보다 오래됨"/><ComboBoxItem Content="30일보다 오래됨"/><ComboBoxItem Content="90일보다 오래됨"/></ComboBox>
+    <Button Content="정리 조건 확인 후 백업 폴더 선택" Click="AutoTrashChoose_Click"/><Button Content="자동 정리 끄기" Click="AutoTrashDisable_Click" Margin="0,0,0,12"/>
     <TextBlock Text="최근 메모 (기기별 최대 20개)"/><ComboBox x:Name="RecentNotesList" DisplayMemberPath="Name" Margin="0,4,0,4"/>
     <WrapPanel><Button Content="최근 메모 열기" Click="RecentOpen_Click"/><Button Content="목록 지우기" Click="RecentClear_Click"/></WrapPanel>
     <TextBlock Text="저장 검색 (기기별 최대 20개)" Margin="0,12,0,0"/><ComboBox x:Name="SavedSearchList" DisplayMemberPath="Name" Margin="0,4,0,4"/>

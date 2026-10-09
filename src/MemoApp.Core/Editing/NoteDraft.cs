@@ -86,10 +86,14 @@ public sealed class NoteDraft : INotifyPropertyChanged
     {
         EditVersion++; ModifiedAt = clock.GetUtcNow(); Notify(nameof(EditVersion)); Notify(nameof(ModifiedAt));
     }
-    internal void Close()
+    internal void StageClose()
     {
         InvalidateAttachmentReads();
         IsClosed = true;ContentVersion++; title = text = ""; metadata = new();mode="plain";document=null;attachmentIds=[];
+    }
+    internal void Close(){StageClose();PublishClosed();}
+    internal void PublishClosed()
+    {
         Notify(nameof(IsClosed)); Notify(nameof(Title)); Notify(nameof(Text)); Notify(nameof(Metadata));Notify(nameof(Mode));Notify(nameof(Document));Notify(nameof(AttachmentIds));
     }
     private void Notify(string? property) => PropertyChanged?.Invoke(this, new(property));

@@ -33,3 +33,5 @@ core.*
 
 ui-device.id
 pending-ui-*.id
+
+.superpowers/

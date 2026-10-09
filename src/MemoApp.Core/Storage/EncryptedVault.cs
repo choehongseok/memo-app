@@ -28,6 +28,9 @@ public sealed partial class EncryptedVault : IDisposable
     private bool attachmentRootPrepared;
     private bool searchStatePrepared;
     private bool filePathsPrepared;
+    private bool discardedPrepared;
+    private readonly Dictionary<Guid,StoredDiscardedRevision> knownDiscarded=[];
+    private readonly Dictionary<Guid,StoredTombstone> knownDiscardedTombstones=[];
     private volatile bool attachmentUseAllowed=true;
     private long attachmentUseEpoch;
     private readonly Dictionary<Guid,StoredAttachmentObject> knownAttachmentObjects=[];
@@ -52,6 +55,7 @@ public sealed partial class EncryptedVault : IDisposable
         this.recoveryKey = (byte[])recoveryKey.Clone(); Loaded = loaded; this.vaultId = vaultId;
         this.sequence = sequence; this.wraps = wraps; reservedBase = current; lastKnownBase = authenticated;
         foreach(var item in loaded.AttachmentObjects)knownAttachmentObjects.Add(item.ObjectId,item);
+        RememberDiscarded(loaded);
         attachmentRootId=loaded.AttachmentRootId;attachmentRootKey=ownedAttachmentRoot;attachmentRootAnchored=rootAnchored;
     }
     public static byte[] GenerateRecoverySecret() => RandomNumberGenerator.GetBytes(32);
@@ -92,10 +96,10 @@ public sealed partial class EncryptedVault : IDisposable
             byte[]? transferred=null;
             try
             {
-                if(decoded.Snapshot.SchemaVersion is 5 or 6 or 7)transferred=decoded.TakeRootKey();
+                if(decoded.Snapshot.SchemaVersion is 5 or 6 or 7 or 8)transferred=decoded.TakeRootKey();
                 var fingerprint=SHA256.HashData(candidateBytes);
                 var result=new EncryptedVault(root, writer, secret, decoded.Snapshot, decoded.Header.VaultId, decoded.Header.Sequence,
-                    decoded.Header.WrapCount, candidate == "current.vault" ? fingerprint : expectedCurrent, files ?? new AtomicVaultFiles(), fingerprint,transferred,candidate=="current.vault"&&(decoded.Snapshot.SchemaVersion is 5 or 6 or 7));
+                    decoded.Header.WrapCount, candidate == "current.vault" ? fingerprint : expectedCurrent, files ?? new AtomicVaultFiles(), fingerprint,transferred,candidate=="current.vault"&&(decoded.Snapshot.SchemaVersion is 5 or 6 or 7 or 8));
                 transferred=null;return result;
             }
             finally{if(transferred is not null)CryptographicOperations.ZeroMemory(transferred);}
@@ -139,7 +143,7 @@ public sealed partial class EncryptedVault : IDisposable
             VaultEnvelope.Validate(snapshot);
             RequireRootSnapshot(snapshot);
             if (snapshot.SchemaVersion < 4) snapshot = snapshot with { SchemaVersion = 4 };
-            ulong reservation=snapshot.SchemaVersion is 5 or 6 or 7?3UL:2UL;
+            ulong reservation=snapshot.SchemaVersion is 5 or 6 or 7 or 8?3UL:2UL;
             if (wraps > VaultEnvelope.MaxWraps - reservation || sequence == ulong.MaxValue) throw new InvalidOperationException("Key use or sequence budget exhausted");
             // Count every attempt, including failures. Rollback of persisted counters cannot be proven.
             wraps += reservation; sequence++;
@@ -148,13 +152,15 @@ public sealed partial class EncryptedVault : IDisposable
             try
             {
                 var header=new EnvelopeHeader(vaultId,epoch,id,sequence,wraps,plaintext.Length);
-                var bytes = snapshot.SchemaVersion is 5 or 6 or 7?AttachmentEnvelope.Encrypt(plaintext,vaultKey,recoveryKey,header,attachmentRootId,attachmentRootKey!):VaultEnvelope.Encrypt(plaintext, vaultKey, recoveryKey,header);
+                var bytes = snapshot.SchemaVersion is 5 or 6 or 7 or 8?AttachmentEnvelope.Encrypt(plaintext,vaultKey,recoveryKey,header,attachmentRootId,attachmentRootKey!):VaultEnvelope.Encrypt(plaintext, vaultKey, recoveryKey,header);
                 var prepared = new PreparedSnapshot(bytes, reservedBase, id,snapshot.AttachmentRootId);
                 reservedBase = SHA256.HashData(bytes);
-                if(snapshot.SchemaVersion is 5 or 6 or 7)attachmentRootPrepared=true;
+                if(snapshot.SchemaVersion is 5 or 6 or 7 or 8)attachmentRootPrepared=true;
                 if(snapshot.SchemaVersion>=6)searchStatePrepared=true;
-                if(snapshot.SchemaVersion==7)filePathsPrepared=true;
-                if(snapshot.SchemaVersion is 5 or 6 or 7)foreach(var item in snapshot.AttachmentObjects)knownAttachmentObjects.TryAdd(item.ObjectId,item);
+                if(snapshot.SchemaVersion>=7)filePathsPrepared=true;
+                if(snapshot.SchemaVersion==8)discardedPrepared=true;
+                RememberDiscarded(snapshot);
+                if(snapshot.SchemaVersion is 5 or 6 or 7 or 8)foreach(var item in snapshot.AttachmentObjects)knownAttachmentObjects.TryAdd(item.ObjectId,item);
                 return prepared;
             }
             finally { CryptographicOperations.ZeroMemory(plaintext); }
@@ -248,7 +254,7 @@ public sealed partial class EncryptedVault : IDisposable
         {
             CryptographicOperations.ZeroMemory(vaultKey); CryptographicOperations.ZeroMemory(recoveryKey);
             if(attachmentRootKey is not null){CryptographicOperations.ZeroMemory(attachmentRootKey);attachmentRootKey=null;}attachmentRootAnchored=false;attachmentUseAllowed=false;
-            knownAttachmentObjects.Clear();
+            knownAttachmentObjects.Clear();knownDiscarded.Clear();knownDiscardedTombstones.Clear();
             Loaded = new(1, Guid.Empty, []); keysReleased = true;
         }
     }
@@ -258,7 +264,7 @@ public sealed partial class EncryptedVault : IDisposable
         {
             if(disposed||keysReleased||faulted)throw new InvalidOperationException("Vault root initialization authority ended");
             VaultEnvelope.Validate(snapshot);
-            if(snapshot.SchemaVersion is 5 or 6 or 7){RequireRootSnapshot(snapshot);return snapshot;}
+            if(snapshot.SchemaVersion is 5 or 6 or 7 or 8){RequireRootSnapshot(snapshot);return snapshot;}
             var id=attachmentRootId==Guid.Empty?Guid.NewGuid():attachmentRootId;
             var candidate=snapshot with{SchemaVersion=5,AttachmentRootId=id};VaultEnvelope.Validate(candidate);
             if(attachmentRootKey is null){attachmentRootKey=RandomNumberGenerator.GetBytes(32);attachmentRootId=id;}
@@ -267,7 +273,8 @@ public sealed partial class EncryptedVault : IDisposable
     }
     private void RequireRootSnapshot(VaultSnapshot snapshot)
     {
-        if((Loaded.SchemaVersion==7||filePathsPrepared)&&snapshot.SchemaVersion<7)throw new InvalidOperationException("File path state downgrade refused");
+        RequireDiscardedSnapshot(snapshot);
+        if((Loaded.SchemaVersion>=7||filePathsPrepared)&&snapshot.SchemaVersion<7)throw new InvalidOperationException("File path state downgrade refused");
         if((Loaded.SchemaVersion>=6||searchStatePrepared)&&snapshot.SchemaVersion<6)throw new InvalidOperationException("Search UI state downgrade refused");
         if(snapshot.SchemaVersion<5)
         {
@@ -290,13 +297,25 @@ public sealed partial class EncryptedVault : IDisposable
             try{}finally{CryptographicOperations.ZeroMemory(plaintext);}
         }
     }
+    private void RememberDiscarded(VaultSnapshot snapshot)
+    {
+        foreach(var witness in snapshot.DiscardedRevisions)knownDiscarded.TryAdd(witness.RevisionId,witness with{Parents=(Guid[])witness.Parents.Clone()});
+        var current=snapshot.Notes.Select(n=>n.NoteId).ToHashSet();foreach(var marker in snapshot.Tombstones.Where(t=>!current.Contains(t.NoteId)))knownDiscardedTombstones.TryAdd(marker.NoteId,marker with{Parents=(Guid[])marker.Parents.Clone()});
+    }
+    private void RequireDiscardedSnapshot(VaultSnapshot snapshot)
+    {
+        if((Loaded.SchemaVersion==8||discardedPrepared)&&snapshot.SchemaVersion<8)throw new InvalidOperationException("Discarded revision state downgrade refused");
+        if(snapshot.SchemaVersion<8&&!discardedPrepared&&Loaded.SchemaVersion<8)return;
+        if(knownDiscarded.Count==0&&knownDiscardedTombstones.Count==0)return;
+        DiscardedEvidence.RequirePreserved(knownDiscarded.Values,knownDiscardedTombstones.Values,snapshot);
+    }
     internal void ValidateHiddenRoot(VaultSnapshot snapshot)
-    {lock(gate){if(disposed||keysReleased)throw new InvalidOperationException("Hidden root authority ended");if(snapshot.SchemaVersion is not(1 or 2 or 3 or 4 or 5 or 6 or 7))throw new InvalidOperationException("Unknown hidden schema refused");if(snapshot.SchemaVersion<5&&attachmentRootId!=Guid.Empty&&(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7))throw new InvalidOperationException("Hidden attachment root downgrade refused");var objects=AttachmentValidation.Objects(snapshot);foreach(var note in snapshot.Notes)AttachmentValidation.References(note.AttachmentIds,objects,snapshot.SchemaVersion);foreach(var revision in snapshot.History)AttachmentValidation.References(revision.AttachmentIds,objects,snapshot.SchemaVersion);if(snapshot.SchemaVersion is 5 or 6 or 7)RequireRootSnapshot(snapshot);}}
+    {lock(gate){if(disposed||keysReleased)throw new InvalidOperationException("Hidden root authority ended");if(snapshot.SchemaVersion is not(1 or 2 or 3 or 4 or 5 or 6 or 7 or 8))throw new InvalidOperationException("Unknown hidden schema refused");if(snapshot.SchemaVersion<5&&attachmentRootId!=Guid.Empty&&(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7 or 8))throw new InvalidOperationException("Hidden attachment root downgrade refused");var objects=AttachmentValidation.Objects(snapshot);foreach(var note in snapshot.Notes)AttachmentValidation.References(note.AttachmentIds,objects,snapshot.SchemaVersion);foreach(var revision in snapshot.History)AttachmentValidation.References(revision.AttachmentIds,objects,snapshot.SchemaVersion);if(snapshot.SchemaVersion is 5 or 6 or 7 or 8)RequireRootSnapshot(snapshot);}}
     internal void CancelUnpreparedAttachmentRoot()
     {
         lock(gate)
         {
-            if(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7||keysReleased)return;
+            if(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7 or 8||keysReleased)return;
             if(attachmentRootKey is not null)CryptographicOperations.ZeroMemory(attachmentRootKey);
             attachmentRootKey=null;attachmentRootId=Guid.Empty;
         }

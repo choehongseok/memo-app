@@ -5,6 +5,9 @@ if (args.Length==2&&args[0]=="--ocr-native-probe") { await LocalOcrChecks.Native
 if (args.Length==2&&args[0]=="--ocr-linux-probe") { await LocalOcrChecks.LinuxProbe(args[1]); return; }
 if (LocalOcrChecks.TryWorker(args)) return;
 if (args.Contains("--ocr-process-only")) { await LocalOcrChecks.ProcessChecks(); return; }
+if (args.Contains("--trash-encryption-only")) { await TrashEncryptionChecks.Run(); return; }
+if (args.Contains("--automatic-trash-only")) { AutomaticTrashChecks.Run(); return; }
+if (args.Contains("--trash-lineage-only")) { TrashLineageChecks.Run(); return; }
 if (args.Contains("--ocr-input-only")) { LocalOcrChecks.Input(); return; }
 
 if (args.Contains("--search-excerpt-only")) { SearchExcerptChecks.Run(); return; }
@@ -127,3 +130,8 @@ VaultFailureChecks.Run();
 await CoordinatorChecks.Run();
 
 await SelectedPngChecks.Run();
+
+TrashLineageChecks.Run();
+AutomaticTrashChecks.Run();
+
+await TrashEncryptionChecks.Run();

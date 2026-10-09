@@ -392,3 +392,14 @@ A09/E10 후속 구조 검토에서 schema6 확장 중 programmatic Tombstones100
 제품6d082ea Windows37990395571 첫 실제 gate: engine/model ZIP/build0warnings0errors/fullCore 및 기존WPF와ocr-shared-settlement PASS; ocr-product-native 초기합성 plain→Markdown 변환이 확인 인자를 생략해 Explicit conversion loss acknowledgement required FAIL. 인식 시작 전 시험 설정 실패이며 제품 guard를 완화하지 않고 true인자로 보정했다. publish/설치/upload는SKIPPED, 전체SUCCESS 아님. inherited-pipe Windows actual late cleanup transfer observed=True는 별도 Core boundary 증거다.
 
 OCR 제품 실제 Windows 수정본 baeba805967c290e2adb9d5eede3a7db76189a40 / https://github.com/choehongseok/memo-app/actions/runs/37991107459 전체SUCCESS: fixed native/model ZIP, build0warning0error, fullCore, actual ocr-product-native/ocr-shared-settlement, read-only/public model setup/Markdown source unchanged/plain encrypted result/search/restart/lock/native-disable held path DTO cleanup, publish413files/actual installed EXE/shortcut/tray child/exit PASS. 첫 source37990395571의 fixture 실패를 보존하고 확인 인자만 고쳤다. runtime 통신관찰·일반 정확도·사용자 수용은 별도이며 uploadSKIPPED다.
+
+
+## D11 schema8 / 자동 정리 Linux 및 실제 Windows gate 준비
+
+structural witness missing RED→GREEN, missing EligibleTrash/PurgeTrash RED→GREEN; 독립 검토의 최초8 이전 contentless marker loss를 실제 RED로 재현하고 전환 전 marker guard로 GREEN. 기존 버전7 소스를 별도 빌드해 고정1089B SHA ce304d83988eb81974788e4ba8fbb9d6a55b81f93bdeb8bab4d8d22a3456ff9b를 확보했으며 exact 기존1..7 writer/negative 계약 보존. 전체 Core의 실제 encrypted8 save/restart/3wrap·원본 previous/암호 백업·다른root 전체8복구·선택 새copy·workspace edit/search/path·잠금 exhausted-wrap hidden8 resume/re-save·legacy marker 최초 전환 refusal PASS. 전체 candidate 검증·strict cutoff·stale/중복 거절·multi held draft clear·Changed observer 실패 뒤 dirty handler 실행 PASS. 실제 WPF 새 gate는 아직 미실행이며 WPF 교차 빌드는 실제 GUI 검증이 아니다. 원본 암호 파일이 남으므로 physical secure erase를 주장하지 않는다.
+
+## 남은 외부 모델/플랫폼 범위 접근 상태
+
+T13/T14/T15/T16의 원문 음성 작성/AI 요약·다듬기·질문은 남아 있다. 공개 공식 후보 조사만 수행했다. 직접 urllib 요청 https://api.github.com/repos/ggml-org/whisper.cpp/releases/latest 및 https://huggingface.co/api/models/ggerganov/whisper.cpp, https://huggingface.co/api/models/Qwen/Qwen3-0.6B-GGUF 에서 `Tunnel connection failed: 403 Forbidden`을 관찰했다. 해당 접근을 다른 실행 환경/우회 URL로 대체하거나 모델을 내려받아 실행하지 않았다. 이 거절은 실제 OCR Windows gate의 이미 검증된 GitHub 공식 tessdata 모델 경로와 다르다. 모델 접근 허용이 가능한 정식 연결 또는 검증 가능한 공식 모델 파일 제공이 후속 실제 엔진 시험에 필요하며, 유료 API/외부 메모 전송/사용자 자료 실행을 추가하지 않는다. Android SDK 약관 명시 동의는 별도 대기, 인증 다중기기 동기화와 실제 게시자 서명 업데이트도 새 신뢰/플랫폼 조건 없이 완료로 표시하지 않는다.
+
+D11 독립 후속 읽기 검토 추가 Critical/Important 없음(실행하지 않음). 추가 실제 attached-note PurgeTrash→Save8→reopen root/opaque object exact 보존, purge 적용 뒤 Flush 실패→dirty/이전 ciphertext/백업 유지→잠금 keyrelease→새 pending8 후보 authentic recovery PASS. 이미 가져온 암호 사본 후보도 보존되므로 pending 파일이 하나라는 신규 fixture 가정을 새로 생성된 후보만 식별하도록 보정했다. 두 제거 대상의 첫 observer 예외에서도 둘 모두 scalar clear PASS. Windows fixture에 blocked backup 중 잠금·즉시 keyrelease/현재원문재실행/stale purge 거절을 추가했으며 실제 Windows 실행 대기다.

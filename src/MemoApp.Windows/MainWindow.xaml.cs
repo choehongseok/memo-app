@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
-        Closed += (_, _) => { windowClosed=true;DisableTray();ClearBackupPreviews();ClearAutomaticBackupViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true;DisableTray();ClearBackupPreviews();ClearAutomaticBackupViews();ClearAutomaticTrashViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -72,6 +72,7 @@ public partial class MainWindow : Window
         if (DateTimeOffset.UtcNow - activity > TimeSpan.FromMinutes(5)) { await active.LockAsync(); return; }
         bool saved=active.IsDirty&&await active.SaveAsync();
         if(ReferenceEquals(session,active)&&!active.IsLocked)await RunAutomaticBackupAsync(saved);
+        if(ReferenceEquals(session,active)&&!active.IsLocked)await RunAutomaticTrashAsync(DateTimeOffset.UtcNow);
     }
     private void StartSession(EncryptedVault vault)
     {
@@ -99,7 +100,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++;concealing=true;ClearTrayMenu();ClearBackupPreviews();ClearAutomaticBackupViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
+        uiEpoch++;concealing=true;ClearTrayMenu();ClearBackupPreviews();ClearAutomaticBackupViews();ClearAutomaticTrashViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }

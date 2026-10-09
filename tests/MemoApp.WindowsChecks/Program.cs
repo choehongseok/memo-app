@@ -48,6 +48,7 @@ internal static partial class Program
                 groups=groups.Append(("pdf-plaintext-export",(Func<Task>)PdfExportRun)).ToArray();
                 groups=groups.Append(("office-plaintext-export",(Func<Task>)OfficeExportRun)).ToArray();
                 groups=groups.Append(("whole-encrypted-transfer",(Func<Task>)WholeTransferRun)).ToArray();
+                groups=groups.Append(("automatic-encrypted-trash",(Func<Task>)AutomaticTrashRun)).ToArray();
                 groups=groups.Append(("automatic-encrypted-backup",(Func<Task>)AutomaticBackupRun)).ToArray();
                 groups=groups.Append(("device-search-state",(Func<Task>)DeviceSearchRun)).ToArray();
                 groups=groups.Append(("batch-text-export",(Func<Task>)BatchTextExportRun)).ToArray();

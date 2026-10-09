@@ -6,7 +6,14 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8)) throw new InvalidDataException("Unsupported schema");
+        if(version<8&&root.TryGetProperty("discardedRevisions",out _))throw new InvalidDataException("Older schema discarded evidence refused");
+        if(version==8)
+        {
+            Fields(root,["discardedRevisions"]);Array(root,"discardedRevisions",10100);
+            foreach(var witness in root.GetProperty("discardedRevisions").EnumerateArray())
+            {Fields(witness,["noteId","revisionId","parents"]);if(witness.EnumerateObject().Count()!=3)throw new InvalidDataException("Content in discarded evidence refused");Array(witness,"parents",8);}
+        }
         if (version >= 2) Fields(root, ["folders", "tags"]);
         if(version>=3)Fields(root,["uiDevices"]);
         if(version>=5)
@@ -81,7 +88,8 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if(snapshot.DiscardedRevisions is null||snapshot.DiscardedRevisions.Length>10100||snapshot.DiscardedRevisions.Length+snapshot.History.Length>10100||snapshot.SchemaVersion<8&&snapshot.DiscardedRevisions.Length!=0)throw new InvalidDataException("Discarded evidence count/schema limit");
         var attachmentObjects=AttachmentValidation.Objects(snapshot);
         bool legacy = snapshot.SchemaVersion == 1;
         if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
@@ -132,6 +140,13 @@ internal static class SnapshotValidation
             Content(revision.Mode,revision.Document,revision.Text);AttachmentValidation.References(revision.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
         }
         if (snapshot.History.GroupBy(r => r.NoteId).Any(g => g.Count() > 512)) throw new InvalidDataException("History limit exceeded");
+        var discardedIds=new HashSet<Guid>();
+        foreach(var witness in snapshot.DiscardedRevisions)
+        {
+            if(witness is null||witness.NoteId==Guid.Empty||ids.Contains(witness.NoteId)||!snapshot.Tombstones.Any(t=>t is not null&&t.NoteId==witness.NoteId)||witness.RevisionId==Guid.Empty||!revisions.Add(witness.RevisionId)||!Parents(witness.Parents,witness.RevisionId))throw new InvalidDataException("Invalid discarded evidence");
+            discardedIds.Add(witness.NoteId);graph.Add(witness.RevisionId,(witness.NoteId,witness.Parents));
+        }
+        if(snapshot.DiscardedRevisions.GroupBy(r=>r.NoteId).Any(g=>g.Count()>513))throw new InvalidDataException("Discarded note revision limit");
         var deletedIds = new HashSet<Guid>();
         foreach (var deleted in snapshot.Tombstones)
         {
@@ -140,6 +155,10 @@ internal static class SnapshotValidation
             if (retained is not null)
             {
                 if (legacy || !retained.Metadata.Deleted || retained.RevisionId != deleted.RevisionId || !retained.Parents.SequenceEqual(deleted.Parents)) throw new InvalidDataException("Live/deleted tombstone mismatch");
+            }
+            else if(discardedIds.Contains(deleted.NoteId))
+            {
+                if(!graph.TryGetValue(deleted.RevisionId,out var witness)||witness.NoteId!=deleted.NoteId||!witness.Parents.SequenceEqual(deleted.Parents))throw new InvalidDataException("Discarded tombstone original identity/parents mismatch");
             }
             else if (!revisions.Add(deleted.RevisionId) || deleted.Parents.Length != 0) throw new InvalidDataException("Invalid legacy contentless tombstone");
         }
