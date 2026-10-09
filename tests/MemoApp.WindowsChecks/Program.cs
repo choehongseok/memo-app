@@ -38,6 +38,7 @@ internal static partial class Program
                 groups=groups.Append(("rich-own-same-restore",(Func<Task>)RichOwnSameRestoreRun)).ToArray();
                 groups=groups.Append(("rich-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("rich")))).Append(("markdown-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("markdown")))).ToArray();
                 groups=groups.Append(("attachment-panel-boundaries",(Func<Task>)AttachmentPanelRun)).Append(("attachment-production",(Func<Task>)AttachmentProductionRun)).ToArray();
+                groups=groups.Append(("selected-backup-copy",(Func<Task>)SelectedBackupRun)).ToArray();
                 groups=groups.Append(("encrypted-backup-preview",(Func<Task>)BackupPreviewRun)).ToArray();
                 groups=groups.Append(("clipboard-png-input",(Func<Task>)ClipboardPngRun)).ToArray();
                 groups=groups.Append(("excel-text-import",(Func<Task>)ExcelImportRun)).ToArray();

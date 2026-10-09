@@ -75,6 +75,12 @@ public sealed class SaveCoordinator : IDisposable
         if(disposed||IsLocked||epoch!=sessionEpoch||vault.IsFaulted||note.EditVersion!=expectedVersion)throw new InvalidOperationException("Attachment source authority changed");
         Workspace.RequireAttachmentNote(note);
     }
+    public NoteDraft[] ImportSelectedEncryptedBackup(byte[] cipher,Guid[] selected,long expectedPreviewEpoch)
+    {
+        void Current(){if(disposed||IsLocked||vault.IsFaulted||AttachmentPreviewEpoch!=expectedPreviewEpoch)throw new InvalidOperationException("Selected backup authority ended");}
+        Current();var backup=vault.AuthenticateBackupSnapshot(cipher);Current();
+        return Workspace.ImportBackupNotes(backup,selected,candidate=>{Current();vault.ValidateImportedCandidate(candidate);Current();});
+    }
     public EncryptedBackupPreview PreviewEncryptedBackup(byte[] cipher)
     {
         if(disposed||IsLocked||vault.IsFaulted)throw new InvalidOperationException("Backup preview authority ended");

@@ -3628,17 +3628,28 @@
       "name": "백업 미리보기",
       "normalized": "백업 미리보기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O08: 백업 미리보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/EncryptedVault.BackupPreview.cs",
+        "src/MemoApp.Core/Transfer/BackupFileReader.cs",
+        "src/MemoApp.Windows/MainWindow.BackupPreview.cs",
+        "src/MemoApp.Windows/BackupPreviewWindow.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "commit": "3d923425c6aa8e0b0233331dfbf97876e2b78b02",
+          "environment": "Linux SDK10.0.401 + Windows37943750235",
+          "result": "전체 SUCCESS/encrypted-backup-preview PASS: 같은 vault full 첨부 인증·cipher/current/workspace 불변·DTO256/거대grapheme·wrongsecret/tamper/otherVault·native list reentry/throwing title/userClose·picker/source/lock 독립clear."
+        }
+      ],
+      "blocking_reason": "같은 저장소의 인증된 로컬 암호 백업, 제목/본문256자 plain 읽기 미리보기. 이미지/서식 전체 렌더·외부 vault·physical picker/USB/사용자 수용 미확인. 선택 복구는 별도 후속 O09."
     },
     {
       "id": "O09",
@@ -4325,9 +4336,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "cd08e57d859c4d075579a82cbe68b0bff665e0c1",
-    "implemented_or_partial_in_progress": 106,
-    "not_started": 26,
+    "as_of_code": "3d923425c6aa8e0b0233331dfbf97876e2b78b02",
+    "implemented_or_partial_in_progress": 107,
+    "not_started": 25,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4340,6 +4351,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "106개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "107개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }
