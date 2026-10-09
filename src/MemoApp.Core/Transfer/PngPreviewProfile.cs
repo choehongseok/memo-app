@@ -11,6 +11,7 @@ internal static class PngPreviewProfile
     {
         if(source.Length is <8 or >4194304||!source[..8].SequenceEqual(new byte[]{137,80,78,71,13,10,26,10}))throw Refused();
         int position=8,chunks=0,width=0,height=0,channels=0,pixels=0,dataBytes=0,idat=0,structure=8;
+        bool srgb=false,gamma=false,density=false;
         while(position<source.Length)
         {
             int remaining=source.Length-position;if(remaining<12)throw Refused();
@@ -26,9 +27,15 @@ internal static class PngPreviewProfile
                 long total=checked((long)w*h);if(total>4194304)throw Refused();width=(int)w;height=(int)h;pixels=(int)total;channels=header[9]==6?4:3;
                 structure=checked(structure+length);
             }
+            else if(type.SequenceEqual("sRGB"u8))
+            {if(srgb||idat!=0||length!=1||source[position+8]>3)throw Refused();srgb=true;structure=checked(structure+length);}
+            else if(type.SequenceEqual("gAMA"u8))
+            {if(gamma||idat!=0||length!=4||BinaryPrimitives.ReadUInt32BigEndian(source.Slice(position+8,length)) is 0 or >int.MaxValue)throw Refused();gamma=true;structure=checked(structure+length);}
+            else if(type.SequenceEqual("pHYs"u8))
+            {if(density||idat!=0||length!=9||source[position+16]>1||BinaryPrimitives.ReadUInt32BigEndian(source.Slice(position+8,4))>int.MaxValue||BinaryPrimitives.ReadUInt32BigEndian(source.Slice(position+12,4))>int.MaxValue)throw Refused();density=true;structure=checked(structure+length);}
             else if(type.SequenceEqual("IDAT"u8)){idat++;dataBytes=checked(dataBytes+length);}
             else if(!type.SequenceEqual("IEND"u8)||length!=0||idat==0||dataBytes==0||end!=source.Length)throw Refused();
-            structure=checked(structure+12);if(structure>65536)throw Refused(); // Dominated by this exact allowlist and chunk256 =>3093.
+            structure=checked(structure+12);if(structure>65536)throw Refused(); // Fixed scalar ancillary payloads are included; no metadata is decoded or rendered.
             uint actual=Crc(source.Slice(position+4,checked(length+4))),stored=BinaryPrimitives.ReadUInt32BigEndian(source.Slice(position+8+length,4));
             if(actual!=stored)throw Refused();
             if(type.SequenceEqual("IEND"u8))

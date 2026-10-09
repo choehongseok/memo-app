@@ -375,6 +375,8 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     private static void RejectDrop(object sender,DragEventArgs e){e.Effects=DragDropEffects.None;e.Handled=true;}
     private void PreviewCommand(object sender,ExecutedRoutedEventArgs e)
     {
+        if(e.Command==EditingCommands.EnterParagraphBreak&&!checklistEnterActive&&RichInput.CaretPosition.Paragraph?.Parent is ListItem item&&item.Parent is List list&&(bool)list.GetValue(ChecklistProperty))
+        {e.Handled=true;EnterChecklistItem(item,list);return;}
         if(e.Command is RoutedCommand command && command.Name is "ToggleItalic" or "AlignCenter" or "AlignRight" or "AlignJustify" or "IncreaseIndentation" or "DecreaseIndentation" or "ToggleSubscript" or "ToggleSuperscript")e.Handled=true;
     }
     public void ClearSensitive()

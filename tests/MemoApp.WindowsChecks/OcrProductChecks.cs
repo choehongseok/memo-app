@@ -14,7 +14,7 @@ internal static partial class Program
  private static async Task OcrProductRun()
  {
   var root=Path.Combine(Path.GetTempPath(),"memo-wpf-ocr-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);byte[] secret=EncryptedVault.GenerateRecoverySecret();
-  byte[] png=Convert.FromBase64String(File.ReadAllText("tests/fixtures/ocr-synthetic-png.base64"));Window? window=null;
+  byte[] png=WithScalarPngMetadata(Convert.FromBase64String(File.ReadAllText("tests/fixtures/ocr-synthetic-png.base64")));Window? window=null;
   try
   {
    using(var session=new SaveCoordinator(EncryptedVault.Create(Path.Combine(root,"vault"),secret,secret),TimeProvider.System))

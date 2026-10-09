@@ -3,12 +3,32 @@ using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.IO;
+using System.Security.Cryptography;
+using MemoApp.Core.Storage;
 using MemoApp.Core.Editing;
 using MemoApp.Windows;
 using NativeList = System.Windows.Documents.List;
 
 internal static partial class Program
 {
+    private static async Task ChecklistEnterBoundaryRun()
+    {
+        foreach(bool lockDuring in new[]{false,true})
+        {
+            string root=Path.Combine(Path.GetTempPath(),"memo-check-enter-boundary-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();Window? window=null;
+            try
+            {
+                using var session=new SaveCoordinator(EncryptedVault.Create(root,secret,secret),TimeProvider.System);var note=session.Workspace.CreateNote();note.Text="synthetic checklist boundary";session.Workspace.ConvertMode(note,"rich",true);
+                using var view=new StructuredNoteEditor(session.Workspace,note,()=>!session.IsLocked,_=>{});window=new Window{Content=view};window.Show();await Idle();view.RichInput.CaretPosition=((Paragraph)view.RichInput.Document.Blocks.FirstBlock).ContentEnd;view.InsertChecklist();await Idle();Require(await session.SaveAsync(),"Checklist boundary encrypted baseline");string source=note.Document!.SourceJson;
+                var paragraph=(Paragraph)view.RichInput.Document.Blocks.OfType<NativeList>().Single().ListItems.FirstListItem.Blocks.FirstBlock;var end=paragraph.ContentEnd.GetInsertionPosition(LogicalDirection.Backward);view.RichInput.Selection.Select(end,end);
+                bool armed=true,fired=false;Task<bool>? locking=null;RoutedEventHandler change=(_,_)=>{if(!armed)return;armed=false;fired=true;if(lockDuring)locking=session.LockAsync();else note.Title="changed during native split";};view.RichInput.SelectionChanged+=change;
+                try{EditingCommands.EnterParagraphBreak.Execute(null,view.RichInput);await Idle();if(locking is not null)await locking;Require(fired,"Actual native checklist split raises synthetic authority-changing selection callback");if(lockDuring)Require(session.KeysReleased&&note.IsClosed&&view.RichInput.Document.Blocks.Count==0&&!view.RichInput.CanUndo,"Lock in native checklist Enter clears source and native Undo without late publication");else Require(note.Document!.SourceJson==source&&view.RichInput.Document.Blocks.OfType<NativeList>().Single().ListItems.Count==1,"Source version change inside native Enter refuses partial split and restores original canonical checklist");}
+                finally{armed=false;view.RichInput.SelectionChanged-=change;}
+            }
+            finally{window?.Close();CryptographicOperations.ZeroMemory(secret);Directory.Delete(root,true);}
+        }
+    }
     // Exercise the actual native Enter command, not a fabricated canonical checklist.
     private static async Task ChecklistEditingRun()
     {

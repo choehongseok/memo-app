@@ -7,6 +7,7 @@ if (LocalOcrChecks.TryWorker(args)) return;
 if (args.Contains("--ocr-process-only")) { await LocalOcrChecks.ProcessChecks(); return; }
 if (args.Contains("--trash-encryption-only")) { await TrashEncryptionChecks.Run(); return; }
 if (args.Contains("--user-link-only")) { UserLinkChecks.Run(); return; }
+if (args.Contains("--png-metadata-only")) { PngMetadataChecks.Run(); return; }
 if (args.Contains("--automatic-trash-only")) { AutomaticTrashChecks.Run(); return; }
 if (args.Contains("--trash-lineage-only")) { TrashLineageChecks.Run(); return; }
 if (args.Contains("--ocr-input-only")) { LocalOcrChecks.Input(); return; }
@@ -135,5 +136,6 @@ await SelectedPngChecks.Run();
 TrashLineageChecks.Run();
 AutomaticTrashChecks.Run();
 UserLinkChecks.Run();
+PngMetadataChecks.Run();
 
 await TrashEncryptionChecks.Run();

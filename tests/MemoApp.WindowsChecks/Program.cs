@@ -33,6 +33,7 @@ internal static partial class Program
                 var groups=new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-post-handler-race",RichPostHandlerRaceRun),("rich-exception-purge",RichExceptionPurgeRun),("rich-clear-exception",RichClearExceptionRun),("rich-url-clear-exception",()=>RichClearExceptionCase(true)),("rich-two-views",RichViewsRun),("rich-formatting-commands",RichFormattingCommandsRun),("rich-fidelity",RichFidelityRun),("rich-link-split",RichLinkSplitRun),("rich-history-mode",RichHistoryRun),("rich-native-style-refusal",RichNativeStyleRun),("rich-native-malformed-unicode",RichMalformedNativeRun),("rich-composition-boundary",RichCompositionRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun),("rich-nested-native-worker",RichNestedNativeProcessRun)};
                 groups=groups.Append(("rich-explicit-link",(Func<Task>)RichLinkRun)).ToArray();
                 groups=groups.Append(("rich-checklist-enter",(Func<Task>)ChecklistEditingRun)).ToArray();
+                groups=groups.Append(("rich-checklist-enter-boundary",(Func<Task>)ChecklistEnterBoundaryRun)).ToArray();
                 groups=groups.Append(("rich-composition-metadata",(Func<Task>)RichCompositionMetadataRun)).ToArray();
                 groups=groups.Append(("rich-same-content-restore",(Func<Task>)RichSameContentRestoreRun)).ToArray();
                 groups=groups.Append(("markdown-preview",(Func<Task>)MarkdownPreviewRun)).Append(("markdown-production",(Func<Task>)MarkdownProductionRun)).ToArray();
@@ -46,6 +47,7 @@ internal static partial class Program
                 groups=groups.Append(("selected-backup-copy",(Func<Task>)SelectedBackupRun)).ToArray();
                 groups=groups.Append(("encrypted-backup-preview",(Func<Task>)BackupPreviewRun)).ToArray();
                 groups=groups.Append(("clipboard-png-input",(Func<Task>)ClipboardPngRun)).ToArray();
+                groups=groups.Append(("png-scalar-metadata",(Func<Task>)PngMetadataRun)).ToArray();
                 groups=groups.Append(("excel-text-import",(Func<Task>)ExcelImportRun)).ToArray();
                 groups=groups.Append(("pdf-plaintext-export",(Func<Task>)PdfExportRun)).ToArray();
                 groups=groups.Append(("office-plaintext-export",(Func<Task>)OfficeExportRun)).ToArray();
