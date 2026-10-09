@@ -319,12 +319,13 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Core/Editing/EditingWorkspace.SearchState.cs",
-        "src/MemoApp.Core/Storage/DeviceUiState.cs",
-        "src/MemoApp.Core/Storage/DeviceSearchValidation.cs"
+        "src/MemoApp.Windows/MainWindow.SearchState.cs"
       ],
       "planned_module": "Notes",
-      "test_evidence": [],
-      "blocking_reason": "기기별 암호 기록 구조 및 atomic Core API, schema6 암호 저장 경로까지 연결했다. 기존1~5 literal bytes/이력·첨부/root/3-wrap·백업·복구·downgrade 거절을 검사했다. Windows 최근 목록·저장 조건 UI는 아직 미연결이며 사용자 수용 미확인."
+      "test_evidence": [
+        "6b3b7c3 Windows37932435158 전체 SUCCESS: 실제 최근/저장검색 UI, exact조건 적용, missing폴더 거절, record제거/throwing setter rollback 또는 search block, sourceepoch labels폐기, 잠금 제거. 실제 사용자 수용 미확인."
+      ],
+      "blocking_reason": "자동 검사는 합성 자료이며 사용자 실제 Windows 수용 미확인; 화면으로 정확히 표현할 수 없는 조건은 보존하고 적용 거절."
     },
     {
       "id": "A10",
@@ -2433,12 +2434,13 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Core/Editing/EditingWorkspace.SearchState.cs",
-        "src/MemoApp.Core/Storage/DeviceUiState.cs",
-        "src/MemoApp.Core/Storage/DeviceSearchValidation.cs"
+        "src/MemoApp.Windows/MainWindow.SearchState.cs"
       ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": "기기별 암호 기록 구조 및 atomic Core API, schema6 암호 저장 경로까지 연결했다. 기존1~5 literal bytes/이력·첨부/root/3-wrap·백업·복구·downgrade 거절을 검사했다. Windows 최근 목록·저장 조건 UI는 아직 미연결이며 사용자 수용 미확인."
+      "test_evidence": [
+        "6b3b7c3 Windows37932435158 전체 SUCCESS: 실제 최근/저장검색 UI, exact조건 적용, missing폴더 거절, record제거/throwing setter rollback 또는 search block, sourceepoch labels폐기, 잠금 제거. 실제 사용자 수용 미확인."
+      ],
+      "blocking_reason": "자동 검사는 합성 자료이며 사용자 실제 Windows 수용 미확인; 화면으로 정확히 표현할 수 없는 조건은 보존하고 적용 거절."
     },
     {
       "id": "H01",
@@ -4255,7 +4257,7 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "f006eb33fec296f9b978cc9ed6b714b34f00e5e9",
+    "as_of_code": "6b3b7c38733197ef0c72460f40c99a3f4054bfe7",
     "implemented_or_partial_in_progress": 95,
     "not_started": 37,
     "external_format_blocked": 1,

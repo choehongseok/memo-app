@@ -202,21 +202,23 @@ public sealed class EncryptedVault : IDisposable
             return new CandidateState(Path.GetFileName(path), state);
         }).ToArray();
     }
-    public void ExportCommitted(string path, IAtomicVaultFiles? backupFiles = null)
+    public void ExportCommitted(string path,IAtomicVaultFiles? backupFiles=null)
     {
-        path = Path.GetFullPath(path);
-        string relative = Path.GetRelativePath(root, path);
-        if (relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) && !Path.IsPathRooted(relative)) throw new IOException("Backup destination must be outside the active vault");
-        RejectLinkedAncestors(Path.GetDirectoryName(path)!);
-        lock (commitGate)
+        using var prepared=CaptureCommittedCopy();prepared.WriteTo(path,backupFiles);
+    }
+    public PreparedEncryptedCopy CaptureCommittedCopy()=>CaptureCommittedCopy(false);
+    internal PreparedEncryptedCopy CaptureLockedCommittedCopy()=>CaptureCommittedCopy(true);
+    private PreparedEncryptedCopy CaptureCommittedCopy(bool requireReleased)
+    {
+        lock(commitGate)
         {
-            lock (gate)
-                if (disposed || keysReleased || faulted || lastKnownBase is null) throw new InvalidOperationException("No active authenticated committed snapshot");
-            var bytes = ReadBounded(Path.Combine(root, "current.vault"));
-            if (!Equal(lastKnownBase, SHA256.HashData(bytes))) throw new IOException("Committed snapshot changed; backup refused");
-            var outputFiles = backupFiles ?? new AtomicVaultFiles();
-            using (var output = outputFiles.CreateNew(path)) { output.Write(bytes); outputFiles.FlushToDisk(output); }
-            if (!Equal(SHA256.HashData(ReadBounded(path)), lastKnownBase)) throw new IOException("Backup outcome uncertain");
+            lock(gate)
+            {
+                if(disposed||faulted||lastKnownBase is null||keysReleased!=requireReleased)throw new InvalidOperationException("No authenticated committed copy authority");
+                var bytes=ReadBounded(Path.Combine(root,"current.vault"));
+                if(!Equal(lastKnownBase,SHA256.HashData(bytes)))throw new IOException("Committed snapshot changed; backup refused");
+                return new(bytes,root);
+            }
         }
     }
     private static void RejectLinkedAncestors(string directory)

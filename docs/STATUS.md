@@ -1,3 +1,5 @@
+A09/E10 Windows 화면 연결 6b3b7c3 / 실행37932435158 전체 SUCCESS. 최근기록 비동기 작업 완료 후 검색 문맥 불변 기준을 저장한다. sourceepoch/reentry/lock 결과폐기와 적용 중 native setter 실패시 exact rollback 또는 검색 차단/명시 초기화를 검증했다. 원문134/기존암호/자료는 보존하며 95부분/37미착수/N09차단1/M06정규화1, 사용자 수용0. O01~O04 별도 암호문 복사/최종 dirty 종료 백업 설계와 Core 검사를 진행 중이다.
+
 ## A09/E10 Core 활성화 진행
 
 최근20개 MRU/저장검색20개 atomic후보 API 및schema6 암호 경로를연결했다. 미구현API RED→암호write차단 RED→targetGREEN, fullCore/build PASS. 실제첨부5→6/정확previouscipher·원본/root·이력/noise 보존·재실행·백업current고정·3-wrap실패예약/한도·6downgrade/future거절·숨겨진6복구·최초root준비중lock·invalid/capacity/전체payload실패불변·20/21MRU를검사했다. actualWindows gate 및최근/저장검색 UI는후속진행중이다.

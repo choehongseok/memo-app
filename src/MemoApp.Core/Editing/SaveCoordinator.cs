@@ -166,9 +166,10 @@ public sealed class SaveCoordinator : IDisposable
     }
     public async Task<bool> LockAsync()
     {
+        var settlingBackup=backupTask;
         if (IsLocked)
         {
-            bool settled = await tail; await backupTask; await rootTask;
+            bool settled = await tail; await settlingBackup; await rootTask;
             return settled && !pendingPlaintext && pendingCipher is null;
         }
         IsLocked = true; sessionEpoch++;
@@ -199,7 +200,7 @@ public sealed class SaveCoordinator : IDisposable
         if (!pendingPlaintext) vault.ReleaseKeys();
         Changed?.Invoke();
         bool result = await tail;
-        await backupTask; // Native conceal/key release above are immediate; close/dispose waits for ciphertext I/O.
+        await settlingBackup; // Native conceal/key release above are immediate; close/dispose waits for ciphertext I/O.
         await rootTask;
         Status = pendingPlaintext ? "잠금 — 숨겨진 복구 대기(메모리 키 보유)" :
             pendingCipher is not null ? "잠금 — 미저장 암호문 보류, 키 종료됨" : "잠금 — 키 종료됨";
@@ -229,9 +230,22 @@ public sealed class SaveCoordinator : IDisposable
     {
         if (!await SaveAsync() || disposed || IsLocked || epoch != sessionEpoch || IsDirty) return false;
         long capturedGeneration = generation;
-        try { await Task.Run(() => vault.ExportCommitted(path, backupFiles)); }
+        try { using var prepared=vault.CaptureCommittedCopy();await WriteDetachedBackupAsync(prepared,path,backupFiles); }
         catch { return false; }
         return !disposed && !IsLocked && epoch == sessionEpoch && generation == capturedGeneration && !IsDirty;
+    }
+    private static Task WriteDetachedBackupAsync(PreparedEncryptedCopy prepared,string path,IAtomicVaultFiles? files)=>Task.Run(()=>prepared.WriteTo(path,files));
+    public Task<bool> LockWithBackupAsync(string path,IAtomicVaultFiles? files=null)
+    {
+        if(disposed||IsLocked||!backupTask.IsCompleted)return Task.FromResult(false);
+        // Lock synchronously conceals/releases keys and snapshots the old backup task before this assignment.
+        var locking=LockAsync();backupTask=LockedBackupCoreAsync(locking,path,files,sessionEpoch);return backupTask;
+    }
+    private async Task<bool> LockedBackupCoreAsync(Task<bool> locking,string path,IAtomicVaultFiles? files,long epoch)
+    {
+        if(!await locking||disposed||!IsLocked||!vault.KeysReleased||epoch!=sessionEpoch)return false;
+        try{using var prepared=vault.CaptureLockedCommittedCopy();await WriteDetachedBackupAsync(prepared,path,files);return !disposed&&IsLocked&&epoch==sessionEpoch;}
+        catch{return false;}
     }
     public void ExportPendingCiphertext(string path)
     {
