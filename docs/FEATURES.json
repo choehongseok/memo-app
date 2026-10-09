@@ -617,17 +617,27 @@
       "name": "메모 최소화",
       "normalized": "메모 최소화",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "B08: 메모 최소화 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/StickyWindow.xaml.cs"
+      ],
       "planned_module": "DesktopNotes",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-partial",
+          "commit": "b6139ce19fdf009a29555101d1030e7c0ea80e19",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Source/Python26/safety/build/Core/actual WPF; https://github.com/choehongseok/memo-app/actions/runs/37920769983",
+          "result": "PASS relevant WPF controls/boundaries; publish/manifest PASS; actual published install FAIL unexpected file; not full feature acceptance"
+        }
+      ],
+      "blocking_reason": "기존 native 포스트잇 minimize/restore 경로를 실제 Windows 자동검사로 확인. 물리 DPI/OS 사용자 수용 미확인."
     },
     {
       "id": "B09",
@@ -2401,17 +2411,28 @@
       "name": "메모에 이미지 붙이기",
       "normalized": "메모에 이미지 붙이기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H01: 메모에 이미지 붙이기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-partial",
+          "commit": "b6139ce19fdf009a29555101d1030e7c0ea80e19",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Source/Python26/safety/build/Core/actual WPF; https://github.com/choehongseok/memo-app/actions/runs/37920769983",
+          "result": "PASS relevant WPF controls/boundaries; publish/manifest PASS; actual published install FAIL unexpected file; not full feature acceptance"
+        }
+      ],
+      "blocking_reason": "PNG 원본 첨부·선택 미리보기 부분 연결. inline image-node/clipboard/drop 및 전체 이미지 수용은 미완료."
     },
     {
       "id": "H02",
@@ -2572,17 +2593,29 @@
       "name": "이미지 미리보기",
       "normalized": "이미지 미리보기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H08: 이미지 미리보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "src/MemoApp.Windows/ImagePreviewBackend.cs",
+        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-partial",
+          "commit": "b6139ce19fdf009a29555101d1030e7c0ea80e19",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Source/Python26/safety/build/Core/actual WPF; https://github.com/choehongseok/memo-app/actions/runs/37920769983",
+          "result": "PASS relevant WPF controls/boundaries; publish/manifest PASS; actual published install FAIL unexpected file; not full feature acceptance"
+        }
+      ],
+      "blocking_reason": "제한 RGB/RGBA PNG만 명시 미리보기. 앱 전체 lifetime slot·epoch/stale 결과 폐기 검사. 전체 형식/사용자 수용 미완료."
     },
     {
       "id": "H09",
@@ -2686,17 +2719,28 @@
       "name": "완전히 종료하는 메뉴",
       "normalized": "완전히 종료하는 메뉴",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L04: 완전히 종료하는 메뉴 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-partial",
+          "commit": "b6139ce19fdf009a29555101d1030e7c0ea80e19",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Source/Python26/safety/build/Core/actual WPF; https://github.com/choehongseok/memo-app/actions/runs/37920769983",
+          "result": "PASS relevant WPF controls/boundaries; publish/manifest PASS; actual published install FAIL unexpected file; not full feature acceptance"
+        }
+      ],
+      "blocking_reason": "파일 → 완전히 종료가 기존 마지막 저장·잠금 경로를 사용. 실제 Windows dirty edit 저장·암호 재실행 검사 PASS. 사용자 수용 미확인."
     },
     {
       "id": "L05",
@@ -2767,17 +2811,29 @@
       "name": "일반 Windows 설치형",
       "normalized": "일반 Windows 설치형",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L08: 일반 Windows 설치형 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "설치·업그레이드·제거가 기존 자료를 임의 삭제하지 않는다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/TrialInstaller.cs",
+        "src/MemoApp.Windows/NativeShellLink.cs",
+        "tools/package_trial.py"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-partial",
+          "commit": "b6139ce19fdf009a29555101d1030e7c0ea80e19",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Source/Python26/safety/build/Core/actual WPF; https://github.com/choehongseok/memo-app/actions/runs/37920769983",
+          "result": "PASS relevant WPF controls/boundaries; publish/manifest PASS; actual published install FAIL unexpected file; not full feature acceptance"
+        }
+      ],
+      "blocking_reason": "관리자 권한 없는 새 사용자 폴더 설치·Unicode 바로가기 부분 구현. 기존 설치 거절·실패 stage 보존. 실제 게시 패키지 설치 gate는 허용 파일 거절로 수정 중; 서명/MSI/자동 제거 및 사용자 수용 미완료."
     },
     {
       "id": "L09",
