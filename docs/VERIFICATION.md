@@ -286,3 +286,8 @@ User/parent instructed continuedfullscopeimplementation, no stop at intermediate
 ## E08 검색 강조 Windows 확인
 
 e8e1bd9b0cc780d355ad9a309645d91159dec81e / https://github.com/choehongseok/memo-app/actions/runs/37925174477 전체 SUCCESS. 최초 missing-control RED37923895896과 dirty snapshot Capture 준비 revision GUID 차이로 인한 시험 실패37924693995를 구분했다. 저장되지 않은 같은 본문을 두 번 Capture하면 서로 다른 준비 revision이 생성됨을 임시 Core 진단으로 확인한 후 진단은 삭제하고 accepted Save 기준으로 보정했다. 실제 WPF search-match-preview 포함 전체 Core/Windows/build/publish/설치 실행 통과, 중간 artifact 업로드는 건너뛰었다. 134개 완료나 사용자 수용은 아니다.
+
+
+## H03 이미지 파일 끌어놓기
+
+미구현7b256a8/Windows37925927491은 protected FileDrop 누락만 예상 RED. a7daf51/37926504938은 actual 관리창·스티키 child-routed import PASS, 별도 selection-loss fixture의 폐기된 host 재사용으로 후속 OLE edit case 실패. ded5d75에서 selection-loss마다 별도 host를 써 영구 폐기를 실제 단언하고 https://github.com/choehongseok/memo-app/actions/runs/37926846176 전체 SUCCESS. 원문/35 Python/safety/4project build/full Core/WPF/publish/실제 설치 실행 PASS; upload SKIPPED. 단일 image FileDrop 원본·암호 재실행을 검증했고 physical Explorer OLE drag/사용자 수용은 미확인. 독립 읽기 검토와 실행 검사는 구분한다.

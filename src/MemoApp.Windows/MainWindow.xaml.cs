@@ -113,7 +113,7 @@ public partial class MainWindow : Window
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = TxtImportButton.IsEnabled = false;
         TxtExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
-        BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=BatchRestoreButton.IsEnabled=BatchFolder.IsEnabled=false;
+        BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=BatchRestoreButton.IsEnabled=BatchFolder.IsEnabled=BatchTxtExportButton.IsEnabled=false;
         ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;concealing=false;hiddenSticky=false;
     }
     private void UpdateStatus()
@@ -392,6 +392,7 @@ public partial class MainWindow : Window
         HistoryButton.IsEnabled = unlocked && note is not null;
         var selected=NotesList.SelectedItems.Cast<NoteDraft>().ToArray();bool any=unlocked&&selected.Length>0;
         BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=any&&selected.All(n=>!n.IsDeleted);
+        BatchTxtExportButton.IsEnabled=any&&!batchTextBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
         BatchRestoreButton.IsEnabled=any&&selected.All(n=>n.IsDeleted);BatchFolder.IsEnabled=BatchMoveButton.IsEnabled;
     }
     private void RefreshFolders()

@@ -2489,17 +2489,27 @@
       "name": "이미지 드래그앤드롭",
       "normalized": "이미지 드래그앤드롭",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H03: 이미지 드래그앤드롭 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/AttachmentPanel.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-synthetic-partial",
+          "commit": "ded5d75a603c29a180fa7c1253934807a041cafc",
+          "environment": "Windows Server 2022 / SDK10.0.401",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/37926846176",
+          "result": "전체 SUCCESS: 단일 non-converted FileDrop, 관리창/스티키 실제 child-routed copy, 원본 hash/본문/암호 재실행 보존; URI/network/junction/oversize/multiple/기타format/OLE exception/edit/selection/동일version교체/양쪽OLE lock 거절. 물리 탐색기 drag 사용자 시험은 별도."
+        }
+      ],
+      "blocking_reason": "암호 첨부 패널에 단일 로컬 이미지 파일 복사를 연결했다. 미구현 RED37925927491 후 actual routed production PASS; 선택 권한 상실로 영구 폐기된 시험host를 다른 사례에서 재사용한 fixture 오류를 별도 host로 보정하여 전체 Windows37926846176 PASS. 이미지 원본 바이트는 실행/자동decode/이동하지 않는다. 물리 drag 및 전체 사용자 수용 미확인."
     },
     {
       "id": "H04",
@@ -3239,17 +3249,27 @@
       "name": "여러 메모 일괄 내보내기",
       "normalized": "여러 메모 일괄 내보내기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N05: 여러 메모 일괄 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/BatchTextTransfer.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "component-partial",
+          "commit": "f006eb33fec296f9b978cc9ed6b714b34f00e5e9",
+          "environment": "Linux x86_64 SDK10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release -- --batch-text-only",
+          "result": "missing-type RED→bounded UTF8 capture/전체 target충돌거절/cancel/부분flush실패보존/실제owned배열zero GREEN. 실제 Windows UI 연결 대기."
+        }
+      ],
+      "blocking_reason": "전체 선택의 제목·본문 TXT 복사 core만 구현. 실제 UI/명시 평문 확인/기존vault 내부출력 거절/잠금·선택·version 경계 후속 구현 중; 사용자 수용 미확인."
     },
     {
       "id": "N06",
@@ -4218,9 +4238,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "818a5318db425ec047f47d65b05a6a41187015c9",
-    "implemented_or_partial_in_progress": 69,
-    "not_started": 63,
+    "as_of_code": "f006eb33fec296f9b978cc9ed6b714b34f00e5e9",
+    "implemented_or_partial_in_progress": 93,
+    "not_started": 39,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4233,6 +4253,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "Implementation counts include partial shared-code coverage, not completed134 features. Dependency tags overlap status counts; independent Windows work remains."
+    "note": "진행 중 수는 구현·부분 연결이며 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현은 실제PC시험을 기다리지 않고 계속한다."
   }
 }

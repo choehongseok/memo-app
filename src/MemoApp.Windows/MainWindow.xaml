@@ -67,6 +67,7 @@
     <Button x:Name="BatchMoveButton" Content="선택 메모 일괄 이동" Click="BatchMove_Click" Padding="6" Margin="0,0,0,4" IsEnabled="False"/>
     <Button x:Name="BatchDeleteButton" Content="선택 메모 일괄 휴지통" Click="BatchDelete_Click" Padding="6" Margin="0,0,0,4" IsEnabled="False"/>
     <Button x:Name="BatchRestoreButton" Content="선택 메모 일괄 복원" Click="BatchRestore_Click" Padding="6" IsEnabled="False"/>
+    <Button x:Name="BatchTxtExportButton" Content="선택 메모 TXT 내보내기" Click="BatchTxtExport_Click" Padding="6" Margin="0,4,0,0" IsEnabled="False"/>
    </StackPanel></ScrollViewer>
    <DockPanel Grid.Column="1" Margin="0,0,16,0">
     <StackPanel DockPanel.Dock="Top"><WrapPanel><Button Content="순서 ↑" Click="OrderUp_Click" Padding="6" Margin="0,0,6,4"/><Button Content="순서 ↓" Click="OrderDown_Click" Padding="6" Margin="0,0,0,4"/></WrapPanel><TextBlock Text="검색"/><TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" Margin="0,4,0,4"/><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문 + 첨부 이름"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/><ComboBoxItem Content="첨부 이름·확장자"/></ComboBox>

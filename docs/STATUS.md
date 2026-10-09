@@ -1,8 +1,10 @@
-# 계속 개발 중: E08 검색 문장 강조 및 후속 로컬 기능
+# 계속 개발 중: 검색 강조·이미지 끌어놓기·일괄 TXT
+
+H03 ded5d75/Windows37926846176 전체 SUCCESS. 관리창·스티키 actual child-routed Copy/암호 save-restart/OLE 경계 PASS, 물리 탐색기 drag는 별도 사용자 확인. N05 f006eb3 core RED→GREEN, UI 연결 후속 진행. 오래된 progress_summary69/63 표기를 actual ID상태에서 다시 산출해93/39로 보정했다.
 
 설치517bcf0/artifact11612428553/Windows37922583685는검증된중간산출물로보존한다. 사용자시험을기다리며전체개발을멈추지않는다. 현재E08선택결과문맥은공통missing-type RED→GREEN, fullCore/4projectbuild/Python35/134/safety PASS; Windows37923895896 missing-control RED 후 e8e1bd9/Windows37925174477 전체 SUCCESS를 확인했다. dirty Capture는 매번 새 준비 revision을 생성하므로 검색 원본불변 시험을 accepted Save baseline으로 보정했다. native source/query/selection/session/epoch/attachment-object교체 authority·독립clear·현재metadata재투영을연결하고 native exception/lock/unchangedversionreplacement회귀를보강한다. 저장형식/원본/암호키설계는변경하지않는다.
 
-현재원장91부분진행/41미착수/N09차단1/M06정규화1=134·사용자수용0. E08후H03이미지파일drop과기기별암호recent/savedsearch설계를우선하며NEXT_SCOPE의계속구현우선순위를따른다. 현재E08/H03에는사용자실제PC시험이코드구현을막는의존성이없다. 외부서비스/유료/계정/서명권한이필요한기능은분리한다. 기존ZIP업로드를반복하지않는다.
+현재원장93부분진행/39미착수/N09차단1/M06정규화1=134·사용자수용0. E08후H03이미지파일drop과기기별암호recent/savedsearch설계를우선하며NEXT_SCOPE의계속구현우선순위를따른다. 현재E08/H03에는사용자실제PC시험이코드구현을막는의존성이없다. 외부서비스/유료/계정/서명권한이필요한기능은분리한다. 기존ZIP업로드를반복하지않는다.
 
 아래는보존한중간설치산출물과이전진행기록이다.
 
