@@ -6,17 +6,20 @@ namespace MemoApp.Windows;
 public sealed class BackupPreviewWindow : Window,IDisposable
 {
     private Func<bool>? current;
-    private bool revoked,closing,closed;
+    private bool revoked,closing,closed,restoring;
+    private Func<Guid[],Task<bool>>? restore;
+    public Button RestoreButton{get;}=new(){Content="선택 메모를 새 복사로 복구",IsEnabled=false,Margin=new(0,8,0,0)};
+    public Guid[] SelectedIds=>NotesList.SelectedItems.OfType<BackupNotePreview>().Select(n=>n.NoteId).ToArray();
     private readonly TextBlock counts=new(){TextWrapping=TextWrapping.Wrap};
-    public ListBox NotesList{get;}=new(){DisplayMemberPath="Title",MaxHeight=280,Margin=new(0,8,0,8)};
+    public ListBox NotesList{get;}=new(){SelectionMode=SelectionMode.Extended,DisplayMemberPath="Title",MaxHeight=280,Margin=new(0,8,0,8)};
     public TextBox TitleView{get;}=new(){IsReadOnly=true,IsUndoEnabled=false,MaxLength=256};
     public TextBox ExcerptView{get;}=new(){IsReadOnly=true,IsUndoEnabled=false,TextWrapping=TextWrapping.Wrap,AcceptsReturn=true,MaxLength=256,MinHeight=100,Margin=new(0,8,0,0)};
     public bool IsRevoked=>revoked;
     public BackupPreviewWindow(Func<bool> current)
     {
         this.current=current;Title="암호 백업 미리보기";Width=620;Height=580;
-        var panel=new StackPanel{Margin=new(16)};panel.Children.Add(new TextBlock{Text="읽기 전용 · 제목/본문 최대256자 · 복구/원본 파일 변경 없음",TextWrapping=TextWrapping.Wrap});panel.Children.Add(counts);panel.Children.Add(NotesList);panel.Children.Add(TitleView);panel.Children.Add(ExcerptView);Content=panel;
-        NotesList.SelectionChanged+=Selected;CompositionTarget.Rendering+=Rendering;
+        var panel=new StackPanel{Margin=new(16)};panel.Children.Add(new TextBlock{Text="읽기 전용 · 제목/본문 최대256자 · 원본 파일 변경 없음 · 선택 복구는 새 복사 추가",TextWrapping=TextWrapping.Wrap});panel.Children.Add(counts);panel.Children.Add(NotesList);panel.Children.Add(TitleView);panel.Children.Add(ExcerptView);panel.Children.Add(RestoreButton);Content=panel;
+        NotesList.SelectionChanged+=Selected;RestoreButton.Click+=RestoreSelected;CompositionTarget.Rendering+=Rendering;
         Closing+=(_,_)=>{closing=true;Revoke();};Closed+=(_,_)=>{closed=true;Revoke();};
     }
     private bool Live()=>!revoked&&!closed&&current?.Invoke()==true;
@@ -39,16 +42,24 @@ public sealed class BackupPreviewWindow : Window,IDisposable
         try
         {
             var item=NotesList.SelectedItem as BackupNotePreview;TitleView.Text=item?.Title??"";if(!Check())return;
-            ExcerptView.Text=item?.Excerpt??"";Check();
+            ExcerptView.Text=item?.Excerpt??"";if(Check())UpdateRestore();
         }
         catch{Dispose();}
+    }
+    public void ConfigureRestore(Func<Guid[],Task<bool>> action)
+    {Dispatcher.VerifyAccess();if(!Check())return;restore=action;UpdateRestore();}
+    private void UpdateRestore(){if(!Check())return;RestoreButton.IsEnabled=!restoring&&restore is not null&&SelectedIds.Length>0;Check();}
+    private async void RestoreSelected(object sender,RoutedEventArgs e)
+    {
+        if(!Check()||restoring||restore is not{ } action)return;var ids=SelectedIds;if(ids.Length==0)return;restoring=true;
+        try{RestoreButton.IsEnabled=false;if(Check())await action(ids);}catch{Dispose();}finally{restoring=false;if(!revoked)try{UpdateRestore();}catch{Dispose();}}
     }
     private void Rendering(object? sender,EventArgs e){if(!Live())Dispose();}
     private void Revoke()
     {
-        if(revoked)return;revoked=true;current=null;CompositionTarget.Rendering-=Rendering;NotesList.SelectionChanged-=Selected;
+        if(revoked)return;revoked=true;current=null;restore=null;CompositionTarget.Rendering-=Rendering;NotesList.SelectionChanged-=Selected;RestoreButton.Click-=RestoreSelected;
         try{Hide();}catch{}try{Owner=null;}catch{}try{NotesList.SelectedItem=null;}catch{}try{NotesList.ItemsSource=null;}catch{}
-        try{TitleView.Clear();}catch{}try{ExcerptView.Clear();}catch{}try{counts.Text="";}catch{}
+        try{TitleView.Clear();}catch{}try{ExcerptView.Clear();}catch{}try{counts.Text="";}catch{}try{RestoreButton.IsEnabled=false;}catch{}
     }
     public void Dispose(){Dispatcher.VerifyAccess();Revoke();if(!closing&&!closed)try{Close();}catch{}}
 }

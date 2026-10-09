@@ -14,9 +14,10 @@ public partial class MainWindow
         Dispatcher.VerifyAccess();if(excelImportBusy||session is not{IsLocked:false} active||windowClosed||concealing)return false;
         long epoch=uiEpoch,sourceEpoch=active.AttachmentPreviewEpoch;Guid? folder=(FolderFilter.SelectedItem as FolderChoice)?.Id;var token=fileOperations.Token;bool applied=false;HashSet<Guid>? beforeImport=null;
         bool Current()=>!windowClosed&&!concealing&&SameFileSession(active,epoch)&&sourceEpoch==active.AttachmentPreviewEpoch&&(FolderFilter.SelectedItem as FolderChoice)?.Id==folder&&(folder is null||active.Workspace.Folders.Any(f=>f.FolderId==folder));
-        excelImportBusy=true;ExcelImportButton.IsEnabled=false;
+        excelImportBusy=true;
         try
         {
+            ExcelImportButton.IsEnabled=false;
             if(!Current())return false;string? path=choose();if(path is null||!Current())return false;if(!string.Equals(Path.GetExtension(path),".xlsx",StringComparison.OrdinalIgnoreCase))throw new IOException("Workbook extension mismatch");
             var imported=await ReadExcelAsync(path,token);if(!Current()||!confirm(imported.Notes.Length)||!Current()||token.IsCancellationRequested)return false;
             beforeImport=active.Workspace.Notes.Select(n=>n.Id).ToHashSet();var added=active.Workspace.ImportTexts(imported.Notes,folder);applied=true;if(!SameFileSession(active,epoch)||windowClosed||concealing)return false;
@@ -26,7 +27,7 @@ public partial class MainWindow
         }
         catch(OperationCanceledException){return false;}
         catch{if(SameFileSession(active,epoch)&&!windowClosed&&!concealing)Notice.Text=(applied||beforeImport is not null&&active.Workspace.Notes.Any(n=>!beforeImport.Contains(n.Id)))?"Excel 행 추가 이후 처리 실패 — 추가 내용과 기존 수정의 편집 상태·암호 저장 상태를 확인하세요.":"Excel 가져오기 실패 — 기본 문자열 템플릿·수식 없는 첫 시트·파일/행 한도를 확인하세요. 원본과 기존 메모는 보존했습니다.";return false;}
-        finally{excelImportBusy=false;if(!windowClosed&&!concealing)ExcelImportButton.IsEnabled=session is{IsLocked:false};}
+        finally{excelImportBusy=false;if(!windowClosed&&!concealing)try{ExcelImportButton.IsEnabled=session is{IsLocked:false};}catch{}}
     }
     private static Task<ImportedWorkbookText> ReadExcelAsync(string path,CancellationToken token)=>Task.Run(()=>ExcelTextTransfer.Read(path,token),token);
 }
