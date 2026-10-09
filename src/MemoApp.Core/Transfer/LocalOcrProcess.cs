@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 namespace MemoApp.Core.Transfer;
 
-// Internal keyless process primitive. Product UI/Windows native trust and publication are not connected.
+// Internal keyless process primitive. Product trust/publication belong to the Windows adapter.
 internal sealed class OwnedOcrText(byte[] owned):IDisposable
 {
  private byte[]? bytes=owned;

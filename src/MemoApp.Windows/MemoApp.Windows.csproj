@@ -7,4 +7,11 @@
   <ItemGroup><ProjectReference Include="../MemoApp.Core/MemoApp.Core.csproj"/></ItemGroup>
   <ItemGroup><None Include="../../docs/licenses/Markdig1.4.0.txt" Link="licenses/Markdig1.4.0.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
   <ItemGroup><None Include="../../docs/licenses/D2Coding1.4.0-OFL.txt" Link="licenses/D2Coding1.4.0-OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
+  <ItemGroup Condition="'$(NativeOcrBundle)' != ''">
+    <EmbeddedResource Include="$(NativeOcrBundle)/native-build.json" LogicalName="MemoApp.OcrManifest"/>
+    <None Include="$(NativeOcrBundle)/tesseract.exe" Link="ocr/tesseract.exe" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+    <None Include="$(NativeOcrBundle)/models.zip" Link="ocr/models.zip" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+    <None Include="$(NativeOcrBundle)/Tesseract-Apache2.txt" Link="ocr/Tesseract-Apache2.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+    <None Include="$(NativeOcrBundle)/Leptonica.txt" Link="ocr/Leptonica.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/>
+  </ItemGroup>
 </Project>

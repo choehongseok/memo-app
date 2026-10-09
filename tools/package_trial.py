@@ -2,7 +2,7 @@
 import hashlib,json,pathlib,subprocess,sys
 root=pathlib.Path(sys.argv[1]).resolve()
 if (root/'installation-manifest.json').exists():raise SystemExit('Refusing to overwrite existing installation manifest')
-allowed={'MemoApp.Windows.exe','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','licenses/Markdig1.4.0.txt','licenses/D2Coding1.4.0-OFL.txt','licenses/DotNet10.txt','licenses/DotNet10-ThirdPartyNotices.txt','licenses/WindowsDesktop10.txt','Start-Portable.cmd','Install-User.cmd','README.txt','USER-TESTS.txt'}
+allowed={'ocr/tesseract.exe','ocr/models.zip','ocr/Tesseract-Apache2.txt','ocr/Leptonica.txt','MemoApp.Windows.exe','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','licenses/Markdig1.4.0.txt','licenses/D2Coding1.4.0-OFL.txt','licenses/DotNet10.txt','licenses/DotNet10-ThirdPartyNotices.txt','licenses/WindowsDesktop10.txt','Start-Portable.cmd','Install-User.cmd','README.txt','USER-TESTS.txt'}
 font_notice=root/'licenses/D2Coding1.4.0-OFL.txt'
 if font_notice.is_symlink() or not font_notice.is_file() or hashlib.sha256(font_notice.read_bytes()).hexdigest()!='1807e8dec4d65f474cbf9be39f5e2254ecb81702babc320749e272ea66ffcc69':raise SystemExit('Complete pinned font copyright/OFL notice missing')
 files=[]

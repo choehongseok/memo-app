@@ -15,7 +15,7 @@ permissions:
 jobs:
   windows-skeleton:
     runs-on: windows-2022
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node24
         with:
@@ -73,14 +73,20 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/check_commit_safety.py
           exit $LASTEXITCODE
+      - name: Build fixed offline OCR engine and public model bundle
+        shell: pwsh
+        run: |
+          python tools/build_native_ocr.py "$env:RUNNER_TEMP/memo-native-product-ocr"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "MEMO_OCR_BUNDLE=$env:RUNNER_TEMP/memo-native-product-ocr/probe" | Out-File $env:GITHUB_ENV -Append
       - name: Build Windows skeleton
-        run: dotnet build MemoApp.slnx -c Release
+        run: dotnet build MemoApp.slnx -c Release -p:NativeOcrBundle="${{ env.MEMO_OCR_BUNDLE }}"
       - name: Synthetic contract checks
         run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build
       - name: Actual Windows WPF synthetic control checks
         run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
       - name: Publish unsigned synthetic-data Windows x64 trial
-        run: dotnet publish src/MemoApp.Windows -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
+        run: dotnet publish src/MemoApp.Windows -p:NativeOcrBundle="${{ env.MEMO_OCR_BUNDLE }}" -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
       - name: Package bounded per-user installation payload
         shell: pwsh
         run: |

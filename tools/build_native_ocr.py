@@ -1,5 +1,5 @@
-"""Public synthetic CI probe only; no runtime installer/download or artifact upload."""
-import hashlib, json, pathlib, re, shutil, subprocess, sys, urllib.request
+"""Build pinned public OCR components in CI; no runtime download or artifact upload."""
+import hashlib, json, pathlib, re, shutil, subprocess, sys, urllib.request, zipfile
 
 TESSERACT = 'db0ec62f81b0737fbbe184d8fea40af5738f8eef'
 LEPTONICA = '13275a278eb55b5746e33f95fbf5a2c8f604b3ab'
@@ -82,10 +82,19 @@ def main(root):
   (bundle / filename).write_bytes(content)
  content = (bundle / 'tesseract.exe').read_bytes()
  manifest = {'tesseractCommit': TESSERACT, 'leptonicaCommit': LEPTONICA, 'modelsCommit': MODELS, 'engineLength': len(content), 'engineSha256': hashlib.sha256(content).hexdigest(), 'peDependencies': dependencies}
+ archive = bundle / 'models.zip'
+ with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as output:
+  for filename in ['kor.traineddata', 'eng.traineddata']:
+   info = zipfile.ZipInfo(filename, (1980, 1, 1, 0, 0, 0)); info.compress_type = zipfile.ZIP_DEFLATED
+   output.writestr(info, (bundle / 'tessdata' / filename).read_bytes())
+  info = zipfile.ZipInfo('Apache2.txt', (1980, 1, 1, 0, 0, 0)); info.compress_type = zipfile.ZIP_DEFLATED
+  output.writestr(info, (bundle / 'Tesseract-Apache2.txt').read_bytes())
+ content = archive.read_bytes()
+ manifest.update({'modelsArchiveLength': len(content), 'modelsArchiveSha256': hashlib.sha256(content).hexdigest()})
  (bundle / 'native-build.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
  run(str(bundle / 'tesseract.exe'), '--version')
  print(json.dumps(manifest))
- print('Native engine proof bundle only; not installed into product or uploaded')
+ print('Pinned native bundle built; product integration and package checks run separately; this tool uploads nothing')
 
 if __name__ == '__main__':
  if len(sys.argv) != 2:

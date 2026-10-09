@@ -26,6 +26,18 @@ internal static class LocalOcrChecks
   using var cancel=new CancellationTokenSource();cancel.Cancel();byte[] raw=[42,42,42,255];using var canceled=new OwnedBgraRaster(1,1,raw);
   bool refused=false;try{using var never=PpmOcrInput.Capture(canceled,cancel.Token);}catch(OperationCanceledException){refused=true;}
   VaultChecks.Require(refused&&raw.All(b=>b==0),"OCR pre-cancel clears raster without output");
+  string root=Path.Combine(Path.GetTempPath(),"memo-ocr-root-boundary-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);
+  try
+  {
+   // Synthetic metadata probes path refusal only; it never executes/authenticates a native binary.
+   string manifest=System.Text.Json.JsonSerializer.Serialize(new{tesseractCommit="db0ec62f81b0737fbbe184d8fea40af5738f8eef",leptonicaCommit="13275a278eb55b5746e33f95fbf5a2c8f604b3ab",modelsCommit="87416418657359cb625c412a48b6e1d6d41c29bd",engineLength=1,engineSha256=new string('0',64),modelsArchiveLength=1,modelsArchiveSha256=new string('0',64),peDependencies=new[]{"KERNEL32.dll"}});
+   var bundle=new WindowsOcrBundle(root,Encoding.UTF8.GetBytes(manifest));
+   Directory.CreateDirectory(Path.Combine(root,"unexpected-child"));VaultChecks.ExpectFailure(()=>bundle.CheckNativeRoot(),"OCR refuses additional directory without traversing children");Directory.Delete(Path.Combine(root,"unexpected-child"));
+   Directory.CreateDirectory(Path.Combine(root,"tesseract.exe"));VaultChecks.ExpectFailure(()=>bundle.CheckNativeRoot(),"OCR fixed component name cannot be a directory");Directory.Delete(Path.Combine(root,"tesseract.exe"));
+   if(!OperatingSystem.IsWindows())
+   {Directory.CreateSymbolicLink(Path.Combine(root,"unexpected-link"),Path.GetTempPath());VaultChecks.ExpectFailure(()=>bundle.CheckNativeRoot(),"OCR refuses linked directory without following it");Directory.Delete(Path.Combine(root,"unexpected-link"));}
+  }
+  finally{Directory.Delete(root,true);}
   Console.WriteLine("PASS: bounded owned OCR PPM input RGB/alpha/source zero/refusal/cancel; engine validation separate");
  }
 

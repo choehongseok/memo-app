@@ -54,6 +54,7 @@ internal static partial class Program
                 groups=groups.Append(("image-file-drop",(Func<Task>)ImageFileDropRun)).ToArray();
                 groups=groups.Append(("search-match-preview",(Func<Task>)SearchMatchRun)).ToArray();
                 groups=groups.Append(("image-selected-png",(Func<Task>)ImagePreviewRun)).Append(("image-paused-races",(Func<Task>)ImagePreviewRacesRun)).Append(("image-commit-fault",(Func<Task>)ImagePreviewFaultRun)).Append(("image-dispatcher-shutdown",(Func<Task>)ImageShutdownRun)).Append(("explicit-full-exit",(Func<Task>)ExitMenuRun)).Append(("trial-installer",(Func<Task>)TrialInstallerRun)).ToArray();
+                groups=groups.Append(("ocr-product-native",(Func<Task>)OcrProductRun)).Append(("ocr-shared-settlement",(Func<Task>)OcrSettlementUiRun)).ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {

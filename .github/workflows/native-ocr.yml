@@ -1,14 +1,6 @@
 name: Native OCR feasibility checks
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/native-ocr.yml'
-      - 'tools/build_native_ocr.py'
-      - 'src/MemoApp.Core/Transfer/*Ocr*.cs'
-      - 'src/MemoApp.Core/Transfer/LinuxTesseractProbe.cs'
-      - 'tests/MemoApp.ContractChecks/LocalOcrChecks.cs'
-      - 'tests/MemoApp.ContractChecks/Program.cs'
-      - 'tests/fixtures/ocr-synthetic-png.base64'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

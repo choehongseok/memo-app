@@ -10,7 +10,7 @@ internal static class TrialInstaller
 {
     private const string ManifestName="installation-manifest.json";
     private sealed record Entry(string Path,long Size,string Hash);
-    private static readonly string[] required=["MemoApp.Windows.exe","MemoApp.Windows.dll","MemoApp.Windows.deps.json","MemoApp.Windows.runtimeconfig.json","Markdig.dll","licenses/Markdig1.4.0.txt","licenses/D2Coding1.4.0-OFL.txt","licenses/DotNet10.txt","licenses/DotNet10-ThirdPartyNotices.txt","licenses/WindowsDesktop10.txt","Start-Portable.cmd","Install-User.cmd"];
+    private static readonly string[] required=["ocr/tesseract.exe","ocr/models.zip","ocr/Tesseract-Apache2.txt","ocr/Leptonica.txt","MemoApp.Windows.exe","MemoApp.Windows.dll","MemoApp.Windows.deps.json","MemoApp.Windows.runtimeconfig.json","Markdig.dll","licenses/Markdig1.4.0.txt","licenses/D2Coding1.4.0-OFL.txt","licenses/DotNet10.txt","licenses/DotNet10-ThirdPartyNotices.txt","licenses/WindowsDesktop10.txt","Start-Portable.cmd","Install-User.cmd"];
     internal static void Prompt()
     {
         string target=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","MemoApp","SyntheticTrial");
