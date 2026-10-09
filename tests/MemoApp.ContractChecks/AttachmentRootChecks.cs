@@ -174,7 +174,7 @@ internal static class AttachmentRootChecks
         for(int version=1;version<=4;version++)
         {
             var snapshot=new VaultSnapshot(version,Guid.NewGuid(),[new(noteId,Guid.NewGuid(),[historyId],now,now,"synthetic old","old body")]){History=[new(noteId,historyId,[],now,"old history","old text")]};
-            var json=System.Text.Json.JsonSerializer.SerializeToNode(snapshot,VaultEnvelope.JsonOptions)!.AsObject();Schema2Checks.StripAttachmentFields(json);
+            var json=System.Text.Json.JsonSerializer.SerializeToNode(snapshot,SnapshotSerialization.Options(snapshot.SchemaVersion))!.AsObject();Schema2Checks.StripAttachmentFields(json);
             if(version<4)Schema2Checks.StripDocumentFields(json);if(version<3)json.Remove("uiDevices");
             if(version==1){json.Remove("folders");json.Remove("tags");foreach(var note in json["notes"]!.AsArray())note!.AsObject().Remove("metadata");foreach(var revision in json["history"]!.AsArray())revision!.AsObject().Remove("metadata");}
             var current=Path.Combine(path,"v"+version);Directory.CreateDirectory(current);var bytes=Schema2Checks.Encode(json,secret);File.WriteAllBytes(Path.Combine(current,"current.vault"),bytes);

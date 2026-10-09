@@ -6,7 +6,7 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7)) throw new InvalidDataException("Unsupported schema");
         if (version >= 2) Fields(root, ["folders", "tags"]);
         if(version>=3)Fields(root,["uiDevices"]);
         if(version>=5)
@@ -18,14 +18,14 @@ internal static class SnapshotValidation
         foreach (var note in root.GetProperty("notes").EnumerateArray())
         {
             Fields(note, ["noteId", "revisionId", "parents", "createdAt", "modifiedAt", "title", "text", "mode", "scope"]);
-            if (version >= 2) Metadata(note);
+            Metadata(note,version);
             if(version>=4)Document(note,false);
             if(version>=5){Fields(note,["attachmentIds"]);Array(note,"attachmentIds",16);}
         }
         foreach (var revision in root.GetProperty("history").EnumerateArray())
         {
             Fields(revision, ["noteId", "revisionId", "parents", "modifiedAt", "title", "text"]);
-            if (version >= 2) Metadata(revision);
+            Metadata(revision,version);
             if(version>=4)Document(revision,true);
             if(version>=5){Fields(revision,["attachmentIds"]);Array(revision,"attachmentIds",16);}
         }
@@ -36,7 +36,7 @@ internal static class SnapshotValidation
             {
                 Fields(device,["uiDeviceId","preferences","windows"]);var prefs=device.GetProperty("preferences");Fields(prefs,["darkMode","fontSize","scale"]);
                 if(version<6&&(device.TryGetProperty("recentNoteIds",out _)||device.TryGetProperty("savedSearches",out _)))throw new InvalidDataException("Older schema cannot carry search UI state");
-                if(version==6)
+                if(version>=6)
                 {
                     Fields(device,["recentNoteIds","savedSearches"]);Array(device,"recentNoteIds",20);Array(device,"savedSearches",20);
                     foreach(var saved in device.GetProperty("savedSearches").EnumerateArray())
@@ -68,9 +68,12 @@ internal static class SnapshotValidation
         var value = element.GetProperty(field);
         if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > max) throw new InvalidDataException("Array size/type outside limits");
     }
-    private static void Metadata(JsonElement record)
+    private static void Metadata(JsonElement record,int version)
     {
+        if(version==1){if(record.TryGetProperty("metadata",out var old)&&old.TryGetProperty("filePathLinks",out _))throw new InvalidDataException("Older schema file paths refused");return;}
         Fields(record, ["metadata"]); var metadata = record.GetProperty("metadata");
+        if(version<7&&metadata.TryGetProperty("filePathLinks",out _))throw new InvalidDataException("Older schema file paths refused");
+        if(version>=7){Fields(metadata,["filePathLinks"]);Array(metadata,"filePathLinks",16);foreach(var link in metadata.GetProperty("filePathLinks").EnumerateArray())Fields(link,["id","uiDeviceId","name","path"]);}
         Fields(metadata, ["folderId", "tagIds", "color", "important", "favorite", "pinned", "archived", "deleted", "order"]);
         Array(metadata, "tagIds", 16);
         foreach (var name in new[] { "important", "favorite", "pinned", "archived", "deleted" })
@@ -78,7 +81,7 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
         var attachmentObjects=AttachmentValidation.Objects(snapshot);
         bool legacy = snapshot.SchemaVersion == 1;
         if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
@@ -102,6 +105,7 @@ internal static class SnapshotValidation
         void Meta(NoteMetadata metadata)
         {
             if (metadata is null || metadata.TagIds.IsDefault || metadata.TagIds.Length > 16 || metadata.TagIds.Distinct().Count() != metadata.TagIds.Length || metadata.TagIds.Any(t => !tagIds.Contains(t)) || metadata.FolderId is Guid f && !folderMap.ContainsKey(f) || metadata.Color is not ("yellow" or "blue" or "green" or "pink" or "white" or "purple") || metadata.Order is < 0 or > 1000000) throw new InvalidDataException("Invalid organization metadata");
+            FilePathLinkValidation.Links(metadata.FilePathLinks,snapshot.SchemaVersion);
             if (legacy && (metadata.FolderId is not null || metadata.TagIds.Length != 0 || metadata.Color != "yellow" || metadata.Important || metadata.Favorite || metadata.Pinned || metadata.Archived || metadata.Deleted || metadata.Order != 0)) throw new InvalidDataException("Legacy metadata not supported");
         }
         void Content(string mode,StyledDocument? document,string text)

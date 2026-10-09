@@ -112,7 +112,7 @@ internal static class VaultFailureChecks
         try
         {
             var snapshot = Snapshot("PARSER");
-            string valid = System.Text.Json.JsonSerializer.Serialize(snapshot, VaultEnvelope.JsonOptions);
+            string valid = System.Text.Json.JsonSerializer.Serialize(snapshot, SnapshotSerialization.Options(snapshot.SchemaVersion));
             foreach (var raw in new[] { valid.Replace("\"schemaVersion\":1", "\"schemaVersion\":1,\"schemaVersion\":1"), valid.Replace("\"mode\":\"plain\"", "\"mode\":\"future\""), valid.Replace("\"history\":[]", "\"history\":null"), valid.Replace("\"schemaVersion\":1", "\"schemaVersion\":2147483648") })
             {
                 var bytes = Encoding.UTF8.GetBytes(raw);

@@ -48,7 +48,7 @@ internal static class AttachmentEnvelope
             var rootId=new Guid(packet.AsSpan(0,16),true);if(rootId==Guid.Empty)throw new InvalidDataException("Empty attachment root");
             plaintext=Open(bytes,280,header.PayloadLength,dataKey,[..aad,3]);
             var snapshot=VaultEnvelope.ReadSnapshot(plaintext);
-            if(snapshot.SchemaVersion is not(5 or 6)||snapshot.AttachmentRootId!=rootId)throw new InvalidDataException("Envelope2/schema5-6/root pairing");
+            if(snapshot.SchemaVersion is not(5 or 6 or 7)||snapshot.AttachmentRootId!=rootId)throw new InvalidDataException("Envelope2/schema5-7/root pairing");
             foreach(var item in snapshot.AttachmentObjects)
             {
                 var original=AttachmentObjectCodec.Decrypt(item,header.VaultId,rootId,packet.AsSpan(16,32));

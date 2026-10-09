@@ -16,7 +16,7 @@ public sealed partial class EditingWorkspace
     private Guid attachmentRootId;
     private ImmutableArray<StoredAttachmentObject> attachmentObjects=[];
     private bool closed;
-    private bool searchStateEnabled;
+    private bool searchStateEnabled,filePathsEnabled;
     public EditingWorkspace(TimeProvider clock, VaultSnapshot? initial = null, VaultSnapshot? displayed = null)
     {
         this.clock = clock ?? throw new ArgumentNullException(nameof(clock)); Notes = new(notes);
@@ -24,7 +24,8 @@ public sealed partial class EditingWorkspace
         // Recovery supplies its entire latest organization state, not a stale vault.Loaded projection.
         basis = initial ?? new(4, Guid.NewGuid(), []);
         var visible = displayed ?? basis;
-        searchStateEnabled=visible.SchemaVersion==6||basis.SchemaVersion==6;
+        searchStateEnabled=visible.SchemaVersion>=6||basis.SchemaVersion>=6;
+        filePathsEnabled=visible.SchemaVersion==7||basis.SchemaVersion==7;
         attachmentRootId=visible.AttachmentRootId;attachmentObjects=visible.AttachmentObjects;
         folders.AddRange(visible.Folders); tags.AddRange(visible.Tags); devices.AddRange(visible.UiDevices);
         foreach (var source in visible.Notes)
@@ -76,7 +77,7 @@ public sealed partial class EditingWorkspace
     private void SetUiDevice(StoredDeviceUi next,bool activateSearch=false)
     {
         EnsureOpen(); var updated=devices.Where(d=>d.UiDeviceId!=next.UiDeviceId).Append(next).ToArray();
-        var candidate=Capture() with {UiDevices=updated};if(activateSearch)candidate=candidate with{SchemaVersion=6};VaultEnvelope.Validate(candidate);
+        var candidate=Capture() with {UiDevices=updated};if(activateSearch&&candidate.SchemaVersion<6)candidate=candidate with{SchemaVersion=6};VaultEnvelope.Validate(candidate);
         if(devices.SingleOrDefault(d=>d.UiDeviceId==next.UiDeviceId)==next)return;
         if(activateSearch)searchStateEnabled=true;devices.Clear();devices.AddRange(updated);Changed?.Invoke();
     }
@@ -152,7 +153,7 @@ public sealed partial class EditingWorkspace
         ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
     private void ApplyContentEvent(NoteDraft note,string text,string mode,StyledDocument? document,NoteMetadata metadata)=>
         ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,text,metadata)},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(mode,document)});
-    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null,ImmutableArray<StoredAttachmentObject>? stagedObjects=null)
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null,ImmutableArray<StoredAttachmentObject>? stagedObjects=null,bool activateFilePaths=false)
     {
         if (changes.Count == 0) return;
         var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
@@ -167,6 +168,7 @@ public sealed partial class EditingWorkspace
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
         var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags,AttachmentObjects=stagedObjects??before.AttachmentObjects };
+        if(activateFilePaths)next=next with{SchemaVersion=7};
         if(searchStateEnabled)next=next with{UiDevices=SanitizeRecent(nextNotes)};
         VaultEnvelope.Validate(next);
         var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
@@ -292,14 +294,16 @@ public sealed partial class EditingWorkspace
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
+        return new(filePathsEnabled?7:searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
         EnsureOpen();
+        if(filePathsEnabled&&snapshot.SchemaVersion<7)throw new InvalidOperationException("File path metadata downgrade refused");
         if(searchStateEnabled&&snapshot.SchemaVersion<6)throw new InvalidOperationException("Search UI state downgrade refused");
         InvalidateAttachmentReads(null);
-        if(snapshot.SchemaVersion==6)searchStateEnabled=true;
+        if(snapshot.SchemaVersion>=6)searchStateEnabled=true;
+        if(snapshot.SchemaVersion==7)filePathsEnabled=true;
         basis = snapshot;attachmentRootId=snapshot.AttachmentRootId;attachmentObjects=snapshot.AttachmentObjects;
         foreach (var draft in notes) acceptedVersions[draft.Id] = draft.EditVersion;
     }

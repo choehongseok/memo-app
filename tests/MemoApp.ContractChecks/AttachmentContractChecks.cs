@@ -10,7 +10,7 @@ internal static class AttachmentContractChecks
         // Structural fixtures deliberately contain dummy ciphertext; this unit does not claim AEAD validation.
         var now=DateTimeOffset.UtcNow;var noteId=Guid.NewGuid();var rootId=Guid.NewGuid();var objectId=Guid.NewGuid();
         var basis=new VaultSnapshot(4,Guid.NewGuid(),[new(noteId,Guid.NewGuid(),[],now,now,"synthetic","body")]);
-        var json=JsonSerializer.SerializeToNode(basis,VaultEnvelope.JsonOptions)!.AsObject();json["schemaVersion"]=5;json["attachmentRootId"]=rootId.ToString();json["notes"]![0]!["attachmentIds"]=new JsonArray(objectId.ToString());
+        var json=JsonSerializer.SerializeToNode(basis,SnapshotSerialization.Options(5))!.AsObject();json["schemaVersion"]=5;json["attachmentRootId"]=rootId.ToString();json["notes"]![0]!["attachmentIds"]=new JsonArray(objectId.ToString());
         json["attachmentObjects"]=new JsonArray(new JsonObject{["objectId"]=objectId.ToString(),["rootId"]=rootId.ToString(),["name"]="합성.pdf",["mime"]="application/pdf",["length"]=1,["sha256"]=new string('0',64),["wrappedKey"]=Convert.ToBase64String(new byte[60]),["chunks"]=new JsonArray(Convert.ToBase64String(new byte[65552]))});
         var decoded=Decode(json);VaultChecks.Require(decoded.SchemaVersion==5,"valid bounded attachment schema5 metadata and references");
         void Reject(Action<JsonObject> edit,string reason){var altered=(JsonObject)json.DeepClone();edit(altered);VaultChecks.ExpectFailure(()=>Decode(altered),reason);}

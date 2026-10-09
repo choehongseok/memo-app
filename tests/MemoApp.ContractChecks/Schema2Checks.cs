@@ -31,7 +31,7 @@ internal static class Schema2Checks
             using (var vault = EncryptedVault.Create(root, secret, secret)) vault.Save(snapshot);
             using (var vault = EncryptedVault.Open(root, secret))
                 VaultChecks.Require(vault.Loaded.SchemaVersion == 4 && vault.Loaded.Folders.Single().Name == folder.Name && vault.Loaded.Tags.Length == 1, "organization encrypted restart");
-            var validJson = JsonSerializer.SerializeToUtf8Bytes(snapshot, VaultEnvelope.JsonOptions);
+            var validJson = JsonSerializer.SerializeToUtf8Bytes(snapshot, SnapshotSerialization.Options(snapshot.SchemaVersion));
             void Reject(JsonObject altered, string reason) => VaultChecks.ExpectFailure(() => Decode(altered, secret), reason);
             JsonObject Fresh() => JsonNode.Parse(validJson)!.AsObject();
             var missing = Fresh(); missing.Remove("folders"); Reject(missing, "schema2 missing folders must reject");
@@ -52,7 +52,7 @@ internal static class Schema2Checks
             VaultChecks.Require(restored.History[0].Metadata.TagIds.SequenceEqual(historyTags), "tag edits must not mutate immutable history");
             // Generate an actual legacy payload with no new properties, rather than a schema2-shaped object labeled v1.
             var pastId=Guid.NewGuid();var legacy = new VaultSnapshot(1, Guid.NewGuid(), [snapshot.Notes[0] with { Metadata = new(),Parents=[pastId] }]){History=[new(note.Id,pastId,[],note.ModifiedAt,"legacy prior","LEGACY_V1_HISTORY")]};
-            var legacyJson = JsonSerializer.SerializeToNode(legacy, VaultEnvelope.JsonOptions)!.AsObject();
+            var legacyJson = JsonSerializer.SerializeToNode(legacy,SnapshotSerialization.Options(legacy.SchemaVersion))!.AsObject();
             legacyJson.Remove("uiDevices"); legacyJson.Remove("folders"); legacyJson.Remove("tags"); StripDocumentFields(legacyJson); legacyJson["notes"]![0]!.AsObject().Remove("metadata"); foreach(var r in legacyJson["history"]!.AsArray())r!.AsObject().Remove("metadata");
             var legacyRoot = Path.Combine(root, "legacy"); Directory.CreateDirectory(legacyRoot);
             var original = Encode(legacyJson, secret); File.WriteAllBytes(Path.Combine(legacyRoot, "current.vault"), original);

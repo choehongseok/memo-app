@@ -61,8 +61,8 @@ internal static class AttachmentEnvelopeChecks
             Repack(snapshot with{SchemaVersion=4,AttachmentRootId=Guid.Empty,AttachmentObjects=[],Notes=[]},"Envelope2 only carries schema5");
             Repack(snapshot with{AttachmentObjects=[item with{Chunks=item.Chunks.SetItem(0,Flip(item.Chunks[0]))}]},"Valid outer envelope still rejects unauthenticated internal object before open");
             Repack(snapshot with{AttachmentObjects=[item with{Sha256=new string('0',64)}]},"Valid outer envelope still checks complete original object hash");
-            var missing=JsonSerializer.SerializeToNode(snapshot,VaultEnvelope.JsonOptions)!.AsObject();missing.Remove("attachmentRootId");RepackJson(missing.ToJsonString(),"Strict required schema5 root field");
-            var unknown=JsonSerializer.SerializeToNode(snapshot,VaultEnvelope.JsonOptions)!.AsObject();unknown["unexpected"]=true;RepackJson(unknown.ToJsonString(),"Strict unknown outer snapshot field");
+            var missing=JsonSerializer.SerializeToNode(snapshot,SnapshotSerialization.Options(snapshot.SchemaVersion))!.AsObject();missing.Remove("attachmentRootId");RepackJson(missing.ToJsonString(),"Strict required schema5 root field");
+            var unknown=JsonSerializer.SerializeToNode(snapshot,SnapshotSerialization.Options(snapshot.SchemaVersion))!.AsObject();unknown["unexpected"]=true;RepackJson(unknown.ToJsonString(),"Strict unknown outer snapshot field");
             RepackJson(Encoding.UTF8.GetString(plain).Replace("\"schemaVersion\":5","\"schemaVersion\":5,\"schemaVersion\":5",StringComparison.Ordinal),"Strict authenticated duplicate JSON properties");
             VaultChecks.Require(rootKey.SequenceEqual(originalRoot)&&vaultKey.SequenceEqual(originalVault)&&secret.SequenceEqual(originalSecret),"Borrowed encryption/recovery/root keys are unchanged");
             foreach(var marker in new[]{original,rootKey,vaultKey,secret,Encoding.UTF8.GetBytes(item.Name)})VaultChecks.Require(bytes.AsSpan().IndexOf(marker)<0,"No synthetic original bytes/name/root/vault/recovery key in envelope ciphertext");

@@ -39,6 +39,7 @@ internal static partial class Program
                 groups=groups.Append(("rich-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("rich")))).Append(("markdown-same-turn-mode",(Func<Task>)(()=>EditorSameTurnModeRun("markdown")))).ToArray();
                 groups=groups.Append(("attachment-panel-boundaries",(Func<Task>)AttachmentPanelRun)).Append(("attachment-production",(Func<Task>)AttachmentProductionRun)).ToArray();
                 groups=groups.Append(("raw-markdown-file-import",(Func<Task>)MarkdownImportRun)).Append(("tray-session-lifecycle",(Func<Task>)TrayRun)).Append(("startup-registration",(Func<Task>)StartupRegistrationRun)).ToArray();
+                groups=groups.Append(("file-path-link-authority",(Func<Task>)FilePathLinkRun)).ToArray();
                 groups=groups.Append(("attachment-explicit-open",(Func<Task>)AttachmentOpenRun)).ToArray();
                 groups=groups.Append(("selected-backup-copy",(Func<Task>)SelectedBackupRun)).ToArray();
                 groups=groups.Append(("encrypted-backup-preview",(Func<Task>)BackupPreviewRun)).ToArray();

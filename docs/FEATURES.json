@@ -2750,17 +2750,33 @@
       "name": "Windows 시작 시 자동 실행",
       "normalized": "Windows 시작 시 자동 실행",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "L01: Windows 시작 시 자동 실행 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Lifecycle/StartupOptions.cs",
+        "src/MemoApp.Windows/WindowsStartupStore.cs",
+        "src/MemoApp.Windows/MainWindow.Startup.cs",
+        "src/MemoApp.Windows/App.xaml.cs",
+        "tests/MemoApp.ContractChecks/StartupCommandChecks.cs",
+        "tests/MemoApp.WindowsChecks/StartupRegistrationChecks.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
+      ],
       "planned_module": "Lifecycle",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-integration",
+          "commit": "a7be2987ff906aaf5171ed35abd98f6658ec7ef4",
+          "environment": "GitHub Actions Windows / SDK10.0.401 / real WPF + actual self-contained installed production EXE",
+          "command": "Windows run37959384999; startup-registration and installed-package",
+          "result": "PASS entire gate; opt-in current-user exact fixed command, bounded registry readback, isolated synthetic HKCU only, foreign preservation/reentrant close and unlock refusal; locked --portable --tray-start actual installed child normal exit0 via bounded PID-owned query. Not actual Windows login/system shutdown/user acceptance."
+        }
+      ],
+      "blocking_reason": "실제 Windows 로그인/로그아웃·사용자 수용 미확인. 명시 checkbox Click만 현재 계정 고정 Run값 변경. 실제Run키 CI write 없음. 새 설치 산출물은 후속 최종 gate에서 업로드."
     },
     {
       "id": "L02",

@@ -20,12 +20,12 @@ public partial class StickyNoteWindow : Window
     private string? bodyMode;
     public void SetEditingContext(EditingWorkspace owner,Func<bool> valid,Action<string> status)
     {workspace=owner;current=valid;notice=status;ConfigureBody();}
-    public void SetAttachmentContext(SaveCoordinator owner,Func<bool> valid,Action<string> status)
+    public void SetAttachmentContext(SaveCoordinator owner,Func<bool> valid,Action<string> status,Guid uiDeviceId=default)
     {
         ClearAttachmentPanel();if(closed||!valid()||draft.IsClosed||draft.IsDeleted)return;
         bool attached=false;AttachmentPanel? created=null;
         bool Current()=>!closed&&valid()&&!draft.IsClosed&&!draft.IsDeleted&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
-        created=new(owner,draft,Current,status);if(Current()){attachmentPanel=created;AttachmentHost.Content=created;attached=true;AttachmentHost.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;}else created.Dispose();
+        created=new(owner,draft,Current,status,uiDeviceId);if(Current()){attachmentPanel=created;AttachmentHost.Content=created;attached=true;AttachmentHost.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;}else created.Dispose();
     }
     private void ClearAttachmentPanel()
     {

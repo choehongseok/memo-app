@@ -201,7 +201,7 @@ public partial class MainWindow : Window
         if(ReferenceEquals(attachmentNote,selected)&&attachmentPanel is {IsDisposed:false})return;
         ClearAttachmentPanel();long epoch=uiEpoch;bool attached=false;AttachmentPanel? created=null;
         bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&active.Workspace.Notes.Contains(selected)&&selected is {IsClosed:false,IsDeleted:false}&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
-        created=new(active,selected,Current,message=>{if(Current())Notice.Text=message;});
+        created=new(active,selected,Current,message=>{if(Current())Notice.Text=message;},uiDeviceId);
         if(Current()){attachmentPanel=created;attachmentNote=selected;AttachmentHost.Content=created;AttachmentHost.Visibility=Visibility.Visible;attached=true;}else created.Dispose();
     }
     private void SelectEditor()
@@ -265,7 +265,7 @@ public partial class MainWindow : Window
         stickyWindows.Add(note.Id,window);
         bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&stickyWindows.TryGetValue(note.Id,out var current)&&ReferenceEquals(current,window);
         var placement=new DesktopWindowController(window,"memo",note.Id,state,Current,layout=>PersistLayout(active,epoch,layout));
-        placements.Add(window,placement);window.SetPlacement(placement);window.SetEditingContext(active.Workspace,Current,message=>{if(Current())Notice.Text=message;});window.SetAttachmentContext(active,Current,message=>{if(Current())Notice.Text=message;});window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
+        placements.Add(window,placement);window.SetPlacement(placement);window.SetEditingContext(active.Workspace,Current,message=>{if(Current())Notice.Text=message;});window.SetAttachmentContext(active,Current,message=>{if(Current())Notice.Text=message;},uiDeviceId);window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
         window.Closed+=(_,_)=>{stickyWindows.Remove(note.Id);placements.Remove(window);};window.Show();
     }
     private void PersistLayout(SaveCoordinator active,long epoch,StoredWindowLayout layout)
