@@ -2,3 +2,6 @@
 docs/SOURCE_PROMPT.txt -text
 # The reviewed full dependency notice is also byte-hashed and copied unchanged.
 docs/licenses/Markdig1.4.0.txt -text
+# Preserve the complete upstream OFL bytes and the fixed compressed font parts.
+docs/licenses/D2Coding1.4.0-OFL.txt -text
+src/MemoApp.Core/Transfer/Fonts/*.zlib -text
