@@ -3225,34 +3225,44 @@
       "name": "Excel 내보내기",
       "normalized": "Excel 내보내기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N03: Excel 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.OfficeExport.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe."
+      ],
+      "blocking_reason": "제목/검증된 본문 projection만; 서식 원문과 첨부는 전체 암호 이전으로 보존. Microsoft Office 실제 GUI 렌더링·사용자 수용 미확인."
     },
     {
       "id": "N04",
       "name": "Word 내보내기",
       "normalized": "Word 내보내기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N04: Word 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.OfficeExport.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe."
+      ],
+      "blocking_reason": "제목/검증된 본문 projection만; 서식 원문과 첨부는 전체 암호 이전으로 보존. Microsoft Office 실제 GUI 렌더링·사용자 수용 미확인."
     },
     {
       "id": "N05",
@@ -4296,9 +4306,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "2961d39e513a81c6c6711fb51188043baafb84c8",
-    "implemented_or_partial_in_progress": 102,
-    "not_started": 30,
+    "as_of_code": "073182a3640fdde091be8d50a97b65fe52fdecf3",
+    "implemented_or_partial_in_progress": 104,
+    "not_started": 28,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4311,6 +4321,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "102개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "104개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

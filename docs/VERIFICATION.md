@@ -1,3 +1,7 @@
+N07 Core: bounded 첫 시트 문자열 XLSX parser·모든 행 candidate 사전검증·실제 암호 저장/restart·flush 실패 whole dirty 보존·원본 불변·100노트/전체payload 거절 검사를 통과했다. 중복 sheets/sheetData와 대소문자/선언형 숨긴 관계·active content를 독립 검토 후 보강했다. 일반 기본 문자열 시트만 지원하며 다른 Office 구조/서식/첨부·수식/수치는 지원하지 않는다. Windows 화면은 아직 미연결이며 새 excel-text-import group의 missing-button RED를 원격 확인한 다음 연결한다. 현재104부분/28미착수 집계에 N07을 완료로 더하지 않는다.
+
+N03/N04 073182a / Windows37936392724 전체 SUCCESS. BCL-only XLSX/DOCX plaintext projection, hard16MiB construction/zero buffer, literal cell/Unicode and source/modal/key/lock checks. 공식 SDK3.4.1 독립 schema/relationship probe PASS는 Office 실제 렌더링 수용과 구분한다. 현재104부분/28미착수/N09차단1/M06정규화1, 사용자 수용0. N07 bounded Excel text adapter와 원자 candidate 추가/저장 실패시 전체 dirty 보존을 이어서 검증 중이다.
+
 N10/P02/P03 전체 암호 이전 화면 2961d39 / Windows37934809682 전체 SUCCESS. fresh local root의 전체 인증 snapshot exact equality·unknown rich 원문/이력/조직/기기 검색/첨부 실제 복호화와 원본불변 확인. 실제 두 PC/USB 수용은 미확인. 현재102부분/30미착수/N09차단1/M06정규화1, 사용자 수용0. N03/N04 Office 평문 projection 내보내기를 계속 연결하며 Office 실제 열기/서식·첨부 보존과 구분한다.
 
 O01~O04 079dbe4 / Windows37933940176 전체 SUCCESS. 현재 해제 세션의 opt-in 저장 후/UTC 일일/최종 dirty 종료 백업, 실제 저장소 ID별 보관 한도/저장 대기 중 가득 참 거절, 키 종료 후 독립 암호문 복사 및 새 root 첨부 인증을 검증했다. 99구현·부분 연결/33미착수/N09차단1/M06정규화1. 설정 재실행 유지와 자동 정리는 아직 미완료이고 사용자 수용은0. 기존백업을 자동삭제하지 않는다. 전체 이전 N10/P02/P03 화면을 이어서 연결 중이다.
