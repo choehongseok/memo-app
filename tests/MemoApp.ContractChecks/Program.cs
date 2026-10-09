@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MemoApp.Core;
 
+if (args.Contains("--search-excerpt-only")) { SearchExcerptChecks.Run(); return; }
 if (args.Contains("--selected-png-only")) { await SelectedPngChecks.Run(); return; }
 if (LocalIdentityCreationChecks.TryWorker(args)) return;
 if (args.Contains("--identity-only")) { await LocalIdentityCreationChecks.Run(); return; }
@@ -68,6 +69,7 @@ MarkdownChecks.Run();
 await MarkdownQueueChecks.Run();
 await RichStorageChecks.Run();
 SearchChecks.Run();
+SearchExcerptChecks.Run();
 OrganizationChecks.Run();
 OrganizationPreflightChecks.Run();
 await BatchChecks.Run();

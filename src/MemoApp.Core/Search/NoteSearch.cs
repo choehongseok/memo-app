@@ -1,4 +1,3 @@
-using System.Text;
 using MemoApp.Core.Editing;
 namespace MemoApp.Core.Search;
 public enum SearchField { All, Title, Body, Attachments }
@@ -73,9 +72,5 @@ public static class NoteSearch
         if(field==SearchField.Attachments)throw new ArgumentException("Attachment search requires the owning workspace");
         return notes.Where(n => !n.IsClosed && (field != SearchField.Body && Contains(n.Title) || field != SearchField.Title && Contains(n.Text))).ToArray();
     }
-    private static string Normalize(string value)
-    {
-        // WPF may briefly expose an unpaired UTF-16 surrogate during editing. Literal fallback is safe.
-        try { return value.Normalize(NormalizationForm.FormC); } catch (ArgumentException) { return value; }
-    }
+    private static string Normalize(string value)=>LiteralSearch.Normalize(value);
 }

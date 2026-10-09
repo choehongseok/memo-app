@@ -1,0 +1,30 @@
+using System.IO;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using MemoApp.Core.Editing;
+using MemoApp.Core.Storage;
+using MemoApp.Windows;
+internal static partial class Program
+{
+    private static async Task SearchMatchRun()
+    {
+        string root=Path.Combine(Path.GetTempPath(),"memo-search-match-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
+        try
+        {
+            main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Create(root,secret,secret));var session=Field<SaveCoordinator>(main,"session");var note=session.Workspace.CreateNote();note.Title="합성 제목";note.Text=new string('x',60000)+" 먼 끝의 한글 찾기 문장 😀 마지막";Invoke(main,"RefreshNotes",note);await Idle();
+            Require(main.FindName("SearchMatchPreview") is TextBlock,"Selected search-result sentence highlight is missing");
+            var preview=Control<TextBlock>(main,"SearchMatchPreview");Run Match()=>(Run)main.FindName("SearchMatch");string All()=>string.Concat(preview.Inlines.OfType<Run>().Select(x=>x.Text));
+            string before=JsonSerializer.Serialize(session.Workspace.Capture());long version=note.EditVersion;var query=Control<TextBox>(main,"SearchInput");query.Text="한글 찾기";await Idle();
+            Require(preview.IsVisible&&Match().Text=="한글 찾기"&&Match().Background is not null&&All().Length<=512&&All().Contains("😀"),"Actual selected far-tail result exposes bounded sentence with literal emphasized match");Require(JsonSerializer.Serialize(session.Workspace.Capture())==before&&note.EditVersion==version,"Search context is display-only and preserves exact note/history/snapshot");
+            Control<ComboBox>(main,"SearchFieldFilter").SelectedIndex=1;await Idle();Require(!preview.IsVisible&&All()=="","Title-only absent hit removes body context");Control<ComboBox>(main,"SearchFieldFilter").SelectedIndex=0;await Idle();
+            note.Text="new changed source without hit";Require(All()==""&&!preview.IsVisible,"Post-mutation source event clears old excerpt synchronously before queued refresh");await Idle();
+            note.Text="Cafe\u0301 literal .* <script>";query.Text="CAFÉ";await Idle();Require(Match().Text=="Café","Actual NFC/case match uses inert display projection");query.Text=".*";await Idle();Require(Match().Text==".*"&&All().Contains("<script>"),"Native UI treats HTML/regex-looking body as literal text");
+            query.Clear();Require(All()==""&&!preview.IsVisible,"Clearing query clears native derived text immediately");query.Text=".*";await Idle();Require(preview.IsVisible,"Preview returns for current match");
+            var pending=session.LockAsync();Require(All()==""&&!preview.IsVisible,"Immediate lock clears result text before any save wait");await pending;
+        }
+        finally{if(main is not null){var session=Field<SaveCoordinator?>(main,"session");if(session is not null&&!session.IsLocked)await session.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();}CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);}
+    }
+}
