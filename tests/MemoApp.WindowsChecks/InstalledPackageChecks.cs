@@ -30,11 +30,18 @@ internal static partial class Program
             Require(process.CloseMainWindow()&&process.WaitForExit(15000)&&process.ExitCode==0,"Installed locked production app closes normally");
             process.Dispose();process=null;
             var trayStart=new ProcessStartInfo(Path.Combine(installed,"MemoApp.Windows.exe")){UseShellExecute=false,WorkingDirectory=installed};trayStart.ArgumentList.Add("--portable");trayStart.ArgumentList.Add("--tray-start");process=Process.Start(trayStart)??throw new IOException("Installed tray-start process missing");
-            IntPtr lockedHandle=IntPtr.Zero,parkingHandle=IntPtr.Zero;timer.Restart();while(timer.Elapsed<TimeSpan.FromSeconds(30)){process.Refresh();if(process.HasExited)break;lockedHandle=InstalledWindow(process.Id);parkingHandle=InstalledWindow(process.Id,true);if(lockedHandle!=IntPtr.Zero&&parkingHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
-            Require(!process.HasExited&&lockedHandle!=IntPtr.Zero&&parkingHandle!=IntPtr.Zero,"Installed EXE accepts explicit tray startup and has an actual WPF application message window");
+            IntPtr lockedHandle=IntPtr.Zero;timer.Restart();while(timer.Elapsed<TimeSpan.FromSeconds(30)){process.Refresh();if(process.HasExited)break;lockedHandle=InstalledWindow(process.Id);if(lockedHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
+            Require(!process.HasExited&&lockedHandle!=IntPtr.Zero&&process.WaitForInputIdle(10000),"Installed EXE accepts explicit tray startup and settles GUI startup");
+            var windows=InstalledWindows(process.Id);Require(windows.Length is >0 and <=32,"Bounded synthetic child top-level windows");Console.WriteLine("SYNTHETIC_CHILD_WINDOWS "+string.Join(";",windows.Select(w=>w.Class+":"+w.TitleKind+":thread="+w.Thread)));
             // Send OS-ending messages to this synthetic child only. No system/session shutdown.
-            Require(InstalledSend(parkingHandle,0x11,IntPtr.Zero,(IntPtr)unchecked((int)0x80000000),2,2000,out var queryResult)!=IntPtr.Zero&&queryResult==(IntPtr)1,"Installed child's WPF application receives and accepts real query-end-session boundary");
-            Require(process.WaitForExit(15000)&&process.ExitCode==0,"Actual production SessionEnding shuts down the locked resident child normally");
+            int replies=0;var queryTimer=Stopwatch.StartNew();foreach(var window in windows)
+            {
+                process.Refresh();if(process.HasExited||queryTimer.Elapsed>TimeSpan.FromSeconds(5))break;
+                InstalledPid(window.Handle,out uint stillOwned);if(stillOwned!=(uint)process.Id)continue;
+                long remaining=5000-queryTimer.ElapsedMilliseconds;if(remaining<=0)break;
+                if(InstalledSend(window.Handle,0x11,IntPtr.Zero,(IntPtr)unchecked((int)0x80000000),2,(uint)Math.Min(2000,remaining),out var queryResult)!=IntPtr.Zero&&queryResult==(IntPtr)1)replies++;
+            }
+            bool exited=process.WaitForExit(15000);Require(exited,$"Locked resident child session query timed out; candidates={windows.Length} acceptedReplies={replies}");Require(process.ExitCode==0,$"Locked resident child session query exit={process.ExitCode}; candidates={windows.Length} acceptedReplies={replies}");
             Require(!Directory.EnumerateFiles(installed,"*.vault",SearchOption.AllDirectories).Any(),"Launching untouched trial does not create a vault or recovery secret");
             Console.WriteLine("PASS: actual self-contained package installed/hash-checked/native shortcut/production EXE/default and locked tray-start/session-ending child boundary/clean exit; temporary app/vault path, shared CI account non-secret UI ID; not actual login/user-PC trust/ACL acceptance");return 0;
         }
@@ -46,10 +53,12 @@ internal static partial class Program
         }
     }
     private delegate bool InstalledEnumCallback(IntPtr hwnd,IntPtr parameter);
-    private static IntPtr InstalledWindow(int processId,bool parking=false)
+    private sealed record InstalledWindowState(IntPtr Handle,uint Thread,string Class,string TitleKind);
+    private static InstalledWindowState[] InstalledWindows(int processId)
     {
-        IntPtr found=IntPtr.Zero;InstalledEnum((hwnd,_)=>{InstalledPid(hwnd,out uint pid);if(pid!=(uint)processId)return true;var title=new StringBuilder(256);InstalledTitle(hwnd,title,title.Capacity);var type=new StringBuilder(256);InstalledClass(hwnd,type,type.Capacity);if(parking?title.Length==0&&type.ToString().StartsWith("HwndWrapper[",StringComparison.Ordinal):title.ToString()=="메모앱 — 합성 자료용 시험판"){found=hwnd;return false;}return true;},IntPtr.Zero);return found;
+        var found=new List<InstalledWindowState>();InstalledEnum((hwnd,_)=>{uint thread=InstalledPid(hwnd,out uint pid);if(pid!=(uint)processId)return true;var title=new StringBuilder(256);InstalledTitle(hwnd,title,title.Capacity);var type=new StringBuilder(256);InstalledClass(hwnd,type,type.Capacity);string kind=title.Length==0?"empty":title.ToString()=="메모앱 — 합성 자료용 시험판"?"main":title.ToString()=="MemoAppTray"?"tray":"other";found.Add(new(hwnd,thread,type.ToString(),kind));return found.Count<=32;},IntPtr.Zero);return found.ToArray();
     }
+    private static IntPtr InstalledWindow(int processId)=>InstalledWindows(processId).FirstOrDefault(w=>w.TitleKind=="main")?.Handle??IntPtr.Zero;
     [DllImport("user32.dll",EntryPoint="EnumWindows")][return:MarshalAs(UnmanagedType.Bool)]private static extern bool InstalledEnum(InstalledEnumCallback callback,IntPtr parameter);
     [DllImport("user32.dll",EntryPoint="GetWindowThreadProcessId")]private static extern uint InstalledPid(IntPtr hwnd,out uint processId);
     [DllImport("user32.dll",EntryPoint="GetWindowTextW",CharSet=CharSet.Unicode)]private static extern int InstalledTitle(IntPtr hwnd,StringBuilder title,int count);
