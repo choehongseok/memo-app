@@ -1,4 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
   <ItemGroup><PackageReference Include="Markdig" Version="[1.4.0]"/></ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-00.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-00"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-01.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-01"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-02.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-02"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-03.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-03"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-04.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-04"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-05.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-05"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-06.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-06"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-07.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-07"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-08.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-08"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-09.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-09"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-10.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-10"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-11.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-11"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-12.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-12"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-13.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-13"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-14.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-14"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-15.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-15"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-16.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-16"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-17.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-17"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-18.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-18"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-19.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-19"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-20.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-20"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-21.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-21"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-22.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-22"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-23.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-23"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-24.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-24"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-25.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-25"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-26.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-26"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-27.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-27"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-28.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-28"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-29.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-29"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-30.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-30"/>
+    <EmbeddedResource Include="Transfer/Fonts/D2Coding1.4.0-31.zlib" LogicalName="MemoApp.PdfFont.D2Coding1.4.0-31"/>
+  </ItemGroup>
 </Project>

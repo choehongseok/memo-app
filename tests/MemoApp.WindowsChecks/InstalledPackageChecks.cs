@@ -21,6 +21,7 @@ internal static partial class Program
                 using var input=File.OpenRead(file);Require(input.Length==entry.GetProperty("size").GetInt64()&&Convert.ToHexStringLower(SHA256.HashData(input))==entry.GetProperty("sha256").GetString(),"Installed actual publish file length/hash matches manifest");
             }
             Require(!File.Exists(Path.Combine(installed,"createdump.exe")),"Optional runtime dump utility is excluded from application trial");
+            Require(Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(installed,"licenses","D2Coding1.4.0-OFL.txt"))))=="1807e8dec4d65f474cbf9be39f5e2254ecb81702babc320749e272ea66ffcc69","Actual installed fixed font complete copyright/OFL notice preserved");
             TrialInstaller.CreateShortcut(installed,Path.Combine(root,"MemoApp Synthetic Trial.lnk"));
             var start=new ProcessStartInfo(Path.Combine(installed,"MemoApp.Windows.exe")){UseShellExecute=false,WorkingDirectory=installed};start.ArgumentList.Add("--portable");
             process=Process.Start(start)??throw new IOException("Installed process missing");

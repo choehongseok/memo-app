@@ -101,6 +101,15 @@ def verify_dependencies(root):
     if direct:assert info.get('requested')=='[1.4.0, 1.4.0]','의존성 lock range'
     seen=True
   assert seen,'검토된 의존성 lock 누락'
+def verify_pdf_font(root):
+ root=Path(root).resolve();notice=root/'docs/licenses/D2Coding1.4.0-OFL.txt'
+ parts=[root/f'src/MemoApp.Core/Transfer/Fonts/D2Coding1.4.0-{i:02d}.zlib' for i in range(32)]
+ assert all(p.is_file() and not p.is_symlink() and p.stat().st_size==(65536 if i<31 else 19643) for i,p in enumerate(parts)),'고정 font part 누락/길이'
+ packed=b''.join(p.read_bytes() for p in parts)
+ assert len(packed)==2051259 and hashlib.sha256(packed).hexdigest()=='2f332f3a70c551b36761e68ac76787b6a3957b9888a87d97ab16a50957503bf4','고정 public PDF font resource 변경'
+ assert notice.is_file() and not notice.is_symlink() and hashlib.sha256(notice.read_bytes()).hexdigest()=='1807e8dec4d65f474cbf9be39f5e2254ecb81702babc320749e272ea66ffcc69','font 전체 저작권/OFL 고지 변경'
+ core=ET.parse(root/'src/MemoApp.Core/MemoApp.Core.csproj').getroot();entries=list(core.iter('EmbeddedResource'));assert len(entries)==32 and [e.attrib for e in entries]==[{'Include':f'Transfer/Fonts/D2Coding1.4.0-{i:02d}.zlib','LogicalName':f'MemoApp.PdfFont.D2Coding1.4.0-{i:02d}'} for i in range(32)],'고정 trusted font embed 누락/변경'
+ windows=ET.parse(root/'src/MemoApp.Windows/MemoApp.Windows.csproj').getroot();entries=[e for e in windows.iter('None') if any('D2Coding' in a for a in e.attrib.values())];assert len(entries)==1 and entries[0].attrib=={'Include':'../../docs/licenses/D2Coding1.4.0-OFL.txt','Link':'licenses/D2Coding1.4.0-OFL.txt','CopyToOutputDirectory':'PreserveNewest','CopyToPublishDirectory':'PreserveNewest'},'PDF font 배포 고지 복사 누락/변경'
 def main():
  b=(ROOT/'docs/SOURCE_PROMPT.txt').read_bytes()
  assert len(b)==27417 and hashlib.sha256(b).hexdigest()==SOURCE_SHA256,'원문 변경'
@@ -110,6 +119,7 @@ def main():
  sdk=json.loads((ROOT/'global.json').read_text(encoding='utf-8'))['sdk']
  assert sdk=={'version':'10.0.401','rollForward':'disable','allowPrerelease':False}
  verify_dependencies(ROOT)
+ verify_pdf_font(ROOT)
  verify_ci_scope((ROOT/'.github/workflows/preparation.yml').read_text(encoding='utf-8'))
  for entry in ['*.db','*.key','*.pfx','user-data/','models/']: assert entry in (ROOT/'.gitignore').read_text(encoding='utf-8')
  print(f'PASS: original 27417 bytes/SHA256, {count} exact IDs/names, M06 normalization, scope invariants')

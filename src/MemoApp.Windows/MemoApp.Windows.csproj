@@ -6,4 +6,5 @@
   <ItemGroup><None Include="Install-User.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/><None Include="Start-Portable.cmd" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
   <ItemGroup><ProjectReference Include="../MemoApp.Core/MemoApp.Core.csproj"/></ItemGroup>
   <ItemGroup><None Include="../../docs/licenses/Markdig1.4.0.txt" Link="licenses/Markdig1.4.0.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
+  <ItemGroup><None Include="../../docs/licenses/D2Coding1.4.0-OFL.txt" Link="licenses/D2Coding1.4.0-OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest"/></ItemGroup>
 </Project>

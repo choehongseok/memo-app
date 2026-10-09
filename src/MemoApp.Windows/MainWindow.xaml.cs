@@ -113,7 +113,7 @@ public partial class MainWindow : Window
         ViewFilter.SelectedIndex = SearchFieldFilter.SelectedIndex = SortFilter.SelectedIndex = 0;
         ColorPicker.SelectedIndex = ModeChoice.SelectedIndex = -1; Counts.Text = NoteInfo.Text = ""; loadingUi = false;
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = WholeTransferButton.IsEnabled = BackupPreviewButton.IsEnabled = MarkdownImportButton.IsEnabled = ExcelImportButton.IsEnabled = TxtImportButton.IsEnabled = false;
-        TxtExportButton.IsEnabled = ExcelExportButton.IsEnabled = WordExportButton.IsEnabled = false;
+        TxtExportButton.IsEnabled = PdfExportButton.IsEnabled = ExcelExportButton.IsEnabled = WordExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
         BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=BatchRestoreButton.IsEnabled=BatchFolder.IsEnabled=BatchTxtExportButton.IsEnabled=false;
         ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;concealing=false;hiddenSticky=false;
@@ -395,6 +395,7 @@ public partial class MainWindow : Window
         var selected=NotesList.SelectedItems.Cast<NoteDraft>().ToArray();bool any=unlocked&&selected.Length>0;
         BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=any&&selected.All(n=>!n.IsDeleted);
         BatchTxtExportButton.IsEnabled=any&&!batchTextBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
+        PdfExportButton.IsEnabled=any&&!pdfExportBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
         ExcelExportButton.IsEnabled=WordExportButton.IsEnabled=any&&!officeExportBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
         BatchRestoreButton.IsEnabled=any&&selected.All(n=>n.IsDeleted);BatchFolder.IsEnabled=BatchMoveButton.IsEnabled;
     }

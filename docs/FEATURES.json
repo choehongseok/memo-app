@@ -2651,17 +2651,32 @@
       "name": "파일 경로만 연결",
       "normalized": "파일 경로만 연결",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H07: 파일 경로만 연결 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "원본 파일 암호화를 주장하지 않고 깨진 경로·경로 탈출을 방어한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/StoredFilePathLink.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.FilePathLinks.cs",
+        "src/MemoApp.Core/Storage/SnapshotSerialization.cs",
+        "src/MemoApp.Windows/AttachmentPanel.FilePaths.cs",
+        "tests/MemoApp.ContractChecks/FilePathLinkChecks.cs",
+        "tests/MemoApp.WindowsChecks/FilePathLinkUiChecks.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-component-integration",
+          "commit": "22d6855b6f7c5020acfee19e3c7bf83cdb4157d0",
+          "environment": "GitHub Actions Windows / SDK10.0.401 / real WPF + installed production EXE",
+          "command": "Windows run37963072226; full Core, file-path-link-authority and installed-package",
+          "result": "PASS entire gate; exact legacy1..6 serialization, genuine encrypted schema7 migration/restart/backup, metadata-only local regular-file links, original owner/ciphertext/object preservation, foreign/broken paths, lock/sourceepoch/reentrant DTO/native boundary and forwarding constructor compatibility. Physical external program acceptance not confirmed."
+        }
+      ],
+      "blocking_reason": "원본 외부 파일 암호화·경로 경쟁 공격 방어는 제공하지 않음. 실제 Windows 외부 프로그램 열기/깨진 링크와 사용자 수용은 미확인."
     },
     {
       "id": "H08",
@@ -4451,9 +4466,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "c6ef11ac8083ea93ea21c152800c6e0427bf5099",
-    "implemented_or_partial_in_progress": 114,
-    "not_started": 18,
+    "as_of_code": "22d6855b6f7c5020acfee19e3c7bf83cdb4157d0",
+    "implemented_or_partial_in_progress": 116,
+    "not_started": 16,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4466,6 +4481,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "114개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수18/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
+    "note": "116개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수16/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
   }
 }
