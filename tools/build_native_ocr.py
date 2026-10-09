@@ -1,5 +1,5 @@
 """Public synthetic CI probe only; no runtime installer/download or artifact upload."""
-import hashlib, json, os, pathlib, re, shutil, subprocess, sys, urllib.request
+import hashlib, json, pathlib, re, shutil, subprocess, sys, urllib.request
 
 TESSERACT = 'db0ec62f81b0737fbbe184d8fea40af5738f8eef'
 LEPTONICA = '13275a278eb55b5746e33f95fbf5a2c8f604b3ab'
@@ -20,6 +20,12 @@ def clone(root, name, version, commit):
  if actual != commit:
   raise ValueError('Pinned upstream source commit mismatch')
  return dest
+
+def compiler_dumpbin(cache):
+ selected = re.search(r'^CMAKE_CXX_COMPILER:FILEPATH=([^\r\n]+)$', cache, re.M)
+ if not selected or pathlib.Path(selected.group(1)).name.lower() != 'cl.exe':
+  raise ValueError('Selected MSVC compiler is missing')
+ return pathlib.Path(selected.group(1)).with_name('dumpbin.exe')
 
 def main(root):
  if sys.platform != 'win32':
@@ -48,11 +54,10 @@ def main(root):
   if len(candidates) != 1:
    raise ValueError('Ambiguous native executable')
   executable = candidates[0]
- vswhere = pathlib.Path(os.environ['ProgramFiles(x86)']) / 'Microsoft Visual Studio/Installer/vswhere.exe'
- dumps = subprocess.check_output([str(vswhere), '-latest', '-products', '*', '-find', r'VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe'], text=True).splitlines()
- if len(dumps) != 1:
-  raise ValueError('Existing dumpbin path is ambiguous')
- imports = subprocess.check_output([dumps[0], '/dependents', str(executable)], text=True)
+ dumpbin = compiler_dumpbin(cache)
+ if not dumpbin.is_file():
+  raise ValueError('Selected compiler dumpbin is missing')
+ imports = subprocess.check_output([str(dumpbin), '/dependents', str(executable)], text=True)
  print(imports)
  dependencies = sorted(set(re.findall(r'^\s+([A-Za-z0-9_.-]+\.dll)\s*$', imports, re.M | re.I)))
  allowed = {'kernel32.dll', 'user32.dll', 'advapi32.dll', 'shell32.dll', 'ole32.dll', 'oleaut32.dll', 'shlwapi.dll', 'crypt32.dll', 'bcrypt.dll', 'ntdll.dll', 'gdi32.dll'}
