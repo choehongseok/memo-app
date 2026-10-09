@@ -3383,17 +3383,22 @@
       "name": "전체 자료를 한 파일로 이전",
       "normalized": "전체 자료를 한 파일로 이전",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N10: 전체 자료를 한 파일로 이전 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "암호화된 단일 이전 파일로 새 PC 복원, 무결성·키 복구를 확인한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "2961d39 Windows37934809682 전체 SUCCESS: explicit encrypted full transfer, modal cancellation/lock, exact complete snapshot restoration on new local root including unknown rich/history/profile/search state and authenticated attachment; physical second PC/USB not tested."
+      ],
+      "blocking_reason": "실제 두 PC·USB 장치에서 사용자 수용 미확인. 원본 유지 단일 암호 복사·후보 가져오기/복구 경로이며 자동 동기화는 별도 미완료."
     },
     {
       "id": "O01",
@@ -3664,34 +3669,44 @@
       "name": "집 PC와 다른 PC에서 사용",
       "normalized": "집 PC와 다른 PC에서 사용",
       "phase": 3,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "P02: 집 PC와 다른 PC에서 사용 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs"
+      ],
       "planned_module": "Sync",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "2961d39 Windows37934809682 전체 SUCCESS: explicit encrypted full transfer, modal cancellation/lock, exact complete snapshot restoration on new local root including unknown rich/history/profile/search state and authenticated attachment; physical second PC/USB not tested."
+      ],
+      "blocking_reason": "실제 두 PC·USB 장치에서 사용자 수용 미확인. 원본 유지 단일 암호 복사·후보 가져오기/복구 경로이며 자동 동기화는 별도 미완료."
     },
     {
       "id": "P03",
       "name": "USB로 데이터 직접 이동",
       "normalized": "USB로 데이터 직접 이동",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "P03: USB로 데이터 직접 이동 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs"
+      ],
       "planned_module": "Sync",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "2961d39 Windows37934809682 전체 SUCCESS: explicit encrypted full transfer, modal cancellation/lock, exact complete snapshot restoration on new local root including unknown rich/history/profile/search state and authenticated attachment; physical second PC/USB not tested."
+      ],
+      "blocking_reason": "실제 두 PC·USB 장치에서 사용자 수용 미확인. 원본 유지 단일 암호 복사·후보 가져오기/복구 경로이며 자동 동기화는 별도 미완료."
     },
     {
       "id": "P04",
@@ -4281,9 +4296,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "079dbe46b8ab36e6026aa088a6cae491589ad362",
-    "implemented_or_partial_in_progress": 99,
-    "not_started": 33,
+    "as_of_code": "2961d39e513a81c6c6711fb51188043baafb84c8",
+    "implemented_or_partial_in_progress": 102,
+    "not_started": 30,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4296,6 +4311,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "99개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 최근 메모/저장 검색 Core와 실제 UI는 구분한다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "102개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

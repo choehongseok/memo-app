@@ -31,6 +31,7 @@ if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
 if (args.Contains("--device-search-activation-only")) { await DeviceSearchActivationChecks.Run(); return; }
 if (args.Contains("--device-search-state-only")) { DeviceSearchStateChecks.Run(); return; }
 if (args.Contains("--batch-text-only")) { BatchTextTransferChecks.Run(); return; }
+if (args.Contains("--office-export-only")) { OfficeTextExportChecks.Run(); return; }
 if (args.Contains("--whole-migration-only")) { await WholeMigrationChecks.Run(); return; }
 if (args.Contains("--auto-backup-only")) { AutomaticBackupPolicyChecks.Run(); return; }
 if (args.Contains("--prepared-backup-only")) { await PreparedBackupChecks.Run(); return; }
@@ -84,6 +85,7 @@ await Schema2Checks.Run();
 await BackupChecks.Run();
 await PreparedBackupChecks.Run();
 await WholeMigrationChecks.Run();
+OfficeTextExportChecks.Run();
 AutomaticBackupPolicyChecks.Run();
 TextTransferChecks.Run();
 BatchTextTransferChecks.Run();
