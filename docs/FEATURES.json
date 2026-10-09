@@ -3387,13 +3387,16 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
-        "src/MemoApp.Windows/MainWindow.OfficeExport.cs"
+        "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
+        "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
+        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
-        "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe."
+        "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe.",
+        "후속 dirty: canonical rich Word run styles/fonts/color/list/checklist/table/inert URL route Linux target GREEN; aggregate XML/package16MiB and retired plaintext zeroing RED→GREEN. independent OpenXML SDK3.4.1 actual rich package schema/relationship errors0. 실제 새 WPF gate 및 Word viewer 수용 대기."
       ],
-      "blocking_reason": "제목/검증된 본문 projection만; 서식 원문과 첨부는 전체 암호 이전으로 보존. Microsoft Office 실제 GUI 렌더링·사용자 수용 미확인."
+      "blocking_reason": "지원 canonical 글자·목록·체크 상태·표를 내보내며 링크는 inert주소문자. 첨부 그림·rendered Markdown 미연결, 실제 Word viewer 수용 별도; 새 Windows gate 대기."
     },
     {
       "id": "N05",
@@ -3475,7 +3478,9 @@
       "implementation_locations": [
         "src/MemoApp.Core/Transfer/ExcelTextTransfer.cs",
         "src/MemoApp.Core/Editing/EditingWorkspace.ImportTexts.cs",
-        "src/MemoApp.Windows/MainWindow.ExcelImport.cs"
+        "src/MemoApp.Windows/MainWindow.ExcelImport.cs",
+        "src/MemoApp.Core/Transfer/SpreadsheetScalarText.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
@@ -3483,9 +3488,10 @@
           "commit": "0acb978c37a3363714bb737426d60a2058b0e5fa",
           "environment": "Linux SDK10.0.401 + Windows Actions37940341144",
           "result": "전체 Windows SUCCESS/excel-text-import PASS: bounded 첫 시트 plain 문자열·원본 불변·암호 restart·전체 candidate와 dirty savefailure 보존·picker/confirm/lock/sourceguard. 후속 observer 예외 안내 추가 검사는 다음 소스에서 확인한다."
-        }
+        },
+        "후속 dirty: actual XLSX ZIP numeric lexical long integer/boolean exact import and source preservation Linux target GREEN. date serial raw numeric only/no display-date inference; new WPF encrypted restart test pending Windows."
       ],
-      "blocking_reason": "기본 XLSX 첫 시트 2/5열 문자열만 plain 추가. 일반 .xls/수치/날짜/수식/매크로/ActiveX/OLE/외부 연결/복잡 구조는 보존 거절. 서식·첨부·다른 시트 가져오기/실제 Excel 호환·사용자 수용 미확인."
+      "blocking_reason": "첫 시트/제목·본문2열 또는앱5열; 문자열·숫자원문·boolean 지원. 선택 시트·열 매핑 미연결, 날짜서식 해석/수식실행 없음. 새 WPF gate·실제 사용자 수용 별도."
     },
     {
       "id": "N08",
@@ -3582,13 +3588,18 @@
       "implementation_locations": [
         "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
         "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
-        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "src/MemoApp.Core/Storage/StoredAutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/AutomaticBackupRootBinding.cs",
+        "tests/MemoApp.ContractChecks/Schema9Checks.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupPersistenceChecks.cs"
       ],
       "planned_module": "Recovery",
       "test_evidence": [
-        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
+        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant."
       ],
-      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
+      "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
     },
     {
       "id": "O02",
@@ -3605,13 +3616,18 @@
       "implementation_locations": [
         "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
         "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
-        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "src/MemoApp.Core/Storage/StoredAutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/AutomaticBackupRootBinding.cs",
+        "tests/MemoApp.ContractChecks/Schema9Checks.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupPersistenceChecks.cs"
       ],
       "planned_module": "Recovery",
       "test_evidence": [
-        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
+        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant."
       ],
-      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
+      "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
     },
     {
       "id": "O03",
@@ -3628,13 +3644,18 @@
       "implementation_locations": [
         "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
         "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
-        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "src/MemoApp.Core/Storage/StoredAutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/AutomaticBackupRootBinding.cs",
+        "tests/MemoApp.ContractChecks/Schema9Checks.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupPersistenceChecks.cs"
       ],
       "planned_module": "Recovery",
       "test_evidence": [
-        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
+        "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant."
       ],
-      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
+      "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
     },
     {
       "id": "O04",

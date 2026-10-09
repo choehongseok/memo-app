@@ -275,7 +275,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     private void Changed(object sender,TextChangedEventArgs e)
     {
-        if(composing)return;CommitNative();
+        if(composing||checklistEnterActive)return;CommitNative();
     }
     private void CompositionStart(object sender,TextCompositionEventArgs e){if(Live()&&editable&&!rebuilding){compositionToken++;composing=true;}}
     private void CompositionUpdate(object sender,TextCompositionEventArgs e){if(!composing)CompositionStart(sender,e);}

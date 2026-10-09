@@ -11,6 +11,7 @@ public static class OfficeTextTransfer
     private const string SheetNs="http://schemas.openxmlformats.org/spreadsheetml/2006/main",WordNs="http://schemas.openxmlformats.org/wordprocessingml/2006/main",RelationNs="http://schemas.openxmlformats.org/package/2006/relationships",OfficeRelationNs="http://schemas.openxmlformats.org/officeDocument/2006/relationships",TypesNs="http://schemas.openxmlformats.org/package/2006/content-types";
     public static PreparedTextExport Capture(IEnumerable<NoteDraft> selection,OfficeTextFormat format)
     {
+        if(format==OfficeTextFormat.Word)return StructuredWordExport.Capture(selection);
         ArgumentNullException.ThrowIfNull(selection);if(!Enum.IsDefined(format))throw new ArgumentException("Office export format");var notes=selection.Take(101).ToArray();if(notes.Length is <1 or >100||notes.Select(n=>n.Id).Distinct().Count()!=notes.Length)throw new ArgumentException("Office export selection limits");
         int total=0;foreach(var note in notes){using var validated=TextTransfer.Capture(note);total=checked(total+validated.Bytes.Length);if(total>16*1024*1024)throw new InvalidDataException("Office source byte limit");XmlConvert.VerifyXmlChars(note.Title);XmlConvert.VerifyXmlChars(note.Text);}
         using var output=new BoundedOfficeBuffer();
@@ -36,12 +37,14 @@ public static class OfficeTextTransfer
     {
         private const long Limit=16*1024*1024;private bool cleared;
         private static void Check(long value){if(value<0||value>Limit)throw new IOException("Office construction limit");}
+        public override int Capacity{get=>base.Capacity;set{Check(value);byte[] previous=GetBuffer();base.Capacity=value;if(!ReferenceEquals(previous,GetBuffer()))CryptographicOperations.ZeroMemory(previous);}}
+        private void Prepare(long end){Check(end);if(end>Capacity)Capacity=(int)Math.Min(Limit,Math.Max(end,Math.Max(256L,2L*Capacity)));}
         public override long Position{get=>base.Position;set{Check(value);base.Position=value;}}
-        public override void SetLength(long value){Check(value);base.SetLength(value);}
+        public override void SetLength(long value){Prepare(value);base.SetLength(value);}
         public override long Seek(long offset,SeekOrigin origin){long position=checked((origin switch{SeekOrigin.Begin=>0,SeekOrigin.Current=>Position,SeekOrigin.End=>Length,_=>throw new ArgumentException("Seek origin")})+offset);Check(position);return base.Seek(offset,origin);}
-        public override void Write(byte[] buffer,int offset,int count){Check(checked(Position+count));base.Write(buffer,offset,count);}
-        public override void Write(ReadOnlySpan<byte> buffer){Check(checked(Position+buffer.Length));base.Write(buffer);}
-        public override void WriteByte(byte value){Check(checked(Position+1));base.WriteByte(value);}
+        public override void Write(byte[] buffer,int offset,int count){ArgumentNullException.ThrowIfNull(buffer);ArgumentOutOfRangeException.ThrowIfNegative(offset);ArgumentOutOfRangeException.ThrowIfNegative(count);if(offset>buffer.Length-count)throw new ArgumentException("Buffer range");Prepare(checked(Position+count));base.Write(buffer,offset,count);}
+        public override void Write(ReadOnlySpan<byte> buffer){Prepare(checked(Position+buffer.Length));base.Write(buffer);}
+        public override void WriteByte(byte value){Prepare(checked(Position+1));base.WriteByte(value);}
         protected override void Dispose(bool disposing){if(disposing&&!cleared){cleared=true;CryptographicOperations.ZeroMemory(GetBuffer());}base.Dispose(disposing);}
     }
     private static void XmlPart(ZipArchive zip,string name,Action<XmlWriter> content)

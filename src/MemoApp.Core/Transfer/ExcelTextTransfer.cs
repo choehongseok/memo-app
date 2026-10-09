@@ -108,7 +108,7 @@ public static class ExcelTextTransfer
         string? type=(string?)cell.Attribute("t");if(cell.Elements().Any(e=>e.Name!=Main+"v"&&e.Name!=Main+"is"))throw new InvalidDataException("Unsupported cell markup");if(!cell.HasElements)return "";
         if(type=="inlineStr"&&cell.Elements().Count()==1&&cell.Element(Main+"is") is XElement inline)return InlineText(inline);
         if(type=="s"&&cell.Elements().Count()==1&&cell.Element(Main+"v") is XElement value&&!value.HasElements&&int.TryParse(value.Value,System.Globalization.NumberStyles.None,System.Globalization.CultureInfo.InvariantCulture,out int index)&&index>=0&&index<shared.Length)return shared[index];
-        throw new InvalidDataException("Only non-formula string cells supported");
+        return SpreadsheetScalarText.Read(cell);
     }
     private static string InlineText(XElement item)
     {

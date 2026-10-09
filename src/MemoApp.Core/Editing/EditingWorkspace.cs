@@ -16,7 +16,7 @@ public sealed partial class EditingWorkspace
     private Guid attachmentRootId;
     private ImmutableArray<StoredAttachmentObject> attachmentObjects=[];
     private bool closed;
-    private bool searchStateEnabled,filePathsEnabled,discardedEnabled;
+    private bool searchStateEnabled,filePathsEnabled,discardedEnabled,backupPolicyEnabled;
     private StoredDiscardedRevision[] discardedRevisions=[];
     private StoredTombstone[] discardedMarkers=[];
     public EditingWorkspace(TimeProvider clock, VaultSnapshot? initial = null, VaultSnapshot? displayed = null)
@@ -28,7 +28,8 @@ public sealed partial class EditingWorkspace
         var visible = displayed ?? basis;
         searchStateEnabled=visible.SchemaVersion>=6||basis.SchemaVersion>=6;
         filePathsEnabled=visible.SchemaVersion>=7||basis.SchemaVersion>=7;
-        discardedEnabled=visible.SchemaVersion==8||basis.SchemaVersion==8;
+        backupPolicyEnabled=visible.SchemaVersion>=9||basis.SchemaVersion>=9;
+        discardedEnabled=visible.SchemaVersion>=8||basis.SchemaVersion>=8;
         if(discardedEnabled)discardedRevisions=DiscardedEvidence.Clone(visible.DiscardedRevisions);
         discardedMarkers=DiscardedEvidence.ContentlessMarkers(visible);
         attachmentRootId=visible.AttachmentRootId;attachmentObjects=visible.AttachmentObjects;
@@ -85,6 +86,13 @@ public sealed partial class EditingWorkspace
         var candidate=Capture() with {UiDevices=updated};if(activateSearch&&candidate.SchemaVersion<6)candidate=candidate with{SchemaVersion=6};VaultEnvelope.Validate(candidate);
         if(devices.SingleOrDefault(d=>d.UiDeviceId==next.UiDeviceId)==next)return;
         if(activateSearch)searchStateEnabled=true;devices.Clear();devices.AddRange(updated);Changed?.Invoke();
+    }
+    public void SetAutomaticBackupPolicy(Guid profile,StoredAutomaticBackupPolicy? policy)
+    {
+        var device=GetUiDevice(profile);if(device.AutomaticBackupPolicy==policy)return;
+        var updated=devices.Where(d=>d.UiDeviceId!=profile).Append(device with{AutomaticBackupPolicy=policy}).ToArray();
+        var candidate=Capture() with{SchemaVersion=9,UiDevices=updated};VaultEnvelope.Validate(candidate);
+        backupPolicyEnabled=true;discardedEnabled=true;devices.Clear();devices.AddRange(updated);Changed?.Invoke();
     }
     public void SetUiPreferences(Guid profile,UiPreferences preferences)
     {
@@ -299,20 +307,22 @@ public sealed partial class EditingWorkspace
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(discardedEnabled?8:filePathsEnabled?7:searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, DiscardedRevisions=DiscardedEvidence.Clone(discardedRevisions), Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
+        return new(backupPolicyEnabled?9:discardedEnabled?8:filePathsEnabled?7:searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, DiscardedRevisions=DiscardedEvidence.Clone(discardedRevisions), Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
         EnsureOpen();
-        if(snapshot.SchemaVersion==8)VaultEnvelope.Validate(snapshot);
+        if(snapshot.SchemaVersion>=8)VaultEnvelope.Validate(snapshot);
+        if(backupPolicyEnabled&&snapshot.SchemaVersion<9)throw new InvalidOperationException("Backup policy downgrade refused");
         if(discardedEnabled&&snapshot.SchemaVersion<8)throw new InvalidOperationException("Discarded evidence downgrade refused");
-        if(discardedEnabled||snapshot.SchemaVersion==8)DiscardedEvidence.RequirePreserved(discardedRevisions,discardedMarkers,snapshot);
+        if(discardedEnabled||snapshot.SchemaVersion>=8)DiscardedEvidence.RequirePreserved(discardedRevisions,discardedMarkers,snapshot);
         if(filePathsEnabled&&snapshot.SchemaVersion<7)throw new InvalidOperationException("File path metadata downgrade refused");
         if(searchStateEnabled&&snapshot.SchemaVersion<6)throw new InvalidOperationException("Search UI state downgrade refused");
         InvalidateAttachmentReads(null);
+        if(snapshot.SchemaVersion>=9)backupPolicyEnabled=true;
         if(snapshot.SchemaVersion>=6)searchStateEnabled=true;
         if(snapshot.SchemaVersion>=7)filePathsEnabled=true;
-        if(snapshot.SchemaVersion==8){discardedEnabled=true;discardedRevisions=DiscardedEvidence.Clone(snapshot.DiscardedRevisions);}
+        if(snapshot.SchemaVersion>=8){discardedEnabled=true;discardedRevisions=DiscardedEvidence.Clone(snapshot.DiscardedRevisions);}
         discardedMarkers=DiscardedEvidence.ContentlessMarkers(snapshot);
         basis = snapshot;attachmentRootId=snapshot.AttachmentRootId;attachmentObjects=snapshot.AttachmentObjects;
         foreach (var draft in notes) acceptedVersions[draft.Id] = draft.EditVersion;

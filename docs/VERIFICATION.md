@@ -413,3 +413,14 @@ D11 실제 Windows 최종 기능 검증 소스 f6af63cffd4abf41cbd901156af16c3a8
 
 
 최종 artifact 요청 d8bccaab53f65d130d38237d989d35c44072fc2f / run37995989631/job114042089704 전체SUCCESS. 원문/원장/Python39/native/build0warning0error/fullCore/actualWPF/413file publish/실제installedEXE/업로드 전부PASS, artifact11647312201 72573768B GitHub ZIPdigest sha256:4f9c4d05e682a48b2cf02b48ae68275a71ebe301ba8cb3f316e1acd093369111 만료2026-10-16T21:56:29Z. src48d8354ed39e072f2ca8aeeaa78ee0b01d9761c4/tests2921ade94ee64e0e31e49d42ce19e1fd3541d476 exact marker-only 지정으로 앞선 검증 기능과 동일. 문서 상세인계 docs/WINDOWS-TRIAL-2026-10-09.md, README/USER-TESTS 포함 패키지. 실제 사용자 수용·전체134완료·현실 OS/보안 정책 신뢰 증명과 구분한다. 후속 기록은 docs만 변경하고 업로드 재요청하지 않는다.
+
+
+## 후속726038 실패 경계와 transfer/schema9 targeted 검증
+
+Windows37999870635/job114055072525는 fullCore/nativeOCR/build PASS 뒤 checklist Enter boundary FAIL(EndChange callback source change)로 전체 실패했다. 실제 rich-checklist-enter·png-scalar-metadata·명시 link·Markdown·manual backup·OCR product/shared settlement는 PASS, publish/install/upload SKIPPED다. strict capture 조건을 완화하지 않고 final EndChange 뒤 source authority를 확인하는 dirty 수정을 진행한다.
+
+N04 성장 MemoryStream retired plaintext array zeroing 실제 RED→guarded Capacity/Prepare GREEN; 독립 검토가 발견한 기존 XLSX buffer 동일 문제도 실제 RED→수정했다. Production Word route canonical numbering missing RED→새 structured export 연결 target GREEN. N07 실제 ZIP reader scalar import RED→numeric lexical/boolean 연결 GREEN; 첫 보완 fixture의 B2 본문을 남긴 C2 삽입 가정 오류는 실제 B2 boolean으로 고쳤으며 원본 ZIP 및 atomic note 추가를 확인했다. Word fonts/formatting/list/table/inert links/source invariance/16MiB package+aggregate XML limit target GREEN, 실제 Word viewer 수용 아님.
+
+schema9 missing policy RED→default-off DTO/strict fields/prechange8 fixture/sticky guards target GREEN. unpaired UTF16를 JsonValue로 serialize하면 replacement가 되는 fixture 오류는 DTO 직접 validation으로 바꾸고 실제 well-formed Unicode guard를 유지했다. Core+Windows 강화 검증 진행 중이며 새로운 전체 GREEN이나 최종 산출물을 주장하지 않는다.
+
+후속 강화 실제 fullCore GREEN: schema9 exact prechange8 fixture2357B SHA96845312b47eca214aaf8a72fa5a41c650f18dc3be0c516791257375daf5925f; schema1..8 omit/null refusal·prepared/loaded downgrade·D11 sticky9·hidden unprepared9 최신source/policy/discarded witness/root/attachment·original8 previous ciphertext·encrypted9 archive 복구 PASS. 기존 future9 회귀 actualRED DeviceSearchActivationChecks→명시10으로 갱신 후 fullGREEN. 마지막 FilePathLink future10 타깃PASS. crossbuild0warnings/errors, Python39/source134 PASS; Core 불필요 중복실행 없음. 새 canonical rich DOCX를 공식 OpenXML SDK3.4.1로 검사해 schema/relationship 오류0. Windows 정책후속 독립 Important3(earlyrevision stale runtime/day/exit, OFF await stale command, worker Current ownergraph)를 수정하고 재검토 중요결함없음; adapter token-only·sourcepolicyidentity·명시OFF/rejectedsetting·knowncurrent only restore·allprofile recovery sanitize 실제 WPF 검사는 pending이다.

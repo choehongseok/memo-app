@@ -2,26 +2,10 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "af0d50e13701b46d583b5de5aaed5812202664f1",
+    "head": "726038083e3a383ec577a8279040062a239ba834",
     "working_tree": "dirty changes included only where explicitly described; no invented commit for uncommitted code",
     "dirty_changes_observed": [
-      " M docs/NEXT_SCOPE.md",
-      " M docs/STATUS.md",
-      " M docs/VERIFICATION.md",
-      " M src/MemoApp.Core/Documents/SafeMarkdown.cs",
-      " M src/MemoApp.Windows/MainWindow.xaml.cs",
-      " M src/MemoApp.Windows/MarkdownNotePreview.cs",
-      " M src/MemoApp.Windows/StructuredNoteEditor.cs",
-      " M tests/MemoApp.ContractChecks/MarkdownChecks.cs",
-      " M tests/MemoApp.ContractChecks/Program.cs",
-      " M tests/MemoApp.WindowsChecks/Program.cs",
-      "?? src/MemoApp.Core/Transfer/UserLinkTarget.cs",
-      "?? src/MemoApp.Windows/MainWindow.ManualBackup.cs",
-      "?? src/MemoApp.Windows/StructuredNoteEditor.Links.cs",
-      "?? tests/MemoApp.ContractChecks/UserLinkChecks.cs",
-      "?? tests/MemoApp.WindowsChecks/ChecklistChecks.cs",
-      "?? tests/MemoApp.WindowsChecks/ManualBackupChecks.cs",
-      "?? tests/MemoApp.WindowsChecks/RichLinkChecks.cs"
+      "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
     "date": "2026-10-09",
     "audit_inputs": [
@@ -35,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "590db433 actual Windows37998752768에서 rich-explicit-link/markdown-preview/manual-encrypted-backup PASS, rich-checklist-enter actual1/unsupported notice FAIL, package/upload SKIPPED. C10 strict scaffold를 유지한 native Enter 보완 dirty·build0warning0error PASS; 새 gate 전 해결 주장하지 않는다. H08 scalar metadata 기존거절/31-bit RED→Linux 전체Core/build PASS, 실제 공유 clipboard/OCR gate 미실행.",
+    "current_change_verification": "726038 actual Windows37999870635: fullCore/build/nativeOCR PASS; rich-checklist-enter PASS, rich-checklist-enter-boundary FAIL(source change during native EndChange). rich-explicit-link/markdown-preview/png-scalar-metadata/manual-encrypted-backup/ocr-product-native/ocr-shared-settlement PASS; package/install/upload SKIPPED. 후속 dirty C10 final-EndChange authority guard, N04 canonical Word route and retired plaintext-buffer zeroing, N07 lexical numeric/boolean XLSX import: Linux targeted GREEN/build0warnings0errors. schema9 Core default-off policy targeted GREEN; 강화 검사/Windows opt-in restoration/root identity는 진행 중. 새 Windows gate 전 전체 SUCCESS/새 artifact를 주장하지 않는다. 후속 actual Linux fullCore+strong hidden9/attachment/archive/Python39/original134 PASS; independent canonical rich OpenXML3.4.1 errors0. Windows post-review3Importantfixed/no remainingImportant, actualWindows pending.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "590db433ad53c22d180cd22fe61a626fd8083999 + pending bounded PNG metadata working changes"
+    "supplemental_source": "726038 + explicitly identified uncommitted changes"
   },
   "summary": {
     "original_id_count": 134,
@@ -48,18 +32,18 @@
       "차단됨": 1
     },
     "in_progress_audit_category_counts": {
-      "physical-user": 100,
-      "independent-code": 13,
-      "independent-test": 5,
-      "decision": 1
+      "decision": 1,
+      "independent-code": 9,
+      "independent-test": 9,
+      "physical-user": 100
     },
     "all_category_counts": {
-      "physical-user": 100,
-      "independent-code": 26,
-      "independent-test": 5,
-      "normalized": 1,
       "blocked-format": 1,
-      "decision": 1
+      "decision": 1,
+      "independent-code": 22,
+      "independent-test": 9,
+      "normalized": 1,
+      "physical-user": 100
     },
     "full_feature_completion": 0,
     "user_acceptance_confirmed": 0,
@@ -926,9 +910,9 @@
     },
     {
       "id": "C10",
-      "implemented": "Canonical checklist items/checked booleans, single-paragraph InsertChecklist and ToggleChecked implemented and Windows-tested. 실제 Windows37998752768가 native Enter 다중 항목 rollback(actual1)을 재현했다. native split을 하나의 Undo unit 내에서 새 unchecked scaffold와 연결하는 보완은 dirty·교차build PASS이며 실제 Windows 재검사 전이다.",
-      "remaining": "C10 native Enter 보완의 실제 Windows 3항목·checked 독립성·원본 스타일/형제·Undo/Redo 회귀가 필요하다. empty-item Enter 종료와 선택 범위 Enter 처리는 이번 보완에서 미연결이며 후속 독립 구현·검사가 남는다.",
-      "category": "independent-code",
+      "implemented": "Canonical checklist checked states and actual Windows37999870635 three-item native Enter/styles/siblings/UndoRedo PASS. Same native operation source-version boundary FAIL; dirty final EndChange authority guard and empty-item/same-item selected Enter follow-up in progress. Dirty same-item body selection Enter 및 빈 항목 first/middle/last 종료를 canonical/Undo unit 안에 연결했다; prefix/cross-item 선택은 안전 거절, actual Windows gate pending.",
+      "remaining": "새 Windows gate에서 Title change/Lock 경계와 빈 항목 종료·동일 항목 선택 Enter 검사. prefix/다른 항목을 포함한 선택은 안전 거절하며 실제 IME/사용자 수용은 별도.",
+      "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Core/Documents/StyledDocument.cs",
@@ -944,11 +928,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "빈 체크 항목의 Enter 종료와 선택 범위 Enter의 서식/본문 보존을 canonical·Undo·잠금 경계 내에서 연결한다."
-        ],
+        "code": [],
         "inspection": [
-          "실제 실패 baseline37998752768를 보존하고 보완 source의 native Enter/Undo/Redo Windows GREEN을 확인한다."
+          "Windows37999870635 boundary FAIL 보존 후 실제 수정본 gate 결과를 확인한다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1975,8 +1957,8 @@
     },
     {
       "id": "H08",
-      "implemented": "Explicit selected RGB/RGBA8 noninterlaced PNG decoder/preview; full lifetime admission, bounded owned BGRA, source/lock/stale publication tests. 후속 dirty: sRGB/gAMA/pHYs만 길이·값·중복·IDAT 이전·CRC·구조예산을 검사해 무해석 허용하며 RGB/RGBA 픽셀과 opaque 원본을 보존한다. Linux 실제 RED→전체Core/build PASS; 새 Windows 검사 미수행.",
-      "remaining": "JPEG 및 palette/interlace/텍스트·ICC·EXIF 등 기타 PNG profile은 아직 표시하지 못한다. 세 scalar metadata 확장만 완료 경계이며 전체 이미지 형식 지원으로 해석하지 않는다. 새 clipboard·OCR·재실행 WPF 검사와 물리 수용이 남았다.",
+      "implemented": "Bounded RGB/RGBA8 noninterlaced PNG explicit preview plus strictly bounded sRGB/gAMA/pHYs scalar chunks; actual Windows37999870635 png-scalar-metadata, clipboard/encrypted reopen/original bytes, OCR product+shared settlement PASS. Color/physical metadata is uninterpreted.",
+      "remaining": "JPEG·palette/interlace·text/ICC/EXIF/animation은 아직 지원하지 않는다. 범용 이미지 표시 확대와 실제 사용자 수용이 남는다.",
       "category": "independent-code",
       "minimum_user_action": "None. Use public/synthetic image fixtures and reviewed decoder dependency if needed.",
       "evidence": [
@@ -1998,7 +1980,7 @@
           "bounded JPEG·PNG palette/interlace/필요한 ancillary 지원을 독립 보안검토·원본 보존 경계 내에서 계속 구현한다."
         ],
         "inspection": [
-          "새 scalar PNG 공유 clipboard·원본 암호 재실행·실제 WPF bitmap 및 native OCR 회귀를 다음 Windows source gate에서 확인한다."
+          "현재 scalar profile Windows PASS를 보존하며 새 형식에 독립 decoder/원본/잠금/Windows 검사를 추가한다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2553,8 +2535,8 @@
     },
     {
       "id": "N04",
-      "implemented": "Multi-selected valid DOCX title/body projection, tab/newline handling, OpenXML SDK schema/relationship evidence and actual WPF/source/lock safeguards.",
-      "remaining": "Only title uses bold; canonical rich marks/lists/checklists/tables/links/images and rendered Markdown are flattened into text. Working text-only Word export exists, but final document-editing/export scope remains restricted. Add bounded canonical DOCX projection with original invariance and attachment image embedding; arbitrary macros/OLE not required. Actual Word-compatible viewer acceptance remains separate.",
+      "implemented": "Multi-select Word route now dirty canonical rich run styles/font/color/list/checklist/table export; links are inert visible URL text. Linux target GREEN includes exact source/history invariance, fixed internal relations, aggregate XML/package bounds and retired-array zeroing; actual new Windows route gate pending.",
+      "remaining": "Word-compatible viewer 표시 수용 및 새 Windows rich route/lock 검사. Attachment image embedding과 rendered Markdown은 미연결; 원본 전체 서식·이력·첨부는 암호 이전 파일로 보존한다.",
       "category": "independent-code",
       "minimum_user_action": "None. Add XML-only canonical rich export with synthetic fixtures; later viewer check can use available compatible app.",
       "evidence": [
@@ -2562,7 +2544,9 @@
         "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
         "tests/MemoApp.ContractChecks/OfficeTextExportChecks.cs",
         "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs",
-        "docs/PRODUCT_SPEC.md"
+        "docs/PRODUCT_SPEC.md",
+        "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
+        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs"
       ],
       "name": "Word 내보내기",
       "normalized": "Word 내보내기",
@@ -2570,10 +2554,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Only title uses bold; canonical rich marks/lists/checklists/tables/links/images and rendered Markdown are flattened into text. Working text-only Word export exists, but final document-editing/export scope remains restricted. Add bounded canonical DOCX projection with original invariance and attachment image embedding; arbitrary macros/OLE not required. Actual Word-compatible viewer acceptance remains separate."
+          "canonical image/source-linked attachment export와 rendered Markdown 필요 범위를 안전한 bounded projection 내에서 이어간다."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "새 WPF canonical rich Word route와 independent OpenXML schema/relationship 검사를 확인한다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2638,8 +2622,8 @@
     },
     {
       "id": "N07",
-      "implemented": "Bounded XLSX first-sheet 2-column title/body or app five-column text template import; inline/shared strings, source hash, schema/zip/input safety, all-candidate atomic apply/encrypted restart and actual WPF tests.",
-      "remaining": "Template-only importer cannot handle ordinary worksheet numeric/date/boolean cells or arbitrary column mapping/sheet selection, and .xls is unsupported. Original generic Excel import has no prescribed two-column restriction; extend explicit mapping/selected sheets and safe scalar values without executing formulas/macros/external links. Do not imply every Excel format must be supported.",
+      "implemented": "Bounded first-sheet title/body XLSX import extended in dirty code to exact lexical numeric scalars and TRUE/FALSE; no float conversion, date serial remains numeric. Actual ZIP reader+atomic import Linux GREEN; actual WPF/encrypted restart test added pending Windows.",
+      "remaining": "선택 시트·열 지정 UI는 미연결, 날짜 서식은 해석하지 않는다. 수식·macros·외부 links 실행 없음. 새 Windows scalar encrypted restart 및 물리 사용자 수용은 별도.",
       "category": "independent-code",
       "minimum_user_action": "None. Synthetic/public XLSX fixtures and ordinary schema choices are sufficient; no personal workbook needed.",
       "evidence": [
@@ -2647,7 +2631,10 @@
         "src/MemoApp.Windows/MainWindow.ExcelImport.cs",
         "src/MemoApp.Core/Editing/EditingWorkspace.ImportTexts.cs",
         "tests/MemoApp.ContractChecks/ExcelImportChecks.cs",
-        "tests/MemoApp.WindowsChecks/ExcelImportChecks.cs"
+        "tests/MemoApp.WindowsChecks/ExcelImportChecks.cs",
+        "src/MemoApp.Core/Transfer/SpreadsheetScalarText.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarChecks.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs"
       ],
       "name": "Excel 가져오기",
       "normalized": "Excel 가져오기",
@@ -2655,10 +2642,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Template-only importer cannot handle ordinary worksheet numeric/date/boolean cells or arbitrary column mapping/sheet selection, and .xls is unsupported. Original generic Excel import has no prescribed two-column restriction; extend explicit mapping/selected sheets and safe scalar values without executing formulas/macros/external links. Do not imply every Excel format must be supported."
+          "임의 제목·본문 열 매핑과 명시 선택 시트를 bounded/safe XLSX reader에 추가한다."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "새 WPF numeric/boolean/date-serial source exact/encrypted restart gate를 확인한다."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2753,9 +2740,9 @@
     },
     {
       "id": "O01",
-      "implemented": "Opt-in after-successful-save encrypted automatic backup, latest committed detached bytes and bounded owned capacity.",
-      "remaining": "Policy only survives current unlocked session. Add optional encrypted durable settings and re-unlock/restart restoration; do not defer this code to unavailable user hardware.",
-      "category": "independent-code",
+      "implemented": "Opt-in after-successful-save encrypted automatic backup, latest committed detached bytes and bounded owned capacity. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
+      "remaining": "Windows 정책 저장 성공 뒤 활성화·OFF 경쟁·hidden resume 비활성·명시 복구 전체 정책 제거·root ID·일일 예약 저장과 재시작/clock rollback 회귀가 남아 있다.",
+      "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
@@ -2768,11 +2755,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "Policy only survives current unlocked session. Add optional encrypted durable settings and re-unlock/restart restoration; do not defer this code to unavailable user hardware."
-        ],
+        "code": [],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "강화 schema1..8 exact/D11 sticky9 전체 회귀와 실제 Windows 정책/동시성 gate 실행."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2783,9 +2768,9 @@
     },
     {
       "id": "O02",
-      "implemented": "Opt-in final dirty-state exit backup after immediate lock/key release; settles previous backup without self-deadlock.",
-      "remaining": "Exit policy/directory/cap are session-only and need optional encrypted durable restoration; user acceptance remains separate.",
-      "category": "independent-code",
+      "implemented": "Opt-in final dirty-state exit backup after immediate lock/key release; settles previous backup without self-deadlock. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
+      "remaining": "Windows 정책 저장 성공 뒤 활성화·OFF 경쟁·hidden resume 비활성·명시 복구 전체 정책 제거·root ID·일일 예약 저장과 재시작/clock rollback 회귀가 남아 있다.",
+      "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
@@ -2798,11 +2783,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "Exit policy/directory/cap are session-only and need optional encrypted durable restoration; user acceptance remains separate."
-        ],
+        "code": [],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "강화 schema1..8 exact/D11 sticky9 전체 회귀와 실제 Windows 정책/동시성 gate 실행."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2813,9 +2796,9 @@
     },
     {
       "id": "O03",
-      "implemented": "UTC-day automatic backup while running/unlocked, failed-day attempt throttle and latest-save gate.",
-      "remaining": "Durable policy plus persisted last-success/attempt-day semantics are absent; define suspended/offline/locked missed-day behavior and add deterministic clock tests independently.",
-      "category": "independent-code",
+      "implemented": "UTC-day automatic backup while running/unlocked, failed-day attempt throttle and latest-save gate. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
+      "remaining": "Windows 정책 저장 성공 뒤 활성화·OFF 경쟁·hidden resume 비활성·명시 복구 전체 정책 제거·root ID·일일 예약 저장과 재시작/clock rollback 회귀가 남아 있다.",
+      "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
@@ -2826,11 +2809,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "Durable policy plus persisted last-success/attempt-day semantics are absent; define suspended/offline/locked missed-day behavior and add deterministic clock tests independently."
-        ],
+        "code": [],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "강화 schema1..8 exact/D11 sticky9 전체 회귀와 실제 Windows 정책/동시성 gate 실행."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."

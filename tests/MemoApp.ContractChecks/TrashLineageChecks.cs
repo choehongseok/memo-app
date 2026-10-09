@@ -40,7 +40,7 @@ internal static class TrashLineageChecks
   VaultChecks.ExpectFailure(()=>editor.AcceptPrepared(legacy with{SchemaVersion=8,Notes=legacy.Notes.Append(oldNote with{NoteId=marker.NoteId}).ToArray(),Tombstones=[]}),"First8 refuses old ID resurrection");
   VaultChecks.Require(editor.Capture().SchemaVersion==7,"Refused8 acceptance leaves previous schema and scalar state");
   var malformed=legacy with{SchemaVersion=8,DiscardedRevisions=[new(marker.NoteId,marker.RevisionId,new Guid[9])]};VaultChecks.ExpectFailure(()=>editor.AcceptPrepared(malformed),"Malformed8 preflight before sticky mutation");VaultChecks.Require(editor.Capture().SchemaVersion==7,"Malformed8 acceptance no partial activation");
-  VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(valid with{SchemaVersion=9}),"Unknown future9 rejected");
+  VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(valid with{SchemaVersion=10}),"Unknown future10 rejected");
   Console.WriteLine("PASS: schema8 contentless original deletion DAG, malformed/cross-note/cycle/legacy/future refusal; encryption activation verified separately");
  }
 }

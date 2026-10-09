@@ -81,6 +81,7 @@ public partial class MainWindow : Window
         active.Conceal += ConcealViews;
         active.Changed += () => { if (ReferenceEquals(session, active)) {ClearTrayMenu();UpdateStatus();} };
         ShowEditing();
+        RestoreAutomaticBackupConfiguration();
     }
     private void ShowEditing()
     {
@@ -350,13 +351,18 @@ public partial class MainWindow : Window
             if (MessageBox.Show($"선택한 인증 후보(메모 {candidate.NoteCount}개)를 새 키 epoch의 snapshot으로 적용할까요? 기존 파일과 다른 후보는 보존합니다.", "복구 적용", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
             var vault = EncryptedVault.Open(root, secret, candidate.Name);
             long capturedEpoch = uiEpoch; transitionBusy = true;
-            try { await Task.Run(() => vault.Save(vault.Loaded)); }
-            catch { vault.Dispose(); throw; }
+            vault=await SaveRecoveredVaultAsync(vault,secret);
             if (capturedEpoch != uiEpoch) { vault.Dispose(); return; }
             StartSession(vault);
         }
         catch { Notice.Text = "복구 실패 — 후보를 보존하고 쓰기를 중단했습니다. 비밀·파일·쓰기 권한을 확인하세요."; }
         finally { transitionBusy = false; if (secret is not null) CryptographicOperations.ZeroMemory(secret); }
+    }
+    internal async Task<EncryptedVault> SaveRecoveredVaultAsync(EncryptedVault vault,byte[] secret)
+    {
+        try { await Task.Run(()=>vault.Save(vault.Loaded with{UiDevices=vault.Loaded.UiDevices.Select(d=>d with{AutomaticBackupPolicy=null}).ToArray()})); }
+        finally { vault.Dispose(); }
+        return EncryptedVault.Open(root,secret);
     }
     private void ExportPending_Click(object sender, RoutedEventArgs e)
     {

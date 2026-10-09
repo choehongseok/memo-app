@@ -7,6 +7,7 @@ public sealed record StoredWindowLayout(string Kind,Guid? NoteId,string Monitor,
 public sealed record StoredSavedSearch(Guid Id,string Name,SearchOptions Options);
 public sealed record StoredDeviceUi(Guid UiDeviceId,UiPreferences Preferences,ImmutableArray<StoredWindowLayout> Windows)
 {
+    public StoredAutomaticBackupPolicy? AutomaticBackupPolicy{get;init;}
     public ImmutableArray<Guid> RecentNoteIds{get;init;}=[];
     public ImmutableArray<StoredSavedSearch> SavedSearches{get;init;}=[];
 }

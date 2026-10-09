@@ -54,6 +54,9 @@ internal static partial class Program
                 groups=groups.Append(("whole-encrypted-transfer",(Func<Task>)WholeTransferRun)).ToArray();
                 groups=groups.Append(("automatic-encrypted-trash",(Func<Task>)AutomaticTrashRun)).ToArray();
                 groups=groups.Append(("automatic-encrypted-backup",(Func<Task>)AutomaticBackupRun)).ToArray();
+                groups=groups.Append(("automatic-backup-root-binding",(Func<Task>)AutomaticBackupRootBindingRun)).ToArray();
+                groups=groups.Append(("automatic-backup-persistence",(Func<Task>)AutomaticBackupPersistenceRun)).ToArray();
+                groups=groups.Append(("rich-checklist-enter-completion",(Func<Task>)ChecklistEnterCompletionRun)).ToArray();
                 groups=groups.Append(("manual-encrypted-backup",(Func<Task>)ManualBackupRun)).ToArray();
                 groups=groups.Append(("device-search-state",(Func<Task>)DeviceSearchRun)).ToArray();
                 groups=groups.Append(("batch-text-export",(Func<Task>)BatchTextExportRun)).ToArray();

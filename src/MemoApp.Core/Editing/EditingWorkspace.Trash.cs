@@ -19,7 +19,7 @@ public sealed partial class EditingWorkspace
         var evidence=DiscardedEvidence.Clone(before.DiscardedRevisions).Concat(before.History.Where(h=>ids.Contains(h.NoteId)).Select(h=>new StoredDiscardedRevision(h.NoteId,h.RevisionId,(Guid[])h.Parents.Clone())))
             .Concat(before.Notes.Where(n=>ids.Contains(n.NoteId)).Select(n=>new StoredDiscardedRevision(n.NoteId,n.RevisionId,(Guid[])n.Parents.Clone()))).ToArray();
         var profiles=before.UiDevices.Select(d=>d with{Windows=d.Windows.Where(w=>w.NoteId is not Guid id||!ids.Contains(id)).ToImmutableArray(),RecentNoteIds=d.RecentNoteIds.Where(id=>!ids.Contains(id)).ToImmutableArray()}).ToArray();
-        var candidate=before with{SchemaVersion=8,Notes=before.Notes.Where(n=>!ids.Contains(n.NoteId)).ToArray(),History=before.History.Where(h=>!ids.Contains(h.NoteId)).ToArray(),DiscardedRevisions=evidence,UiDevices=profiles};
+        var candidate=before with{SchemaVersion=Math.Max(8,before.SchemaVersion),Notes=before.Notes.Where(n=>!ids.Contains(n.NoteId)).ToArray(),History=before.History.Where(h=>!ids.Contains(h.NoteId)).ToArray(),DiscardedRevisions=evidence,UiDevices=profiles};
         VaultEnvelope.Validate(candidate);DiscardedEvidence.RequirePreserved(discardedRevisions,discardedMarkers,candidate);
         // Complete authoritative state and every retained draft before any native observer runs.
         AcceptPrepared(candidate);devices.Clear();devices.AddRange(profiles);
