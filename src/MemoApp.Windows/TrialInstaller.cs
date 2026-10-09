@@ -78,7 +78,7 @@ internal static class TrialInstaller
                 if(!Regex.IsMatch(segment,"\\A[A-Za-z0-9_-][A-Za-z0-9._-]*\\z")||segment.EndsWith('.'))throw Refused();
                 string stem=segment.Split('.')[0].ToUpperInvariant();if(stem is "CON" or "PRN" or "AUX" or "NUL"||Regex.IsMatch(stem,"\\A(?:COM|LPT)[1-9]\\z"))throw Refused();
             }
-            if(!(name.EndsWith(".dll",StringComparison.OrdinalIgnoreCase)||required.Contains(name,StringComparer.Ordinal)||name is "README.txt" or "USER-TESTS.txt"))throw Refused();
+            if(!(name.EndsWith(".dll",StringComparison.OrdinalIgnoreCase)||required.Contains(name,StringComparer.Ordinal)||name is "README.txt" or "USER-TESTS.txt"))throw new IOException("Unexpected published app filename: "+name);
             total=checked(total+size);if(total>536870912)throw Refused();result.Add(new(name,size,hash));
         }
         if(required.Any(name=>!names.Contains(name)))throw Refused();return result.ToArray();

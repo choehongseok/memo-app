@@ -11,6 +11,8 @@ changed=git('diff','--name-only','HEAD^','HEAD').splitlines()
 request='docs/ARTIFACT_UPLOAD_REQUEST.json'
 allow=False
 if request in changed:
+ assert changed==[request], 'Final upload request must be a marker-only commit'
+ assert len(git('rev-list','--parents','-n','1','HEAD').split())==2, 'Final request must have one parent'
  data=json.loads(pathlib.Path(request).read_text(encoding='utf-8'))
  assert set(data)=={'schemaVersion','sourceTree','testTree','purpose'} and data['schemaVersion']==1
  assert data['purpose']=='authorized-final-windows-trial'
