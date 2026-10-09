@@ -1,3 +1,11 @@
+# 최신: 2026-10-09 Windows 설치 시험판 gate 통과
+
+b31cf8d7360511765fe032f91dc556b3f4cfa186 / Windows37922263494 전체SUCCESS: 원문27417byte/hash/134ID/M06, Python35, safety, build, fullCore, 실제WPF(이미지/종료/설치), self-contained publish, 408파일manifest, 한글 새 설치폴더hash·Unicode link·실제production창·설치폴더coreclr·정상종료 PASS. preShow/즉시Show-close/연속close/마지막dirtysave도포함한다. upload는아직SKIPPED이고검증된동일src14cfe4d2364e51ac56bedd5c08d48d2ed9811570/testsbcf2e28cf8279e5689e38b762907c1e12e5363a9를marker-only최종요청에서고정한다. 산출물ID/링크/만료는실제업로드성공후기록한다.
+
+환경·git·원격은정상이다. development/stage-1/draftPR1에만저장했고main merge/release/권한변경/유료서비스/실제자료없음. 자동결과는실사용/134완성을의미하지않는다. 현재90부분진행/42미착수/N09차단1/M06정규화1, 전체134·사용자수용/기능전수완료0. 실행·설치·제거안내는README/USER-TESTS, 남은원장범위는NEXT_SCOPE/FEATURES. Android·동기화·로컬OCR/음성/AI와진행중ID의나머지수용조건도보존하며개발을이어가야한다.
+
+아래는진행시점의역사기록이며최신판정은위의정확head/Windows gate를따른다.
+
 # 2026-10-09 실행 환경 복구·PNG 표시·완전 종료·설치형 진행
 
 저장된 memo-app 환경 준비를 실제 확인했고 stale main 기반 work checkout에서 원격 development/stage-1의0aaa047을 명시적으로 복구했다. 동일 draft PR1/작업 브랜치에만 저장하며 main merge/release/권한변경/외부서비스/유료 의존성/실제 개인정보는 없다. source27417bytes/SHA256·134ID·M06·기존 암호/잠금/자료 호환을 보존했다.
