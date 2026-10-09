@@ -30,11 +30,11 @@ internal static partial class Program
             Require(process.CloseMainWindow()&&process.WaitForExit(15000)&&process.ExitCode==0,"Installed locked production app closes normally");
             process.Dispose();process=null;
             var trayStart=new ProcessStartInfo(Path.Combine(installed,"MemoApp.Windows.exe")){UseShellExecute=false,WorkingDirectory=installed};trayStart.ArgumentList.Add("--portable");trayStart.ArgumentList.Add("--tray-start");process=Process.Start(trayStart)??throw new IOException("Installed tray-start process missing");
-            IntPtr lockedHandle=IntPtr.Zero;timer.Restart();while(timer.Elapsed<TimeSpan.FromSeconds(30)){process.Refresh();if(process.HasExited)break;lockedHandle=InstalledWindow(process.Id);if(lockedHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
-            Require(!process.HasExited&&lockedHandle!=IntPtr.Zero,"Installed EXE accepts explicit tray startup without falling into startup error dialog");
+            IntPtr lockedHandle=IntPtr.Zero,parkingHandle=IntPtr.Zero;timer.Restart();while(timer.Elapsed<TimeSpan.FromSeconds(30)){process.Refresh();if(process.HasExited)break;lockedHandle=InstalledWindow(process.Id);parkingHandle=InstalledWindow(process.Id,true);if(lockedHandle!=IntPtr.Zero&&parkingHandle!=IntPtr.Zero)break;Thread.Sleep(50);}
+            Require(!process.HasExited&&lockedHandle!=IntPtr.Zero&&parkingHandle!=IntPtr.Zero,"Installed EXE accepts explicit tray startup and has an actual WPF application message window");
             // Send OS-ending messages to this synthetic child only. No system/session shutdown.
-            Require(InstalledSend(lockedHandle,0x11,IntPtr.Zero,(IntPtr)unchecked((int)0x80000000),2,2000,out _)!=IntPtr.Zero,"Installed child receives real query-end-session boundary");
-            Require(InstalledPost(lockedHandle,0x10,IntPtr.Zero,IntPtr.Zero)&&process.WaitForExit(15000)&&process.ExitCode==0,"Actual production SessionEnding disables resident-hide before normal child close");
+            Require(InstalledSend(parkingHandle,0x11,IntPtr.Zero,(IntPtr)unchecked((int)0x80000000),2,2000,out var queryResult)!=IntPtr.Zero&&queryResult==(IntPtr)1,"Installed child's WPF application receives and accepts real query-end-session boundary");
+            Require(process.WaitForExit(15000)&&process.ExitCode==0,"Actual production SessionEnding shuts down the locked resident child normally");
             Require(!Directory.EnumerateFiles(installed,"*.vault",SearchOption.AllDirectories).Any(),"Launching untouched trial does not create a vault or recovery secret");
             Console.WriteLine("PASS: actual self-contained package installed/hash-checked/native shortcut/production EXE/default and locked tray-start/session-ending child boundary/clean exit; temporary app/vault path, shared CI account non-secret UI ID; not actual login/user-PC trust/ACL acceptance");return 0;
         }
@@ -46,13 +46,13 @@ internal static partial class Program
         }
     }
     private delegate bool InstalledEnumCallback(IntPtr hwnd,IntPtr parameter);
-    private static IntPtr InstalledWindow(int processId)
+    private static IntPtr InstalledWindow(int processId,bool parking=false)
     {
-        IntPtr found=IntPtr.Zero;InstalledEnum((hwnd,_)=>{InstalledPid(hwnd,out uint pid);if(pid!=(uint)processId)return true;var title=new StringBuilder(256);InstalledTitle(hwnd,title,title.Capacity);if(title.ToString()=="메모앱 — 합성 자료용 시험판"){found=hwnd;return false;}return true;},IntPtr.Zero);return found;
+        IntPtr found=IntPtr.Zero;InstalledEnum((hwnd,_)=>{InstalledPid(hwnd,out uint pid);if(pid!=(uint)processId)return true;var title=new StringBuilder(256);InstalledTitle(hwnd,title,title.Capacity);var type=new StringBuilder(256);InstalledClass(hwnd,type,type.Capacity);if(parking?title.Length==0&&type.ToString().StartsWith("HwndWrapper[",StringComparison.Ordinal):title.ToString()=="메모앱 — 합성 자료용 시험판"){found=hwnd;return false;}return true;},IntPtr.Zero);return found;
     }
     [DllImport("user32.dll",EntryPoint="EnumWindows")][return:MarshalAs(UnmanagedType.Bool)]private static extern bool InstalledEnum(InstalledEnumCallback callback,IntPtr parameter);
     [DllImport("user32.dll",EntryPoint="GetWindowThreadProcessId")]private static extern uint InstalledPid(IntPtr hwnd,out uint processId);
     [DllImport("user32.dll",EntryPoint="GetWindowTextW",CharSet=CharSet.Unicode)]private static extern int InstalledTitle(IntPtr hwnd,StringBuilder title,int count);
     [DllImport("user32.dll",EntryPoint="SendMessageTimeoutW")]private static extern IntPtr InstalledSend(IntPtr hwnd,uint message,IntPtr wParam,IntPtr lParam,uint flags,uint timeout,out IntPtr result);
-    [DllImport("user32.dll",EntryPoint="PostMessageW")][return:MarshalAs(UnmanagedType.Bool)]private static extern bool InstalledPost(IntPtr hwnd,uint message,IntPtr wParam,IntPtr lParam);
+    [DllImport("user32.dll",EntryPoint="GetClassNameW",CharSet=CharSet.Unicode)]private static extern int InstalledClass(IntPtr hwnd,StringBuilder name,int count);
 }
