@@ -7,6 +7,6 @@
 3. 작은 RGB/RGBA 8-bit PNG를 첨부하고 선택 이미지 미리보기를 누릅니다. 선택 변경·분리·잠금 시 이전 이미지가 보이지 않는지 확인합니다. 제한 밖 PNG/JPEG는 미리보기를 거절해도 원본 첨부를 그대로 보존합니다.
 4. 실제 Windows 잠금과 5분 idle 후 관리창·포스트잇·달력·이미지가 가려지는지 확인합니다. 같은 복구 비밀로 다시 해제합니다. 실패하면 즉시 시험을 중단하고 합성 자료만 유지합니다.
 5. 사용하는 모니터/DPI에서 포스트잇 이동·최소화·복원·재실행 위치를 확인합니다. 다른 PC/USB 이전이 필요하면 암호 백업 사본과 별도 보관한 복구 비밀로 새 시험 폴더에서 복구하고 원본은 보존합니다.
-6. 설치형 제거는 모든 창을 완전히 종료한 뒤 실행 파일 폴더 `%LOCALAPPDATA%\Programs\MemoApp\SyntheticTrial`과 시작 메뉴 바로가기만 수동 삭제합니다. 자료 폴더 `%LOCALAPPDATA%\MemoApp\SyntheticTrial`은 보존합니다. portable 자료는 압축 해제한 폴더의 `Data`입니다. 실패한 설치의 `.memo-install-*` 임시 앱 폴더는 안내된 위치를 확인한 후 수동 정리합니다.
+6. 설치형 제거는 모든 창을 완전히 종료한 뒤 실행 파일 폴더 `%LOCALAPPDATA%\Programs\MemoApp\SyntheticTrial`과 시작 메뉴 바로가기만 수동 삭제합니다. 자료 폴더 `%LOCALAPPDATA%\MemoApp\SyntheticTrial`은 보존합니다. portable 자료는 실행 파일 옆의 `Data`입니다. 설치 폴더에서 portable로 실행했다면 해당 `Data`도 보존한 뒤 실행 파일만 제거하세요. 실패한 설치의 `.memo-install-*` 임시 앱 폴더는 안내된 위치를 확인한 후 수동 정리합니다.
 
 결과는 사용한 커밋/Windows 버전/설치형 또는 portable/모니터 DPI와 재현 순서로 기록하세요. 복구 비밀·암호 파일·실제 메모를 공개 이슈나 로그에 올리지 마세요.

@@ -3,7 +3,7 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 class PackageTrialChecks(unittest.TestCase):
  def setUp(self):
   self.temp=tempfile.TemporaryDirectory();self.root=pathlib.Path(self.temp.name)
-  for name in ['MemoApp.Windows.exe','MemoApp.Windows.dll','coreclr.dll','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','Start-Portable.cmd','Install-User.cmd','createdump.exe','MemoApp.Windows.pdb','licenses/Markdig1.4.0.txt']:
+  for name in ['MemoApp.Windows.exe','MemoApp.Windows.dll','coreclr.dll','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','Start-Portable.cmd','Install-User.cmd','createdump.exe','MemoApp.Windows.pdb','licenses/Markdig1.4.0.txt','licenses/DotNet10.txt','licenses/DotNet10-ThirdPartyNotices.txt','licenses/WindowsDesktop10.txt']:
    p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(('synthetic '+name).encode())
  def tearDown(self):self.temp.cleanup()
  def run_tool(self):return subprocess.run(['python3',str(ROOT/'tools/package_trial.py'),str(self.root)],cwd=ROOT,capture_output=True,text=True)

@@ -84,6 +84,9 @@ jobs:
       - name: Package bounded per-user installation payload
         shell: pwsh
         run: |
+          Copy-Item "$env:DOTNET_ROOT/LICENSE.txt" artifacts/windows-x64-synthetic-trial/licenses/DotNet10.txt
+          Copy-Item "$env:DOTNET_ROOT/ThirdPartyNotices.txt" artifacts/windows-x64-synthetic-trial/licenses/DotNet10-ThirdPartyNotices.txt
+          Copy-Item "$env:DOTNET_ROOT/sdk/10.0.401/Sdks/Microsoft.NET.Sdk.WindowsDesktop/LICENSE.TXT" artifacts/windows-x64-synthetic-trial/licenses/WindowsDesktop10.txt
           Copy-Item README.md artifacts/windows-x64-synthetic-trial/README.txt
           Copy-Item docs/USER-TESTS.md artifacts/windows-x64-synthetic-trial/USER-TESTS.txt
           python tools/package_trial.py artifacts/windows-x64-synthetic-trial

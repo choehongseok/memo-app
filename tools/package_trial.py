@@ -2,7 +2,7 @@
 import hashlib,json,pathlib,subprocess,sys
 root=pathlib.Path(sys.argv[1]).resolve()
 if (root/'installation-manifest.json').exists():raise SystemExit('Refusing to overwrite existing installation manifest')
-allowed={'MemoApp.Windows.exe','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','licenses/Markdig1.4.0.txt','Start-Portable.cmd','Install-User.cmd','README.txt','USER-TESTS.txt'}
+allowed={'MemoApp.Windows.exe','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','licenses/Markdig1.4.0.txt','licenses/DotNet10.txt','licenses/DotNet10-ThirdPartyNotices.txt','licenses/WindowsDesktop10.txt','Start-Portable.cmd','Install-User.cmd','README.txt','USER-TESTS.txt'}
 files=[]
 for p in sorted(root.rglob('*')):
  if p.is_file():
