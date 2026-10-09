@@ -1836,17 +1836,33 @@
       "name": "휴지통 자동 비우기",
       "normalized": "휴지통 자동 비우기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "D11: 휴지통 자동 비우기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "초기 자동 삭제는 꺼짐이며 보존 정책·동기화 삭제기록을 확인 후 적용한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.Trash.cs",
+        "src/MemoApp.Core/Storage/DiscardedEvidence.cs",
+        "src/MemoApp.Core/Storage/SnapshotValidation.cs",
+        "src/MemoApp.Windows/MainWindow.AutomaticTrash.cs",
+        "tests/MemoApp.ContractChecks/AutomaticTrashChecks.cs",
+        "tests/MemoApp.ContractChecks/TrashEncryptionChecks.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticTrashUiChecks.cs"
+      ],
       "planned_module": "Organization",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "windows-control-and-core",
+          "commit": "f6af63cffd4abf41cbd901156af16c3a839cbe82",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401 runtime10.0.12 / synthetic dated trash and recoverable encrypted backups",
+          "command": "Whole Windows37995312568 build/fullCore/WPF automatic-encrypted-trash/publish/413-file actual installed EXE; https://github.com/choehongseok/memo-app/actions/runs/37995312568",
+          "result": "PASS defaultoff/explicit7,30,90 day session opt-in/cancel/outside root/cap; actual backup failure and metadata/lock during blocked backup refuse purge; immediate key release; successful current encrypted backup before purge/save8/restart defaultoff; exact Markdown/history backup recovery; Core multi-observer close/legacy1..7 bytes/causal witnesses/root/opaque attachments/flush-fault dirty+original ciphertext+backup/pending and hidden8 recovery. No real user data deleted. Artifact upload skipped."
+        }
+      ],
+      "blocking_reason": "합성 Windows 자동 확인만 수행. 물리 사용자 설정·기간 선택/폴더/잠금·복구 수용은 미확인. 백업100/삭제표식100/메모당513 witness/전체history+witness10100 한도, 백업·previous/pending·암호 객체 보존으로 완전 삭제 아님. Android/동기화 새 리더는 schema8 causal witness를 유지해야 함."
     },
     {
       "id": "D12",
@@ -4494,9 +4510,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "01836a226740a4b3fb8998853ae84398d058bdd1",
-    "implemented_or_partial_in_progress": 117,
-    "not_started": 15,
+    "as_of_code": "f6af63cffd4abf41cbd901156af16c3a839cbe82",
+    "implemented_or_partial_in_progress": 119,
+    "not_started": 13,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4509,6 +4525,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "117개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수15/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
+    "note": "119개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수13/N09차단1/M06정규화1 및 진행 중 ID의 미완료 조건을 보존한다."
   }
 }
