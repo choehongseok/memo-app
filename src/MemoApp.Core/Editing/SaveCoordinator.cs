@@ -112,6 +112,11 @@ public sealed class SaveCoordinator : IDisposable
         try{RequireAttachmentSource(note,expectedVersion,epoch);returned=true;return plaintext;}
         finally{if(!returned)System.Security.Cryptography.CryptographicOperations.ZeroMemory(plaintext);}
     }
+    public string AttachmentExportRoot(NoteDraft note,Guid id,long expectedVersion,long expectedPreviewEpoch)
+    {
+        if(!IsAttachmentPreviewCurrent(note,id,expectedVersion,expectedPreviewEpoch))throw new InvalidOperationException("Attachment export authority ended");
+        return vault.DataRoot;
+    }
     public AttachmentReadLease CreateAttachmentReadLease(NoteDraft note, Guid id, long expectedVersion)
     {
         long epoch = sessionEpoch;

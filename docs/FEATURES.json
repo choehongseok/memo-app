@@ -3656,16 +3656,30 @@
       "name": "특정 메모 선택 복구",
       "normalized": "특정 메모 선택 복구",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O09: 특정 메모 선택 복구 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "선택 메모만 복원하고 미선택 원본·첨부·삭제기록을 보존한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.ImportBackup.cs",
+        "src/MemoApp.Core/Storage/EncryptedVault.BackupPreview.cs",
+        "src/MemoApp.Windows/BackupPreviewWindow.cs",
+        "src/MemoApp.Windows/MainWindow.SelectedBackup.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "6318561cf76f713fc250fbd34a66a0f298802064",
+          "environment": "Windows GitHub Actions / SDK 10.0.401",
+          "command": "full Core/WPF/publish/installed-package; Windows37947499629",
+          "result": "PASS: selected-backup-copy native/sourceHash/selection/lock boundaries; whole fresh copy current root auth, backup-only organization/objects restart, original/current preserved. Actual user acceptance remains unconfirmed.",
+          "limitations": "same vault/current root authenticated backup only; selected notes become fresh copies without old revision history; no merge/overwrite/full-vault recovery claim."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -4336,9 +4350,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "3d923425c6aa8e0b0233331dfbf97876e2b78b02",
-    "implemented_or_partial_in_progress": 107,
-    "not_started": 25,
+    "as_of_code": "6318561cf76f713fc250fbd34a66a0f298802064",
+    "implemented_or_partial_in_progress": 108,
+    "not_started": 24,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4351,6 +4365,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "107개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "108개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

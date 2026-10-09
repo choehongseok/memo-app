@@ -38,6 +38,7 @@ public sealed partial class EncryptedVault : IDisposable
     private bool disposed, keysReleased;
     private volatile bool faulted;
     public VaultSnapshot Loaded { get; private set; }
+    internal string DataRoot=>root;
     public bool KeysReleased => keysReleased;
     public bool NeedsInitialSave => reservedBase is null;
     internal bool VerifyRecoverySecret(byte[] secret) => !keysReleased && secret.Length == 32 && CryptographicOperations.FixedTimeEquals(secret, recoveryKey);
