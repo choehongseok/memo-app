@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
-        Closed += (_, _) => { windowClosed=true;ClearBackupPreviews();ClearAutomaticBackupViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true;DisableTray();ClearBackupPreviews();ClearAutomaticBackupViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -78,7 +78,7 @@ public partial class MainWindow : Window
         var active = new SaveCoordinator(vault, TimeProvider.System);
         session = active;
         active.Conceal += ConcealViews;
-        active.Changed += () => { if (ReferenceEquals(session, active)) UpdateStatus(); };
+        active.Changed += () => { if (ReferenceEquals(session, active)) {ClearTrayMenu();UpdateStatus();} };
         ShowEditing();
     }
     private void ShowEditing()
@@ -99,7 +99,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++;concealing=true;ClearBackupPreviews();ClearAutomaticBackupViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
+        uiEpoch++;concealing=true;ClearTrayMenu();ClearBackupPreviews();ClearAutomaticBackupViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
@@ -644,13 +644,14 @@ public partial class MainWindow : Window
         if (generatedSecret is not null) CryptographicOperations.ZeroMemory(generatedSecret);
         generatedSecret = null; NewSecretDisplay.Clear(); ConfirmationInput.Clear(); RecoveryInput.Clear();
     }
-    private void Exit_Click(object sender,RoutedEventArgs e)=>Close();
+    private void Exit_Click(object sender,RoutedEventArgs e){fullExitRequested=true;ClearTrayMenu();Close();}
     private async void Window_Closing(object? sender, CancelEventArgs e)
     {
         if (confirmedExit) return;
         e.Cancel = true;
+        if(!closing&&!transitionBusy&&TryHideToTray())return;
         if (transitionBusy) { Notice.Text = "복구 파일 작업이 끝날 때까지 종료를 보류합니다."; return; }
-        if (closing) return; closing = true;
+        if (closing) return; closing = true;ClearTrayMenu();
         try
         {
             if (session is not null)

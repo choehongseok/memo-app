@@ -3383,17 +3383,33 @@
       "name": "다른 메모 프로그램 자료 가져오기",
       "normalized": "다른 메모 프로그램 자료 가져오기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N08: 다른 메모 프로그램 자료 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "실제 확인한 앱·형식·버전만 어댑터 지원 목록에 표시한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/MarkdownFileTransfer.cs",
+        "src/MemoApp.Core/Transfer/BoundedFileReader.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.MarkdownImport.cs",
+        "tests/MemoApp.ContractChecks/MarkdownFileTransferChecks.cs",
+        "tests/MemoApp.ContractChecks/BoundedFileReaderChecks.cs",
+        "tests/MemoApp.WindowsChecks/MarkdownImportChecks.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "raw-markdown-file-windows",
+          "commit": "2df8f9381cff9a99a15c4d7c4751dc50350e2c1e",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401",
+          "command": "Windows whole checks; https://github.com/choehongseok/memo-app/actions/runs/37953672481",
+          "result": "PASS full Core/raw-markdown-file-import/native disable/picker-source/folder transient/actual raw newlines/observer after apply/lock/installed self-contained package. Not whole Obsidian vault or user acceptance."
+        }
+      ],
+      "blocking_reason": "단일 UTF8 .md (Obsidian raw Markdown) 제목/본문만 새 Markdown 메모로 가져옴. 원문 확장/CRLF/CR/LF/HTML 보존, 해석/실행/외부 fetch 없음. 전체 vault/설정/플러그인/첨부/관계/다른 프로그램 형식은 미지원. 1MiB/65536자/strict UTF8/NUL 금지/atomic whole candidate/lock·source·selection 결과 폐기. 실제 사용자/Obsidian 데스크톱 수용 미확인."
     },
     {
       "id": "N09",
@@ -4363,9 +4379,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "980cdbf599767a7abd2a034bc8ae250c76ec57d3",
-    "implemented_or_partial_in_progress": 109,
-    "not_started": 23,
+    "as_of_code": "2df8f9381cff9a99a15c4d7c4751dc50350e2c1e",
+    "implemented_or_partial_in_progress": 110,
+    "not_started": 22,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4378,6 +4394,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "109개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "110개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수22/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
   }
 }

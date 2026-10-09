@@ -3,6 +3,12 @@ using MemoApp.Core.Lifecycle;
 namespace MemoApp.Windows;
 public partial class App : Application
 {
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        if(MainWindow is MainWindow main)main.SetTraySessionEnding(true);
+        base.OnSessionEnding(e);
+        if(e.Cancel&&MainWindow is MainWindow canceled)canceled.SetTraySessionEnding(false);
+    }
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
