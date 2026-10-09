@@ -113,3 +113,27 @@ internal static partial class Program
         finally{CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);}
     }
 }
+
+internal static partial class Program
+{
+    private static int ImageShutdownWorker()
+    {
+        string root=Path.Combine(Path.GetTempPath(),"memo-wpf-png-shutdown-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();
+        try
+        {
+            _=new Application{ShutdownMode=ShutdownMode.OnExplicitShutdown};
+            using var session=new SaveCoordinator(EncryptedVault.Create(root,secret,secret),TimeProvider.System);var note=session.Workspace.CreateNote();Require(session.PrepareAttachmentsAsync().GetAwaiter().GetResult(),"Shutdown root");session.AttachBytes(note,PreviewPng,"synthetic.png","image/png",note.EditVersion);Require(session.SaveAsync().GetAwaiter().GetResult(),"Shutdown baseline");
+            using var backend=new PausedImageBackend(true);using var panel=new AttachmentPanel(session,note,()=>true,_=>{},backend);panel.FilesList.SelectedIndex=0;Task<bool> work=panel.PreviewSelectedAsync();Require(backend.Started.Wait(10000),"Shutdown owns complete raster");
+            panel.Dispatcher.InvokeShutdown();Require(panel.IsDisposed&&panel.PreviewImage.Source is null,"Shutdown conceals and cancels UI host before raster cleanup");backend.Release.Set();Require(!work.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult()&&backend.Output!.All(b=>b==0),"No Dispatcher available: stale output still zeroed and task completes");
+            var admission=typeof(MainWindow).Assembly.GetType("MemoApp.Windows.ImagePreviewAdmission")!;Require(!(bool)admission.GetField("occupied",BindingFlags.Static|BindingFlags.NonPublic)!.GetValue(null)!,"Shutdown returns global slot without any UI continuation");
+            session.LockAsync().GetAwaiter().GetResult();Console.WriteLine("PASS: image Dispatcher shutdown cleanup");return 0;
+        }
+        catch(Exception error){Console.Error.WriteLine("FAIL: image shutdown "+error.GetType().Name+": "+error.Message);return 1;}
+        finally{CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);}
+    }
+    private static async Task ImageShutdownRun()
+    {
+        var start=new System.Diagnostics.ProcessStartInfo("dotnet"){RedirectStandardOutput=true,RedirectStandardError=true,UseShellExecute=false};start.ArgumentList.Add(typeof(Program).Assembly.Location);start.ArgumentList.Add("--image-shutdown-worker");using var process=System.Diagnostics.Process.Start(start)??throw new Exception("Cannot start isolated shutdown fixture");
+        var output=process.StandardOutput.ReadToEndAsync();var error=process.StandardError.ReadToEndAsync();try{await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));Require(process.ExitCode==0,"Isolated Dispatcher shutdown: "+await output+await error);}finally{if(!process.HasExited)process.Kill(true);}
+    }
+}
