@@ -28,9 +28,13 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
     private sealed record Entry(Guid Id,string Label);
     public ListBox FilesList{get;}=new(){MaxHeight=110,MinHeight=24,DisplayMemberPath="Label",Margin=new(0,4,0,0)};
     public bool IsDisposed{get;private set;}
-    public AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,Guid uiDeviceId=default)
+    public AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice)
+        :this(session,note,current,notice,new ImagePreviewBackend(),Guid.Empty){}
+    public AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,Guid uiDeviceId)
         :this(session,note,current,notice,new ImagePreviewBackend(),uiDeviceId){}
-    internal AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend,Guid uiDeviceId=default)
+    internal AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend)
+        :this(session,note,current,notice,backend,Guid.Empty){}
+    internal AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend,Guid uiDeviceId)
     {
         Dispatcher.VerifyAccess();previewBackend=backend;filePathProfile=uiDeviceId;
         this.session=session;this.note=note;this.current=current;this.notice=notice;observedPreviewEpoch=session.AttachmentPreviewEpoch;
