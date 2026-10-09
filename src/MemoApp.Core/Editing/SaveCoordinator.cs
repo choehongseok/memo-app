@@ -76,6 +76,14 @@ public sealed class SaveCoordinator : IDisposable
         Workspace.RequireAttachmentNote(note);
     }
     public Task<bool> PrepareAttachmentsAsync()=>EnsureAttachmentRootAsync();
+    // Predict only this coordinator's synchronous acceptance. Callers must still reject any additional revocation.
+    public (Task<bool> Completion,long PreviewEpoch) PrepareAttachments(long expectedPreviewEpoch)
+    {
+        if(disposed||IsLocked||vault.IsFaulted||AttachmentPreviewEpoch!=expectedPreviewEpoch)throw new InvalidOperationException("Attachment preparation authority changed");
+        long expected=AttachmentPreviewEpoch+(!rootTask.IsCompleted||vault.AttachmentRootAnchored?0:1);
+        return (EnsureAttachmentRootAsync(),expected);
+    }
+
     public Guid AttachBytes(NoteDraft note,ReadOnlySpan<byte> bytes,string name,string mime,long expectedVersion)
     {
         long epoch=sessionEpoch;RequireAttachmentSource(note,expectedVersion,epoch);

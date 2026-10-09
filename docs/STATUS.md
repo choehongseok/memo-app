@@ -1,3 +1,5 @@
+H02 77e4ea5 / Windows37940830509은 예상 missing-method RED 한 건만 발생했고 Excel observer 안내 회귀 PASS였다. 후속 raw PNG 입력은 앱 전체 admission을 OLE 전에 확보하고 각 getter/source/epoch/lock을 검증한다. 독립 검토로 rootId≠anchored 상태와 stream restore 예외 소유 버퍼 누락을 수정했다. authoritative preparation API의 비어있지 않은 unanchored 실제 root/anchored/stale/locked Core 검사 PASS; scratch zero/실제 Windows OS clipboard 및 관리창·스티키 버튼 회귀를 추가했다. 테스트 초안의 sealed DataObject 상속 오류는 IDataObject 직접 구현으로 보정하고 빌드0warning/0error를 확인했다. 실제 Windows 새 소스 gate 대기이며 H02 완료·실제 Ctrl+V 수용으로 표시하지 않는다.
+
 N07 0acb978 / Windows37940341144 전체 SUCCESS, 실제 excel-text-import PASS 확인. 원장105부분/27미착수/N09차단1/M06정규화1·사용자 수용0. 이후 검토에서 observer 예외가 이미 추가된 전체 batch의 안내를 오인할 경로를 찾아 current IDs로 실제 적용 여부를 판별하고 회귀를 추가했다. H02 제한 raw PNG 소유 복사 API는 missing-type RED→target GREEN; Windows UI는 아직 미연결이며 새 missing-method 검사부터 확인한다. H02 테스트 초안의 using System.IO 누락 빌드 오류를 바로잡고 전체 빌드를 다시 실행했다.
 
 N07 382e1d2 / Windows37940004737에서 Core 전체 PASS 및 예상한 excel-text-import missing-button 한 건 RED를 실제 확인했다. 후속 화면은 첫 시트 plain 변환 명시 확인·picker/read/confirm sourceepoch/lock/folder guard·키 소유자 없는 worker·전체 추가 후 저장 결과 안내를 연결한다. 빌드0warning/0error이며 실제 Windows 화면 회귀는 다음 새 소스에서 확인한다.
