@@ -1,6 +1,12 @@
 using System.Text.Json;
 using MemoApp.Core;
 
+if (args.Length==2&&args[0]=="--ocr-native-probe") { await LocalOcrChecks.NativeProbe(args[1]); return; }
+if (args.Length==2&&args[0]=="--ocr-linux-probe") { await LocalOcrChecks.LinuxProbe(args[1]); return; }
+if (LocalOcrChecks.TryWorker(args)) return;
+if (args.Contains("--ocr-process-only")) { await LocalOcrChecks.ProcessChecks(); return; }
+if (args.Contains("--ocr-input-only")) { LocalOcrChecks.Input(); return; }
+
 if (args.Contains("--search-excerpt-only")) { SearchExcerptChecks.Run(); return; }
 if (args.Contains("--selected-png-only")) { await SelectedPngChecks.Run(); return; }
 if (LocalIdentityCreationChecks.TryWorker(args)) return;
@@ -69,6 +75,8 @@ if (restored.NoteId != note.NoteId || restored.RevisionId != note.RevisionId ||
 if (restored.Content.GetProperty("nodes")[3].GetProperty("opaque").GetProperty("keep").GetBoolean() != true)
     throw new InvalidOperationException("Unknown node lost");
 Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roundtrip (in-memory only)");
+LocalOcrChecks.Input();
+await LocalOcrChecks.ProcessChecks();
 EditingChecks.Run();
 ContentVersionChecks.Run();
 AttachmentContractChecks.Run();

@@ -1,0 +1,59 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
+namespace MemoApp.Core.Transfer;
+
+// Internal keyless process primitive. Product UI/Windows native trust and publication are not connected.
+internal sealed class OwnedOcrText(byte[] owned):IDisposable
+{
+ private byte[]? bytes=owned;
+ internal string Text=>bytes is not null?new UTF8Encoding(false,true).GetString(bytes):throw new ObjectDisposedException(nameof(OwnedOcrText));
+ public void Dispose(){var old=Interlocked.Exchange(ref bytes,null);if(old is not null)CryptographicOperations.ZeroMemory(old);}
+}
+internal static class LocalOcrProcess
+{
+ private static readonly SemaphoreSlim admission=new(1,1);
+ internal static async Task<OwnedOcrText> RunPreparedAsync(PreparedTextExport input,ProcessStartInfo start,TimeSpan timeout,CancellationToken token=default)
+ {
+  bool entered=false,transferred=false;Process? child=null;byte[] output=new byte[262145];Task all=Task.CompletedTask;
+  try
+  {
+   if(timeout<=TimeSpan.Zero||timeout>TimeSpan.FromSeconds(20)||input.IsDisposed||input.Bytes.Length>3145750)throw new InvalidDataException("OCR input/deadline limit");
+   token.ThrowIfCancellationRequested();if(!await admission.WaitAsync(0,token))throw new InvalidOperationException("OCR process work is occupied");entered=true;
+   start.UseShellExecute=false;start.RedirectStandardInput=true;start.RedirectStandardOutput=true;start.RedirectStandardError=true;start.CreateNoWindow=true;
+   child=new Process{StartInfo=start};if(!child.Start())throw new InvalidDataException("OCR child refused");
+   var fault=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);int count=0;
+   async Task ReadOutput()
+   {
+    while(true){int read=await child.StandardOutput.BaseStream.ReadAsync(output.AsMemory(count),token);if(read==0)return;count+=read;if(count>262144)throw new InvalidDataException("OCR output byte limit");}
+   }
+   async Task ReadError()
+   {
+    byte[] buffer=new byte[1024];int total=0;try{while(true){int read=await child.StandardError.BaseStream.ReadAsync(buffer.AsMemory(0,Math.Min(buffer.Length,4097-total)),token);if(read==0)return;total+=read;if(total>4096)throw new InvalidDataException("OCR error output limit");}}finally{CryptographicOperations.ZeroMemory(buffer);}
+   }
+   async Task WriteInput(){try{await child.StandardInput.BaseStream.WriteAsync(input.Bytes,token);await child.StandardInput.BaseStream.FlushAsync(token);}finally{child.StandardInput.Close();}}
+   Task[] tasks=[ReadOutput(),ReadError(),WriteInput(),child.WaitForExitAsync()];
+   foreach(var task in tasks)_=task.ContinueWith(t=>{if(t.IsFaulted||t.IsCanceled)fault.TrySetResult();},CancellationToken.None,TaskContinuationOptions.ExecuteSynchronously,TaskScheduler.Default);
+   all=Task.WhenAll(tasks);Task first=await Task.WhenAny(all,fault.Task).WaitAsync(timeout,token);
+   if(first==fault.Task)throw new InvalidDataException("OCR pipe failed");
+   try{await all;}catch{throw new InvalidDataException("OCR pipe failed");}
+   token.ThrowIfCancellationRequested();if(child.ExitCode!=0)throw new InvalidDataException("OCR child failed");
+   string text;try{text=new UTF8Encoding(false,true).GetString(output,0,count);}catch(DecoderFallbackException){throw new InvalidDataException("OCR output UTF8");}
+   if(text.Length>65536||text.Contains('\0'))throw new InvalidDataException("OCR output text limit");
+   token.ThrowIfCancellationRequested();return new(output.AsSpan(0,count).ToArray());
+  }
+  finally
+  {
+   if(child is not null)
+   {
+    try{if(!child.HasExited)child.Kill(true);}catch(Exception error)when(error is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException){}
+    try{child.StandardInput.Close();}catch{}try{child.StandardOutput.Close();}catch{}try{child.StandardError.Close();}catch{}
+    try{await all.WaitAsync(TimeSpan.FromSeconds(2));}catch{}
+   }
+   void Release(){input.Dispose();CryptographicOperations.ZeroMemory(output);child?.Dispose();if(entered)admission.Release();}
+   if(!all.IsCompleted)
+   {transferred=true;_=all.ContinueWith(t=>{_=t.Exception;Release();},CancellationToken.None,TaskContinuationOptions.ExecuteSynchronously,TaskScheduler.Default);}
+   if(!transferred)Release();
+  }
+ }
+}

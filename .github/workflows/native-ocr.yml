@@ -1,0 +1,51 @@
+name: Native OCR feasibility checks
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/native-ocr.yml'
+      - 'tools/build_native_ocr.py'
+      - 'src/MemoApp.Core/Transfer/*Ocr*.cs'
+      - 'src/MemoApp.Core/Transfer/LinuxTesseractProbe.cs'
+      - 'tests/MemoApp.ContractChecks/LocalOcrChecks.cs'
+      - 'tests/MemoApp.ContractChecks/Program.cs'
+      - 'tests/fixtures/ocr-synthetic-png.base64'
+permissions:
+  contents: read
+jobs:
+  windows-native-ocr:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install fixed official SDK with SHA512 validation
+        shell: pwsh
+        run: |
+          $metadata = Invoke-RestMethod 'https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json'
+          $sdk = @($metadata.releases | ForEach-Object { $_.sdk } | Where-Object { $_.version -eq '10.0.401' })[0]
+          $file = @($sdk.files | Where-Object { $_.rid -eq 'win-x64' -and $_.name.EndsWith('.zip') })[0]
+          if (!$file) { throw 'Exact SDK archive not found' }
+          $archive = Join-Path $env:RUNNER_TEMP 'memo-sdk.zip'
+          $sdkDir = Join-Path $env:RUNNER_TEMP 'memo-dotnet'
+          Invoke-WebRequest $file.url -OutFile $archive
+          if ((Get-FileHash $archive -Algorithm SHA512).Hash.ToLowerInvariant() -ne $file.hash.ToLowerInvariant()) { throw 'SDK hash mismatch' }
+          Expand-Archive $archive -DestinationPath $sdkDir
+          $sdkDir | Out-File $env:GITHUB_PATH -Append
+          "DOTNET_ROOT=$sdkDir" | Out-File $env:GITHUB_ENV -Append
+          "DOTNET_CLI_TELEMETRY_OPTOUT=1" | Out-File $env:GITHUB_ENV -Append
+          "DOTNET_NOLOGO=1" | Out-File $env:GITHUB_ENV -Append
+      - name: Build pinned public native engine using existing MSVC
+        shell: pwsh
+        run: |
+          cmake --version
+          python tools/build_native_ocr.py "$env:RUNNER_TEMP/memo-native-ocr"
+          exit $LASTEXITCODE
+      - name: Build contract harness
+        run: dotnet build tests/MemoApp.ContractChecks -c Release
+      - name: Actual Windows Korean and English synthetic recognition
+        shell: pwsh
+        run: |
+          dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build -- --ocr-native-probe "$env:RUNNER_TEMP/memo-native-ocr/probe"
+          exit $LASTEXITCODE
