@@ -47,6 +47,32 @@ internal static class LocalOcrChecks
   using var deadline=PpmOcrInput.Capture(new OwnedBgraRaster(1,1,new byte[]{1,2,3,255}));bool timed=false;
   try{using var impossible=await LocalOcrProcess.RunPreparedAsync(deadline,Worker("blocked"),TimeSpan.FromMilliseconds(200));}catch(TimeoutException){timed=true;}
   VaultChecks.Require(timed&&deadline.IsDisposed,"Actual child overall timeout and cleanup");
+  using var settledInput=PpmOcrInput.Capture(new OwnedBgraRaster(1,1,new byte[]{1,2,3,255}));
+  var settled=LocalOcrProcess.StartPrepared(settledInput,Worker("good"),TimeSpan.FromSeconds(5));
+  using(var text=await settled.Completion)VaultChecks.Require(text.Text=="합성 OCR ABC 123\n","Settlement API retains owned actual child result");
+  await settled.Settled.WaitAsync(TimeSpan.FromSeconds(4));VaultChecks.Require(settledInput.IsDisposed,"Settlement waits for input cleanup");
+  using var failedInput=PpmOcrInput.Capture(new OwnedBgraRaster(1,1,new byte[]{1,2,3,255}));
+  var failed=LocalOcrProcess.StartPrepared(failedInput,Worker("blocked"),TimeSpan.FromMilliseconds(200));bool refusedDeadline=false;
+  using var simultaneousInput=PpmOcrInput.Capture(new OwnedBgraRaster(1,1,new byte[]{1,2,3,255}));
+  var simultaneous=LocalOcrProcess.StartPrepared(simultaneousInput,Worker("good"),TimeSpan.FromSeconds(5));bool occupied=false;
+  try{using var text=await simultaneous.Completion;}catch(InvalidOperationException){occupied=true;}
+  await simultaneous.Settled;VaultChecks.Require(occupied&&simultaneousInput.IsDisposed,"Concurrent process refused before starting; refused input ownership settled");
+  try{using var text=await failed.Completion;}catch(TimeoutException){refusedDeadline=true;}
+  await failed.Settled.WaitAsync(TimeSpan.FromSeconds(4));VaultChecks.Require(refusedDeadline&&failedInput.IsDisposed,"Failure result and child ownership settlement are distinct and both finish");
+  using var inheritedInput=PpmOcrInput.Capture(new OwnedBgraRaster(1,1,new byte[]{1,2,3,255}));
+  var inherited=LocalOcrProcess.StartPrepared(inheritedInput,Worker("inherit-pipes"),TimeSpan.FromMilliseconds(400));bool inheritedDeadline=false;
+  try{using var text=await inherited.Completion;}catch(TimeoutException){inheritedDeadline=true;}
+  bool observedLate=!inherited.Settled.IsCompleted;
+  if(observedLate)
+  {
+   VaultChecks.Require(!inheritedInput.IsDisposed,"Actual inherited late pipe retains input before settlement");
+   using var lateInput=PpmOcrInput.Capture(new OwnedBgraRaster(1,1,new byte[]{1,2,3,255}));
+   var late=LocalOcrProcess.StartPrepared(lateInput,Worker("good"),TimeSpan.FromSeconds(5));bool refusedLate=false;
+   try{using var text=await late.Completion;}catch(InvalidOperationException){refusedLate=true;}
+   await late.Settled;VaultChecks.Require(refusedLate&&lateInput.IsDisposed,"Actual late pipe retains process admission");
+  }
+  await inherited.Settled.WaitAsync(TimeSpan.FromSeconds(8));VaultChecks.Require(inheritedDeadline&&inheritedInput.IsDisposed,"Inherited pipe timeout eventually clears actual ownership");
+  Console.WriteLine("OCR inherited-pipe fixture: late cleanup transfer observed="+observedLate+"; OS closure can settle earlier");
   Console.WriteLine("PASS: actual OCR child stdio/good/invalid/overflow/stderr/nonzero/cancel/deadline and owned cleanup; synthetic child is a boundary fixture, not OCR accuracy");
  }
  private static ProcessStartInfo Worker(string mode)
@@ -58,7 +84,9 @@ internal static class LocalOcrChecks
  {
   if(args.Length!=2||args[0]!="--ocr-fixture-worker")return false;string mode=args[1];
   if(mode=="blocked"){Thread.Sleep(30000);return true;}
+  if(mode=="hold-pipes"){Thread.Sleep(5000);return true;}
   using var input=Console.OpenStandardInput();input.CopyTo(Stream.Null);using var output=Console.OpenStandardOutput();
+  if(mode=="inherit-pipes"){using var descendant=Process.Start(Worker("hold-pipes"));return true;}
   if(mode=="good")output.Write(Encoding.UTF8.GetBytes("합성 OCR ABC 123\n"));
   else if(mode=="invalid")output.Write(new byte[]{0xff,0xfe});
   else if(mode=="overflow")output.Write(new byte[262145]);

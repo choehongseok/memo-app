@@ -10,10 +10,18 @@ internal sealed class OwnedOcrText(byte[] owned):IDisposable
  internal string Text=>bytes is not null?new UTF8Encoding(false,true).GetString(bytes):throw new ObjectDisposedException(nameof(OwnedOcrText));
  public void Dispose(){var old=Interlocked.Exchange(ref bytes,null);if(old is not null)CryptographicOperations.ZeroMemory(old);}
 }
+internal sealed record OcrOperation(Task<OwnedOcrText> Completion,Task Settled);
 internal static class LocalOcrProcess
 {
  private static readonly SemaphoreSlim admission=new(1,1);
- internal static async Task<OwnedOcrText> RunPreparedAsync(PreparedTextExport input,ProcessStartInfo start,TimeSpan timeout,CancellationToken token=default)
+ internal static Task<OwnedOcrText> RunPreparedAsync(PreparedTextExport input,ProcessStartInfo start,TimeSpan timeout,CancellationToken token=default)=>StartPrepared(input,start,timeout,token).Completion;
+ // Settled is keyless cleanup evidence. UI/global admission may release only after its own publication work and this task finish.
+ internal static OcrOperation StartPrepared(PreparedTextExport input,ProcessStartInfo start,TimeSpan timeout,CancellationToken token=default)
+ {
+  var settled=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+  return new(RunOwnedAsync(input,start,timeout,token,settled),settled.Task);
+ }
+ private static async Task<OwnedOcrText> RunOwnedAsync(PreparedTextExport input,ProcessStartInfo start,TimeSpan timeout,CancellationToken token,TaskCompletionSource settled)
  {
   bool entered=false,transferred=false;Process? child=null;byte[] output=new byte[262145];Task all=Task.CompletedTask;
   try
@@ -50,7 +58,11 @@ internal static class LocalOcrProcess
     try{child.StandardInput.Close();}catch{}try{child.StandardOutput.Close();}catch{}try{child.StandardError.Close();}catch{}
     try{await all.WaitAsync(TimeSpan.FromSeconds(2));}catch{}
    }
-   void Release(){input.Dispose();CryptographicOperations.ZeroMemory(output);child?.Dispose();if(entered)admission.Release();}
+   void Release()
+   {
+    try{input.Dispose();CryptographicOperations.ZeroMemory(output);child?.Dispose();if(entered)admission.Release();settled.TrySetResult();}
+    catch(Exception error){settled.TrySetException(error);throw;}
+   }
    if(!all.IsCompleted)
    {transferred=true;_=all.ContinueWith(t=>{_=t.Exception;Release();},CancellationToken.None,TaskContinuationOptions.ExecuteSynchronously,TaskScheduler.Default);}
    if(!transferred)Release();
