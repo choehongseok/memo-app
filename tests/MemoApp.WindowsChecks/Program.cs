@@ -21,7 +21,9 @@ internal static partial class Program
     [STAThread]
     private static int Main()
     {
-        if(Environment.GetCommandLineArgs().Contains("--image-shutdown-worker"))return ImageShutdownWorker();
+        var arguments=Environment.GetCommandLineArgs();
+        if(arguments.Length==3&&arguments[1]=="--installed-package")return InstalledPackageRun(arguments[2]);
+        if(arguments.Contains("--image-shutdown-worker"))return ImageShutdownWorker();
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {

@@ -110,13 +110,13 @@ internal static class TrialInstaller
     internal static void CreateShortcut(string installed,string shortcut)
     {
         installed=LocalPath(installed);shortcut=LocalPath(shortcut);string parent=Path.GetDirectoryName(shortcut)!;if(!Directory.Exists(parent)||Path.Exists(shortcut))throw Refused();
-        string temporary=Path.Combine(parent,"memo-link-"+Guid.NewGuid().ToString("N")+".lnk");object? shell=null,link=null;
+        string temporary=Path.Combine(parent,"memo-link-"+Guid.NewGuid().ToString("N")+".lnk");object? shell=null,link=null;string phase="activate";
         try
         {
             shell=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")??throw Refused())??throw Refused();
-            dynamic native=shell;link=native.CreateShortcut(temporary);dynamic entry=link;entry.TargetPath=Path.Combine(installed,"MemoApp.Windows.exe");entry.Arguments="";entry.WorkingDirectory=installed;entry.Description="메모앱 합성 자료용 시험판";entry.Save();LocalPath(temporary);File.Move(temporary,shortcut,false);
+            dynamic native=shell;phase="create";link=native.CreateShortcut(temporary);dynamic entry=link;phase="target";entry.TargetPath=Path.Combine(installed,"MemoApp.Windows.exe");phase="arguments";entry.Arguments="";phase="working directory";entry.WorkingDirectory=installed;phase="description";entry.Description="메모앱 합성 자료용 시험판";phase="save";entry.Save();phase="publish";LocalPath(temporary);File.Move(temporary,shortcut,false);
         }
-        catch(Exception error){throw new IOException($"새 임시 바로가기를 보존했습니다: {temporary}",error);}
+        catch(Exception error){throw new IOException($"새 임시 바로가기를 보존했습니다 ({phase}): {temporary}",error);}
         finally{if(link is not null)Marshal.FinalReleaseComObject(link);if(shell is not null)Marshal.FinalReleaseComObject(shell);}
     }
     private static IOException Refused()=>new("Trial installation validation failed");

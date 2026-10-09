@@ -85,6 +85,8 @@ jobs:
           Copy-Item README.md artifacts/windows-x64-synthetic-trial/README.txt
           python tools/package_trial.py artifacts/windows-x64-synthetic-trial
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Actual installed self-contained package checks
+        run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build -- --installed-package artifacts/windows-x64-synthetic-trial
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, Node24
         if: github.event_name == 'workflow_dispatch' && inputs.upload_trial
         with:
