@@ -71,8 +71,15 @@ dotnet publish src/MemoApp.Windows -c Release -r win-x64 --self-contained true -
 [PRODUCT_SPEC](docs/PRODUCT_SPEC.md)는 전체 설계, [FEATURES](docs/FEATURES.json)는 원선택134 ID 상태, [STATUS](docs/STATUS.md)는 실제 작업/원격 차단, [VERIFICATION](docs/VERIFICATION.md)은 실행 근거입니다. 원문은 [SOURCE_PROMPT](docs/SOURCE_PROMPT.txt), 독립 설계 검토 조건은 [STAGE1_SECURITY_REVIEW](docs/STAGE1_SECURITY_REVIEW.md)에 보존했습니다.
 
 ## 설치형 제거와 실제 사용자 확인
-모든 창을 완전히 종료하고 실행 파일 폴더 `%LOCALAPPDATA%\Programs\MemoApp\SyntheticTrial`과 시작 메뉴 바로가기만 수동 제거합니다. 자료 폴더 `%LOCALAPPDATA%\MemoApp\SyntheticTrial`과 별도 암호 백업은 보존하세요. 설치 폴더에서 portable로 실행했다면 그 폴더 안의 `Data`도 자료이므로 별도로 보존한 뒤 실행 파일만 제거하세요. 자동 제거/업데이트/MSI는 제공하지 않습니다. 실패 시 새 `.memo-install-*` 임시 앱 폴더/임시 바로가기를 자동 삭제하지 않고 정확한 위치를 안내합니다. 확인 후 수동 정리하세요.
+Windows 시작 실행을 켰다면 관리창 설정에서 먼저 끄고, 모든 창을 완전히 종료한 뒤 실행 파일 폴더 `%LOCALAPPDATA%\Programs\MemoApp\SyntheticTrial`과 시작 메뉴 바로가기만 수동 제거합니다. 자료 폴더 `%LOCALAPPDATA%\MemoApp\SyntheticTrial`과 별도 암호 백업은 보존하세요. 설치 폴더에서 portable로 실행했다면 그 폴더 안의 `Data`도 자료이므로 별도로 보존한 뒤 실행 파일만 제거하세요. 자동 제거/업데이트/MSI는 제공하지 않습니다. 실패 시 새 `.memo-install-*` 임시 앱 폴더/임시 바로가기를 자동 삭제하지 않고 정확한 위치를 안내합니다. 확인 후 수동 정리하세요.
 
 패키지의 `USER-TESTS.txt` 또는 [최소 실제 Windows 시험목록](docs/USER-TESTS.md)을 따르세요. CI의 합성 자료 자동검사는 실제 한글 IME·Windows 잠금·물리 모니터/DPI·사용자 PC의 실행 정책과 수용을 대신하지 않습니다.
 
 패키지의 `licenses`에는 고정 Markdig BSD 고지와 SHA512로 검증한 공식 .NET SDK의 .NET/third-party/WindowsDesktop 고지를 함께 포함합니다.
+
+## 최근 연결 기능의 시험 범위
+트레이 상주는 기본 꺼짐이며 현재 세션에서 선택합니다. 관리창 닫기는 상주를 켠 경우 숨김이고, `완전히 종료`는 종료입니다. Windows 시작 실행도 직접 선택해야 켜지며 현재 계정의 고정 앱 항목만 관리합니다. 설치 자체는 시작 실행을 등록하지 않습니다. 실제 로그인·Explorer 재시작·OS 전체 종료 직전 저장은 USER-TESTS에서 확인합니다.
+
+PDF 내보내기는 제목과 검증된 본문을 평문 PDF1.7로 복사합니다. 한글 완성형·지원되는 한자·영문 등은 전체 OFL D2Coding 글꼴을 포함하며, 글꼴 고지는 `licenses/D2Coding1.4.0-OFL.txt`입니다. 최대100메모/256쪽/16MiB이고, 복잡한 문자 조합·emoji·없는 글리프는 파일을 만들기 전에 거절합니다. 원본 서식·첨부는 PDF에 포함되지 않으며 Markdown은 문자 그대로입니다. PDF/Office/외부 열기의 평문 사본과 외부 프로그램 캐시는 사용자가 관리합니다.
+
+파일 경로 연결은 파일을 복사하거나 암호화하지 않고, 암호화된 메모 안에 기기 식별자와 경로를 보관합니다. 다른 기기의 경로는 열지 않습니다. 분리는 외부 원본을 삭제하지 않습니다. 경로 연결을 사용한 schema7 자료는 과거 버전 앱으로 수정하지 마세요. 원본과 별도 암호 백업을 보존합니다.

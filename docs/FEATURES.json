@@ -3317,17 +3317,23 @@
       "name": "PDF 내보내기",
       "normalized": "PDF 내보내기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N02: PDF 내보내기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/PdfTextTransfer.cs",
+        "src/MemoApp.Core/Transfer/PdfExportFont.cs",
+        "src/MemoApp.Windows/MainWindow.PdfExport.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "01836a226740a4b3fb8998853ae84398d058bdd1 Windows37980813931 전체 SUCCESS: actual pdf-plaintext-export WPF/sourceepoch/modal/native setter/lock/cancel/nooverwrite/source invariance; fullCore embedded font/unsupported text/page bounds/owned zero; Python37 and actual409-file installed EXE/full OFL hash. Independent Linux Poppler Unicode extraction/3-page A4/first-page actual rendering PASS, physical Windows PDF reader separately pending."
+      ],
+      "blocking_reason": "검증된 제목/본문의 평문 projection만. 원본 서식/첨부/전체 Unicode shaping/PDF-A·UA는 주장하지 않으며 실제 Windows PDF reader·사용자 수용 미확인."
     },
     {
       "id": "N03",
@@ -4466,9 +4472,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "22d6855b6f7c5020acfee19e3c7bf83cdb4157d0",
-    "implemented_or_partial_in_progress": 116,
-    "not_started": 16,
+    "as_of_code": "01836a226740a4b3fb8998853ae84398d058bdd1",
+    "implemented_or_partial_in_progress": 117,
+    "not_started": 15,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4481,6 +4487,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "116개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수16/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
+    "note": "117개는 구현·부분 연결 수이며 완료 수가 아니다. Windows 자동 검사와 사용자 수용을 구분하며 미착수15/N09차단1/M06정규화1과 진행 중 ID의 미완료 조건을 계속 보존한다."
   }
 }
