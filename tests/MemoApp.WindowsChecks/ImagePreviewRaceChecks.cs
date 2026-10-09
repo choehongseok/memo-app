@@ -30,11 +30,33 @@ internal static partial class Program
         internal override BitmapSource Create(OwnedBgraRaster raster){var bitmap=base.Create(raster);action();return bitmap;}
     }
     private static readonly byte[] PreviewPng=Convert.FromHexString("89504e470d0a1a0a0000000d4948445200000002000000010806000000f4227f8a0000000e49444154789c63f8cfc000420d000f7a037e77e97f970000000049454e44ae426082");
+    private sealed class PreviewFaultFiles:IAtomicVaultFiles
+    {
+        private readonly AtomicVaultFiles actual=new();internal bool Fail;internal readonly ManualResetEventSlim Entered=new(),Release=new();
+        public Stream CreateNew(string path)=>actual.CreateNew(path);
+        public void FlushToDisk(Stream stream){if(Fail){Entered.Set();if(!Release.Wait(15000))throw new IOException("Synthetic flush timeout");throw new IOException("Synthetic preview flush failure");}actual.FlushToDisk(stream);}
+        public void Move(string source,string target)=>actual.Move(source,target);
+        public void Replace(string source,string target,string previous)=>actual.Replace(source,target,previous);
+    }
+    private static async Task ImagePreviewFaultRun()
+    {
+        string root=Path.Combine(Path.GetTempPath(),"memo-wpf-png-fault-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();var files=new PreviewFaultFiles();
+        try
+        {
+            using var session=new SaveCoordinator(EncryptedVault.Create(root,secret,secret,files),TimeProvider.System);var note=session.Workspace.CreateNote();Require(await session.PrepareAttachmentsAsync(),"Fault preview root");session.AttachBytes(note,PreviewPng,"synthetic.png","image/png",note.EditVersion);Require(await session.SaveAsync(),"Fault baseline");
+            using var panel=new AttachmentPanel(session,note,()=>true,_=>{});files.Fail=true;note.Title="saved preparation before preview";Task<bool> saving=session.SaveAsync();Require(files.Entered.Wait(10000),"Real flush paused after immutable source preparation");panel.FilesList.SelectedIndex=0;
+            Require(await panel.PreviewSelectedAsync()&&panel.PreviewImage.Source is not null,"Preview publication from current source while ciphertext write pending");long version=note.EditVersion;
+            files.Release.Set();Require(!await saving&&note.EditVersion==version&&panel.PreviewImage.Source is null,"Real unchanged-version commit fault immediately clears displayed image");Require(!await panel.PreviewSelectedAsync(),"Faulted coordinator refuses decryption and publication");await session.LockAsync();
+        }
+        finally{files.Release.Set();files.Entered.Dispose();files.Release.Dispose();CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);}
+    }
     private static async Task ImagePreviewRacesRun()
     {
         string root=Path.Combine(Path.GetTempPath(),"memo-wpf-png-race-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();
         try
         {
+            var captures=typeof(AttachmentPanel).GetNestedTypes(BindingFlags.NonPublic).Where(t=>t.GetMethods(BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Instance).Any(m=>m.Name.Contains("<DecodeAsync>"))).ToArray();
+            Require(captures.Length==1&&captures[0].GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic).All(f=>f.FieldType==typeof(ImagePreviewBackend)||f.FieldType==typeof(AttachmentReadLease)||f.FieldType==typeof(CancellationToken)),"Compiled worker capture graph contains only backend/lease/token, no owner or UI authority");
             using var session=new SaveCoordinator(EncryptedVault.Create(root,secret,secret),TimeProvider.System);var note=session.Workspace.CreateNote();Require(await session.PrepareAttachmentsAsync(),"race root");Guid id=session.AttachBytes(note,PreviewPng,"fixture.png","image/png",note.EditVersion);Require(await session.SaveAsync(),"race saved");
             foreach(bool after in new[]{false,true})
             {
