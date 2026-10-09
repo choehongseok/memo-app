@@ -3400,68 +3400,92 @@
       "name": "자동 백업",
       "normalized": "자동 백업",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O01: 자동 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
+        "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+      ],
+      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
     },
     {
       "id": "O02",
       "name": "종료 시 백업",
       "normalized": "종료 시 백업",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O02: 종료 시 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
+        "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+      ],
+      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
     },
     {
       "id": "O03",
       "name": "하루 한 번 백업",
       "normalized": "하루 한 번 백업",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O03: 하루 한 번 백업 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
+        "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+      ],
+      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
     },
     {
       "id": "O04",
       "name": "백업 보관 개수 설정",
       "normalized": "백업 보관 개수 설정",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "O04: 백업 보관 개수 설정 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
+        "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs"
+      ],
       "planned_module": "Recovery",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified."
+      ],
+      "blocking_reason": "현재 해제 세션 설정만 유지. 자동 삭제 없이 한도 도달 시 새 백업 중단. 설정 재실행 유지·보관 자동 정리와 실제 사용자 수용 미완료."
     },
     {
       "id": "O05",
@@ -4257,9 +4281,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "6b3b7c38733197ef0c72460f40c99a3f4054bfe7",
-    "implemented_or_partial_in_progress": 95,
-    "not_started": 37,
+    "as_of_code": "079dbe46b8ab36e6026aa088a6cae491589ad362",
+    "implemented_or_partial_in_progress": 99,
+    "not_started": 33,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4272,6 +4296,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "95개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 최근 메모/저장 검색 Core와 실제 UI는 구분한다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "99개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 최근 메모/저장 검색 Core와 실제 UI는 구분한다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }
