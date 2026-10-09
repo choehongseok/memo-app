@@ -4399,8 +4399,16 @@
       ],
       "implementation_locations": [],
       "planned_module": "LocalIntelligence",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "preparation-runtime",
+          "commit": "3dc66ecb2a0952dab7142874c10f3239ea030f6c",
+          "environment": "GitHub Windows Server2022, existing MSVC19.44/CMake3.31.6, fixed Tesseract5.5.3/Leptonica1.87.0 official kor+eng; Linux boundary checks separate",
+          "command": "Windows whole app37986588306 + native OCR37986588361; LocalOcrChecks NativeProbe/Input/ProcessChecks",
+          "result": "PASS internal owned PPM/process/settlement, actual source-built Korean/English synthetic OCR215ms, PE dependencies KERNEL32.dll. Product UI/model installation/app-wide admission/lock publication/encrypted OCR apply/runtime communication/user acceptance not connected or verified; feature remains not started."
+        }
+      ],
+      "blocking_reason": "내부 준비와 실제 native 합성 OCR 근거만 확보. 제품 엔진 전체 구성물·라이선스·assembly expected hash·사용자 모델설치 선택, 전역 이미지 admission settlement, lock/selection/epoch discard·미리보기/명시 새메모 암호 적용·검색·통신관찰은 후속 구현. 기존 계획 docs/plans/2026-10-09-local-ocr-windows-integration.md에서 이어간다."
     },
     {
       "id": "T13",
