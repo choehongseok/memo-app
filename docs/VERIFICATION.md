@@ -281,3 +281,8 @@ Finalmetadata/docs-onlycommit uses skipci toavoidrepeatingunchangedcodechecks/up
 
 ## Post-artifact continuation: E08
 User/parent instructed continuedfullscopeimplementation, no stop at intermediateinstallation. Artifact517bcf0 retained unchanged. Core SearchExcerpt missing-typeRED thenboundedliteral/NFC/case/far-tail/grapheme/giantcluster/HTML-astext/budgetGREEN; existingNoteSearch shares exactsameNormalizer. Source42a4b9d Windows37923895896 expectedmissingcontrolRED only. UI source d2fb0aa usesselectedcurrentnote,3fixedliteralRuns,512charlimit,no canonicalwrite/index/cache/worker,postmutationclear andepoch revalidation aroundevery nativefield. AttachPreviewEpoch covers publicAcceptPrepared unchangedversionfilename replacement; renderingboundary drops old excerpt thenprojects currentmetadata,not synchronousnativeclearonthatCorehook. Independent read-only Core/design/actualdiffreview foundno remainingCritical/Important; didnotexecute tests. FullLinuxCore+Python35/source/safetyPASS; serial4projectbuild0warnings/errorsPASS. LatestWindows/extra nativefailure/lock regressionsrecordedwhenactualresultsavailable. UserPCIME/OS/DPIacceptance remains separate anddoesnotblocknextlocalfeatureimplementation.
+
+
+## E08 검색 강조 Windows 확인
+
+e8e1bd9b0cc780d355ad9a309645d91159dec81e / https://github.com/choehongseok/memo-app/actions/runs/37925174477 전체 SUCCESS. 최초 missing-control RED37923895896과 dirty snapshot Capture 준비 revision GUID 차이로 인한 시험 실패37924693995를 구분했다. 저장되지 않은 같은 본문을 두 번 Capture하면 서로 다른 준비 revision이 생성됨을 임시 Core 진단으로 확인한 후 진단은 삭제하고 accepted Save 기준으로 보정했다. 실제 WPF search-match-preview 포함 전체 Core/Windows/build/publish/설치 실행 통과, 중간 artifact 업로드는 건너뛰었다. 134개 완료나 사용자 수용은 아니다.

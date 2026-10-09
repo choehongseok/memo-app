@@ -2361,9 +2361,16 @@
           "environment": "Linux x86_64 SDK10.0.401",
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release -- --search-excerpt-only; full Core after UI source",
           "result": "PASS literal/NFC/case/far-tail/grapheme/giantcluster/budgets; actual Windows UI still pending"
+        },
+        {
+          "kind": "windows-synthetic-partial",
+          "commit": "e8e1bd9b0cc780d355ad9a309645d91159dec81e",
+          "environment": "Windows Server 2022 / SDK10.0.401",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/37925174477",
+          "result": "전체 SUCCESS: 실제 WPF 선택 검색 문맥/literal/NFC/512자/원본 불변/잠금/native 예외/동일 버전 교체; full Core/build/publish/실제 설치 실행 PASS. 사용자 수용 아님. 추가 artifact upload 없음."
         }
       ],
-      "blocking_reason": "선택 검색 결과의 title/body/attachment-name 첫 일치 주변512자 NFC/literal 표시를 연결했다. Core missing-type RED→GREEN/fullCore PASS, Windows missing-control RED37923895896 확인. d2fb0aa Windows UI 후속 gate 대기. 전체 사용자 수용 미확인; 원본/암호 저장 형식 변경 없음."
+      "blocking_reason": "선택 결과 title/body/attachment-name 첫 일치 주변 최대512자 강조와 실제 Windows 합성 회귀를 연결했다. 최초 UI 누락 RED와 dirty Capture가 새 준비 revision을 생성하는 시험 기준 오류를 구분하고 accepted Save baseline으로 보정했다. 전체 실제 사용자 수용 미확인; 원본/암호 저장 형식 변경 없음."
     },
     {
       "id": "E09",

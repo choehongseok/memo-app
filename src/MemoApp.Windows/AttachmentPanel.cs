@@ -35,7 +35,8 @@ public sealed class AttachmentPanel : UserControl,IDisposable
         Dispatcher.VerifyAccess();previewBackend=backend;
         this.session=session;this.note=note;this.current=current;this.notice=notice;observedPreviewEpoch=session.AttachmentPreviewEpoch;
         var content=new StackPanel();var buttons=new WrapPanel();buttons.Children.Add(add);buttons.Children.Add(detach);buttons.Children.Add(preview);content.Children.Add(buttons);
-        content.Children.Add(new TextBlock{Text="원본 파일 4 MiB · 메모당 16개 · 보존 파일 합계 8 MiB · 자동 실행 없음",TextWrapping=TextWrapping.Wrap});content.Children.Add(FilesList);content.Children.Add(new TextBlock{Text="미리보기: 제한된 PNG만 지원 · 선택 후 버튼으로 표시 · 원본 파일은 유지",TextWrapping=TextWrapping.Wrap});content.Children.Add(PreviewImage);Content=content;
+        content.Children.Add(new TextBlock{Text="원본 파일 4 MiB · 메모당 16개 · 보존 파일 합계 8 MiB · 자동 실행 없음",TextWrapping=TextWrapping.Wrap});content.Children.Add(FilesList);content.Children.Add(new TextBlock{Text="이미지 파일 한 개를 여기에 끌어놓으면 원본을 암호 첨부로 복사합니다. 미리보기는 선택 후 버튼으로 표시하며 제한된 PNG만 지원합니다.",TextWrapping=TextWrapping.Wrap});content.Children.Add(PreviewImage);Content=content;
+        AllowDrop=true;PreviewDragOver+=ImageDragOver;PreviewDrop+=ImageDrop;
         add.Click+=AddClicked;detach.Click+=DetachClicked;preview.Click+=PreviewClicked;FilesList.SelectionChanged+=SelectionChanged;Dispatcher.ShutdownStarted+=DispatcherClosing;
         session.Workspace.Changed+=Refresh;session.Conceal+=Dispose;session.Changed+=PreviewStateChanged;CompositionTarget.Rendering+=PreviewRendering;note.PropertyChanged+=NoteChanged;Refresh();
     }
@@ -126,6 +127,38 @@ public sealed class AttachmentPanel : UserControl,IDisposable
         });
     }
     private void DetachClicked(object sender,RoutedEventArgs e)=>DetachSelected();
+    private void ImageDragOver(object sender,DragEventArgs e)
+    {
+        e.Handled=true;e.Effects=DragDropEffects.None;
+        if(!Current()||busy||(e.AllowedEffects&DragDropEffects.Copy)==0)return;
+        var active=session!;var source=note!;long version=source.EditVersion,epoch=active.AttachmentPreviewEpoch;
+        try{if(e.Data.GetDataPresent(DataFormats.FileDrop,false)&&Same(active,source,version)&&active.AttachmentPreviewEpoch==epoch)e.Effects=DragDropEffects.Copy;}catch{}
+    }
+    private async void ImageDrop(object sender,DragEventArgs e)
+    {
+        e.Handled=true;e.Effects=DragDropEffects.None;
+        if((e.AllowedEffects&DragDropEffects.Copy)==0)return;
+        var request=ImportDroppedImageAsync(e.Data);
+        // OLE receives the accepted copy request before asynchronous read/save; this is not a save receipt.
+        if(!request.IsCompletedSuccessfully||request.Result)e.Effects=DragDropEffects.Copy;
+        await request;
+    }
+    public Task<bool> ImportDroppedImageAsync(IDataObject data)
+    {
+        Dispatcher.VerifyAccess();if(!Current()||busy)return Task.FromResult(false);
+        var active=session!;var source=note!;long version=source.EditVersion,epoch=active.AttachmentPreviewEpoch;
+        bool Allowed()=>Same(active,source,version)&&active.AttachmentPreviewEpoch==epoch;
+        return ImportFileAsync(()=>
+        {
+            if(!Allowed()||!data.GetDataPresent(DataFormats.FileDrop,false)||!Allowed())return null;
+            object value=data.GetData(DataFormats.FileDrop,false);
+            if(!Allowed()||value is not string[] {Length:1} paths)return null;
+            string? path=paths[0];
+            if(string.IsNullOrEmpty(path)||!SupportedImageExtension(System.IO.Path.GetExtension(path))||!Allowed())return null;
+            return path;
+        });
+    }
+    private static bool SupportedImageExtension(string extension)=>extension.ToLowerInvariant() is ".png" or ".jpg" or ".jpeg" or ".gif" or ".bmp" or ".webp" or ".tif" or ".tiff";
     public async Task<bool> ImportFileAsync(Func<string?> choose)
     {
         if(!Current()||busy)return false;var active=session!;var sourceNote=note!;long version=sourceNote.EditVersion;var token=cancellation.Token;busy=true;Refresh();
@@ -133,11 +166,11 @@ public sealed class AttachmentPanel : UserControl,IDisposable
         {
             if(!Same(active,sourceNote,version))return false;
             string? path=choose();if(path is null||!Same(active,sourceNote,version))return false;
-            if(!await active.PrepareAttachmentsAsync()||!Same(active,sourceNote,version))return false;
             token.ThrowIfCancellationRequested();
             using(var input=await Task.Run(()=>AttachmentSource.Read(path,token),token))
             {
                 if(!Same(active,sourceNote,version)||token.IsCancellationRequested)return false;
+                if(!await active.PrepareAttachmentsAsync()||!Same(active,sourceNote,version)||token.IsCancellationRequested)return false;
                 active.AttachBytes(sourceNote,input.Content,input.Name,input.Mime,version);
             }
             if(!Current()||!ReferenceEquals(session,active))return false;
@@ -194,6 +227,6 @@ public sealed class AttachmentPanel : UserControl,IDisposable
         // Conceal this host before native collection callbacks; parents also conceal independently.
         try{Visibility=Visibility.Collapsed;}catch{}
         try{Content=null;}catch{}
-        cancellation.Cancel();ClearLabels();add.Click-=AddClicked;detach.Click-=DetachClicked;FilesList.SelectionChanged-=SelectionChanged;preview.Click-=PreviewClicked;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=PreviewRendering;cancellation.Dispose();
+        cancellation.Cancel();ClearLabels();add.Click-=AddClicked;detach.Click-=DetachClicked;FilesList.SelectionChanged-=SelectionChanged;preview.Click-=PreviewClicked;PreviewDragOver-=ImageDragOver;PreviewDrop-=ImageDrop;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=PreviewRendering;cancellation.Dispose();
     }
 }
