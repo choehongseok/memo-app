@@ -70,7 +70,8 @@ public sealed class MarkdownNotePreview:UserControl,IDisposable
         {
             var line=new TextBlock{TextWrapping=TextWrapping.Wrap,Margin=new(4,2,4,4)};
             if(block.Kind=="heading"){line.FontWeight=FontWeights.Bold;line.FontSize=block.Level switch{1=>28,2=>24,3=>20,_=>18};}
-            if(block.Kind=="list-item")line.Inlines.Add(new Run("• "));
+            if(block.ListMarker is string marker)line.Inlines.Add(new Run(marker));
+            else if(block.Kind=="list-item")line.Inlines.Add(new Run("• "));
             foreach(var span in block.Spans){var run=new Run(span.Text);if(span.Strong)run.FontWeight=FontWeights.Bold;if(span.Italic)run.FontStyle=FontStyles.Italic;if(span.Code)run.FontFamily=new FontFamily("Consolas");line.Inlines.Add(run);}blocks.Add(line);
         }
         if(!Same()){Reject();return;}content.Children.Clear();

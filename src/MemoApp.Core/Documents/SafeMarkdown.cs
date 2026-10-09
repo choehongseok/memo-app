@@ -1,10 +1,12 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 namespace MemoApp.Core.Documents;
 public sealed record MarkdownSpan(string Text,bool Strong=false,bool Italic=false,bool Code=false);
-public sealed record MarkdownBlock(string Kind,int Level,ImmutableArray<MarkdownSpan> Spans);
+public sealed record MarkdownBlock(string Kind,int Level,ImmutableArray<MarkdownSpan> Spans)
+{public string? ListMarker{get;init;}};
 public sealed record MarkdownPreview(bool Complete,string Message,ImmutableArray<MarkdownBlock> Blocks);
 public static class SafeMarkdown
 {
@@ -64,13 +66,18 @@ public static class SafeMarkdown
                 }
                 return spans.ToImmutable();
             }
-            var pending=new Stack<(Block Node,int Depth,bool InList)>();Count();pending.Push((document,0,false));
+            var pending=new Stack<(Block Node,int Depth,string? Marker)>();Count();pending.Push((document,0,null));
             while(pending.TryPop(out var entry))
             {
                 if(entry.Depth>MaxDepth)throw new InvalidDataException("Markdown block depth");
+                if(entry.Node is ListBlock list)
+                {
+                    long start=0;if(list.IsOrdered&&!long.TryParse(list.OrderedStart,NumberStyles.None,CultureInfo.InvariantCulture,out start))throw new InvalidDataException("Markdown ordered start");
+                    for(int index=list.Count-1;index>=0;index--){Count();string listMarker=list.IsOrdered?(start+index).ToString(CultureInfo.InvariantCulture)+list.OrderedDelimiter+" ":"• ";pending.Push((list[index],entry.Depth+1,listMarker));}continue;
+                }
                 if(entry.Node is ContainerBlock container)
                 {
-                    for(int index=container.Count-1;index>=0;index--){Count();pending.Push((container[index],entry.Depth+1,entry.InList||container is ListBlock));}continue;
+                    for(int index=container.Count-1;index>=0;index--){Count();pending.Push((container[index],entry.Depth+1,index==0?entry.Marker:null));}continue;
                 }
                 if(blocks.Count>=MaxBlocks)throw new InvalidDataException("Markdown block count");
                 ImmutableArray<MarkdownSpan> spans;string kind="paragraph";int level=0;
@@ -81,10 +88,11 @@ public static class SafeMarkdown
                     spans=leaf.Inline is null?[new(leaf.Lines.ToString())]:Inlines(leaf.Inline,entry.Depth);
                     if(leaf.Inline is null){int size=spans.Sum(s=>s.Text.Length);if(size>MaxOutput-output)throw new InvalidDataException("Markdown leaf budget");output+=size;}
                     if(leaf is HeadingBlock heading){kind="heading";level=heading.Level;}
-                    else if(entry.InList)kind="list-item";
+                    else if(entry.Marker is not null)kind="list-item";
                 }
                 else continue;
-                blocks.Add(new(kind,level,spans));
+                if(entry.Marker is string marker){if(marker.Length>MaxOutput-output)throw new InvalidDataException("Markdown marker budget");output+=marker.Length;}
+                blocks.Add(new(kind,level,spans){ListMarker=entry.Marker});
             }
             return new(true,"제한된 안전 미리보기 · 링크/이미지/HTML은 자동 실행하지 않습니다.",blocks.ToImmutable());
         }

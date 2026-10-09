@@ -550,11 +550,8 @@ public partial class MainWindow : Window
     }
     private async void Backup_Click(object sender, RoutedEventArgs e)
     {
-        if (session is not { IsLocked: false } active) return;
         var dialog = new SaveFileDialog { Filter = "암호 메모 백업|*.vault", FileName = $"memo-backup-{DateTime.Now:yyyyMMdd-HHmmss}.vault", OverwritePrompt = true };
-        if (dialog.ShowDialog(this) != true || active.IsLocked) return;
-        long epoch = uiEpoch; bool success = await active.BackupAsync(dialog.FileName);
-        if (epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked) Notice.Text = success ? "최신 암호 백업을 새 파일로 저장했습니다. 같은 복구 비밀이 필요합니다." : "백업 실패/상태 변경 — 기존 파일 덮어쓰기 없이 현재 자료를 보존했습니다. 새 이름·경로·쓰기 권한·저장 상태를 확인하세요.";
+        await ChooseManualBackupAsync(() => dialog.ShowDialog(this) == true ? dialog.FileName : null);
     }
     private bool SameFileSession(SaveCoordinator active, long epoch, NoteDraft? note = null) =>
         epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked && (note is null || !note.IsClosed && !note.IsDeleted && active.Workspace.Notes.Contains(note));

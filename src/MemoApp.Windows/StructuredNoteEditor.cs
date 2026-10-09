@@ -14,7 +14,7 @@ using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 namespace MemoApp.Windows;
 // Only our bounded canonical model is loaded. Never parse user XAML/RTF or URI resources.
-public sealed class StructuredNoteEditor:UserControl,IDisposable
+public sealed partial class StructuredNoteEditor:UserControl,IDisposable
 {
     private EditingWorkspace? workspace;
     private NoteDraft? note;
@@ -58,7 +58,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
         Button("밑줄",ApplyUnderline);Button("취소선",ApplyStrike);
         var foreground=new ComboBox{Width=65,ItemsSource=new[]{"#000000","#FFFFFF","#CC0000","#0044CC","#006600","#663399"},ToolTip="글자색"};foreground.SelectionChanged+=(_,_)=>{if(foreground.SelectedItem is string hex)ApplyForeground(hex);};toolbar.Children.Add(foreground);
         var highlight=new ComboBox{Width=65,ItemsSource=new[]{"#FFFF00","#CCFFCC","#FFCCDD","#CCCCFF","#FFFFFF"},ToolTip="형광펜"};highlight.SelectionChanged+=(_,_)=>{if(highlight.SelectedItem is string hex)ApplyHighlight(hex);};toolbar.Children.Add(highlight);
-        Button("• 목록",()=>ToggleList(false));Button("1. 목록",()=>ToggleList(true));Button("체크목록",InsertChecklist);Button("체크",ToggleChecked);Button("2×2 표",()=>InsertTable(2,2));toolbar.Children.Add(linkInput);Button("링크 표시 추가",()=>ApplyLink(linkInput.Text));
+        Button("• 목록",()=>ToggleList(false));Button("1. 목록",()=>ToggleList(true));Button("체크목록",InsertChecklist);Button("체크",ToggleChecked);Button("2×2 표",()=>InsertTable(2,2));toolbar.Children.Add(linkInput);Button("링크 표시 추가",()=>ApplyLink(linkInput.Text));Button("선택 링크 열기",OpenSelectedLinkWithConfirmation);RichInput.PreviewMouseLeftButtonUp+=LinkClick;
         RichInput.TextChanged+=Changed;DataObject.AddPastingHandler(RichInput,Pasting);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart),true);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate),true);
@@ -386,7 +386,7 @@ public sealed class StructuredNoteEditor:UserControl,IDisposable
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate));
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete));
-        RichInput.PreviewDragOver-=RejectDrop;RichInput.PreviewDrop-=RejectDrop;CommandManager.RemovePreviewExecutedHandler(RichInput,PreviewCommand);
+        RichInput.PreviewMouseLeftButtonUp-=LinkClick;RichInput.PreviewDragOver-=RejectDrop;RichInput.PreviewDrop-=RejectDrop;CommandManager.RemovePreviewExecutedHandler(RichInput,PreviewCommand);
         foreach(Action cleanup in new Action[]{()=>Visibility=Visibility.Collapsed,()=>RichInput.IsUndoEnabled=false,()=>RichInput.IsReadOnly=true,()=>RichInput.DataContext=null,()=>state.Text="",()=>toolbar.IsEnabled=false,()=>linkInput.IsUndoEnabled=false,linkInput.Clear,()=>RichInput.Document.Blocks.Clear()})
         {
             try{cleanup();}catch(Exception error) when(error is not OutOfMemoryException){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
