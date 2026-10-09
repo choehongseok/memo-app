@@ -27,8 +27,8 @@ internal static partial class Program
         {
             install(source,target);phase="create shortcut";
             var shortcut=type.GetMethod("CreateShortcut",BindingFlags.Static|BindingFlags.NonPublic)!.CreateDelegate<Action<string,string>>();string linkPath=Path.Combine(root,"MemoApp Synthetic Trial.lnk");shortcut(target,linkPath);
-            phase="read shortcut";object shell=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")!)!;dynamic native=shell;object link=native.CreateShortcut(linkPath);dynamic entry=link;
-            try{Require((string)entry.TargetPath==Path.Combine(target,"MemoApp.Windows.exe")&&(string)entry.Arguments==""&&(string)entry.WorkingDirectory==target,"Actual Windows shortcut has only fixed executable target, no arguments and installed working directory");}finally{System.Runtime.InteropServices.Marshal.FinalReleaseComObject(link);System.Runtime.InteropServices.Marshal.FinalReleaseComObject(shell);}
+            phase="read shortcut";var link=NativeShellLink.Read(linkPath);
+            Require(link.Target==Path.Combine(target,"MemoApp.Windows.exe")&&link.Arguments==""&&link.WorkingDirectory==target,"Actual Unicode Windows shortcut has fixed executable target, no arguments and installed working directory");
             phase="occupied shortcut";byte[] shortcutBytes=File.ReadAllBytes(linkPath);bool occupied=false;try{shortcut(target,linkPath);}catch{occupied=true;}Require(occupied&&File.ReadAllBytes(linkPath).SequenceEqual(shortcutBytes),"Existing shortcut is preserved");
             phase="exact copied files";Require(paths.All(path=>File.ReadAllBytes(Path.Combine(target,path)).SequenceEqual(File.ReadAllBytes(Path.Combine(source,path)))),"Per-user installation preserves every exact declared source file and Korean paths");
             phase="occupied target";bool failed=false;try{install(source,target);}catch{failed=true;}Require(failed&&File.ReadAllText(Path.Combine(target,"MemoApp.Windows.exe"))=="synthetic fixture MemoApp.Windows.exe","Occupied target is refused without overwrite");

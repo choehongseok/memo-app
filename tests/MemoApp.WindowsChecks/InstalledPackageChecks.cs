@@ -25,7 +25,7 @@ internal static partial class Program
             Require(!process.HasExited&&process.MainWindowHandle!=IntPtr.Zero,"Installed self-contained EXE opens actual Windows main window without external runtime");
             Require(process.CloseMainWindow()&&process.WaitForExit(15000)&&process.ExitCode==0,"Installed locked production app closes normally");
             Require(!Directory.EnumerateFiles(installed,"*.vault",SearchOption.AllDirectories).Any(),"Launching untouched trial does not create a vault or recovery secret");
-            Console.WriteLine("PASS: actual self-contained package installed/hash-checked/native shortcut/production EXE window/clean exit; synthetic temporary path only; not user-PC trust/ACL acceptance");return 0;
+            Console.WriteLine("PASS: actual self-contained package installed/hash-checked/native shortcut/production EXE window/clean exit; temporary app/vault path, shared CI account non-secret UI ID; not user-PC trust/ACL acceptance");return 0;
         }
         catch(Exception error){Console.Error.WriteLine("FAIL: actual installed package "+error);return 1;}
         finally

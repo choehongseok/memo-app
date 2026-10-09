@@ -20,6 +20,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node24
         with:
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
       - name: Install fixed official SDK with SHA512 validation
         shell: pwsh
         run: |
@@ -83,13 +85,19 @@ jobs:
         shell: pwsh
         run: |
           Copy-Item README.md artifacts/windows-x64-synthetic-trial/README.txt
+          Copy-Item docs/USER-TESTS.md artifacts/windows-x64-synthetic-trial/USER-TESTS.txt
           python tools/package_trial.py artifacts/windows-x64-synthetic-trial
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Actual installed self-contained package checks
         run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build -- --installed-package artifacts/windows-x64-synthetic-trial
+      - name: Check explicit final-trial upload request
+        id: final-trial
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'development/stage-1' && github.run_attempt == 1
+        run: python tools/check_artifact_request.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, Node24
-        if: github.event_name == 'workflow_dispatch' && inputs.upload_trial
+        if: (github.event_name == 'workflow_dispatch' && inputs.upload_trial) || steps.final-trial.outputs.allowed == 'true'
         with:
           name: windows-x64-synthetic-trial
           path: artifacts/windows-x64-synthetic-trial
           retention-days: 7
+          if-no-files-found: error
