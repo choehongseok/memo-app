@@ -1,0 +1,30 @@
+# Local UI identity creation race correction
+
+## Observed defect and root cause
+The existing fullCore concurrent-winner assertion failed once on unchanged LocalUiIdentity. A separate synthetic16-thread start-barrier probe reproduced it in the first round: two distinct returned winners for the same new directory. No real data/IDs were printed or used. Exact current source hash261da0fc0ac493ab398f4a059d45544cb1f6c1f78f90ffab56b8e1cc89951f79 is unchanged from the preceding Windows-green checkpoint.
+
+The official .NET10.0.12 Unix MoveFile(overwrite:false) implementation performs a destination LStat and, when absent, Rename. A competing creation between those steps can be replaced by rename. Our observed differing IDs are consistent with this verified non-atomic create path; File.Move's false flag is not a sufficient cooperating-concurrent-creator protocol.
+Source: https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/IO/FileSystem.Unix.cs
+
+## Narrow correction
+Preserve the exact32-byte non-secret UI identity format and existing IDs/corruption refusal. This is not a credential, vault/root/key change, schema update, migration, network use or installer activation.
+
+Serialize cooperating GetOrCreate calls for every identity path through one private process-local monitor (no growing path dictionary). For a missing ID, acquire an adjacent persistent empty ui-device.create.lock with explicit FileStream.Lock(0,1) and re-read the target while holding it. Retain that descriptor until the owned temp has been flushed/published and the exact identity is re-read. The interprocess lock file is never deleted, avoiding implementation-induced delete/recreate lock races; it contains no ID or content. Preflight local ancestors, root and lock leaf, reject linked/directory/nonempty lock files. A bounded sharing-contention retry must not turn access-denied or invalid-path/corrupt-lock errors into overwrites. Use checked explicit range-lock semantics on Windows/Linux, not Unix FileShare implicit flock. Retry only Linux IOException HResult11 or Windows0x80070021 thrown by Lock itself; other errors fail closed. Use monotonic deadline and10ms sleep, and reject unsupported creation platforms. The process monitor spans the first lock-file open through final disposal; never open another descriptor for that inode while held. Test real processes with implicit FileShare locking disabled as well.
+
+On supported Windows and tested Linux/libc/statx, existing valid ID reads remain byte-preserving/read-only with no new lock-file creation. Existing ID reads now use the strict regular-file helper; other platforms or missing regular-file capabilities fail closed. This is an explicit narrowing of previously generic untested read compatibility, not a claim of unchanged support on those platforms. Missing-ID creation uses the same preflight/temp/flush/no-overwrite/readback and only deletes its own temp on failure. With the lock held, compatible creators cannot reach the Unix check-rename gap concurrently. A process that ignores the lock and hostile directory replacement remain outside this preflight claim; never silently regenerate an existing ID.
+
+## Required tests and gates
+- Barrier-synchronized same-path threads repeatedly return one exact persisted winner. Observe RED against the old code before the fix
+- Actual independent processes, released after their readiness markers, converge to one exact persisted winner; kill a process while it holds the creation lock and verify OS release without deleting the lock file
+- Existing32-byte IDs are byte-preserved and do not create a lock; corruption/truncation/empty UUID never causes replacement
+- Linked/directory/nonempty lock files and invalid/network paths fail before ID/temp writes; timeout under a live held lock fails without ID creation
+- Same synthetic32-byte format/checksum, zero secret/key effect; complete current Core/source134/Python/serial crossbuild and exact-commit Windows CI remain required
+
+Independent read-only pre-code review conditionally permits the explicit range-lock correction after all conditions here are incorporated. Actual implementation/execution remain separate gates. It is not a completed fix or proof against non-cooperating/adversarial replacement.
+
+## Regular-file and filesystem boundaries
+Linux uses existing no-follow statx before creation (only ENOENT means missing), then native O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW|O_NONBLOCK|O_NOCTTY with mode0x180 (octal0600), no O_TRUNC. Descriptor statx must report STATX_TYPE/S_IFREG. Windows retains ordinary local ancestor/leaf checks and no delete sharing. Both require CanSeek and zero Length before Lock, then zero Length again after Lock. Every failure closes its owned handle. POSIX range locks are process-associated; no second descriptor for the lock inode may be opened/closed while held. Explicit Lock failures/unsupported locking cause refusal. The proof is for tested supported filesystem/locking conditions; LocalFilePath does not detect Unix-mounted network filesystems. Non-cooperating writers/hostile ancestor replacement remain outside the claim.
+Sources: https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/IO/Strategies/FileStreamHelpers.Unix.cs , https://github.com/dotnet/runtime/blob/v10.0.12/src/libraries/System.Private.CoreLib/src/System/IO/Strategies/FileStreamHelpers.Windows.cs , https://man7.org/linux/man-pages/man2/fcntl_locking.2.html
+
+## Actual review and proof wording
+Independent actual-diff read found no remaining Windows/tested-Linux integrity blocker. The strict regular-file ID reader deliberately narrows unsupported-platform/capability reads as disclosed above. The held-lock fixtures exercise both the internal100ms Acquire and public GetOrCreate deadline before any ID/temp creation. The kill/release fixture observes that the persistent lock file remains present and that subsequent creation succeeds; it does not claim an independently sampled inode identity.

@@ -3,6 +3,33 @@ using System.Runtime.InteropServices;
 namespace MemoApp.Core.Transfer;
 internal static class LocalRegularFile
 {
+    internal static FileStream OpenCreationLock(string path)
+    {
+        LocalFilePath.CheckAncestors(path, false);
+        if (OperatingSystem.IsWindows())
+        {
+            try { if ((File.GetAttributes(path) & (FileAttributes.ReparsePoint | FileAttributes.Directory)) != 0) throw new IOException("Invalid UI identity creation lock"); }
+            catch (FileNotFoundException) { }
+            return new(path, new FileStreamOptions { Mode = FileMode.OpenOrCreate, Access = FileAccess.ReadWrite, Share = FileShare.ReadWrite, BufferSize = 1 });
+        }
+        if (!OperatingSystem.IsLinux() || OperatingSystem.IsAndroid()) throw new IOException("UI identity creation locking is unsupported");
+        try
+        {
+            int status = Statx(-100, path, 0x100, 1, out var before);
+            if (status == 0 ? !Regular(before) : Marshal.GetLastPInvokeError() != 2) throw new IOException("Invalid UI identity creation lock");
+            int fd = NativeOpenCreate(path, 2 | 0x40 | 0x80000 | 0x20000 | 0x800 | 0x100, 0x180); // RDWR|CREAT|CLOEXEC|NOFOLLOW|NONBLOCK|NOCTTY, 0600; never truncate.
+            if (fd < 0) throw new IOException("UI identity creation lock cannot be opened");
+            var handle = new SafeFileHandle(new IntPtr(fd), true);
+            try
+            {
+                if (Statx(fd, "", 0x1000, 1, out var actual) != 0 || !Regular(actual)) throw new IOException("Opened UI identity lock is not regular");
+                return new FileStream(handle, FileAccess.ReadWrite, 1, false);
+            }
+            catch { handle.Dispose(); throw; }
+        }
+        catch (Exception error) when (error is DllNotFoundException or EntryPointNotFoundException)
+        { throw new IOException("UI identity regular-file validation is unavailable"); }
+    }
     internal static FileStream Open(string path)
     {
         if(OperatingSystem.IsWindows())return new(path,new FileStreamOptions{Mode=FileMode.Open,Access=FileAccess.Read,Share=FileShare.Read,BufferSize=1,Options=FileOptions.SequentialScan});
@@ -33,4 +60,6 @@ internal static class LocalRegularFile
     private static extern int Statx(int directory,[MarshalAs(UnmanagedType.LPUTF8Str)]string path,int flags,uint mask,out LinuxStatx result);
     [DllImport("libc.so.6",EntryPoint="open",SetLastError=true,CallingConvention=CallingConvention.Cdecl)]
     private static extern int NativeOpen([MarshalAs(UnmanagedType.LPUTF8Str)]string path,int flags);
+    [DllImport("libc.so.6",EntryPoint="open",SetLastError=true,CallingConvention=CallingConvention.Cdecl)]
+    private static extern int NativeOpenCreate([MarshalAs(UnmanagedType.LPUTF8Str)]string path,int flags,uint mode);
 }

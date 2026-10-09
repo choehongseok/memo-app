@@ -1,3 +1,7 @@
+# 2026-10-07 non-secret 표시ID 동시생성 교정 진행
+
+strict PNG pixel 원격f5a4afa/tree9942514 Windows37693088708 전체SUCCESS·uploadSKIPPED를 확인했다. 이전 Linux 표시ID 동시생성 실패는 별도16-thread 첫round에서2개 winner로 재현했고, 공식 .NET Unix stat→rename 경합을 확인했다. 기존32bytes·SHA·UUID를 유지하며 process gate+checked explicit range lock·actual-fd regular 검사를 구현했다. barrier RED 뒤10×16thread·8개 실제process(implicit flock off 포함)·직접/공개 timeout·kill후 파일잔류/lock해제·손상/32개절단/emptyUUID/실제FIFO/link 거절 targeted 및전체Core·4프로젝트build0·Python26/134PASS. 독립 actualdiff읽기필수blocker없음. valid ID read의지원은Windows/검사된Linux libc/statx로명시제한하며다른환경은failclosed. 정확commit Windows는다음gate,85부분/47미착수/2특수·134/수용0·이미지UI미연결유지.
+
 # 2026-10-07 strict PNG 픽셀 decoder Core 진행
 
 lease 원격 f568538/tree c637461의 Windows37691454935 전체SUCCESS(source/Python26/safety/build/Core/WPF/publish), uploadSKIPPED를 확인했다. 다음 Core decoder는 기존RGB/RGBA profile 안에서만 BCL zlib·2개 scanline·최대4MiB BGRA를 사용하며 generic WIC/이미지UI는 미연결이다. missing-type RED 뒤 exact EOF/Adler/5필터·독립fixed/dynamic/Paeth tie·각할당취소·원본불변·실제scratch/result zero targetedPASS. 독립 읽기필수blocker없음, 4프로젝트crossbuild0경고/오류. 첫전체Core는 기존ID동시생성경합이 한 번 실패했고 동일전체 재실행은PASS였으며 경합원인을 별도확인한다. 최신decoder Windows는 후속gate이고85부분/47미착수/2특수·134/사용자수용0을 유지한다.
