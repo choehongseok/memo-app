@@ -2621,16 +2621,29 @@
       "name": "첨부파일 클릭해서 열기",
       "normalized": "첨부파일 클릭해서 열기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H06: 첨부파일 클릭해서 열기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "대상과 평문 임시파일 위험을 알리고 사용자 동작으로 외부 앱을 연다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/AttachmentFileTransfer.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/AttachmentPanel.Open.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
+      "test_evidence": [
+        {
+          "kind": "component-integration",
+          "commit": "980cdbf599767a7abd2a034bc8ae250c76ec57d3",
+          "environment": "Windows GitHub Actions / SDK 10.0.401",
+          "command": "full Core/WPF/publish/installed-package; Windows37949800474",
+          "result": "PASS attachment-explicit-open; fresh local authenticated plaintext copy, no overwrite/vault target, native disable failure, confirmation/selection/edit/duplicate guards, launch failure and notice callback edit/lock after write prevent launch. Exact bytes/zero/nooverwrite and running-lock immediate keys Core PASS.",
+          "limitations": "ShellExecute connected, initiation seam checked with genuine WPF and files; user default application/physical doubleclick usability remains unconfirmed. External app may execute active content/network; plaintext copy/cache remains after lock/failure; no hostile pathname swap defense."
+        }
+      ],
       "blocking_reason": null
     },
     {
@@ -4350,9 +4363,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "6318561cf76f713fc250fbd34a66a0f298802064",
-    "implemented_or_partial_in_progress": 108,
-    "not_started": 24,
+    "as_of_code": "980cdbf599767a7abd2a034bc8ae250c76ec57d3",
+    "implemented_or_partial_in_progress": 109,
+    "not_started": 23,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4365,6 +4378,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "108개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "109개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

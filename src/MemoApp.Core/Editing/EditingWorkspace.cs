@@ -176,6 +176,8 @@ public sealed partial class EditingWorkspace
         AcceptPrepared(next); Changed?.Invoke();
         foreach (var note in affected) { if (closed) break; note.PublishEvent(); }
     }
+    public NoteDraft ImportMarkdown(string title,string raw,Guid? folderId=null)=>
+        AddComplete(title,raw,new(){FolderId=folderId,Order=NextOrder()},"markdown");
     public NoteDraft ImportText(string title, string text, Guid? folderId = null) =>
         AddComplete(title,text,new() { FolderId=folderId,Order=NextOrder() });
     private NoteDraft AddComplete(string title,string text,NoteMetadata metadata,string mode="plain",StyledDocument? document=null,ImmutableArray<Guid> attachments=default)

@@ -16,7 +16,7 @@ public static class ExcelTextTransfer
         var parts=new Dictionary<string,byte[]>(StringComparer.Ordinal);
         try
         {
-            using(var input=new FileStream(source,FileMode.Open,FileAccess.Read,FileShare.Read)){if(input.Length>SourceLimit)throw new InvalidDataException("Workbook source limit");bytes=new byte[checked((int)input.Length)];ReadExact(input,bytes,cancellationToken);if(input.ReadByte()!=-1)throw new IOException("Workbook source changed");}
+            using(var input=LocalRegularFile.Open(source))bytes=BoundedFileReader.Read(input,0,SourceLimit,cancellationToken);
             string hash=Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();using var zip=new ZipArchive(new MemoryStream(bytes,false),ZipArchiveMode.Read);var names=new HashSet<string>(StringComparer.OrdinalIgnoreCase);long declared=0;int expanded=0;
             if(zip.Entries.Count>128)throw new InvalidDataException("Workbook part count");
             foreach(var entry in zip.Entries)
