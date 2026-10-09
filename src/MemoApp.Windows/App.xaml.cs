@@ -6,6 +6,7 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        if(e.Args.SequenceEqual(new[]{"--install"})){TrialInstaller.Prompt();Shutdown();return;}
         try
         {
             string root = StartupPaths.Resolve(e.Args, AppContext.BaseDirectory, Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));

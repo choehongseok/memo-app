@@ -647,6 +647,7 @@ public partial class MainWindow : Window
         if (generatedSecret is not null) CryptographicOperations.ZeroMemory(generatedSecret);
         generatedSecret = null; NewSecretDisplay.Clear(); ConfirmationInput.Clear(); RecoveryInput.Clear();
     }
+    private void Exit_Click(object sender,RoutedEventArgs e)=>Close();
     private async void Window_Closing(object? sender, CancelEventArgs e)
     {
         if (confirmedExit) return;

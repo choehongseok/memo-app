@@ -79,6 +79,12 @@ jobs:
         run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
       - name: Publish unsigned synthetic-data Windows x64 trial
         run: dotnet publish src/MemoApp.Windows -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
+      - name: Package bounded per-user installation payload
+        shell: pwsh
+        run: |
+          Copy-Item README.md artifacts/windows-x64-synthetic-trial/README.txt
+          python tools/package_trial.py artifacts/windows-x64-synthetic-trial
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, Node24
         if: github.event_name == 'workflow_dispatch' && inputs.upload_trial
         with:
