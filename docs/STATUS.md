@@ -4,7 +4,7 @@
 
 제한 PNG의 명시 선택 미리보기를 Main/Sticky에 연결했다. 앱 전체 worker/awaited UI cleanup까지 단일 admission, 하나의 표시 host, 순서 밖 결과 폐기, early epoch/revoke만 수행하는 inert Core hook, 잠금/선택/편집/분리/fault/Dispatcher shutdown/native 재진입 검사와 문자 그대로의 BGRA/native alpha oracle가 Windows에서 통과했다. 인라인 image-node/일반 이미지codec/clipboard/drop/외부 열기는 미완료다. 완전히 종료 메뉴의 마지막 dirty edit 저장·키 해제·독립창 종료·암호 재실행과 native 최소화/복원도 통과했다.
 
-새 사용자 폴더 설치/manifest·해시·기존 설치 거절·실패 stage 보존·Unicode 시작 메뉴 link를 구현했다. b6139ce의Windows37920769983은 source/Python26/build/Core/WPF/publish/manifest PASS, 실제 게시 패키지 설치는 허용 목록 밖 파일로 FAIL했다. 1ea2467의후속CI37921101567에서createdump.exe로원인을분리했다. 패키지의선택적진단 dump helper를제외하고DLL+고정app/문서/launcher허용목록만유지했다. 설치된실제창title·로컬coreclr로드·정상종료는후속Windows에서확인한다. 실패 패키지 upload없음. 아직 설치 산출물 완료를 주장하지 않는다. 최종 업로드는 코드/검사 tree가 고정된 marker-only 단일 요청 commit과 전체 Windows/실제 설치 검사 PASS 뒤에만 허용한다.
+새 사용자 폴더 설치/manifest·해시·기존 설치 거절·실패 stage 보존·Unicode 시작 메뉴 link를 구현했다. b6139ce의Windows37920769983은 source/Python26/build/Core/WPF/publish/manifest PASS, 실제 게시 패키지 설치는 허용 목록 밖 파일로 FAIL했다. 1ea2467의후속CI37921101567에서createdump.exe로원인을분리했다. 패키지의선택적진단 dump helper를제외하고DLL+고정app/문서/launcher허용목록만유지했다. 7e5ca50Windows37921490020에서실제설치·생산창title·로컬coreclr로드까지PASS했지만untouched잠금창닫기에서Closing재진입오류를발견했다. finalClose를Dispatcher에post하는수정과잠금창직접/메뉴닫기회귀를추가하고정상종료후속Windows확인중이다. 실패 패키지 upload없음. 아직 설치 산출물 완료를 주장하지 않는다. 최종 업로드는 코드/검사 tree가 고정된 marker-only 단일 요청 commit과 전체 Windows/실제 설치 검사 PASS 뒤에만 허용한다.
 
 현재 원장90개 구현/부분 연결 진행·42개 미착수·N09 차단1·M06 정규화1=134개, 기능 전체 완료/사용자 수용0. 자동검사 통과를 실제 사용자/전체 앱 완료로 표시하지 않는다. 원문의 동기화·Android·로컬 OCR/음성/AI는 후속 범위로 보존한다. USER-TESTS.md에 설치/제거·IME·마지막 저장·PNG 잠금·물리 OS/DPI·복구의 최소 실제 사용자 시험을 기록했다.
 

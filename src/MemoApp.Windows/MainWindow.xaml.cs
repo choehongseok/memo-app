@@ -661,7 +661,10 @@ public partial class MainWindow : Window
                 await session.LockAsync();
                 if (!ReleaseSettledSession()) return;
             }
-            confirmedExit = true; Close();
+            confirmedExit = true;
+            // A locked/no-session close can complete synchronously inside Closing.
+            // WPF forbids recursive Close while that event is still unwinding.
+            _ = Dispatcher.BeginInvoke(new Action(()=>{if(IsLoaded&&!Dispatcher.HasShutdownStarted)Close();}));
         }
         finally { closing = false; }
     }
