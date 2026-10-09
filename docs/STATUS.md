@@ -1,3 +1,11 @@
+# 계속 개발 중: E08 검색 문장 강조 및 후속 로컬 기능
+
+설치517bcf0/artifact11612428553/Windows37922583685는검증된중간산출물로보존한다. 사용자시험을기다리며전체개발을멈추지않는다. 현재E08선택결과문맥은공통missing-type RED→GREEN, fullCore/4projectbuild/Python35/134/safety PASS; Windows37923895896 missing-control RED 후d2fb0aa UIgate 확인중이다. native source/query/selection/session/epoch/attachment-object교체 authority·독립clear·현재metadata재투영을연결하고 native exception/lock/unchangedversionreplacement회귀를보강한다. 저장형식/원본/암호키설계는변경하지않는다.
+
+현재원장91부분진행/41미착수/N09차단1/M06정규화1=134·사용자수용0. E08후H03이미지파일drop과기기별암호recent/savedsearch설계를우선하며NEXT_SCOPE의계속구현우선순위를따른다. 현재E08/H03에는사용자실제PC시험이코드구현을막는의존성이없다. 외부서비스/유료/계정/서명권한이필요한기능은분리한다. 기존ZIP업로드를반복하지않는다.
+
+아래는보존한중간설치산출물과이전진행기록이다.
+
 # 최종 설치 시험판 업로드: 2026-10-09
 
 산출물 source517bcf007d5bd6d149ed8b784ed3134a54fe2994 / Windows37922583685 전체SUCCESS(원문/Python35/safety/build/fullCore/실제WPF/publish/408파일manifest/실제설치EXE/최종upload). artifact11612428553,65,265,028bytes,SHA25654e437097bda86103ffce2894c5e7e43b01e2d4033f00029d5e69f16f58dc26e. 다운로드 https://github.com/choehongseok/memo-app/actions/runs/37922583685/artifacts/11612428553 ; 보관만료2026-10-16T11:17:07Z. 정확metadata는ARTIFACTS.json. 이후 인계기록 commit은문서만변경하고동일src/tests tree를유지한다. 불필요한같은코드CI/재업로드를피해문서기록은skipci.

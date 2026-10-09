@@ -2341,17 +2341,29 @@
       "name": "검색 결과에서 해당 문장 강조",
       "normalized": "검색 결과에서 해당 문장 강조",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E08: 검색 결과에서 해당 문장 강조 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Search/SearchExcerpt.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "src/MemoApp.Windows/MainWindow.xaml"
+      ],
       "planned_module": "Search",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "kind": "component-partial",
+          "commit": "42a4b9ddeebe30f58bcbfa08fcf9d978789c2593",
+          "environment": "Linux x86_64 SDK10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release -- --search-excerpt-only; full Core after UI source",
+          "result": "PASS literal/NFC/case/far-tail/grapheme/giantcluster/budgets; actual Windows UI still pending"
+        }
+      ],
+      "blocking_reason": "선택 검색 결과의 title/body/attachment-name 첫 일치 주변512자 NFC/literal 표시를 연결했다. Core missing-type RED→GREEN/fullCore PASS, Windows missing-control RED37923895896 확인. d2fb0aa Windows UI 후속 gate 대기. 전체 사용자 수용 미확인; 원본/암호 저장 형식 변경 없음."
     },
     {
       "id": "E09",
