@@ -28,6 +28,7 @@ if (args.Contains("--diff-only")) { HistoryDiffChecks.Run(); return; }
 if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
 if (args.Contains("--startup-only")) { StartupChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
+if (args.Contains("--device-search-state-only")) { DeviceSearchStateChecks.Run(); return; }
 if (args.Contains("--batch-text-only")) { BatchTextTransferChecks.Run(); return; }
 if (args.Contains("--text-only")) { TextTransferChecks.Run(); return; }
 
@@ -81,6 +82,7 @@ TextTransferChecks.Run();
 BatchTextTransferChecks.Run();
 StartupChecks.Run();
 await DeviceUiChecks.Run();
+DeviceSearchStateChecks.Run();
 await LocalIdentityCreationChecks.Run();
 VaultChecks.Run();
 VaultFailureChecks.Run();

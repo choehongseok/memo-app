@@ -6,7 +6,7 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6)) throw new InvalidDataException("Unsupported schema");
         if (version >= 2) Fields(root, ["folders", "tags"]);
         if(version>=3)Fields(root,["uiDevices"]);
         if(version>=5)
@@ -35,6 +35,13 @@ internal static class SnapshotValidation
             foreach(var device in root.GetProperty("uiDevices").EnumerateArray())
             {
                 Fields(device,["uiDeviceId","preferences","windows"]);var prefs=device.GetProperty("preferences");Fields(prefs,["darkMode","fontSize","scale"]);
+                if(version<6&&(device.TryGetProperty("recentNoteIds",out _)||device.TryGetProperty("savedSearches",out _)))throw new InvalidDataException("Older schema cannot carry search UI state");
+                if(version==6)
+                {
+                    Fields(device,["recentNoteIds","savedSearches"]);Array(device,"recentNoteIds",20);Array(device,"savedSearches",20);
+                    foreach(var saved in device.GetProperty("savedSearches").EnumerateArray())
+                    {Fields(saved,["id","name","options"]);Fields(saved.GetProperty("options"),["query","field","view","sort","folderId","unfiledOnly","includeDescendants","tag","favoriteOnly","importantOnly","modifiedFrom","modifiedUntil"]);}
+                }
                 Array(device,"windows",102);
                 foreach(var window in device.GetProperty("windows").EnumerateArray())Fields(window,["kind","noteId","monitor","x","y","width","height","dpi","open","topmost","opacity","folded","positionLocked"]);
             }
@@ -71,7 +78,7 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length > 100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
         var attachmentObjects=AttachmentValidation.Objects(snapshot);
         bool legacy = snapshot.SchemaVersion == 1;
         if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
@@ -148,6 +155,7 @@ internal static class SnapshotValidation
         foreach(var device in snapshot.UiDevices)
         {
             if(device is null||device.UiDeviceId==Guid.Empty||!deviceIds.Add(device.UiDeviceId)||device.Preferences is null||device.Windows.IsDefault||device.Windows.Length>102||!double.IsFinite(device.Preferences.FontSize)||device.Preferences.FontSize is <12 or >36||!double.IsFinite(device.Preferences.Scale)||device.Preferences.Scale is <0.75 or >1.75)throw new InvalidDataException("Invalid UI profile/preferences");
+            DeviceSearchValidation.Validate(snapshot,device);
             var windowIds=new HashSet<(string,Guid?)>();
             foreach(var window in device.Windows)
             {

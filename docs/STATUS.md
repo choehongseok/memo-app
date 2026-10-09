@@ -1,6 +1,10 @@
+## 후속 구조 준비
+
+A09/E10는 기존 암호 기기별 UI 기록의 schema6 구조만 준비 중이다. 새 필드는 기존1~5 출력에서 제외하고, 과거입력에새필드가섞이면거절한다.6의실제암호write/root 경로는명시차단중이다. schema1~5 literal bytes·6 collection/ref/options필드·기존cipher불변 guard·100/101 tombstones를검사하며작업후자동검사를계속한다. 구조/기능연결/사용자수용을구분한다.
+
 # 계속 개발 중: 검색 강조·이미지 끌어놓기·일괄 TXT
 
-H03 ded5d75/Windows37926846176 전체 SUCCESS. 관리창·스티키 actual child-routed Copy/암호 save-restart/OLE 경계 PASS, 물리 탐색기 drag는 별도 사용자 확인. N05 f006eb3 core RED→GREEN, UI 연결 후속 진행. 오래된 progress_summary69/63 표기를 actual ID상태에서 다시 산출해93/39로 보정했다.
+H03 ded5d75/Windows37926846176 전체 SUCCESS. 관리창·스티키 actual child-routed Copy/암호 save-restart/OLE 경계 PASS, 물리 탐색기 drag는 별도 사용자 확인. N05 73d8e95/Windows37927873556 전체 SUCCESS: 실제 UI/암호vault 내부거절/작업 중 lock/worker캡처/Core100·101/16MiB·+1/부분실패·zero 검사 PASS. 오래된 progress_summary69/63 표기를 actual ID상태에서 다시 산출해93/39로 보정했다.
 
 설치517bcf0/artifact11612428553/Windows37922583685는검증된중간산출물로보존한다. 사용자시험을기다리며전체개발을멈추지않는다. 현재E08선택결과문맥은공통missing-type RED→GREEN, fullCore/4projectbuild/Python35/134/safety PASS; Windows37923895896 missing-control RED 후 e8e1bd9/Windows37925174477 전체 SUCCESS를 확인했다. dirty Capture는 매번 새 준비 revision을 생성하므로 검색 원본불변 시험을 accepted Save baseline으로 보정했다. native source/query/selection/session/epoch/attachment-object교체 authority·독립clear·현재metadata재투영을연결하고 native exception/lock/unchangedversionreplacement회귀를보강한다. 저장형식/원본/암호키설계는변경하지않는다.
 

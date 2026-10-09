@@ -291,3 +291,10 @@ e8e1bd9b0cc780d355ad9a309645d91159dec81e / https://github.com/choehongseok/memo-
 ## H03 이미지 파일 끌어놓기
 
 미구현7b256a8/Windows37925927491은 protected FileDrop 누락만 예상 RED. a7daf51/37926504938은 actual 관리창·스티키 child-routed import PASS, 별도 selection-loss fixture의 폐기된 host 재사용으로 후속 OLE edit case 실패. ded5d75에서 selection-loss마다 별도 host를 써 영구 폐기를 실제 단언하고 https://github.com/choehongseok/memo-app/actions/runs/37926846176 전체 SUCCESS. 원문/35 Python/safety/4project build/full Core/WPF/publish/실제 설치 실행 PASS; upload SKIPPED. 단일 image FileDrop 원본·암호 재실행을 검증했고 physical Explorer OLE drag/사용자 수용은 미확인. 독립 읽기 검토와 실행 검사는 구분한다.
+
+
+## N05 선택 TXT와 A09/E10 구조 준비
+
+73d8e9522172bc21582f318a2f4136389505aac4 / https://github.com/choehongseok/memo-app/actions/runs/37927873556 전체 SUCCESS. f006eb3/37927188828 실제 TXT command 누락만 예상 RED 후 UI 연결; 작업중잠금/키즉시해제/compiled worker4fields/afterCreateNew 취소/no plaintext write/모든modal stale경계를검사했다. Core100·101한도/16MiB·+1byte/전체target충돌거절/flush부분실패보존/실제prepared배열zero PASS. 추가artifact upload SKIPPED.
+
+A09/E10 후속 구조 검토에서 schema6 확장 중 programmatic Tombstones100 cap이누락된것을발견해복원했다. 모든지원schema1~6에서wellformed100허용/101거절을추가했다. 기존RichStorage/DeviceUi 인증fixture는 실제schema별serializer옵션으로만들어새필드가legacyfixture에섞이는실패/음성검사falsepositive를피했다. 암호쓰기6은아직차단하며Frozen원래1~5 serializer bytes 및새필드구조검사만활성화한다. 독립검토는읽기검토이고전문감사/독립실행이아니다.

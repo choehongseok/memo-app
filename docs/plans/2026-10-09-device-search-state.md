@@ -8,4 +8,4 @@
 
 필수 검사: 원래1~5 serializer literal fixture,6의 빈/비어있지 않은 기록, 최초 migration의 exact previous ciphertext 및 history/root 보존, 암호 restart/backup/recovery/hidden recovery, downgrade/future/ref/count/Unicode/date/enum 거절, 한도·payload 실패 전체 불변, 모든 기기의 삭제 처리, root 준비 중 잠금, 깨끗한 메모의 metadata-only 저장 시 내용 revision/이력 불변. 이어서 실제 Windows 최근 목록/저장 검색 적용·삭제·잠금 및 native 재진입을 검사한다.
 
-현재는 별도 보안 읽기 검토 조건을 기록한 설계이며 schema6 코드나 데이터 쓰기는 아직 활성화하지 않았다. N05 독립 로컬 TXT UI 구현을 먼저 검증하는 동안 이 경계를 준비한다. 사용자 실제 PC 시험은 이 구현의 선행 차단 조건이 아니다.
+현재는 구조 모델·필드 검증·구버전 serializer만 준비했으며 schema6 데이터 쓰기는 명시 차단했다. 저장 검색의 없어진 폴더 참조는 정확한 조건을 보존하고 UI 적용 시 필터를 바꾸기 전/최종 검색 전에 거절한다. null로 바꿔 검색을 넓히거나 설정을 자동 삭제하지 않는다. N05 독립 로컬 TXT UI 구현을 먼저 검증하는 동안 이 경계를 준비한다. 사용자 실제 PC 시험은 이 구현의 선행 차단 조건이 아니다.

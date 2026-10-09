@@ -30,7 +30,7 @@ internal static class DeviceUiChecks
         {
             void Reject(Action<JsonObject> alter,string reason)
             {
-                var payload=JsonSerializer.SerializeToNode(snapshot,VaultEnvelope.JsonOptions)!.AsObject();alter(payload);
+                var payload=JsonSerializer.SerializeToNode(snapshot,SnapshotSerialization.Options(snapshot.SchemaVersion))!.AsObject();alter(payload);
                 VaultChecks.ExpectFailure(()=>VaultEnvelope.Decrypt(Schema2Checks.Encode(payload,secret),secret),reason);
             }
             Reject(p=>p.Remove("uiDevices"),"v3 UI records required");
@@ -50,7 +50,7 @@ internal static class DeviceUiChecks
             Reject(p=>{var windows=p["uiDevices"]![0]!["windows"]!.AsArray();while(windows.Count<=102)windows.Add(windows[0]!.DeepClone());},"UI layout array cap rejects authenticated payload");
             Reject(p=>{var devices=p["uiDevices"]!.AsArray();while(devices.Count<=32){var extra=devices[0]!.DeepClone();extra["uiDeviceId"]=Guid.NewGuid().ToString();devices.Add(extra);}},"UI profile array cap rejects authenticated payload");
             Reject(p=>p["schemaVersion"]=2,"v2 must refuse UI records rather than silently accepting newer metadata");
-            var duplicate=Encoding.UTF8.GetBytes(JsonSerializer.Serialize(snapshot,VaultEnvelope.JsonOptions).Replace("\"scale\":1.25","\"scale\":1.25,\"scale\":1.25",StringComparison.Ordinal));
+            var duplicate=Encoding.UTF8.GetBytes(JsonSerializer.Serialize(snapshot,SnapshotSerialization.Options(snapshot.SchemaVersion)).Replace("\"scale\":1.25","\"scale\":1.25,\"scale\":1.25",StringComparison.Ordinal));
             var syntheticKey=RandomNumberGenerator.GetBytes(32);
             try{VaultChecks.ExpectFailure(()=>VaultEnvelope.Decrypt(VaultEnvelope.Encrypt(duplicate,syntheticKey,secret,new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid(),1,2,duplicate.Length)),secret),"authenticated duplicate UI JSON property reject");}
             finally{CryptographicOperations.ZeroMemory(syntheticKey);CryptographicOperations.ZeroMemory(duplicate);}
@@ -66,7 +66,7 @@ internal static class DeviceUiChecks
                 VaultChecks.Require(restored.GetUiDevice(profile).Windows.Single()==layout && restored.GetUiDevice(profile).Preferences.FontSize==18,"real encrypted device restart");
             }
             var oldRevision=Guid.NewGuid();var oldFolder=Guid.NewGuid();var oldTag=Guid.NewGuid();var oldMeta=before.Notes[0].Metadata with{FolderId=oldFolder,TagIds=[oldTag]};
-            var legacy=before with{SchemaVersion=2,Notes=[before.Notes[0] with{Parents=[oldRevision],Metadata=oldMeta}],History=[new(note.Id,oldRevision,[],note.ModifiedAt,"old title","LEGACY_V2_HISTORY"){Metadata=oldMeta}],Folders=[new(oldFolder,null,"legacy2 folder")],Tags=[new(oldTag,"legacy2 tag")]};var payload=JsonSerializer.SerializeToNode(legacy,VaultEnvelope.JsonOptions)!.AsObject();payload.Remove("uiDevices");Schema2Checks.StripDocumentFields(payload);
+            var legacy=before with{SchemaVersion=2,Notes=[before.Notes[0] with{Parents=[oldRevision],Metadata=oldMeta}],History=[new(note.Id,oldRevision,[],note.ModifiedAt,"old title","LEGACY_V2_HISTORY"){Metadata=oldMeta}],Folders=[new(oldFolder,null,"legacy2 folder")],Tags=[new(oldTag,"legacy2 tag")]};var payload=JsonSerializer.SerializeToNode(legacy,SnapshotSerialization.Options(legacy.SchemaVersion))!.AsObject();payload.Remove("uiDevices");Schema2Checks.StripDocumentFields(payload);
             var legacyRoot=Path.Combine(root,"legacy2");Directory.CreateDirectory(legacyRoot);var original=Schema2Checks.Encode(payload,secret);File.WriteAllBytes(Path.Combine(legacyRoot,"current.vault"),original);
             using(var session=new SaveCoordinator(EncryptedVault.Open(legacyRoot,secret),TimeProvider.System)){VaultChecks.Require(session.Workspace.Notes.Single().Mode=="plain" && session.Workspace.Notes.Single().Document is null && session.Workspace.Capture().History.Single().Text=="LEGACY_V2_HISTORY" && session.Workspace.Capture().History.Single().Mode=="plain" && session.Workspace.Capture().History.Single().Document is null && session.Workspace.Folders.Single().FolderId==oldFolder && session.Workspace.Tags.Single().TagId==oldTag,"actual legacy2 history and organization load losslessly");VaultChecks.Require(session.IsDirty && await session.SaveAsync(),"schema2 to4 migration save");await session.LockAsync();}
             VaultChecks.Require(Directory.GetFiles(legacyRoot,"previous-*.vault").Any(p=>File.ReadAllBytes(p).SequenceEqual(original)),"schema2 migration exact previous bytes");

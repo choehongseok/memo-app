@@ -3257,7 +3257,9 @@
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
       "implementation_locations": [
-        "src/MemoApp.Core/Transfer/BatchTextTransfer.cs"
+        "src/MemoApp.Core/Transfer/BatchTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.BatchText.cs",
+        "src/MemoApp.Windows/MainWindow.xaml"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
@@ -3267,9 +3269,16 @@
           "environment": "Linux x86_64 SDK10.0.401",
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release -- --batch-text-only",
           "result": "missing-type RED→bounded UTF8 capture/전체 target충돌거절/cancel/부분flush실패보존/실제owned배열zero GREEN. 실제 Windows UI 연결 대기."
+        },
+        {
+          "kind": "windows-synthetic-partial",
+          "commit": "73d8e9522172bc21582f318a2f4136389505aac4",
+          "environment": "Windows Server 2022 / SDK10.0.401",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/37927873556",
+          "result": "전체 SUCCESS: 실제 선택 TXT 확인/취소/암호vault 내부 및 descendant 출력 거절/modal selection-version 변경 거절/작업 중 lock 즉시conceal-keyrelease/postCreateNew 취소/compiled worker no UI-key capture. Core100/101·16MiB/+1·부분실패/실제ownedzero와 기존 회귀/publish/실제설치 실행 PASS; upload SKIPPED."
         }
       ],
-      "blocking_reason": "전체 선택의 제목·본문 TXT 복사 core만 구현. 실제 UI/명시 평문 확인/기존vault 내부출력 거절/잠금·선택·version 경계 후속 구현 중; 사용자 수용 미확인."
+      "blocking_reason": "여러 선택 메모의 제목·본문을 각각 TXT로 복사하는 UI와 합성 Windows 검사를 연결했다. 서식/첨부 원본을 TXT에 포함하지 않으며 기존 파일은 덮어쓰지 않는다. 부분 파일은 자동 삭제하지 않는다. 원문 전체 내보내기 형식·사용자 수용은 후속 검증 대상이다."
     },
     {
       "id": "N06",

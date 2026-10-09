@@ -133,6 +133,7 @@ public sealed class EncryptedVault : IDisposable
         lock (gate)
         {
             if (disposed || keysReleased || faulted) throw new InvalidOperationException("Vault session cannot prepare writes");
+            if(snapshot.SchemaVersion==6)throw new InvalidOperationException("Search UI schema6 write routing is not activated");
             VaultEnvelope.Validate(snapshot);
             RequireRootSnapshot(snapshot);
             if (snapshot.SchemaVersion < 4) snapshot = snapshot with { SchemaVersion = 4 };
@@ -238,6 +239,7 @@ public sealed class EncryptedVault : IDisposable
         lock(gate)
         {
             if(disposed||keysReleased||faulted)throw new InvalidOperationException("Vault root initialization authority ended");
+            if(snapshot.SchemaVersion==6)throw new InvalidOperationException("Search UI schema6 root routing is not activated");
             VaultEnvelope.Validate(snapshot);
             if(snapshot.SchemaVersion==5){RequireRootSnapshot(snapshot);return snapshot;}
             var id=attachmentRootId==Guid.Empty?Guid.NewGuid():attachmentRootId;
