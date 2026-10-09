@@ -10,7 +10,8 @@ public partial class MainWindow
     private sealed record FilterState(string Query,int Field,int View,int Sort,Guid? Folder,string Tag,DateTime? From,DateTime? Until);
     private bool searchBlocked,searchStateBusy;
     private Task recentTask=Task.CompletedTask;
-    private NoteDraft? pendingRecent;
+    private sealed record RecentRequest(SaveCoordinator Session,long Epoch,NoteDraft Note,long Version,long Generation);
+    private RecentRequest? pendingRecent;
     private long recentGeneration;
     private FilterState ReadFilters()=>new(SearchInput.Text,SearchFieldFilter.SelectedIndex,ViewFilter.SelectedIndex,SortFilter.SelectedIndex,(FolderFilter.SelectedItem as FolderChoice)?.Id,TagFilter.Text,FromDate.SelectedDate,UntilDate.SelectedDate);
     private static SearchOptions Options(FilterState state)=>new(){Query=state.Query,Field=(SearchField)Math.Max(0,state.Field),Sort=(SearchSort)Math.Max(0,state.Sort),View=state.View switch{3=>SearchView.Archive,4=>SearchView.Trash,_=>SearchView.Active},FavoriteOnly=state.View==1,ImportantOnly=state.View==2,UnfiledOnly=state.View==5,FolderId=state.Folder,Tag=state.Tag.Length==0?null:state.Tag,ModifiedFrom=state.From is DateTime from?new DateTimeOffset(from.Date).ToUniversalTime():null,ModifiedUntil=state.Until is DateTime until?new DateTimeOffset(until.Date.AddDays(1)).ToUniversalTime():null};
@@ -22,32 +23,41 @@ public partial class MainWindow
     }
     private void RefreshSearchStateViews()
     {
-        if(session is not{IsLocked:false} active||concealing)return;long epoch=uiEpoch;var device=active.Workspace.GetUiDevice(uiDeviceId);
+        if(session is not{IsLocked:false} active||concealing)return;long epoch=uiEpoch;long sourceEpoch=active.AttachmentPreviewEpoch;var device=active.Workspace.GetUiDevice(uiDeviceId);
         var recent=active.Workspace.RecentNotes(uiDeviceId).Select(n=>new SearchChoice(n.Id,n.Title)).ToArray();var saved=device.SavedSearches.Select(s=>new SearchChoice(s.Id,s.Name)).ToArray();
-        bool Current()=>LiveSearch(active,epoch)&&active.Workspace.GetUiDevice(uiDeviceId)==device;
+        bool Current()=>LiveSearch(active,epoch)&&active.AttachmentPreviewEpoch==sourceEpoch&&active.Workspace.GetUiDevice(uiDeviceId)==device;
         if(!Current())return;RecentNotesList.ItemsSource=recent;if(!Current()){ClearSearchStateViews();return;}SavedSearchList.ItemsSource=saved;if(!Current()){ClearSearchStateViews();return;}SavedSearchName.IsUndoEnabled=true;if(!Current())ClearSearchStateViews();
     }
     private void QueueRecent(NoteDraft? note)
     {
         if(searchBlocked||concealing||session is not{IsLocked:false} active||note is not{IsClosed:false,IsDeleted:false}||active.Workspace.GetUiDevice(uiDeviceId).RecentNoteIds.FirstOrDefault()==note.Id)return;
-        pendingRecent=note;recentGeneration++;if(recentTask.IsCompleted)recentTask=RecordRecentAsync();
+        pendingRecent=new(active,uiEpoch,note,note.EditVersion,++recentGeneration);if(recentTask.IsCompleted)recentTask=RecordRecentAsync();
     }
     private async Task RecordRecentAsync()
     {
         // One UI task and one replaceable selection; no background closure owns session or keys.
         await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
-        while(pendingRecent is NoteDraft note)
+        try
         {
-            pendingRecent=null;long generation=recentGeneration,epoch=uiEpoch;var active=session;long version=note.EditVersion;
-            if(active is null||!LiveSearch(active,epoch))return;
-            try
+            while(pendingRecent is RecentRequest request)
             {
-                if(!await active.PrepareAttachmentsAsync())return;
-                if(!LiveSearch(active,epoch))return;
-                if(generation!=recentGeneration||!ReferenceEquals(SingleNote,note)||note.IsClosed||note.IsDeleted||note.EditVersion!=version||!active.Workspace.Notes.Contains(note))continue;
-                active.Workspace.RecordRecentNote(uiDeviceId,note);if(LiveSearch(active,epoch))RefreshSearchStateViews();
+                pendingRecent=null;var active=request.Session;var note=request.Note;
+                bool Current()=>LiveSearch(active,request.Epoch)&&request.Generation==recentGeneration&&ReferenceEquals(SingleNote,note)&&!note.IsClosed&&!note.IsDeleted&&note.EditVersion==request.Version&&active.Workspace.Notes.Contains(note);
+                if(!Current())continue;
+                try
+                {
+                    if(!await active.PrepareAttachmentsAsync())return;
+                    if(!Current())continue;
+                    active.Workspace.RecordRecentNote(uiDeviceId,note);if(LiveSearch(active,request.Epoch))RefreshSearchStateViews();
+                }
+                catch{return;}
             }
-            catch{return;}
+        }
+        finally
+        {
+            // A fresh selection may arrive while an old session/root is settling.
+            // The consumed failed request is never re-enqueued.
+            if(pendingRecent is RecentRequest fresh&&LiveSearch(fresh.Session,fresh.Epoch)&&fresh.Generation==recentGeneration&&ReferenceEquals(SingleNote,fresh.Note)&&!fresh.Note.IsClosed&&!fresh.Note.IsDeleted&&fresh.Note.EditVersion==fresh.Version&&fresh.Session.Workspace.Notes.Contains(fresh.Note))recentTask=RecordRecentAsync();
         }
     }
     private async void SaveSearch_Click(object sender,RoutedEventArgs e)=>await SaveCurrentSearchAsync();
