@@ -1,3 +1,5 @@
+N07 382e1d2 / Windows37940004737에서 Core 전체 PASS 및 예상한 excel-text-import missing-button 한 건 RED를 실제 확인했다. 후속 화면은 첫 시트 plain 변환 명시 확인·picker/read/confirm sourceepoch/lock/folder guard·키 소유자 없는 worker·전체 추가 후 저장 결과 안내를 연결한다. 빌드0warning/0error이며 실제 Windows 화면 회귀는 다음 새 소스에서 확인한다.
+
 N07 Core: bounded 첫 시트 문자열 XLSX parser·모든 행 candidate 사전검증·실제 암호 저장/restart·flush 실패 whole dirty 보존·원본 불변·100노트/전체payload 거절 검사를 통과했다. 중복 sheets/sheetData와 대소문자/선언형 숨긴 관계·active content를 독립 검토 후 보강했다. 일반 기본 문자열 시트만 지원하며 다른 Office 구조/서식/첨부·수식/수치는 지원하지 않는다. Windows 화면은 아직 미연결이며 새 excel-text-import group의 missing-button RED를 원격 확인한 다음 연결한다. 현재104부분/28미착수 집계에 N07을 완료로 더하지 않는다.
 
 N03/N04 073182a / Windows37936392724 전체 SUCCESS. BCL-only XLSX/DOCX plaintext projection, hard16MiB construction/zero buffer, literal cell/Unicode and source/modal/key/lock checks. 공식 SDK3.4.1 독립 schema/relationship probe PASS는 Office 실제 렌더링 수용과 구분한다. 현재104부분/28미착수/N09차단1/M06정규화1, 사용자 수용0. N07 bounded Excel text adapter와 원자 candidate 추가/저장 실패시 전체 dirty 보존을 이어서 검증 중이다.

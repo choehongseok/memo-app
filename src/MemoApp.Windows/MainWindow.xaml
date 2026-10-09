@@ -17,6 +17,7 @@
    <Button x:Name="DeleteButton" Content="휴지통으로" Click="Delete_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="RestoreButton" Content="메모 복원" Click="Restore_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="TxtImportButton" Content="TXT 가져오기" Click="TxtImport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
+   <Button x:Name="ExcelImportButton" Content="Excel 제목·본문 가져오기" Click="ExcelImport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="ExcelExportButton" Content="선택 Excel 내보내기" Click="ExcelExport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="WordExportButton" Content="선택 Word 내보내기" Click="WordExport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="TxtExportButton" Content="TXT 내보내기" Click="TxtExport_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>

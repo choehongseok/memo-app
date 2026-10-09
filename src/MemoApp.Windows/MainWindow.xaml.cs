@@ -111,7 +111,7 @@ public partial class MainWindow : Window
         FolderFilter.ItemsSource = MoveFolder.ItemsSource = BatchFolder.ItemsSource = null; FromDate.SelectedDate = UntilDate.SelectedDate = null;
         ViewFilter.SelectedIndex = SearchFieldFilter.SelectedIndex = SortFilter.SelectedIndex = 0;
         ColorPicker.SelectedIndex = ModeChoice.SelectedIndex = -1; Counts.Text = NoteInfo.Text = ""; loadingUi = false;
-        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = WholeTransferButton.IsEnabled = TxtImportButton.IsEnabled = false;
+        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = WholeTransferButton.IsEnabled = ExcelImportButton.IsEnabled = TxtImportButton.IsEnabled = false;
         TxtExportButton.IsEnabled = ExcelExportButton.IsEnabled = WordExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
         BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=BatchRestoreButton.IsEnabled=BatchFolder.IsEnabled=BatchTxtExportButton.IsEnabled=false;
@@ -121,7 +121,7 @@ public partial class MainWindow : Window
     {
         Notice.Text = session?.Status ?? "잠금 — 복구 비밀로 해제하세요.";
         bool enabled = session is not null && !session.IsLocked;
-        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = WholeTransferButton.IsEnabled = TxtImportButton.IsEnabled = enabled;
+        NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = WholeTransferButton.IsEnabled = ExcelImportButton.IsEnabled = TxtImportButton.IsEnabled = enabled;
         UpdateSelectedActions();
     }
     private bool ReleaseSettledSession()
