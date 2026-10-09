@@ -50,6 +50,13 @@
   <Grid x:Name="EditingPanel" Grid.Row="2" Visibility="Collapsed">
    <Grid.ColumnDefinitions><ColumnDefinition Width="205"/><ColumnDefinition Width="280"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,16,0"><StackPanel>
+    <TextBlock Text="최근 메모 (기기별 최대 20개)"/><ComboBox x:Name="RecentNotesList" DisplayMemberPath="Name" Margin="0,4,0,4"/>
+    <WrapPanel><Button Content="최근 메모 열기" Click="RecentOpen_Click"/><Button Content="목록 지우기" Click="RecentClear_Click"/></WrapPanel>
+    <TextBlock Text="저장 검색 (기기별 최대 20개)" Margin="0,12,0,0"/><ComboBox x:Name="SavedSearchList" DisplayMemberPath="Name" Margin="0,4,0,4"/>
+    <TextBox x:Name="SavedSearchName" MaxLength="64" ToolTip="저장 검색 이름" Margin="0,0,0,4"/>
+    <Button Content="현재 조건 저장 / 같은 이름 갱신" Click="SaveSearch_Click"/>
+    <WrapPanel><Button Content="선택 조건 적용" Click="ApplySearch_Click"/><Button Content="선택 조건 삭제" Click="DeleteSearch_Click"/></WrapPanel>
+    <Button x:Name="ResetSearchButton" Content="검색 초기화" Click="ResetSearch_Click" Margin="0,4,0,12"/>
     <TextBlock Text="분류" FontSize="18" Margin="0,0,0,8"/>
     <ComboBox x:Name="ViewFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8">
      <ComboBoxItem Content="전체 활성 메모"/><ComboBoxItem Content="즐겨찾기"/><ComboBoxItem Content="중요 메모"/><ComboBoxItem Content="보관함"/><ComboBoxItem Content="휴지통"/><ComboBoxItem Content="미분류"/>

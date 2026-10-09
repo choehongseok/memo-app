@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
-        Closed += (_, _) => { windowClosed=true;CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true;ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -97,7 +97,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++; ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
+        uiEpoch++;concealing=true; ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
@@ -238,7 +238,7 @@ public partial class MainWindow : Window
         else ClearMarkdownPreview();
         ConfigureAttachmentPanel(selected);
         bool loading=loadingUi;loadingUi=true;ModeChoice.SelectedItem=ModeChoice.Items.Cast<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==selected?.Mode);loadingUi=loading;
-        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();RenderSearchResultPreview();
+        MoveFolder.IsEnabled=TagsInput.IsEnabled=ColorPicker.IsEnabled=ModeChoice.IsEnabled=Editor.IsEnabled;UpdateSelectedActions();UpdateSelectedDetails();RenderSearchResultPreview();if(changed)QueueRecent(selected);
     }
     private void Mode_Changed(object sender,SelectionChangedEventArgs e)
     {
@@ -414,18 +414,10 @@ public partial class MainWindow : Window
     }
     private void RefreshNotes(NoteDraft? preferred = null)
     {
-        if (session is not { IsLocked: false } active || loadingUi) return;
+        if (session is not { IsLocked: false } active || loadingUi || searchBlocked) return;
         var selected=preferred is null?NotesList.SelectedItems.Cast<NoteDraft>().ToArray():[preferred];
         preferred ??= NotesList.SelectedItem as NoteDraft;
-        var options = new SearchOptions
-        {
-            Query = SearchInput.Text, Field = (SearchField)Math.Max(0, SearchFieldFilter.SelectedIndex), Sort = (SearchSort)Math.Max(0, SortFilter.SelectedIndex),
-            View = ViewFilter.SelectedIndex switch { 3 => SearchView.Archive, 4 => SearchView.Trash, _ => SearchView.Active },
-            FavoriteOnly = ViewFilter.SelectedIndex == 1, ImportantOnly = ViewFilter.SelectedIndex == 2, UnfiledOnly = ViewFilter.SelectedIndex == 5,
-            FolderId = (FolderFilter.SelectedItem as FolderChoice)?.Id, Tag = TagFilter.Text,
-            ModifiedFrom = FromDate.SelectedDate is DateTime from ? new DateTimeOffset(from.Date).ToUniversalTime() : null,
-            ModifiedUntil = UntilDate.SelectedDate is DateTime until ? new DateTimeOffset(until.Date.AddDays(1)).ToUniversalTime() : null
-        };
+        var options = Options(ReadFilters());
         var results = NoteSearch.Find(active.Workspace, options);
         loadingUi = true;
         NotesList.ItemsSource = results;
@@ -437,7 +429,7 @@ public partial class MainWindow : Window
         loadingUi = false; SelectEditor();
         int trash = active.Workspace.Notes.Count(n => n.IsDeleted), archive = active.Workspace.Notes.Count(n => !n.IsDeleted && n.Archived);
         Counts.Text = $"전체 {active.Workspace.Notes.Count} · 활성 {active.Workspace.Notes.Count - trash - archive} · 보관 {archive} · 휴지통 {trash} · 결과 {results.Length}";
-        UpdateSelectedDetails();
+        UpdateSelectedDetails();RefreshSearchStateViews();
     }
     private void UpdateSelectedDetails()
     {
