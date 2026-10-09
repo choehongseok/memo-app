@@ -21,11 +21,11 @@ def clone(root, name, version, commit):
   raise ValueError('Pinned upstream source commit mismatch')
  return dest
 
-def compiler_dumpbin(cache):
- selected = re.search(r'^CMAKE_CXX_COMPILER:FILEPATH=([^\r\n]+)$', cache, re.M)
- if not selected or pathlib.Path(selected.group(1)).name.lower() != 'cl.exe':
+def compiler_dumpbin(selected):
+ selected = selected.strip()
+ if not selected or '\n' in selected or '\r' in selected or pathlib.Path(selected).name.lower() != 'cl.exe':
   raise ValueError('Selected MSVC compiler is missing')
- return pathlib.Path(selected.group(1)).with_name('dumpbin.exe')
+ return pathlib.Path(selected).with_name('dumpbin.exe')
 
 def main(root):
  if sys.platform != 'win32':
@@ -38,13 +38,20 @@ def main(root):
  run('cmake', '-S', str(leptonica), '-B', str(root / 'leptonica-build'), *common, '-DCMAKE_INSTALL_PREFIX=' + str(prefix), *flags)
  run('cmake', '--build', str(root / 'leptonica-build'), '--config', 'Release', '--target', 'install', '--parallel', '2')
  tesseract = clone(root, 'tesseract', '5.5.3', TESSERACT)
+ trace = root / 'record-selected-compiler.cmake'
+ trace.write_text('file(WRITE "${CMAKE_BINARY_DIR}/memo-selected-compiler.txt" "${CMAKE_CXX_COMPILER}\\n")\n', encoding='utf-8')
  flags = ['-DBUILD_TRAINING_TOOLS=OFF', '-DBUILD_TESTS=OFF', '-DBUILD_SHARED_LIBS=OFF', '-DDISABLED_LEGACY_ENGINE=ON', '-DGRAPHICS_DISABLED=ON', '-DDISABLE_CURL=ON', '-DDISABLE_ARCHIVE=ON', '-DDISABLE_TIFF=ON', '-DINSTALL_CONFIGS=OFF', '-DOPENMP_BUILD=OFF', '-DENABLE_NATIVE=OFF', '-DFAST_FLOAT=ON', '-DENABLE_LTO=OFF', '-DENABLE_CCACHE=OFF', '-DWIN32_MT_BUILD=ON']
- run('cmake', '-S', str(tesseract), '-B', str(root / 'tesseract-build'), *common, '-DCMAKE_PREFIX_PATH=' + str(prefix), *flags)
+ run('cmake', '-S', str(tesseract), '-B', str(root / 'tesseract-build'), *[arg for arg in common if not arg.startswith('-DCMAKE_POLICY_DEFAULT_CMP0091=')], '-DCMAKE_PREFIX_PATH=' + str(prefix), '-DCMAKE_PROJECT_INCLUDE=' + str(trace), *flags)
  cache = (root / 'tesseract-build' / 'CMakeCache.txt').read_text(encoding='utf-8')
  selected = re.search(r'^Leptonica_DIR:PATH=(.+)$', cache, re.M)
  if not selected or not pathlib.Path(selected.group(1)).resolve().is_relative_to(prefix.resolve()):
   raise ValueError('CMake selected an unexpected Leptonica package')
  print('Actual selected Leptonica package: ' + selected.group(1))
+ compiler = (root / 'tesseract-build' / 'memo-selected-compiler.txt').read_text(encoding='utf-8')
+ dumpbin = compiler_dumpbin(compiler)
+ if not dumpbin.is_file():
+  raise ValueError('Selected compiler dumpbin is missing')
+ print('Actual selected compiler PE inspection tool: ' + str(dumpbin))
  run('cmake', '--build', str(root / 'tesseract-build'), '--config', 'Release', '--target', 'tesseract', '--parallel', '2')
  bundle = root / 'probe'
  (bundle / 'tessdata').mkdir(parents=True)
@@ -54,9 +61,6 @@ def main(root):
   if len(candidates) != 1:
    raise ValueError('Ambiguous native executable')
   executable = candidates[0]
- dumpbin = compiler_dumpbin(cache)
- if not dumpbin.is_file():
-  raise ValueError('Selected compiler dumpbin is missing')
  imports = subprocess.check_output([str(dumpbin), '/dependents', str(executable)], text=True)
  print(imports)
  dependencies = sorted(set(re.findall(r'^\s+([A-Za-z0-9_.-]+\.dll)\s*$', imports, re.M | re.I)))
