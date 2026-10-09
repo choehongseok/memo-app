@@ -19,7 +19,7 @@ internal static partial class Program
   {
    using(var session=new SaveCoordinator(EncryptedVault.Create(Path.Combine(root,"vault"),secret,secret),TimeProvider.System))
    {
-    var note=session.Workspace.CreateNote();note.Text="원본 한글 본문";session.Workspace.ConvertMode(note,"markdown");Require(await session.PrepareAttachmentsAsync(),"OCR fixture encrypted root");session.AttachBytes(note,png,"합성.png","image/png",note.EditVersion);Require(await session.SaveAsync(),"OCR source save");
+    var note=session.Workspace.CreateNote();note.Text="원본 한글 본문";session.Workspace.ConvertMode(note,"markdown",true);Require(await session.PrepareAttachmentsAsync(),"OCR fixture encrypted root");session.AttachBytes(note,png,"합성.png","image/png",note.EditVersion);Require(await session.SaveAsync(),"OCR source save");
     using var panel=new AttachmentPanel(session,note,()=>true,_=>{},Guid.NewGuid());window=new Window{Content=panel,Width=800,Height=800};window.Show();await Idle();panel.FilesList.SelectedIndex=0;
     string baseline=JsonSerializer.Serialize(session.Workspace.Capture());
     Require(!await panel.RecognizeSelectedAsync()&&panel.OcrResult.Text=="","OCR stays off until explicit model installation/selection");
