@@ -1,3 +1,13 @@
+# 최종 설치 시험판 업로드: 2026-10-09
+
+산출물 source517bcf007d5bd6d149ed8b784ed3134a54fe2994 / Windows37922583685 전체SUCCESS(원문/Python35/safety/build/fullCore/실제WPF/publish/408파일manifest/실제설치EXE/최종upload). artifact11612428553,65,265,028bytes,SHA25654e437097bda86103ffce2894c5e7e43b01e2d4033f00029d5e69f16f58dc26e. 다운로드 https://github.com/choehongseok/memo-app/actions/runs/37922583685/artifacts/11612428553 ; 보관만료2026-10-16T11:17:07Z. 정확metadata는ARTIFACTS.json. 이후 인계기록 commit은문서만변경하고동일src/tests tree를유지한다. 불필요한같은코드CI/재업로드를피해문서기록은skipci.
+
+기능전수완료가아닌설치가능한합성자료시험판이다. 90부분진행/42미착수/N09차단1/M06정규화1=134·사용자수용/전체ID완료0. 이미지제한profile/동기화/Android/로컬OCR·음성·AI등원문나머지범위를삭제하지않았다. README/USER-TESTS의최소실제Windows시험과NEXT_SCOPE/FEATURES의후속개발이필요하다. main merge/공개release/권한변경/유료서비스/실제자료없음.
+
+GitHub앱의artifact다운로드파일reference는정상반환됐지만추가Linux로컬ZIP검사를위한파일host접속은proxy403Forbidden이므로실행하지못했다. 접근거부우회/재시도없음. checksum은Actions업로드로그/API의일치하는서버digest이고, 실제게시파일의전체해시/설치/실행검사는업로드전Windows에서PASS했다.
+
+아래는 이전 시점의 검증·진행 기록이다.
+
 # 최신: 2026-10-09 Windows 설치 시험판 gate 통과
 
 b31cf8d7360511765fe032f91dc556b3f4cfa186 / Windows37922263494 전체SUCCESS: 원문27417byte/hash/134ID/M06, Python35, safety, build, fullCore, 실제WPF(이미지/종료/설치), self-contained publish, 408파일manifest, 한글 새 설치폴더hash·Unicode link·실제production창·설치폴더coreclr·정상종료 PASS. preShow/즉시Show-close/연속close/마지막dirtysave도포함한다. upload는아직SKIPPED이고검증된동일src14cfe4d2364e51ac56bedd5c08d48d2ed9811570/testsbcf2e28cf8279e5689e38b762907c1e12e5363a9를marker-only최종요청에서고정한다. 산출물ID/링크/만료는실제업로드성공후기록한다.
