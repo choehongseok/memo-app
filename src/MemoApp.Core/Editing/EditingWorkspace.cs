@@ -4,7 +4,7 @@ using MemoApp.Core.Storage;
 using MemoApp.Core.Documents;
 namespace MemoApp.Core.Editing;
 
-public sealed class EditingWorkspace
+public sealed partial class EditingWorkspace
 {
     private readonly TimeProvider clock;
     private readonly NoteCollection notes = [];
@@ -16,6 +16,7 @@ public sealed class EditingWorkspace
     private Guid attachmentRootId;
     private ImmutableArray<StoredAttachmentObject> attachmentObjects=[];
     private bool closed;
+    private bool searchStateEnabled;
     public EditingWorkspace(TimeProvider clock, VaultSnapshot? initial = null, VaultSnapshot? displayed = null)
     {
         this.clock = clock ?? throw new ArgumentNullException(nameof(clock)); Notes = new(notes);
@@ -23,6 +24,7 @@ public sealed class EditingWorkspace
         // Recovery supplies its entire latest organization state, not a stale vault.Loaded projection.
         basis = initial ?? new(4, Guid.NewGuid(), []);
         var visible = displayed ?? basis;
+        searchStateEnabled=visible.SchemaVersion==6||basis.SchemaVersion==6;
         attachmentRootId=visible.AttachmentRootId;attachmentObjects=visible.AttachmentObjects;
         folders.AddRange(visible.Folders); tags.AddRange(visible.Tags); devices.AddRange(visible.UiDevices);
         foreach (var source in visible.Notes)
@@ -71,12 +73,12 @@ public sealed class EditingWorkspace
         EnsureOpen(); if(profile==Guid.Empty)throw new ArgumentException("Empty UI profile");
         return devices.SingleOrDefault(d=>d.UiDeviceId==profile) ?? new(profile,new(),[]);
     }
-    private void SetUiDevice(StoredDeviceUi next)
+    private void SetUiDevice(StoredDeviceUi next,bool activateSearch=false)
     {
         EnsureOpen(); var updated=devices.Where(d=>d.UiDeviceId!=next.UiDeviceId).Append(next).ToArray();
-        var candidate=Capture() with {UiDevices=updated}; VaultEnvelope.Validate(candidate);
+        var candidate=Capture() with {UiDevices=updated};if(activateSearch)candidate=candidate with{SchemaVersion=6};VaultEnvelope.Validate(candidate);
         if(devices.SingleOrDefault(d=>d.UiDeviceId==next.UiDeviceId)==next)return;
-        devices.Clear();devices.AddRange(updated);Changed?.Invoke();
+        if(activateSearch)searchStateEnabled=true;devices.Clear();devices.AddRange(updated);Changed?.Invoke();
     }
     public void SetUiPreferences(Guid profile,UiPreferences preferences)
     {
@@ -165,10 +167,12 @@ public sealed class EditingWorkspace
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
         var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags,AttachmentObjects=stagedObjects??before.AttachmentObjects };
+        if(searchStateEnabled)next=next with{UiDevices=SanitizeRecent(nextNotes)};
         VaultEnvelope.Validate(next);
         var affected = notes.Where(n => changes.ContainsKey(n.Id)).ToArray();
         foreach (var note in affected) note.StageEvent(nextNotes.Single(n => n.NoteId == note.Id),formats?.ContainsKey(note.Id)==true||attachments?.ContainsKey(note.Id)==true);
         if(stagedTags is not null){tags.Clear();tags.AddRange(stagedTags);}
+        if(searchStateEnabled){devices.Clear();devices.AddRange(next.UiDevices);}
         AcceptPrepared(next); Changed?.Invoke();
         foreach (var note in affected) { if (closed) break; note.PublishEvent(); }
     }
@@ -286,11 +290,14 @@ public sealed class EditingWorkspace
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
+        return new(searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
-        EnsureOpen(); InvalidateAttachmentReads(null);
+        EnsureOpen();
+        if(searchStateEnabled&&snapshot.SchemaVersion<6)throw new InvalidOperationException("Search UI state downgrade refused");
+        InvalidateAttachmentReads(null);
+        if(snapshot.SchemaVersion==6)searchStateEnabled=true;
         basis = snapshot;attachmentRootId=snapshot.AttachmentRootId;attachmentObjects=snapshot.AttachmentObjects;
         foreach (var draft in notes) acceptedVersions[draft.Id] = draft.EditVersion;
     }

@@ -310,17 +310,21 @@
       "name": "최근 사용한 메모 보기",
       "normalized": "최근 사용한 메모 보기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "A09: 최근 사용한 메모 보기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.SearchState.cs",
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Storage/DeviceSearchValidation.cs"
+      ],
       "planned_module": "Notes",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "기기별 암호 기록 구조 및 atomic Core API, schema6 암호 저장 경로까지 연결했다. 기존1~5 literal bytes/이력·첨부/root/3-wrap·백업·복구·downgrade 거절을 검사했다. Windows 최근 목록·저장 조건 UI는 아직 미연결이며 사용자 수용 미확인."
     },
     {
       "id": "A10",
@@ -2420,17 +2424,21 @@
       "name": "자주 쓰는 검색조건 저장",
       "normalized": "자주 쓰는 검색조건 저장",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "E10: 자주 쓰는 검색조건 저장 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.SearchState.cs",
+        "src/MemoApp.Core/Storage/DeviceUiState.cs",
+        "src/MemoApp.Core/Storage/DeviceSearchValidation.cs"
+      ],
       "planned_module": "Search",
       "test_evidence": [],
-      "blocking_reason": null
+      "blocking_reason": "기기별 암호 기록 구조 및 atomic Core API, schema6 암호 저장 경로까지 연결했다. 기존1~5 literal bytes/이력·첨부/root/3-wrap·백업·복구·downgrade 거절을 검사했다. Windows 최근 목록·저장 조건 UI는 아직 미연결이며 사용자 수용 미확인."
     },
     {
       "id": "H01",
@@ -4248,8 +4256,8 @@
   ],
   "progress_summary": {
     "as_of_code": "f006eb33fec296f9b978cc9ed6b714b34f00e5e9",
-    "implemented_or_partial_in_progress": 93,
-    "not_started": 39,
+    "implemented_or_partial_in_progress": 95,
+    "not_started": 37,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4262,6 +4270,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "진행 중 수는 구현·부분 연결이며 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현은 실제PC시험을 기다리지 않고 계속한다."
+    "note": "95개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 최근 메모/저장 검색 Core와 실제 UI는 구분한다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

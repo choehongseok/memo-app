@@ -26,6 +26,7 @@ public sealed class EncryptedVault : IDisposable
     private Guid attachmentRootId;
     private bool attachmentRootAnchored;
     private bool attachmentRootPrepared;
+    private bool searchStatePrepared;
     private volatile bool attachmentUseAllowed=true;
     private long attachmentUseEpoch;
     private readonly Dictionary<Guid,StoredAttachmentObject> knownAttachmentObjects=[];
@@ -89,10 +90,10 @@ public sealed class EncryptedVault : IDisposable
             byte[]? transferred=null;
             try
             {
-                if(decoded.Snapshot.SchemaVersion==5)transferred=decoded.TakeRootKey();
+                if(decoded.Snapshot.SchemaVersion is 5 or 6)transferred=decoded.TakeRootKey();
                 var fingerprint=SHA256.HashData(candidateBytes);
                 var result=new EncryptedVault(root, writer, secret, decoded.Snapshot, decoded.Header.VaultId, decoded.Header.Sequence,
-                    decoded.Header.WrapCount, candidate == "current.vault" ? fingerprint : expectedCurrent, files ?? new AtomicVaultFiles(), fingerprint,transferred,candidate=="current.vault"&&decoded.Snapshot.SchemaVersion==5);
+                    decoded.Header.WrapCount, candidate == "current.vault" ? fingerprint : expectedCurrent, files ?? new AtomicVaultFiles(), fingerprint,transferred,candidate=="current.vault"&&(decoded.Snapshot.SchemaVersion is 5 or 6));
                 transferred=null;return result;
             }
             finally{if(transferred is not null)CryptographicOperations.ZeroMemory(transferred);}
@@ -133,11 +134,10 @@ public sealed class EncryptedVault : IDisposable
         lock (gate)
         {
             if (disposed || keysReleased || faulted) throw new InvalidOperationException("Vault session cannot prepare writes");
-            if(snapshot.SchemaVersion==6)throw new InvalidOperationException("Search UI schema6 write routing is not activated");
             VaultEnvelope.Validate(snapshot);
             RequireRootSnapshot(snapshot);
             if (snapshot.SchemaVersion < 4) snapshot = snapshot with { SchemaVersion = 4 };
-            ulong reservation=snapshot.SchemaVersion==5?3UL:2UL;
+            ulong reservation=snapshot.SchemaVersion is 5 or 6?3UL:2UL;
             if (wraps > VaultEnvelope.MaxWraps - reservation || sequence == ulong.MaxValue) throw new InvalidOperationException("Key use or sequence budget exhausted");
             // Count every attempt, including failures. Rollback of persisted counters cannot be proven.
             wraps += reservation; sequence++;
@@ -146,11 +146,12 @@ public sealed class EncryptedVault : IDisposable
             try
             {
                 var header=new EnvelopeHeader(vaultId,epoch,id,sequence,wraps,plaintext.Length);
-                var bytes = snapshot.SchemaVersion==5?AttachmentEnvelope.Encrypt(plaintext,vaultKey,recoveryKey,header,attachmentRootId,attachmentRootKey!):VaultEnvelope.Encrypt(plaintext, vaultKey, recoveryKey,header);
+                var bytes = snapshot.SchemaVersion is 5 or 6?AttachmentEnvelope.Encrypt(plaintext,vaultKey,recoveryKey,header,attachmentRootId,attachmentRootKey!):VaultEnvelope.Encrypt(plaintext, vaultKey, recoveryKey,header);
                 var prepared = new PreparedSnapshot(bytes, reservedBase, id,snapshot.AttachmentRootId);
                 reservedBase = SHA256.HashData(bytes);
-                if(snapshot.SchemaVersion==5)attachmentRootPrepared=true;
-                if(snapshot.SchemaVersion==5)foreach(var item in snapshot.AttachmentObjects)knownAttachmentObjects.TryAdd(item.ObjectId,item);
+                if(snapshot.SchemaVersion is 5 or 6)attachmentRootPrepared=true;
+                if(snapshot.SchemaVersion==6)searchStatePrepared=true;
+                if(snapshot.SchemaVersion is 5 or 6)foreach(var item in snapshot.AttachmentObjects)knownAttachmentObjects.TryAdd(item.ObjectId,item);
                 return prepared;
             }
             finally { CryptographicOperations.ZeroMemory(plaintext); }
@@ -239,9 +240,8 @@ public sealed class EncryptedVault : IDisposable
         lock(gate)
         {
             if(disposed||keysReleased||faulted)throw new InvalidOperationException("Vault root initialization authority ended");
-            if(snapshot.SchemaVersion==6)throw new InvalidOperationException("Search UI schema6 root routing is not activated");
             VaultEnvelope.Validate(snapshot);
-            if(snapshot.SchemaVersion==5){RequireRootSnapshot(snapshot);return snapshot;}
+            if(snapshot.SchemaVersion is 5 or 6){RequireRootSnapshot(snapshot);return snapshot;}
             var id=attachmentRootId==Guid.Empty?Guid.NewGuid():attachmentRootId;
             var candidate=snapshot with{SchemaVersion=5,AttachmentRootId=id};VaultEnvelope.Validate(candidate);
             if(attachmentRootKey is null){attachmentRootKey=RandomNumberGenerator.GetBytes(32);attachmentRootId=id;}
@@ -250,6 +250,7 @@ public sealed class EncryptedVault : IDisposable
     }
     private void RequireRootSnapshot(VaultSnapshot snapshot)
     {
+        if((Loaded.SchemaVersion==6||searchStatePrepared)&&snapshot.SchemaVersion<6)throw new InvalidOperationException("Search UI state downgrade refused");
         if(snapshot.SchemaVersion<5)
         {
             if(attachmentRootId!=Guid.Empty)
@@ -272,12 +273,12 @@ public sealed class EncryptedVault : IDisposable
         }
     }
     internal void ValidateHiddenRoot(VaultSnapshot snapshot)
-    {lock(gate){if(disposed||keysReleased)throw new InvalidOperationException("Hidden root authority ended");if(snapshot.SchemaVersion<5&&attachmentRootId!=Guid.Empty&&(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion==5))throw new InvalidOperationException("Hidden attachment root downgrade refused");var objects=AttachmentValidation.Objects(snapshot);foreach(var note in snapshot.Notes)AttachmentValidation.References(note.AttachmentIds,objects,snapshot.SchemaVersion);foreach(var revision in snapshot.History)AttachmentValidation.References(revision.AttachmentIds,objects,snapshot.SchemaVersion);if(snapshot.SchemaVersion==5)RequireRootSnapshot(snapshot);}}
+    {lock(gate){if(disposed||keysReleased)throw new InvalidOperationException("Hidden root authority ended");if(snapshot.SchemaVersion is not(1 or 2 or 3 or 4 or 5 or 6))throw new InvalidOperationException("Unknown hidden schema refused");if(snapshot.SchemaVersion<5&&attachmentRootId!=Guid.Empty&&(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6))throw new InvalidOperationException("Hidden attachment root downgrade refused");var objects=AttachmentValidation.Objects(snapshot);foreach(var note in snapshot.Notes)AttachmentValidation.References(note.AttachmentIds,objects,snapshot.SchemaVersion);foreach(var revision in snapshot.History)AttachmentValidation.References(revision.AttachmentIds,objects,snapshot.SchemaVersion);if(snapshot.SchemaVersion is 5 or 6)RequireRootSnapshot(snapshot);}}
     internal void CancelUnpreparedAttachmentRoot()
     {
         lock(gate)
         {
-            if(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion==5||keysReleased)return;
+            if(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6||keysReleased)return;
             if(attachmentRootKey is not null)CryptographicOperations.ZeroMemory(attachmentRootKey);
             attachmentRootKey=null;attachmentRootId=Guid.Empty;
         }

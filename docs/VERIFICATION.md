@@ -298,3 +298,8 @@ e8e1bd9b0cc780d355ad9a309645d91159dec81e / https://github.com/choehongseok/memo-
 73d8e9522172bc21582f318a2f4136389505aac4 / https://github.com/choehongseok/memo-app/actions/runs/37927873556 전체 SUCCESS. f006eb3/37927188828 실제 TXT command 누락만 예상 RED 후 UI 연결; 작업중잠금/키즉시해제/compiled worker4fields/afterCreateNew 취소/no plaintext write/모든modal stale경계를검사했다. Core100·101한도/16MiB·+1byte/전체target충돌거절/flush부분실패보존/실제prepared배열zero PASS. 추가artifact upload SKIPPED.
 
 A09/E10 후속 구조 검토에서 schema6 확장 중 programmatic Tombstones100 cap이누락된것을발견해복원했다. 모든지원schema1~6에서wellformed100허용/101거절을추가했다. 기존RichStorage/DeviceUi 인증fixture는 실제schema별serializer옵션으로만들어새필드가legacyfixture에섞이는실패/음성검사falsepositive를피했다. 암호쓰기6은아직차단하며Frozen원래1~5 serializer bytes 및새필드구조검사만활성화한다. 독립검토는읽기검토이고전문감사/독립실행이아니다.
+
+
+## A09/E10 Core 활성화
+
+구조023ae316334371bc012353fd0e0e212ad79a327b / https://github.com/choehongseok/memo-app/actions/runs/37929082915 전체 SUCCESS. 이후 metadata API 누락 runtime RED, API 연결 뒤 schema6 encrypted save 명시차단 RED를 각각 관측했다. 기존 envelope2/root wrapping을검증된5/6으로만연결하고 unknownfuture/downgrade를거절했다. Core activation targeted/full Core/build PASS: MRU20/21·반복/noop·empty6, named savedreplace/capacity·invalid/전체payload 불변, 실제5→6·previouscipher exact·본문revision/이력/원본attachment/root불변, restart와독립rootbackup 복구, failedprepare3wrap/nearMax, hiddenlatest6/wrongsecret/downgrade·실제root준비중lock. 복구candidate의Read-before-current-anchor 실패는기존안전경계였고시험을expectedrefusal 후Save/read로수정했다. 테스트 counter반사구문첫compile오류는고친뒤target을통과했으며실행실패를PASS로기록하지않는다. UI/실제Windows 활성화회귀는후속gate.

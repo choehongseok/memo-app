@@ -33,13 +33,6 @@ internal static class DeviceSearchStateChecks
         foreach(var invalid in new[]{search with{Id=Guid.Empty},search with{Name=new string('n',65)},search with{Name="invalid\uD800"},search with{Options=new(){Query=new string('x',257)}},search with{Options=new(){Field=(SearchField)999}},search with{Options=new(){FolderId=Guid.Empty}},search with{Options=new(){FolderId=Guid.NewGuid(),UnfiledOnly=true}},search with{Options=new(){ModifiedFrom=DateTimeOffset.UnixEpoch.AddDays(2),ModifiedUntil=DateTimeOffset.UnixEpoch}}})Invalid(current with{SavedSearches=[invalid]},"Malformed saved identity/name/conditions");
         foreach(string required in new[]{"query","field","view","sort","folderId","unfiledOnly","includeDescendants","tag","favoriteOnly","importantOnly","modifiedFrom","modifiedUntil"})
         {var bad=JsonSerializer.SerializeToNode(complete,VaultEnvelope.JsonOptions)!;bad["uiDevices"]![0]!["savedSearches"]![0]!["options"]!.AsObject().Remove(required);VaultChecks.ExpectFailure(()=>VaultEnvelope.ReadSnapshot(JsonSerializer.SerializeToUtf8Bytes(bad)),"Every saved option is required: "+required);}
-        string root=Path.Combine(Path.GetTempPath(),"memo-search-write-guard-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();
-        try
-        {
-            using var vault=EncryptedVault.Create(root,secret,secret);var anchored=vault.InitializeAttachmentRoot(vault.Loaded);vault.Save(anchored);byte[] before=File.ReadAllBytes(Path.Combine(root,"current.vault"));int candidates=Directory.GetFiles(root).Length;var unavailable=anchored with{SchemaVersion=6,UiDevices=[profile]};
-            VaultChecks.ExpectFailure(()=>vault.Save(unavailable),"Structural schema6 cannot activate unreviewed encrypted write routing");VaultChecks.ExpectFailure(()=>vault.InitializeAttachmentRoot(unavailable),"Structural schema6 cannot downgrade through root initialization");VaultChecks.Require(File.ReadAllBytes(Path.Combine(root,"current.vault")).SequenceEqual(before)&&Directory.GetFiles(root).Length==candidates,"Blocked schema6 operations preserve exact existing cipher and candidates");
-        }
-        finally{CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(root))Directory.Delete(root,true);}
-        Console.WriteLine("PASS: structural schema6 encrypted UI metadata bounds and exact legacy schema5 serializer; schema6 write activation remains separate");
+        Console.WriteLine("PASS: structural schema6 encrypted UI metadata bounds and exact legacy schema5 serializer; metadata structural contract; encrypted migration checked separately");
     }
 }

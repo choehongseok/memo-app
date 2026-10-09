@@ -1,6 +1,10 @@
+## A09/E10 Core 활성화 진행
+
+최근20개 MRU/저장검색20개 atomic후보 API 및schema6 암호 경로를연결했다. 미구현API RED→암호write차단 RED→targetGREEN, fullCore/build PASS. 실제첨부5→6/정확previouscipher·원본/root·이력/noise 보존·재실행·백업current고정·3-wrap실패예약/한도·6downgrade/future거절·숨겨진6복구·최초root준비중lock·invalid/capacity/전체payload실패불변·20/21MRU를검사했다. actualWindows gate 및최근/저장검색 UI는후속진행중이다.
+
 ## 후속 구조 준비
 
-A09/E10는 기존 암호 기기별 UI 기록의 schema6 구조만 준비 중이다. 새 필드는 기존1~5 출력에서 제외하고, 과거입력에새필드가섞이면거절한다.6의실제암호write/root 경로는명시차단중이다. schema1~5 literal bytes·6 collection/ref/options필드·기존cipher불변 guard·100/101 tombstones를검사하며작업후자동검사를계속한다. 구조/기능연결/사용자수용을구분한다.
+A09/E10는 기존 암호 기기별 UI 기록의 schema6 구조만 준비 중이다. 새 필드는 기존1~5 출력에서 제외하고, 과거입력에새필드가섞이면거절한다.구조023ae31/Windows37929082915 전체 SUCCESS 후 별도검토·RED 확인을거쳐Core API와6의실제암호write/root 경로를연결했다. schema1~5 literal bytes·6 collection/ref/options필드·기존cipher불변 guard·100/101 tombstones를검사하며작업후자동검사를계속한다. 구조/기능연결/사용자수용을구분한다.
 
 # 계속 개발 중: 검색 강조·이미지 끌어놓기·일괄 TXT
 
@@ -8,7 +12,7 @@ H03 ded5d75/Windows37926846176 전체 SUCCESS. 관리창·스티키 actual child
 
 설치517bcf0/artifact11612428553/Windows37922583685는검증된중간산출물로보존한다. 사용자시험을기다리며전체개발을멈추지않는다. 현재E08선택결과문맥은공통missing-type RED→GREEN, fullCore/4projectbuild/Python35/134/safety PASS; Windows37923895896 missing-control RED 후 e8e1bd9/Windows37925174477 전체 SUCCESS를 확인했다. dirty Capture는 매번 새 준비 revision을 생성하므로 검색 원본불변 시험을 accepted Save baseline으로 보정했다. native source/query/selection/session/epoch/attachment-object교체 authority·독립clear·현재metadata재투영을연결하고 native exception/lock/unchangedversionreplacement회귀를보강한다. 저장형식/원본/암호키설계는변경하지않는다.
 
-현재원장93부분진행/39미착수/N09차단1/M06정규화1=134·사용자수용0. E08후H03이미지파일drop과기기별암호recent/savedsearch설계를우선하며NEXT_SCOPE의계속구현우선순위를따른다. 현재E08/H03에는사용자실제PC시험이코드구현을막는의존성이없다. 외부서비스/유료/계정/서명권한이필요한기능은분리한다. 기존ZIP업로드를반복하지않는다.
+현재원장95부분진행/37미착수/N09차단1/M06정규화1=134·사용자수용0. E08후H03이미지파일drop과기기별암호recent/savedsearch설계를우선하며NEXT_SCOPE의계속구현우선순위를따른다. 현재E08/H03에는사용자실제PC시험이코드구현을막는의존성이없다. 외부서비스/유료/계정/서명권한이필요한기능은분리한다. 기존ZIP업로드를반복하지않는다.
 
 아래는보존한중간설치산출물과이전진행기록이다.
 
