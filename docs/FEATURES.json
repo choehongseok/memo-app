@@ -2482,17 +2482,26 @@
       "name": "Ctrl+V로 이미지 붙이기",
       "normalized": "Ctrl+V로 이미지 붙이기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "H02: Ctrl+V로 이미지 붙이기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/ClipboardPngSource.cs",
+        "src/MemoApp.Windows/AttachmentPanel.Clipboard.cs"
+      ],
       "planned_module": "Attachments",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "commit": "cd08e57d859c4d075579a82cbe68b0bff665e0c1",
+          "environment": "Linux SDK10.0.401 + Windows37941822384",
+          "result": "전체 SUCCESS/actual OS clipboard 관리창·스티키 버튼 암호 저장/restart, raw PNG 원본 불변, global admission, getter/sourceepoch/lock, anchored/unanchored acceptance, borrowed stream position/restorefailure scratchzero PASS."
+        }
+      ],
+      "blocking_reason": "첨부 영역 focus Ctrl+V/버튼 raw PNG byte[]/exact MemoryStream만 지원. Bitmap/DIB/자동 변환/일반 스크린샷·metadata PNG·인라인 삽입은 제한. 실제 물리 Ctrl+V/clipboard app/사용자 수용 미확인."
     },
     {
       "id": "H03",
@@ -4316,9 +4325,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "0acb978c37a3363714bb737426d60a2058b0e5fa",
-    "implemented_or_partial_in_progress": 105,
-    "not_started": 27,
+    "as_of_code": "cd08e57d859c4d075579a82cbe68b0bff665e0c1",
+    "implemented_or_partial_in_progress": 106,
+    "not_started": 26,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4331,6 +4340,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "105개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "106개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

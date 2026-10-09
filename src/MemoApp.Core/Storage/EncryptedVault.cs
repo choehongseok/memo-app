@@ -13,7 +13,7 @@ public sealed class PreparedSnapshot
 }
 public sealed record CandidateState(string Name, string State);
 public sealed record RecoveryCandidate(string Name, ulong Sequence, int NoteCount);
-public sealed class EncryptedVault : IDisposable
+public sealed partial class EncryptedVault : IDisposable
 {
     private readonly string root;
     private readonly FileStream writerLock;

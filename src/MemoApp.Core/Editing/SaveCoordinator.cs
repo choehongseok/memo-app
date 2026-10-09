@@ -75,6 +75,11 @@ public sealed class SaveCoordinator : IDisposable
         if(disposed||IsLocked||epoch!=sessionEpoch||vault.IsFaulted||note.EditVersion!=expectedVersion)throw new InvalidOperationException("Attachment source authority changed");
         Workspace.RequireAttachmentNote(note);
     }
+    public EncryptedBackupPreview PreviewEncryptedBackup(byte[] cipher)
+    {
+        if(disposed||IsLocked||vault.IsFaulted)throw new InvalidOperationException("Backup preview authority ended");
+        return vault.PreviewEncryptedBackup(cipher);
+    }
     public Task<bool> PrepareAttachmentsAsync()=>EnsureAttachmentRootAsync();
     // Predict only this coordinator's synchronous acceptance. Callers must still reject any additional revocation.
     public (Task<bool> Completion,long PreviewEpoch) PrepareAttachments(long expectedPreviewEpoch)

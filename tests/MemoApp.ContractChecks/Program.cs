@@ -31,6 +31,7 @@ if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
 if (args.Contains("--device-search-activation-only")) { await DeviceSearchActivationChecks.Run(); return; }
 if (args.Contains("--device-search-state-only")) { DeviceSearchStateChecks.Run(); return; }
 if (args.Contains("--batch-text-only")) { BatchTextTransferChecks.Run(); return; }
+if (args.Contains("--backup-preview-only")) { await BackupPreviewChecks.Run(); return; }
 if (args.Contains("--clipboard-png-only")) { ClipboardPngChecks.Run(); await AttachmentPreparationChecks.Run(); return; }
 if (args.Contains("--excel-import-only")) { await ExcelImportChecks.Run(); return; }
 if (args.Contains("--office-export-only")) { OfficeTextExportChecks.Run(); return; }
@@ -88,6 +89,7 @@ HistoryDiffChecks.Run();
 await Schema2Checks.Run();
 await BackupChecks.Run();
 await PreparedBackupChecks.Run();
+await BackupPreviewChecks.Run();
 await WholeMigrationChecks.Run();
 OfficeTextExportChecks.Run();
 await ExcelImportChecks.Run();
