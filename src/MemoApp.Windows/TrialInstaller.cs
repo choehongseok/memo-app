@@ -20,12 +20,18 @@ internal static class TrialInstaller
         {
             Install(AppContext.BaseDirectory,target);string shortcut="시작 메뉴 바로가기를 만들었습니다.";
             try{CreateShortcut(target,Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),"Programs","MemoApp Synthetic Trial.lnk"));}
-            catch{shortcut="바로가기는 만들지 못했습니다. 설치 폴더의 MemoApp.Windows.exe로 실행하세요.";}
+            catch(Exception error){shortcut="바로가기는 만들지 못했습니다. 설치 폴더의 MemoApp.Windows.exe로 실행하세요.\n"+error.Message;}
             MessageBox.Show($"설치했습니다. {shortcut}\n\n{target}\n\n삭제할 때는 앱을 완전히 종료한 뒤 이 실행 파일 폴더와 바로가지만 제거하세요. 별도 메모 자료 폴더는 보존하세요.","메모앱 설치");
         }
-        catch{MessageBox.Show("설치하지 못했습니다. 패키지 무결성·로컬 경로·기존 설치·쓰기 권한을 확인하세요. 기존 설치와 메모 자료는 바꾸지 않았습니다. 정리할 수 없는 새 임시 설치 폴더가 남을 수 있습니다.","메모앱 설치");}
+        catch(Exception error){MessageBox.Show("설치하지 못했습니다. 기존 설치와 메모 자료는 바꾸지 않았습니다. 패키지·경로·기존 설치·쓰기 권한을 확인하세요.\n\n"+error.Message,"메모앱 설치");}
     }
-    internal static void Install(string source,string target)
+    internal class InstallFiles
+    {
+        internal virtual FileStream CreateDestination(string path)=>new(path,FileMode.CreateNew,FileAccess.ReadWrite,FileShare.None);
+        internal virtual void Publish(string source,string target)=>Directory.Move(source,target);
+    }
+    internal static void Install(string source,string target)=>InstallUsing(source,target,new InstallFiles());
+    internal static void InstallUsing(string source,string target,InstallFiles files)
     {
         source=LocalPath(source);target=LocalPath(target);
         if(source.Equals(target,StringComparison.OrdinalIgnoreCase)||target.StartsWith(source+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase)||Directory.Exists(target)||File.Exists(target))throw Refused();
@@ -34,29 +40,27 @@ internal static class TrialInstaller
         foreach(var item in entries)VerifyFile(Path.Combine(source,item.Path),item);
         string parent=Path.GetDirectoryName(target)!;LocalPath(parent);Directory.CreateDirectory(parent);LocalPath(parent);
         string stage=Path.Combine(parent,".memo-install-"+Guid.NewGuid().ToString("N"));if(Directory.Exists(stage)||File.Exists(stage))throw Refused();
-        var created=new List<string>();var directories=new HashSet<string>(StringComparer.OrdinalIgnoreCase);bool moved=false;
+
         try
         {
-            Directory.CreateDirectory(stage);directories.Add(stage);LocalPath(stage);
+            Directory.CreateDirectory(stage);LocalPath(stage);
             foreach(var item in entries)
             {
                 LocalPath(stage);string destination=Path.Combine(stage,item.Path);string folder=Path.GetDirectoryName(destination)!;
-                if(!Directory.Exists(folder)){Directory.CreateDirectory(folder);directories.Add(folder);}LocalPath(folder);
+                if(!Directory.Exists(folder)){Directory.CreateDirectory(folder);}LocalPath(folder);
                 using var input=File.Open(Path.Combine(source,item.Path),FileMode.Open,FileAccess.Read,FileShare.Read);if(input.Length!=item.Size)throw Refused();
-                using var output=new FileStream(destination,FileMode.CreateNew,FileAccess.ReadWrite,FileShare.None);created.Add(destination);
+                using var output=files.CreateDestination(destination);
                 input.CopyTo(output,16384);output.Flush(true);if(output.Length!=item.Size)throw Refused();output.Position=0;
                 if(Convert.ToHexStringLower(SHA256.HashData(output))!=item.Hash)throw Refused();
             }
             // Manifest is never a command or source of target/shortcut authority.
-            LocalPath(stage);LocalPath(parent);if(Directory.Exists(target)||File.Exists(target))throw Refused();Directory.Move(stage,target);moved=true;
+            LocalPath(stage);LocalPath(parent);if(Directory.Exists(target)||File.Exists(target))throw Refused();files.Publish(stage,target);
         }
-        finally
+        catch(Exception error)
         {
-            if(!moved)
-            {
-                foreach(string file in created.AsEnumerable().Reverse())try{LocalPath(file);File.Delete(file);}catch{}
-                foreach(string folder in directories.OrderByDescending(x=>x.Length))try{LocalPath(folder);Directory.Delete(folder,false);}catch{}
-            }
+            // No path-based rollback: a replaced ordinary directory can pass a reparse preflight.
+            // Leave only this attempt's new app stage rather than risk deleting replacement files.
+            throw new IOException($"새 임시 설치 폴더를 보존했습니다: {stage}",error);
         }
     }
     private static Entry[] ReadManifest(string source)
@@ -112,7 +116,8 @@ internal static class TrialInstaller
             shell=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell")??throw Refused())??throw Refused();
             dynamic native=shell;link=native.CreateShortcut(temporary);dynamic entry=link;entry.TargetPath=Path.Combine(installed,"MemoApp.Windows.exe");entry.Arguments="";entry.WorkingDirectory=installed;entry.Description="메모앱 합성 자료용 시험판";entry.Save();LocalPath(temporary);File.Move(temporary,shortcut,false);
         }
-        finally{if(link is not null)Marshal.FinalReleaseComObject(link);if(shell is not null)Marshal.FinalReleaseComObject(shell);try{LocalPath(temporary);File.Delete(temporary);}catch{}}
+        catch(Exception error){throw new IOException($"새 임시 바로가기를 보존했습니다: {temporary}",error);}
+        finally{if(link is not null)Marshal.FinalReleaseComObject(link);if(shell is not null)Marshal.FinalReleaseComObject(shell);}
     }
     private static IOException Refused()=>new("Trial installation validation failed");
 }

@@ -1,6 +1,7 @@
 """Package only published executable/runtime/license files; no user data inputs."""
 import hashlib,json,pathlib,subprocess,sys
 root=pathlib.Path(sys.argv[1]).resolve()
+if (root/'installation-manifest.json').exists():raise SystemExit('Refusing to overwrite existing installation manifest')
 files=[]
 for p in sorted(root.rglob('*')):
  if p.is_file():
