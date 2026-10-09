@@ -31,6 +31,7 @@ if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
 if (args.Contains("--device-search-activation-only")) { await DeviceSearchActivationChecks.Run(); return; }
 if (args.Contains("--device-search-state-only")) { DeviceSearchStateChecks.Run(); return; }
 if (args.Contains("--batch-text-only")) { BatchTextTransferChecks.Run(); return; }
+if (args.Contains("--clipboard-png-only")) { ClipboardPngChecks.Run(); return; }
 if (args.Contains("--excel-import-only")) { await ExcelImportChecks.Run(); return; }
 if (args.Contains("--office-export-only")) { OfficeTextExportChecks.Run(); return; }
 if (args.Contains("--whole-migration-only")) { await WholeMigrationChecks.Run(); return; }
@@ -70,6 +71,7 @@ await AttachmentMutationChecks.Run();
 AttachmentSourceChecks.Run();
 AttachmentMetadataChecks.Run();
 PngProfileChecks.Run();
+ClipboardPngChecks.Run();
 await AttachmentLeaseChecks.Run();
 PngDecoderChecks.Run();
 RichDocumentChecks.Run();

@@ -3334,17 +3334,27 @@
       "name": "Excel 가져오기",
       "normalized": "Excel 가져오기",
       "phase": 2,
-      "status": "미착수",
+      "status": "진행 중",
       "user_acceptance": "미확인",
       "acceptance_criteria": [
         "N07: Excel 가져오기 동작을 합성 자료로 실제 시험하고 해당 커밋·환경·결과를 기록한다.",
         "저장되는 민감 정보는 암호화하고 잠금 중 노출·재실행 손실을 검사한다.",
         "관련 PRODUCT_SPEC 및 SOURCE_PROMPT 요구를 모두 유지하며 자동 검사만으로 사용자 수용을 표시하지 않는다."
       ],
-      "implementation_locations": [],
+      "implementation_locations": [
+        "src/MemoApp.Core/Transfer/ExcelTextTransfer.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.ImportTexts.cs",
+        "src/MemoApp.Windows/MainWindow.ExcelImport.cs"
+      ],
       "planned_module": "ImportExport",
-      "test_evidence": [],
-      "blocking_reason": null
+      "test_evidence": [
+        {
+          "commit": "0acb978c37a3363714bb737426d60a2058b0e5fa",
+          "environment": "Linux SDK10.0.401 + Windows Actions37940341144",
+          "result": "전체 Windows SUCCESS/excel-text-import PASS: bounded 첫 시트 plain 문자열·원본 불변·암호 restart·전체 candidate와 dirty savefailure 보존·picker/confirm/lock/sourceguard. 후속 observer 예외 안내 추가 검사는 다음 소스에서 확인한다."
+        }
+      ],
+      "blocking_reason": "기본 XLSX 첫 시트 2/5열 문자열만 plain 추가. 일반 .xls/수치/날짜/수식/매크로/ActiveX/OLE/외부 연결/복잡 구조는 보존 거절. 서식·첨부·다른 시트 가져오기/실제 Excel 호환·사용자 수용 미확인."
     },
     {
       "id": "N08",
@@ -4306,9 +4316,9 @@
     }
   ],
   "progress_summary": {
-    "as_of_code": "073182a3640fdde091be8d50a97b65fe52fdecf3",
-    "implemented_or_partial_in_progress": 104,
-    "not_started": 28,
+    "as_of_code": "0acb978c37a3363714bb737426d60a2058b0e5fa",
+    "implemented_or_partial_in_progress": 105,
+    "not_started": 27,
     "external_format_blocked": 1,
     "normalized_preserved": 1,
     "fully_feature_verified": 0,
@@ -4321,6 +4331,6 @@
       "Q07",
       "Q08"
     ],
-    "note": "104개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
+    "note": "105개는 구현·부분 연결·구조/API 진행 수이고 완료 수가 아니다. 사용자 수용0. 독립 로컬 구현을 계속한다."
   }
 }

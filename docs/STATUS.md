@@ -1,3 +1,5 @@
+N07 0acb978 / Windows37940341144 전체 SUCCESS, 실제 excel-text-import PASS 확인. 원장105부분/27미착수/N09차단1/M06정규화1·사용자 수용0. 이후 검토에서 observer 예외가 이미 추가된 전체 batch의 안내를 오인할 경로를 찾아 current IDs로 실제 적용 여부를 판별하고 회귀를 추가했다. H02 제한 raw PNG 소유 복사 API는 missing-type RED→target GREEN; Windows UI는 아직 미연결이며 새 missing-method 검사부터 확인한다. H02 테스트 초안의 using System.IO 누락 빌드 오류를 바로잡고 전체 빌드를 다시 실행했다.
+
 N07 382e1d2 / Windows37940004737에서 Core 전체 PASS 및 예상한 excel-text-import missing-button 한 건 RED를 실제 확인했다. 후속 화면은 첫 시트 plain 변환 명시 확인·picker/read/confirm sourceepoch/lock/folder guard·키 소유자 없는 worker·전체 추가 후 저장 결과 안내를 연결한다. 빌드0warning/0error이며 실제 Windows 화면 회귀는 다음 새 소스에서 확인한다.
 
 N07 Core: bounded 첫 시트 문자열 XLSX parser·모든 행 candidate 사전검증·실제 암호 저장/restart·flush 실패 whole dirty 보존·원본 불변·100노트/전체payload 거절 검사를 통과했다. 중복 sheets/sheetData와 대소문자/선언형 숨긴 관계·active content를 독립 검토 후 보강했다. 일반 기본 문자열 시트만 지원하며 다른 Office 구조/서식/첨부·수식/수치는 지원하지 않는다. Windows 화면은 아직 미연결이며 새 excel-text-import group의 missing-button RED를 원격 확인한 다음 연결한다. 현재104부분/28미착수 집계에 N07을 완료로 더하지 않는다.
