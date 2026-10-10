@@ -10,9 +10,7 @@ namespace MemoApp.Windows;
 public partial class MainWindow
 {
     private bool pdfExportBusy;
-    private async void PdfExport_Click(object sender,RoutedEventArgs e)=>await ExportSelectedPdfAsync(
-        ()=>MessageBox.Show(this,"선택 메모의 제목·검증된 본문을 평문 PDF로 복사합니다. 고정 글꼴의 한글·일부 한자·영문 등을 지원하며 미지원 글자·이모지·복잡한 문자 조합은 거절합니다. 서식·첨부는 포함하지 않고 Markdown은 원문 문자로 표시합니다. 100개/256쪽/16 MiB 한도이며 탭·줄은 읽기용 배치로 바뀝니다. 원본 보존에는 전체 암호 이전을 사용하세요. PDF와 실패한 부분 파일은 앱 잠금 후에도 남습니다. 평문 파일을 만들까요?","선택 메모 PDF 내보내기",MessageBoxButton.YesNo,MessageBoxImage.Warning,MessageBoxResult.No)==MessageBoxResult.Yes,
-        ()=>{var picker=new SaveFileDialog{Filter="제목·본문 평문 PDF|*.pdf",DefaultExt=".pdf",FileName="selected-notes.pdf",OverwritePrompt=true};return picker.ShowDialog(this)==true?picker.FileName:null;});
+    private async void PdfExport_Click(object sender,RoutedEventArgs e)=>await ExportSelectedPdfWithModeAsync(ChoosePdfMode,ConfirmTextPdf,ConfirmVisualPdf,ChoosePdfDestination);
     internal async Task<bool> ExportSelectedPdfAsync(Func<bool> confirm,Func<string?> choose,IAtomicVaultFiles? files=null)
     {
         Dispatcher.VerifyAccess();if(windowClosed||concealing||pdfExportBusy||CaptureBatch(false) is not{ } request)return false;

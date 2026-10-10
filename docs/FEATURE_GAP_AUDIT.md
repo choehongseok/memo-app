@@ -1,3 +1,5 @@
+2026-10-10 저장 소스08d1bcb4b5aee26cbf031ab699ccaf82016c94d6/treeb7b3f9b1f700ec749108a5176d12ece3f2900a33 실제 Windows38009222772/job114085089242 전체FAIL. nativeOCR/build/fullCore PASS; H01 rich-image-document/publication/product·gray공유표시·selected-body Enter completion PASS로 이전 immediateepochclear 결함 해소 확인. 신규 clipboard-dib-input은 Synthetic Control modifier observed, pdf-export-authority는 dirty edit 후 Capture 직렬화 동일성 단언에서 FAIL했다. 두 원인을 원래 native/취소/원본보존 조건을 유지하여 진단 중이다. publish/package/install/networkobservation/upload SKIPPED, 기존artifact11647312201 유지. N02 visual renderer 및 O06/H09 후속은 아직 새Windows 성공/제품완료로 간주하지 않는다.
+
 # 원문 134 ID 후속 감사
 
 119개는 구현·부분 연결 개수이며 완료 개수가 아니다. 13미착수/N09차단1/M06정규화1, 전체 기능 완료·사용자 수용0을 유지한다. 각 ID의 구현 근거·남은 독립 작업·실제 기기·결정/접근은 [FEATURE_GAP_AUDIT.json](FEATURE_GAP_AUDIT.json)에 기록한다. 원문 이름·ID·M06을 변경하지 않는다.

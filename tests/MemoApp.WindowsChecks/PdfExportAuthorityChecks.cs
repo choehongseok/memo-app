@@ -50,12 +50,12 @@ internal static partial class Program
                             active.Workspace.AcceptPrepared(active.Workspace.Capture());
                             Require(note.EditVersion==version&&active.AttachmentPreviewEpoch!=epoch,"Same-version acceptance advances source authority epoch");break;
                     }
-                    byte[] source=System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(active.Workspace.Capture()),cipher=File.ReadAllBytes(Path.Combine(root,"current.vault"));
+                    byte[] source=PdfAuthorityStableSource(active.Workspace),cipher=File.ReadAllBytes(Path.Combine(root,"current.vault"));
                     try
                     {
                         paused.Continue.TrySetResult();
                         Require(!await pending&&File.Exists(destination)&&new FileInfo(destination).Length==0,"Paused CreateNew "+mutation+" revocation writes no PDF plaintext");
-                        Require(source.SequenceEqual(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(active.Workspace.Capture()))&&cipher.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"current.vault"))),"Revoked PDF preserves exact post-mutation source and ciphertext: "+mutation);
+                        Require(source.SequenceEqual(PdfAuthorityStableSource(active.Workspace))&&cipher.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"current.vault"))),"Revoked PDF preserves exact post-mutation source and ciphertext: "+mutation);
                     }
                     finally{CryptographicOperations.ZeroMemory(source);CryptographicOperations.ZeroMemory(cipher);}
                 }
@@ -91,5 +91,19 @@ internal static partial class Program
             }
             CryptographicOperations.ZeroMemory(secret);Directory.Delete(dir,true);
         }
+    }
+
+    private static byte[] PdfAuthorityStableSource(EditingWorkspace workspace)
+    {
+        var basis=workspace.FrozenBasis;var captured=workspace.Capture();
+        // Capture creates fresh provisional revision IDs for dirty drafts; those are not committed identities.
+        // Keep every committed ID, history/parent/object/UI field and exact public draft state/version.
+        var provisional=captured.Notes.Where(note=>!basis.Notes.Any(old=>old.NoteId==note.NoteId&&old.RevisionId==note.RevisionId)).Select(note=>note.RevisionId).ToHashSet();
+        var stable=captured with
+        {
+            Notes=captured.Notes.Select(note=>provisional.Contains(note.RevisionId)?note with{RevisionId=Guid.Empty}:note).ToArray(),
+            Tombstones=captured.Tombstones.Select(note=>provisional.Contains(note.RevisionId)?note with{RevisionId=Guid.Empty}:note).ToArray()
+        };
+        return System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new{CommittedBasis=basis,Current=stable,Drafts=workspace.Notes.ToArray()});
     }
 }

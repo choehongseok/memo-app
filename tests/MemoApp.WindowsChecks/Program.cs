@@ -54,6 +54,7 @@ internal static partial class Program
                 groups=groups.Append(("excel-sheet-column-mapping",(Func<Task>)ExcelMappingRun)).ToArray();
                 groups=groups.Append(("pdf-plaintext-export",(Func<Task>)PdfExportRun)).ToArray();
                 groups=groups.Append(("pdf-export-authority",(Func<Task>)PdfExportAuthorityRun)).ToArray();
+                groups=groups.Append(("pdf-visual-export",(Func<Task>)PdfVisualRun)).ToArray();
                 groups=groups.Append(("office-plaintext-export",(Func<Task>)OfficeExportRun)).ToArray();
                 groups=groups.Append(("whole-encrypted-transfer",(Func<Task>)WholeTransferRun)).ToArray();
                 groups=groups.Append(("automatic-encrypted-trash",(Func<Task>)AutomaticTrashRun)).ToArray();
@@ -71,6 +72,7 @@ internal static partial class Program
                 groups=groups.Append(("rich-image-document",(Func<Task>)RichImageDocumentRun)).Append(("rich-image-publication",(Func<Task>)RichImagePublicationRun)).ToArray();
                 groups=groups.Append(("rich-image-product",(Func<Task>)RichImageProductRun)).ToArray();
                 if(arguments.Contains("--h01-image-only"))groups=groups.Where(group=>group.Name is "rich-image-document" or "rich-image-publication" or "rich-image-product").ToArray();
+                if(arguments.Contains("--pdf-visual-only"))groups=groups.Where(group=>group.Name=="pdf-visual-export").ToArray();
                 if(arguments.Contains("--clipboard-dib-only"))groups=groups.Where(group=>group.Name=="clipboard-dib-input").ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)

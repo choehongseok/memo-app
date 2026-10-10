@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "2163093533cff1f12210a6d09a778f896c4b595c",
-    "working_tree": "H01 wholeWindows38008067402 FAIL; boundedDIB/PDFauthority/inertRasterCore/epochfix working followup, nextactualWindowspending",
+    "head": "08d1bcb4b5aee26cbf031ab699ccaf82016c94d6",
+    "working_tree": "Windows38009222772 entireFAIL DIB Ctrl fixture/PDF dirty-Capture oracle; H01 immediateepochfix actualPASS; followupvisualPDF/O06/H09 phases explicit",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "2026-10-10 저장 소스2163093533cff1f12210a6d09a778f896c4b595c/tree936c57cc3331e0679a74dc14b08dcc31cc5bee7b Windows38008067402/job114081385426 전체FAIL. nativeOCR/build0w0e/fullCore 및 actualWPF selected-body Enter completion/기존boundary/gray shareddisplay/H01publication·product PASS. H01 unchangedAcceptPrepared immediatepixel-clear assertion만FAIL. Workspace.AcceptPrepared는 AttachmentReadInvalidating으로 globalpreviewepoch를 증가시키지만 새view는 NotePropertyChanged/sessionChanged/prepaint만 감시해 동기clear를 놓쳤다. 원래actualREDoracle를 유지하고 해당workspaceevent에 즉시InvalidateImageDisplay를 연결/Dispose때해제한다. 독립읽기재검토 추가Important없음; 새WindowsPASS는 아직미확인. package/install/networkobservation/uploadSKIPPED, 기존artifact11647312201보존.\n\n후속H02 CF_DIB8/header40 BI_RGB24/32 ≤4MiB→opaqueRGBPNG actualCoreRED→GREEN/fullCoreexit0. source/dims/stride/tail/PNGoutputcap/borrowed원본/allocation취소·오류zeroing 및 strictgrammar검사. 초기Refresh 선택generation 및 OLE전sequence Important수정/독립재검토추가없음; nativegetters/cleanup/lockedworker슬롯/암호첨부/savefault/명시H01참조/actualnativeclipboard 픽셀·lock tests작성, Windows실행은대기. rawPNG기존동작보존/편집기CtrlV범위미확장.\n\nN02 기존textPDF의 operationCTS는 선택away/back/sourceEditVersion/sameversionAcceptPrepared/lock/close에 단조취소하고 실제blockedCreateNew 뒤token검사를 유지한다. closedCTS 접근Important는 entryguard+postclose무callback회귀로수정/독립재검토. 새nativeWindows대기. 별도 inertRasterPDFCore actualmissingAPIRED→targetGREEN/build0w0e, strictRGB/A4/xref/16MiB/256page/faultedbuilder/allocationzero 계약. 독립Poppler pdfinfo1page/A4/PDF1.7/noJS 및96DPI렌더794x1123의 비대칭4corner exactRGB/whitecenter PASS. 렌더PPMSHA256 c82d41dcf511db0e6cbe8b9279c5aaafb29557be06ef6e9ffaf9035e3f3c9dad. WindowsUnicodeformatter/표시PDFUI는후속이며 현재제품제공·전체N02완료로표시하지않음.\n\n",
+    "current_change_verification": "2026-10-10 저장 소스08d1bcb4b5aee26cbf031ab699ccaf82016c94d6/treeb7b3f9b1f700ec749108a5176d12ece3f2900a33 실제 Windows38009222772/job114085089242 전체FAIL. nativeOCR/build/fullCore PASS; H01 rich-image-document/publication/product·gray공유표시·selected-body Enter completion PASS로 이전 immediateepochclear 결함 해소 확인. 신규 clipboard-dib-input은 Synthetic Control modifier observed, pdf-export-authority는 dirty edit 후 Capture 직렬화 동일성 단언에서 FAIL했다. 두 원인을 원래 native/취소/원본보존 조건을 유지하여 진단 중이다. publish/package/install/networkobservation/upload SKIPPED, 기존artifact11647312201 유지. N02 visual renderer 및 O06/H09 후속은 아직 새Windows 성공/제품완료로 간주하지 않는다.\n\n2026-10-10 저장 소스2163093533cff1f12210a6d09a778f896c4b595c/tree936c57cc3331e0679a74dc14b08dcc31cc5bee7b Windows38008067402/job114081385426 전체FAIL. nativeOCR/build0w0e/fullCore 및 actualWPF selected-body Enter completion/기존boundary/gray shareddisplay/H01publication·product PASS. H01 unchangedAcceptPrepared immediatepixel-clear assertion만FAIL. Workspace.AcceptPrepared는 AttachmentReadInvalidating으로 globalpreviewepoch를 증가시키지만 새view는 NotePropertyChanged/sessionChanged/prepaint만 감시해 동기clear를 놓쳤다. 원래actualREDoracle를 유지하고 해당workspaceevent에 즉시InvalidateImageDisplay를 연결/Dispose때해제한다. 독립읽기재검토 추가Important없음; 새WindowsPASS는 아직미확인. package/install/networkobservation/uploadSKIPPED, 기존artifact11647312201보존.\n\n후속H02 CF_DIB8/header40 BI_RGB24/32 ≤4MiB→opaqueRGBPNG actualCoreRED→GREEN/fullCoreexit0. source/dims/stride/tail/PNGoutputcap/borrowed원본/allocation취소·오류zeroing 및 strictgrammar검사. 초기Refresh 선택generation 및 OLE전sequence Important수정/독립재검토추가없음; nativegetters/cleanup/lockedworker슬롯/암호첨부/savefault/명시H01참조/actualnativeclipboard 픽셀·lock tests작성, Windows실행은대기. rawPNG기존동작보존/편집기CtrlV범위미확장.\n\nN02 기존textPDF의 operationCTS는 선택away/back/sourceEditVersion/sameversionAcceptPrepared/lock/close에 단조취소하고 실제blockedCreateNew 뒤token검사를 유지한다. closedCTS 접근Important는 entryguard+postclose무callback회귀로수정/독립재검토. 새nativeWindows대기. 별도 inertRasterPDFCore actualmissingAPIRED→targetGREEN/build0w0e, strictRGB/A4/xref/16MiB/256page/faultedbuilder/allocationzero 계약. 독립Poppler pdfinfo1page/A4/PDF1.7/noJS 및96DPI렌더794x1123의 비대칭4corner exactRGB/whitecenter PASS. 렌더PPMSHA256 c82d41dcf511db0e6cbe8b9279c5aaafb29557be06ef6e9ffaf9035e3f3c9dad. WindowsUnicodeformatter/표시PDFUI는후속이며 현재제품제공·전체N02완료로표시하지않음.\n\n",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "2163093 committed plus explicitly working H02/PDFauthority/inertRaster/epochfix"
+    "supplemental_source": "08d1bcb committed; separately working visualPDF/O06/H09 source, nativegate pending"
   },
   "summary": {
     "original_id_count": 134,
@@ -1764,8 +1764,8 @@
     },
     {
       "id": "H01",
-      "implemented": "Canonical strictdocv2/schema10 PNG block refs/read-only ordered viewer/manual display/remove; fullCore and Windowspublication/product PASS.",
-      "remaining": "Actual Windows38008067402 entireFAIL only immediate same-source AcceptPrepared pixel-clear; synchronousworkspaceinvalidation fix independentreview/newgatepending. Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain.",
+      "implemented": "Canonical strictdocv2/schema10 PNG refs/read-only ordered viewer/manual display/remove; actualWindows38009222772 document/publication/product PASS, including same-version immediateepochpixelclear.",
+      "remaining": "Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain. OverallWindows38009222772 FAIL at separateDIB/PDF fixtures; newpackage notproduced.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -1781,7 +1781,7 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Actual Windows38008067402 entireFAIL only immediate same-source AcceptPrepared pixel-clear; synchronousworkspaceinvalidation fix independentreview/newgatepending. Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain."
+          "Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain. OverallWindows38009222772 FAIL at separateDIB/PDF fixtures; newpackage notproduced."
         ],
         "inspection": [
           "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
@@ -1796,7 +1796,7 @@
     {
       "id": "H02",
       "implemented": "RawPNG existingroute plus bounded CF_DIB8/header40 BI_RGB24/32→opaqueRGBPNG explicitbutton/panelfocusCtrlV working source; CoreRED→fullGREEN/independentreview.",
-      "remaining": "NativeCF_DIB/authority/cleanup/worker-settlement/encryptedrestart tests awaitingactualWindows. DIBV5/otherformats/largerinputs and editorfocus inlinepaste remain. OSsynthesizedconversioncannotbeexcluded.",
+      "remaining": "ActualWindows38009222772 group stops at missingLeftCtrl teststate; fixture nowsets actualLeftCtrl with unchanged nativeCtrlV oracle, nextgatepending. DIBV5/otherformats/largerinputs/editorfocusinlinepaste remain; OSsynthesizedconversioncannotbeexcluded.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -1812,7 +1812,7 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "NativeCF_DIB/authority/cleanup/worker-settlement/encryptedrestart tests awaitingactualWindows. DIBV5/otherformats/largerinputs and editorfocus inlinepaste remain. OSsynthesizedconversioncannotbeexcluded."
+          "ActualWindows38009222772 group stops at missingLeftCtrl teststate; fixture nowsets actualLeftCtrl with unchanged nativeCtrlV oracle, nextgatepending. DIBV5/otherformats/largerinputs/editorfocusinlinepaste remain; OSsynthesizedconversioncannotbeexcluded."
         ],
         "inspection": [
           "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
@@ -2477,7 +2477,7 @@
     {
       "id": "N02",
       "implemented": "Existing limitedtextPDF preserved; operationCTS revocationfix/newnativefixture pending. InertCoreRasterPDF RED→GREEN/independentPoppler A4/exactcorners PASS.",
-      "remaining": "WindowsUnicodeformatter/explicitdisplayPDFUI plus rich/table/Markdown/image rendering remain independentcode. Inertwriter is not productexport support. Actualvieweruseracceptance remains.",
+      "remaining": "Explicit plain displayPDF Windowsformatter/mode/render/source fixtures nowinreview; resolvedfontfamily Importantfix/nativegatepending. ExistingtextPDF newauthority fixture dirty provisionalCapture identity failure underdiagnosis. Rich/table/Markdown/image rendering and actualvieweruseracceptance remain.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -2494,7 +2494,7 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "WindowsUnicodeformatter/explicitdisplayPDFUI plus rich/table/Markdown/image rendering remain independentcode. Inertwriter is not productexport support. Actualvieweruseracceptance remains."
+          "Explicit plain displayPDF Windowsformatter/mode/render/source fixtures nowinreview; resolvedfontfamily Importantfix/nativegatepending. ExistingtextPDF newauthority fixture dirty provisionalCapture identity failure underdiagnosis. Rich/table/Markdown/image rendering and actualvieweruseracceptance remain."
         ],
         "inspection": [
           "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
