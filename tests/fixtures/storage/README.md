@@ -11,3 +11,9 @@ Schema9Checks verifies the frozen hash and exact schema8 deserialize/serialize b
 Fixture SHA-256: `cde32f87ced6cbf5828c2c6ad3547e23243588aa719d727cd963fc6945518050`.
 
 The pre-H01 baseline DLL was copied to `/tmp/memo-frozen9-baseline/MemoApp.Core.dll`: 2413056 bytes, SHA-256 `d88729a4dfb6b10cce728063e37f148ffb5e7b95fd04798dd96c959fff6bfa49`. Its standalone capture source and project were kept in the same temporary directory. The frozen output is committed for regression checking; the binary is not a repository deliverable. No post-change serializer was used to generate or claim the original fixture.
+
+`frozen-schema10.json` is the exact 2912-byte synthetic output captured before schema11 changes from the real unchanged schema10 Core writer at08d1bcb (isolated N02 Windows-check build). It carries the frozen schema9 device policy and deletion witnesses, with a known rich-document v2 containing no image references; it does not claim encrypted-object authentication or OCR metadata.
+
+Fixture SHA-256: `da2e67991474b41fc02315b44f63125305a172bf1a19ebf6b66e2e244ec9d28e`.
+
+The actual baseline DLL copied to `/tmp/memo-frozen10-baseline/MemoApp.Core.dll` is2435584 bytes, SHA-256 `c8f4711fe6c3e253190d07fa1ee102846ea41531868a643dacf92964108cb01f`. Its capture project/source and actual run log were retained under that temporary directory and `/tmp/memo-frozen10-capture.log`. The baseline binary is not committed. No schema11 serializer was used to generate the fixture.

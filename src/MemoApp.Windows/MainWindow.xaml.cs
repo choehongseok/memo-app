@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
-        Closed += (_, _) => { windowClosed=true;DisableTray();ClearBackupPreviews();ClearAutomaticBackupViews();ClearAutomaticTrashViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true;DisableTray();ClearBackupPreviews();ClearBackupMergeViews();ClearAutomaticBackupViews();ClearAutomaticTrashViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -101,7 +101,7 @@ public partial class MainWindow : Window
     }
     private void ConcealViews()
     {
-        uiEpoch++;concealing=true;ClearTrayMenu();ClearBackupPreviews();ClearAutomaticBackupViews();ClearAutomaticTrashViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
+        uiEpoch++;concealing=true;ClearTrayMenu();ClearBackupPreviews();ClearBackupMergeViews();ClearAutomaticBackupViews();ClearAutomaticTrashViews(); ClearSearchStateViews();ClearSearchResultPreview();fileOperations.Cancel(); draggingNote = dragCandidate = null;concealing=true;selectedBodyMode=null;
         foreach(var widget in widgets.Values.ToArray()){widget.Hide();widget.Close();}
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
@@ -117,6 +117,7 @@ public partial class MainWindow : Window
         NewButton.IsEnabled = SaveButton.IsEnabled = LockButton.IsEnabled = BackupButton.IsEnabled = WholeTransferButton.IsEnabled = BackupPreviewButton.IsEnabled = MarkdownImportButton.IsEnabled = ExcelImportButton.IsEnabled = TxtImportButton.IsEnabled = false;
         TxtExportButton.IsEnabled = PdfExportButton.IsEnabled = ExcelExportButton.IsEnabled = WordExportButton.IsEnabled = false;
         DuplicateButton.IsEnabled = DeleteButton.IsEnabled = RestoreButton.IsEnabled = HistoryButton.IsEnabled = false;
+        BackupMergeButton.IsEnabled=PendingBackupBranchesButton.IsEnabled=false;
         BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=BatchRestoreButton.IsEnabled=BatchFolder.IsEnabled=BatchTxtExportButton.IsEnabled=false;
         ClearSecretControls(); LockPanel.Visibility = Visibility.Visible;concealing=false;hiddenSticky=false;
     }
@@ -407,6 +408,8 @@ public partial class MainWindow : Window
         BatchMoveButton.IsEnabled=BatchDeleteButton.IsEnabled=any&&selected.All(n=>!n.IsDeleted);
         BatchTxtExportButton.IsEnabled=any&&!batchTextBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
         PdfExportButton.IsEnabled=any&&!pdfExportBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
+        BackupMergeButton.IsEnabled=any&&!backupMergeBusy&&selected.Length<=100&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
+        PendingBackupBranchesButton.IsEnabled=unlocked&&!backupMergeBusy&&note is{IsClosed:false,IsDeleted:false};
         ExcelExportButton.IsEnabled=WordExportButton.IsEnabled=any&&!officeExportBusy&&selected.All(n=>!n.IsClosed&&!n.IsDeleted);
         BatchRestoreButton.IsEnabled=any&&selected.All(n=>n.IsDeleted);BatchFolder.IsEnabled=BatchMoveButton.IsEnabled;
     }

@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.IO.Compression;
 namespace MemoApp.Core.Transfer;
 // Expected manifest comes from the product assembly resource, never an editable runtime file.
-internal sealed class WindowsOcrBundle
+internal sealed partial class WindowsOcrBundle
 {
  internal readonly string Root;private readonly string engineHash,archiveHash;private readonly long engineLength,archiveLength;
  internal static readonly (string Name,int Length,string Hash)[] Models=[("kor.traineddata",1677415,"6b85e11d9bbf07863b97b3523b1b112844c43e713df8b66418a081fd1060b3b2"),("eng.traineddata",4113088,"7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2"),("Apache2.txt",11358,"cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30")];

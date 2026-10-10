@@ -1,6 +1,6 @@
 # H09 / T12 encrypted source-linked OCR search plan
 
-Status: proposed design only. No product code, schema change, build, inference, network operation, model installation, or acceptance claim accompanies this document. Implementation requires an independent pre-implementation security review of the concrete contracts below and the parent's assignment of a separate source unit. The H02 and N02 source phases remain separate.
+Status: independent preimplementation review accepted the bounded note-scoped design after original note/session grant binding and explicit cap4/owner-retirement clarification. Detached runtime input/result code is implemented and compiled0warnings0errors with actual isolated RED→GREEN and expanded ownership GREEN (`/tmp/memo-h09-runtime-red.log`, `/tmp/memo-h09-runtime-green.log`, `/tmp/memo-h09-runtime-ownership-green.log`). Same-span source/hash/decode, exact prepared PPM, closed verified-result factory and byte ownership are tested; no actual linked engine/provenance execution, issuer registry, schema11, storage/search or UI activation is claimed. The schema/grant contracts below remain future work until separately assigned after O06 source coordination.
 
 ## Original requirement and observed gap
 

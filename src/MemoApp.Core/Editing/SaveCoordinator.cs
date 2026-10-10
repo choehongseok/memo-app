@@ -38,6 +38,7 @@ public sealed partial class SaveCoordinator : IDisposable
     private void RevokeAttachmentReads(NoteDraft? source)
     {
         AttachmentPreviewEpoch++;
+        ObserveMergeRevocation(source);
         attachmentReads.Revoke(source?.AttachmentReadIdentity);
     }
     public bool IsAttachmentPreviewCurrent(NoteDraft note,Guid id,long expectedVersion,long expectedEpoch)

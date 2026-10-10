@@ -4,6 +4,8 @@ using MemoApp.Core;
 if (args.Length==2&&args[0]=="--ocr-native-probe") { await LocalOcrChecks.NativeProbe(args[1]); return; }
 if (args.Length==2&&args[0]=="--ocr-linux-probe") { await LocalOcrChecks.LinuxProbe(args[1]); return; }
 if (LocalOcrChecks.TryWorker(args)) return;
+if (args.Contains("--attachment-ocr-input-only")) { await AttachmentOcrInputChecks.Run(); return; }
+if (args.Contains("--o06-merge-only")) { await BackupMergeChecks.Run(); return; }
 if (args.Contains("--ocr-process-only")) { await LocalOcrChecks.ProcessChecks(); return; }
 if (args.Contains("--trash-encryption-only")) { await TrashEncryptionChecks.Run(); return; }
 if (args.Contains("--user-link-only")) { UserLinkChecks.Run(); return; }
@@ -94,6 +96,8 @@ Console.WriteLine("PASS: synthetic Korean/table/image/unknown-node contract roun
 LocalOcrChecks.Input();
 await LocalOcrChecks.ProcessChecks();
 EditingChecks.Run();
+await BackupMergeChecks.Run();
+await AttachmentOcrInputChecks.Run();
 SpreadsheetMappingChecks.Run();
 await Schema9Checks.Run();
 await Schema9HiddenChecks.Run();

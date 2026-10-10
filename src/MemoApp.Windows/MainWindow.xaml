@@ -13,6 +13,8 @@
    <Button x:Name="LockButton" Content="잠금" Click="Lock_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="WholeTransferButton" Content="전체 자료 이전 파일" Click="WholeTransfer_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="BackupPreviewButton" Content="암호 백업 미리보기" Click="BackupPreview_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
+   <Button x:Name="BackupMergeButton" Content="선택 메모의 백업 이력 보존" Click="BackupMerge_Click" ToolTip="현재 메모 유지 · 같은 메모 ID의 백업 이력 보존 · 미저장 수정은 비교 전에 암호 저장" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
+   <Button x:Name="PendingBackupBranchesButton" Content="보존된 백업 분기 비교" Click="PendingBackupBranches_Click" ToolTip="선택한 현재 메모의 보존 분기를 읽기 전용 비교 · 미저장 수정은 비교 전에 암호 저장" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="BackupButton" Content="암호 백업" Click="Backup_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="DuplicateButton" Content="복제" Click="Duplicate_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>
    <Button x:Name="DeleteButton" Content="휴지통으로" Click="Delete_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/>

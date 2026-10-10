@@ -13,6 +13,17 @@ public sealed class PreparedEncryptedCopy:IDisposable
     {
         if(disposed)throw new InvalidOperationException("Disposed encrypted copy");destination=LocalFilePath.Resolve(destination);LocalFilePath.CheckAncestors(destination,false);
         string relative=Path.GetRelativePath(sourceRoot,destination);if(relative!=".."&&!relative.StartsWith(".."+Path.DirectorySeparatorChar,StringComparison.Ordinal)&&!Path.IsPathRooted(relative))throw new IOException("Backup inside active vault refused");
+        WriteVerified(destination,files);
+    }
+    // Restricted recovery checkpoint: a fresh supported candidate in the owned source root only.
+    internal void WriteMergeRecovery(string destination,IAtomicVaultFiles? files=null)
+    {
+        if(disposed)throw new InvalidOperationException("Disposed encrypted copy");destination=LocalFilePath.Resolve(destination);LocalFilePath.CheckAncestors(destination,false);
+        if(Path.GetDirectoryName(destination)!=sourceRoot||!System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(destination),"\\Aprevious-[a-f0-9]{32}\\.vault\\z",System.Text.RegularExpressions.RegexOptions.CultureInvariant))throw new IOException("Invalid merge recovery destination");
+        WriteVerified(destination,files);
+    }
+    private void WriteVerified(string destination,IAtomicVaultFiles? files)
+    {
         var adapter=files??new AtomicVaultFiles();using(var output=adapter.CreateNew(destination)){output.Write(bytes);adapter.FlushToDisk(output);}
         LocalFilePath.CheckAncestors(destination,true);using var input=new FileStream(destination,FileMode.Open,FileAccess.Read,FileShare.Read);
         if(input.Length!=bytes.Length)throw new IOException("Encrypted backup size changed");

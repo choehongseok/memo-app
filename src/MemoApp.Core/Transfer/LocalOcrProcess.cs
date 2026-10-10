@@ -4,11 +4,21 @@ using System.Text;
 namespace MemoApp.Core.Transfer;
 
 // Internal keyless process primitive. Product trust/publication belong to the Windows adapter.
+internal delegate void OcrUtf8Reader(ReadOnlySpan<byte> bytes);
 internal sealed class OwnedOcrText(byte[] owned):IDisposable
 {
- private byte[]? bytes=owned;
- internal string Text=>bytes is not null?new UTF8Encoding(false,true).GetString(bytes):throw new ObjectDisposedException(nameof(OwnedOcrText));
- public void Dispose(){var old=Interlocked.Exchange(ref bytes,null);if(old is not null)CryptographicOperations.ZeroMemory(old);}
+ private readonly object gate=new();private byte[]? bytes=owned;private bool running,finished,revoked;
+ internal string Text{get{lock(gate){if(bytes is null||revoked||finished)throw new ObjectDisposedException(nameof(OwnedOcrText));if(running)throw new InvalidOperationException("OCR output consumption running");return new UTF8Encoding(false,true).GetString(bytes);}}}
+ internal bool ConsumeUtf8(OcrUtf8Reader reader)
+ {
+  ArgumentNullException.ThrowIfNull(reader);byte[] borrowed;
+  lock(gate){if(running||finished||revoked)throw new InvalidOperationException("OCR output ownership ended");running=true;borrowed=bytes!;}
+  bool success=false;
+  try{reader(borrowed);}
+  finally{lock(gate){success=!revoked;running=false;finished=true;CryptographicOperations.ZeroMemory(borrowed);bytes=null;}}
+  return success;
+ }
+ public void Dispose(){lock(gate){revoked=true;if(!running&&!finished){finished=true;if(bytes is not null)CryptographicOperations.ZeroMemory(bytes);bytes=null;}}}
 }
 internal sealed record OcrOperation(Task<OwnedOcrText> Completion,Task Settled);
 internal static class LocalOcrProcess

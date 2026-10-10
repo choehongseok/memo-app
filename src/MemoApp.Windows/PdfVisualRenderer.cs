@@ -82,7 +82,12 @@ internal static class PdfVisualRenderer
                     for(int column=0;column<PageWidth;column++)
                     {
                         int pixel=start+column*4,output=outStart+column*3;
-                        if(bgra[pixel+3]!=255)throw new InvalidDataException("Display PDF page must be opaque white-backed RGB");
+                        if(bgra[pixel+3]!=255)
+                        {
+                            // Geometry/alpha only: this diagnostic must never include source text or pixel colors.
+                            DpiScale visualDpi=VisualTreeHelper.GetDpi(page!);
+                            throw new InvalidDataException(FormattableString.Invariant($"Display PDF page must be opaque white-backed RGB; first nonopaque pixel x={column}, y={row}, alpha={bgra[pixel+3]}; bitmap={bitmap.PixelWidth}x{bitmap.PixelHeight}, dpi={bitmap.DpiX:R}x{bitmap.DpiY:R}; visual scale={visualDpi.DpiScaleX:R}x{visualDpi.DpiScaleY:R}; corner alpha={bgra[3]},{bgra[(PageWidth-1)*4+3]},{bgra[(PageHeight-1)*PageWidth*4+3]},{bgra[bgra.Length-1]}"));
+                        }
                         rgb[output]=bgra[pixel+2];rgb[output+1]=bgra[pixel+1];rgb[output+2]=bgra[pixel];
                     }
                 }
