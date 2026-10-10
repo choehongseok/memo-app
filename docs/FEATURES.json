@@ -3475,9 +3475,16 @@
           "environment": "Linux cloud x86_64 / SDK10.0.401",
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release -- --pdf-rich-paragraph-capture-only; full Core; WindowsChecks crossbuild",
           "result": "Actual missingAPI RED134 then focusedGREEN0/fullCore0/crossbuild0warnings0errors. Exact raw/projection/style/whole refusal/grapheme/CRLF/source and payload budgets/cipher history OCR preservation tested; independent sourcePOSTclear. Actual Windows font inventory/approval/styled renderer/nativeviewer/host integration pending; no N02/full134/user acceptance completion claim."
+        },
+        {
+          "kind": "windows-font-inventory-and-installed-partial",
+          "commit": "e2bff1c210f8fe9539c92f0d537e7dc637e69d64",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38032655607",
+          "result": "Whole native/Core/package/actual installed EXE SUCCESS. Eight regular/bold requests resolved; six exact unsimulated system candidates independently approved, Symbol/Emoji bold simulation refused. Core capture PASS; glyph/styled renderer/nativeviewer/host integration remain pending. Upload SKIP; no full N02/134 or physical acceptance claim."
         }
       ],
-      "blocking_reason": "Bounded plain Unicode 표시 PDF는 final35 및 2c6 run163 전체 Windows/실제 설치 gate PASS. H01/corpus gate 종료 후 rich-v1 paragraph/run inert capture 및 test-only actual font inventory만 활성화. 실제 bold face 승인·서식 renderer·native/viewer·정확한 선택 순서 검증은 대기. Rich list/table/Markdown/image fidelity 및 물리 사용자 수용은 미완료."
+      "blocking_reason": "Bounded plain 표시 PDF 및 inert rich paragraph capture는 run164 전체Windows/실제설치 gate PASS. 실제6systemface 독립승인 후 Task2 tests-first 활성화; 서식 renderer/nativeRGB/viewer 및 정확한 UI선택순서 권한·통합은 대기. Rich list/table/Markdown/image fidelity 및 실제 사용자 수용 미완료."
     },
     {
       "id": "N03",
