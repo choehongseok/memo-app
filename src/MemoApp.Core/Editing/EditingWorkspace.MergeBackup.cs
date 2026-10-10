@@ -67,7 +67,7 @@ public sealed partial class EditingWorkspace
     {
         var x=a.Metadata;var y=b.Metadata;
         return a.NoteId==b.NoteId&&a.RevisionId==b.RevisionId&&a.Parents.SequenceEqual(b.Parents)&&a.ModifiedAt==b.ModifiedAt&&a.Title==b.Title&&a.Text==b.Text&&a.Mode==b.Mode&&a.Document==b.Document&&a.AttachmentIds.SequenceEqual(b.AttachmentIds)
-            &&x.FolderId==y.FolderId&&x.TagIds.SequenceEqual(y.TagIds)&&x.Color==y.Color&&x.Important==y.Important&&x.Favorite==y.Favorite&&x.Pinned==y.Pinned&&x.Archived==y.Archived&&x.Deleted==y.Deleted&&x.Order==y.Order&&x.FilePathLinks.SequenceEqual(y.FilePathLinks);
+            &&x.FolderId==y.FolderId&&x.TagIds.SequenceEqual(y.TagIds)&&x.Color==y.Color&&x.Important==y.Important&&x.Favorite==y.Favorite&&x.Pinned==y.Pinned&&x.Archived==y.Archived&&x.Deleted==y.Deleted&&x.Order==y.Order&&x.FilePathLinks.SequenceEqual(y.FilePathLinks)&&x.AttachmentOcrResults.SequenceEqual(y.AttachmentOcrResults);
     }
     internal PreparedBackupMerge PrepareBackupMerge(VaultSnapshot backup,Guid[] selected,Action<VaultSnapshot> validateCurrent)
     {
@@ -107,7 +107,7 @@ public sealed partial class EditingWorkspace
         if(refs.Length>0&&(before.AttachmentRootId==Guid.Empty||before.AttachmentRootId!=owned.AttachmentRootId))throw new InvalidOperationException("Merge attachment root differs");
         foreach(var id in refs)
         {var obj=sourceObjects[id];var old=objects.FirstOrDefault(o=>o.ObjectId==id);if(old is null)objects.Add(obj);else if(!AttachmentValidation.SameObject(old,obj))throw new InvalidOperationException("Immutable merge object conflict");}
-        int schema=before.SchemaVersion;
+        int schema=owned.SchemaVersion==11?11:before.SchemaVersion;
         if(incoming.Any(r=>r.Metadata.FilePathLinks.Length>0))schema=Math.Max(schema,7);
         if(incoming.Any(r=>r.Document?.SchemaVersion==2))schema=Math.Max(schema,10);
         if(schema>=5&&before.AttachmentRootId==Guid.Empty)throw new InvalidOperationException("Merge cannot create attachment root");
@@ -139,7 +139,7 @@ public sealed partial class EditingWorkspace
             // No callbacks, validation, cloning or capacity growth from here through markApplied.
             folders.Clear();folders.AddRange(candidate.Folders);tags.Clear();tags.AddRange(candidate.Tags);
             discardedRevisions=witnesses;discardedMarkers=markers;attachmentRootId=candidate.AttachmentRootId;attachmentObjects=candidate.AttachmentObjects;basis=candidate;
-            inlineImagesEnabled|=candidate.SchemaVersion>=10;backupPolicyEnabled|=candidate.SchemaVersion>=9;discardedEnabled|=candidate.SchemaVersion>=8;filePathsEnabled|=candidate.SchemaVersion>=7;searchStateEnabled|=candidate.SchemaVersion>=6;
+            ocrEnabled|=candidate.SchemaVersion==11;inlineImagesEnabled|=candidate.SchemaVersion>=10;backupPolicyEnabled|=candidate.SchemaVersion>=9;discardedEnabled|=candidate.SchemaVersion>=8;filePathsEnabled|=candidate.SchemaVersion>=7;searchStateEnabled|=candidate.SchemaVersion>=6;
             markApplied();bool cleanNotifications=true;
             foreach(Action handler in observers){try{handler();}catch{cleanNotifications=false;}if(closed){cleanNotifications=false;break;}}
             return cleanNotifications;

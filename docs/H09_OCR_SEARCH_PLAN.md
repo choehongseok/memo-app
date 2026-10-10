@@ -1,6 +1,6 @@
 # H09 / T12 encrypted source-linked OCR search plan
 
-Status: independent preimplementation review accepted the bounded note-scoped design after original note/session grant binding and explicit cap4/owner-retirement clarification. Detached runtime input/result code is implemented and compiled0warnings0errors with actual isolated RED→GREEN and expanded ownership GREEN (`/tmp/memo-h09-runtime-red.log`, `/tmp/memo-h09-runtime-green.log`, `/tmp/memo-h09-runtime-ownership-green.log`). Same-span source/hash/decode, exact prepared PPM, closed verified-result factory and byte ownership are tested; no actual linked engine/provenance execution, issuer registry, schema11, storage/search or UI activation is claimed. The schema/grant contracts below remain future work until separately assigned after O06 source coordination.
+Status: approved bounded note-scoped plan implemented through schema11 storage/search and genuine issuer grants with preallocated detached runtime ownership. Consolidated build0warnings0errors; four targeted checks and fullCore actualexit0; final independent source review noCritical/Important. Prior c3 actual native source/PPM/provenance primitive PASS used synthetic stamp; new staged runtime and explicit linked UI still require actualWindows. Explicit linked UI is implemented, cross-built0warnings0errors and independently source-reviewed; actual native group/save-reopen proof remains pending, no installed-package/user-acceptance claim.
 
 ## Original requirement and observed gap
 

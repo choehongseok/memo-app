@@ -13,6 +13,7 @@ public sealed record NoteMetadata
     public bool Deleted { get; init; }
     public int Order { get; init; }
     public ImmutableArray<StoredFilePathLink> FilePathLinks { get; init; }=[];
+    public ImmutableArray<StoredAttachmentOcrResult> AttachmentOcrResults {get;init;}=[];
 }
 public sealed record StoredFolder(Guid FolderId, Guid? ParentId, string Name);
 public sealed record StoredTag(Guid TagId, string Name);

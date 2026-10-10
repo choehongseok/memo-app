@@ -15,6 +15,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     private ImmutableArray<Guid> attachmentIds=[];
     private NoteMetadata metadata = new();
     // Inert identity only: consumers may retain this token, never the live draft/event graph.
+    internal Action<NoteDraft,string,string,NoteMetadata>? OcrEditPreflight;
     internal object AttachmentReadIdentity { get; } = new();
     public event PropertyChangedEventHandler? PropertyChanged;
     // Trusted internal revocation only. Never publish UI callbacks from this boundary.
@@ -60,6 +61,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     {
         EnsureEditable(); ArgumentNullException.ThrowIfNull(value);
         if (field == value) return;
+        OcrEditPreflight?.Invoke(this,property==nameof(Title)?value:title,property==nameof(Text)?value:text,metadata);
         InvalidateAttachmentReads();
         field = value;if(property==nameof(Text))ContentVersion++;Advance(); Notify(property);
     }
@@ -67,10 +69,13 @@ public sealed class NoteDraft : INotifyPropertyChanged
     {
         if (IsClosed || IsDeleted && !allowTrash) throw new InvalidOperationException("Editing session or trash note is closed");
         if (metadata == value) return;
+        OcrEditPreflight?.Invoke(this,title,text,value);
         InvalidateAttachmentReads();
         metadata = value; Advance();
         foreach (var property in new[] { nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color) }) Notify(property);
     }
+    internal void StageOcrMetadata(StoredNote source)
+    { metadata=source.Metadata;ModifiedAt=source.ModifiedAt;EditVersion++; }
     internal void StageEvent(StoredNote source,bool replaceContent=false)
     {
         if (IsClosed) throw new InvalidOperationException("Editing session is closed");
@@ -89,7 +94,7 @@ public sealed class NoteDraft : INotifyPropertyChanged
     internal void StageClose()
     {
         InvalidateAttachmentReads();
-        IsClosed = true;ContentVersion++; title = text = ""; metadata = new();mode="plain";document=null;attachmentIds=[];
+        OcrEditPreflight=null;IsClosed = true;ContentVersion++; title = text = ""; metadata = new();mode="plain";document=null;attachmentIds=[];
     }
     internal void Close(){StageClose();PublishClosed();}
     internal void PublishClosed()

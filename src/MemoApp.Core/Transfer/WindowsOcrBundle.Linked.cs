@@ -16,8 +16,8 @@ internal sealed partial class WindowsOcrBundle
             string windows=Environment.GetFolderPath(Environment.SpecialFolder.Windows);start.Environment.Clear();start.Environment.Add("SystemRoot",windows);start.Environment.Add("WINDIR",windows);start.Environment.Add("OMP_THREAD_LIMIT","1");
             raster=source.TakeRaster();input=PpmOcrInput.Capture(raster,token);raster=null;
             var facts=new OcrProvenanceFacts(engineHash.ToLowerInvariant(),Models.Single(p=>p.Name=="kor.traineddata").Hash,Models.Single(p=>p.Name=="eng.traineddata").Hash,source.SourceWidth,source.SourceHeight,source.PreviewWidth,source.PreviewHeight,Convert.ToHexStringLower(SHA256.HashData(input.Bytes)));facts.Validate();token.ThrowIfCancellationRequested();
-            var operation=LocalOcrProcess.StartPrepared(input,start,TimeSpan.FromSeconds(20),token);input=null;
-            return (new(operation.Completion,Settle(operation.Settled,files)),facts);
+            var operation=LocalOcrProcess.StartPrepared(input,start,TimeSpan.FromSeconds(20),token,files);input=null;
+            return (operation,facts);
         }
         catch{input?.Dispose();raster?.Dispose();foreach(var file in files)file.Dispose();throw;}
     }

@@ -26,7 +26,7 @@ public static class NoteSearch
         if (!Enum.IsDefined(options.View) || !Enum.IsDefined(options.Sort)) throw new ArgumentException("Unsupported search option");
         if(!Enum.IsDefined(options.Field))throw new ArgumentException("Unsupported search field");
         string needle=Normalize(options.Query);
-        bool MatchesAttachment(NoteDraft note)=>workspace.DescribeAttachments(note).Any(item=>Normalize(item.Name).Contains(needle,StringComparison.OrdinalIgnoreCase));
+        bool MatchesAttachment(NoteDraft note)=>workspace.DescribeAttachments(note).Any(item=>Normalize(item.Name).Contains(needle,StringComparison.OrdinalIgnoreCase))||workspace.DescribeAttachmentOcrResults(note).Any(item=>Normalize(item.Text).Contains(needle,StringComparison.OrdinalIgnoreCase));
         var found = options.Field==SearchField.Attachments
             ? workspace.Notes.Where(n=>!n.IsClosed&&(needle.Length==0||MatchesAttachment(n)))
             : options.Field==SearchField.All

@@ -34,15 +34,31 @@ internal sealed class OwnedOcrDerivation : IDisposable
     }
     internal static LinkedOcrOperation StartVerified(WindowsOcrBundle bundle,AttachmentOcrInput input,string models,CancellationToken token,Action<byte[]>? allocations=null)
     {
+        var completion=new TaskCompletionSource<OwnedOcrDerivation>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var settled=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var operation=new LinkedOcrOperation(completion.Task,settled.Task);
+        _=RunVerifiedAsync(bundle,input,models,token,allocations,completion,settled);return operation;
+    }
+    private static async Task RunVerifiedAsync(WindowsOcrBundle bundle,AttachmentOcrInput input,string models,CancellationToken token,Action<byte[]>? allocations,TaskCompletionSource<OwnedOcrDerivation> completion,TaskCompletionSource settled)
+    {
+        OcrOperation? inner=null;OwnedOcrDerivation? owned=null;
         try
         {
-            var source=input.Source;var stamp=input.Stamp;var verified=bundle.StartVerifiedLinked(input,models,token);
-            return new(Complete(verified.Operation.Completion,source,stamp,verified.Facts,token,allocations),verified.Operation.Settled);
+            var source=input.Source;var stamp=input.Stamp;var verified=bundle.StartVerifiedLinked(input,models,token);inner=verified.Operation;
+            using var output=await inner.Completion.ConfigureAwait(false);
+            owned=new(output,source,stamp,verified.Facts,token,allocations);
+            if(completion.TrySetResult(owned))owned=null;
         }
-        finally{input.Dispose();}
+        catch(OperationCanceledException error){completion.TrySetCanceled(error.CancellationToken);}
+        catch(Exception error){completion.TrySetException(error);}
+        finally
+        {
+            Exception? failure=null;
+            try{owned?.Dispose();input.Dispose();}catch(Exception error){failure=error;}
+            try{if(inner is not null)await inner.Settled.ConfigureAwait(false);}catch(Exception error){failure??=error;}
+            if(failure is null)settled.TrySetResult();else settled.TrySetException(failure);
+        }
     }
-    private static async Task<OwnedOcrDerivation> Complete(Task<OwnedOcrText> completion,OcrSourceDescriptor source,OcrGrantStamp stamp,OcrProvenanceFacts facts,CancellationToken token,Action<byte[]>? allocations)
-    {using var output=await completion.ConfigureAwait(false);return new(output,source,stamp,facts,token,allocations);}
     internal bool ConsumeUtf8(OcrUtf8Reader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);byte[] borrowed;

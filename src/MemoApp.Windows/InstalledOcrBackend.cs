@@ -18,4 +18,10 @@ internal class InstalledOcrBackend
  internal virtual void Check(string directory,CancellationToken token)=>bundle!.CheckModels(directory,token);
  internal virtual OcrOperation Start(AttachmentReadLease lease,string models,CancellationToken token)
  {using var raster=AttachmentPngPreview.Decode(lease,token);return bundle!.Start(raster,models,token);}
+ internal virtual LinkedOcrStarter PrepareLinked(AttachmentOcrReadGrant grant,string models,CancellationToken token)
+ {
+  AttachmentOcrInput? input=null;
+  try{input=AttachmentOcrInput.Capture(grant.Lease,grant.Source,grant.Stamp,token);var starter=new LinkedOcrStarter(bundle!,input,models,token);input=null;return starter;}
+  finally{input?.Dispose();}
+ }
 }

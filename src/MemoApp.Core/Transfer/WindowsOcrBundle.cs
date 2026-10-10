@@ -73,12 +73,10 @@ internal sealed partial class WindowsOcrBundle
    string engine=Path.Combine(Root,"tesseract.exe");files.Add(Verify(engine,engineLength,engineHash,token));foreach(var pin in Models)files.Add(Verify(Path.Combine(models,pin.Name),pin.Length,pin.Hash,token));
    var start=new ProcessStartInfo(engine){WorkingDirectory=models};foreach(string arg in new[]{"stdin","stdout","--tessdata-dir",models,"-l","kor+eng","--oem","1","--psm","6"})start.ArgumentList.Add(arg);
    string windows=Environment.GetFolderPath(Environment.SpecialFolder.Windows);start.Environment.Clear();start.Environment.Add("SystemRoot",windows);start.Environment.Add("WINDIR",windows);start.Environment.Add("OMP_THREAD_LIMIT","1");
-   input=PpmOcrInput.Capture(raster,token);var operation=LocalOcrProcess.StartPrepared(input,start,TimeSpan.FromSeconds(20),token);input=null;
-   return new(operation.Completion,Settle(operation.Settled,files));
+   input=PpmOcrInput.Capture(raster,token);var operation=LocalOcrProcess.StartPrepared(input,start,TimeSpan.FromSeconds(20),token,files);input=null;
+   return operation;
   }
   catch{input?.Dispose();foreach(var file in files)file.Dispose();throw;}
   finally{raster.Dispose();}
  }
- private static async Task Settle(Task settled,List<FileStream> files)
- {try{await settled.ConfigureAwait(false);}finally{foreach(var file in files)file.Dispose();}}
 }

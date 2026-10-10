@@ -31,6 +31,7 @@ public sealed partial class EncryptedVault : IDisposable
     private bool discardedPrepared;
     private bool backupPolicyPrepared;
     private bool inlineImagesPrepared;
+    private bool ocrPrepared,ocrHiddenObserved;
     private readonly Dictionary<Guid,StoredDiscardedRevision> knownDiscarded=[];
     private readonly Dictionary<Guid,StoredTombstone> knownDiscardedTombstones=[];
     private volatile bool attachmentUseAllowed=true;
@@ -98,10 +99,10 @@ public sealed partial class EncryptedVault : IDisposable
             byte[]? transferred=null;
             try
             {
-                if(decoded.Snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10)transferred=decoded.TakeRootKey();
+                if(decoded.Snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11)transferred=decoded.TakeRootKey();
                 var fingerprint=SHA256.HashData(candidateBytes);
                 var result=new EncryptedVault(root, writer, secret, decoded.Snapshot, decoded.Header.VaultId, decoded.Header.Sequence,
-                    decoded.Header.WrapCount, candidate == "current.vault" ? fingerprint : expectedCurrent, files ?? new AtomicVaultFiles(), fingerprint,transferred,candidate=="current.vault"&&(decoded.Snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10));
+                    decoded.Header.WrapCount, candidate == "current.vault" ? fingerprint : expectedCurrent, files ?? new AtomicVaultFiles(), fingerprint,transferred,candidate=="current.vault"&&(decoded.Snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11));
                 transferred=null;return result;
             }
             finally{if(transferred is not null)CryptographicOperations.ZeroMemory(transferred);}
@@ -145,7 +146,7 @@ public sealed partial class EncryptedVault : IDisposable
             VaultEnvelope.Validate(snapshot);
             RequireRootSnapshot(snapshot);
             if (snapshot.SchemaVersion < 4) snapshot = snapshot with { SchemaVersion = 4 };
-            ulong reservation=snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10?3UL:2UL;
+            ulong reservation=snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11?3UL:2UL;
             if (wraps > VaultEnvelope.MaxWraps - reservation || sequence == ulong.MaxValue) throw new InvalidOperationException("Key use or sequence budget exhausted");
             // Count every attempt, including failures. Rollback of persisted counters cannot be proven.
             wraps += reservation; sequence++;
@@ -154,17 +155,18 @@ public sealed partial class EncryptedVault : IDisposable
             try
             {
                 var header=new EnvelopeHeader(vaultId,epoch,id,sequence,wraps,plaintext.Length);
-                var bytes = snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10?AttachmentEnvelope.Encrypt(plaintext,vaultKey,recoveryKey,header,attachmentRootId,attachmentRootKey!):VaultEnvelope.Encrypt(plaintext, vaultKey, recoveryKey,header);
+                var bytes = snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11?AttachmentEnvelope.Encrypt(plaintext,vaultKey,recoveryKey,header,attachmentRootId,attachmentRootKey!):VaultEnvelope.Encrypt(plaintext, vaultKey, recoveryKey,header);
                 var prepared = new PreparedSnapshot(bytes, reservedBase, id,snapshot.AttachmentRootId);
                 reservedBase = SHA256.HashData(bytes);
-                if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10)attachmentRootPrepared=true;
+                if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11)attachmentRootPrepared=true;
                 if(snapshot.SchemaVersion>=6)searchStatePrepared=true;
                 if(snapshot.SchemaVersion>=7)filePathsPrepared=true;
                 if(snapshot.SchemaVersion>=9)backupPolicyPrepared=true;
                 if(snapshot.SchemaVersion>=10)inlineImagesPrepared=true;
+                if(snapshot.SchemaVersion==11)ocrPrepared=true;
                 if(snapshot.SchemaVersion>=8)discardedPrepared=true;
                 RememberDiscarded(snapshot);
-                if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10)foreach(var item in snapshot.AttachmentObjects)knownAttachmentObjects.TryAdd(item.ObjectId,item);
+                if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11)foreach(var item in snapshot.AttachmentObjects)knownAttachmentObjects.TryAdd(item.ObjectId,item);
                 return prepared;
             }
             finally { CryptographicOperations.ZeroMemory(plaintext); }
@@ -268,7 +270,7 @@ public sealed partial class EncryptedVault : IDisposable
         {
             if(disposed||keysReleased||faulted)throw new InvalidOperationException("Vault root initialization authority ended");
             VaultEnvelope.Validate(snapshot);
-            if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10){RequireRootSnapshot(snapshot);return snapshot;}
+            if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11){RequireRootSnapshot(snapshot);return snapshot;}
             var id=attachmentRootId==Guid.Empty?Guid.NewGuid():attachmentRootId;
             var candidate=snapshot with{SchemaVersion=5,AttachmentRootId=id};VaultEnvelope.Validate(candidate);
             if(attachmentRootKey is null){attachmentRootKey=RandomNumberGenerator.GetBytes(32);attachmentRootId=id;}
@@ -278,6 +280,7 @@ public sealed partial class EncryptedVault : IDisposable
     private void RequireRootSnapshot(VaultSnapshot snapshot)
     {
         RequireDiscardedSnapshot(snapshot);
+        if((Loaded.SchemaVersion==11||ocrPrepared||ocrHiddenObserved)&&snapshot.SchemaVersion<11)throw new InvalidOperationException("OCR metadata payload downgrade refused");
         if((Loaded.SchemaVersion>=10||inlineImagesPrepared)&&snapshot.SchemaVersion<10)throw new InvalidOperationException("Inline image payload downgrade refused");
         if((Loaded.SchemaVersion>=9||backupPolicyPrepared)&&snapshot.SchemaVersion<9)throw new InvalidOperationException("Backup policy state downgrade refused");
         if((Loaded.SchemaVersion>=7||filePathsPrepared)&&snapshot.SchemaVersion<7)throw new InvalidOperationException("File path state downgrade refused");
@@ -320,9 +323,10 @@ public sealed partial class EncryptedVault : IDisposable
         lock(gate)
         {
             if(disposed||keysReleased)throw new InvalidOperationException("Hidden root authority ended");
-            if(snapshot.SchemaVersion is not(1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10))throw new InvalidOperationException("Unknown hidden schema refused");
-            if(snapshot.SchemaVersion<5&&attachmentRootId!=Guid.Empty&&(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10))throw new InvalidOperationException("Hidden attachment root downgrade refused");
+            if(snapshot.SchemaVersion is not(1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10 or 11))throw new InvalidOperationException("Unknown hidden schema refused");
+            if(snapshot.SchemaVersion<5&&attachmentRootId!=Guid.Empty&&(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11))throw new InvalidOperationException("Hidden attachment root downgrade refused");
             var objects=AttachmentValidation.Objects(snapshot);
+            AttachmentOcrValidation.Snapshot(snapshot);
             // Hidden drafts may still need title/text/total-size repair. Check image authority without applying normal save's scalar limits.
             void ImageDocument(Documents.StyledDocument? document,string mode,string text,System.Collections.Immutable.ImmutableArray<Guid> references)
             {
@@ -333,14 +337,15 @@ public sealed partial class EncryptedVault : IDisposable
             }
             foreach(var note in snapshot.Notes){AttachmentValidation.References(note.AttachmentIds,objects,snapshot.SchemaVersion);ImageDocument(note.Document,note.Mode,note.Text,note.AttachmentIds);}
             foreach(var revision in snapshot.History){AttachmentValidation.References(revision.AttachmentIds,objects,snapshot.SchemaVersion);ImageDocument(revision.Document,revision.Mode,revision.Text,revision.AttachmentIds);}
-            if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10)RequireRootSnapshot(snapshot);
+            if(snapshot.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11)RequireRootSnapshot(snapshot);
+            if(snapshot.SchemaVersion==11)ocrHiddenObserved=true;
         }
     }
     internal void CancelUnpreparedAttachmentRoot()
     {
         lock(gate)
         {
-            if(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10||keysReleased)return;
+            if(attachmentRootAnchored||attachmentRootPrepared||Loaded.SchemaVersion is 5 or 6 or 7 or 8 or 9 or 10 or 11||keysReleased)return;
             if(attachmentRootKey is not null)CryptographicOperations.ZeroMemory(attachmentRootKey);
             attachmentRootKey=null;attachmentRootId=Guid.Empty;
         }

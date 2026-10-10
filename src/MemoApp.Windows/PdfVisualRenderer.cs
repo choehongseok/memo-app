@@ -76,19 +76,15 @@ internal static class PdfVisualRenderer
                 Current();bitmap.Render(page!);Current();
                 bgra=new byte[checked(PageWidth*PageHeight*4)];rgb=new byte[checked(PageWidth*PageHeight*3)];bitmap.CopyPixels(bgra,checked(PageWidth*4),0);
                 ownedBuffers?.Invoke(bgra); // Optional ownership observer; production has no observer.
+                foreach(int corner in new[]{0,(PageWidth-1)*4,(PageHeight-1)*PageWidth*4,bgra.Length-4})
+                    if(bgra[corner]!=255||bgra[corner+1]!=255||bgra[corner+2]!=255||bgra[corner+3]!=255)throw new InvalidDataException("Display PDF native white page background is missing");
                 for(int row=0;row<PageHeight;row++)
                 {
                     Current();int start=checked(row*PageWidth*4),outStart=checked(row*PageWidth*3);
                     for(int column=0;column<PageWidth;column++)
                     {
                         int pixel=start+column*4,output=outStart+column*3;
-                        if(bgra[pixel+3]!=255)
-                        {
-                            // Geometry/alpha only: this diagnostic must never include source text or pixel colors.
-                            DpiScale visualDpi=VisualTreeHelper.GetDpi(page!);
-                            throw new InvalidDataException(FormattableString.Invariant($"Display PDF page must be opaque white-backed RGB; first nonopaque pixel x={column}, y={row}, alpha={bgra[pixel+3]}; bitmap={bitmap.PixelWidth}x{bitmap.PixelHeight}, dpi={bitmap.DpiX:R}x{bitmap.DpiY:R}; visual scale={visualDpi.DpiScaleX:R}x{visualDpi.DpiScaleY:R}; corner alpha={bgra[3]},{bgra[(PageWidth-1)*4+3]},{bgra[(PageHeight-1)*PageWidth*4+3]},{bgra[bgra.Length-1]}"));
-                        }
-                        rgb[output]=bgra[pixel+2];rgb[output+1]=bgra[pixel+1];rgb[output+2]=bgra[pixel];
+                        CompositeWhiteRgb(bgra.AsSpan(pixel,4),rgb.AsSpan(output,3));
                     }
                 }
                 ownedBuffers?.Invoke(rgb);Current();builder.AddRgbPage(PageWidth,PageHeight,rgb);pages++;
@@ -133,6 +129,17 @@ internal static class PdfVisualRenderer
             Current();var prepared=builder.Finish();try{Current();return prepared;}catch{prepared.Dispose();throw;}
         }
         finally{drawing?.Close();page=null;}
+    }
+
+    internal static void CompositeWhiteRgb(ReadOnlySpan<byte> pbgra,Span<byte> rgb)
+    {
+        if(pbgra.Length!=4||rgb.Length!=3)throw new ArgumentException("Exact raster pixel dimensions required");
+        int alpha=pbgra[3];
+        if(pbgra[0]>alpha||pbgra[1]>alpha||pbgra[2]>alpha)throw new InvalidDataException("Invalid premultiplied display PDF channel");
+        // Actual Windows WPF produced interior glyph alpha254 over the white drawing (opaque corners, 96 DPI).
+        // Pbgra32 channels already include coverage. Porter-Duff over opaque white is Cpremult + 255*(1-A).
+        // With byte alpha this is exactly Cpremult+(255-alpha); straight-alpha multiplication would darken it twice.
+        int white=255-alpha;rgb[0]=(byte)(pbgra[2]+white);rgb[1]=(byte)(pbgra[1]+white);rgb[2]=(byte)(pbgra[0]+white);
     }
 
     private static string Layout(VisualPdfSource source)

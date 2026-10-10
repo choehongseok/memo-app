@@ -28,16 +28,21 @@ internal static partial class Program
             string expectedPpm=IndependentLinkedPpmHash(png,out int sourceWidth,out int sourceHeight,out int previewWidth,out int previewHeight);Require(sourceWidth==1000&&sourceHeight==450,"Known synthetic OCR dimensions");
             using(var input=Capture())
             {
-                running=bundle.StartLinked(input,models);Require(observed.All(bytes=>bytes.All(value=>value==0)),"Actual linked start consumes and zeroes source/decode/raster buffers before process completion");
+                using var starter=new LinkedOcrStarter(bundle,input,models);running=starter.Operation;Require(!running.Completion.IsCompleted&&!running.Settled.IsCompleted,"Detached starter preallocates pending operation before launch");starter.Start();
                 string[] verifiedPaths=[Path.Combine(bundle.Root,"tesseract.exe"),Path.Combine(models,"kor.traineddata"),Path.Combine(models,"eng.traineddata"),Path.Combine(models,"Apache2.txt")];
-                bool heldObserved=false;
-                if(!running.Settled.IsCompleted)
+                var held=new HashSet<string>();var deadline=DateTime.UtcNow.AddSeconds(10);
+                // Do not acquire an exclusive probe before verification: that would itself race native startup.
+                while(!running.Settled.IsCompleted&&!observed.All(bytes=>bytes.All(value=>value==0))&&DateTime.UtcNow<deadline)await Task.Delay(1);
+                while(!running.Settled.IsCompleted&&held.Count<verifiedPaths.Length&&DateTime.UtcNow<deadline)
                 {
-                    foreach(string path in verifiedPaths){if(running.Settled.IsCompleted)break;try{using var unexpected=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.None);Require(running.Settled.IsCompleted,"Verified file handle remains held before settlement: "+Path.GetFileName(path));}catch(IOException){heldObserved=true;}}
+                    foreach(string path in verifiedPaths.Where(path=>!held.Contains(path)))
+                    {try{using var available=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.None);}catch(IOException){held.Add(path);}}
+                    if(held.Count<verifiedPaths.Length)await Task.Delay(1);
                 }
                 result=await running.Completion.WaitAsync(TimeSpan.FromSeconds(30));await running.Settled.WaitAsync(TimeSpan.FromSeconds(30));
+                Require(observed.All(bytes=>bytes.All(value=>value==0)),"Actual staged linked worker zeroes source/decode/raster buffers by settlement");
                 foreach(string path in verifiedPaths){using var released=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.None);Require(released.Length>0,"Verified component handles released after actual settlement");}
-                Require(heldObserved,"Observe actual verified file retention while native OCR remains unsettled");
+                Require(held.Count==verifiedPaths.Length,"Observe all actual verified file handles retained while native OCR remains unsettled");
                 var facts=result.Provenance;facts.Validate();Require(result.Source==source&&result.Stamp==stamp&&facts.SourceWidth==sourceWidth&&facts.SourceHeight==sourceHeight&&facts.PreviewWidth==previewWidth&&facts.PreviewHeight==previewHeight&&facts.PpmSha256==expectedPpm,"Actual linked provenance preserves source descriptor/synthetic stamp and independently computed exact PPM digest/dimensions");
                 Require(facts.EngineSha256==manifestJson.RootElement.GetProperty("engineSha256").GetString()!.ToLowerInvariant()&&facts.EngineSha256==FileSha(Path.Combine(bundle.Root,"tesseract.exe"))&&facts.KorModelSha256==FileSha(Path.Combine(models,"kor.traineddata"))&&facts.EngModelSha256==FileSha(Path.Combine(models,"eng.traineddata")),"Actual verified engine/model fingerprints match fixed manifest and installed model bytes");
                 Require(manifestJson.RootElement.GetProperty("tesseractCommit").GetString()==OcrProvenanceFacts.TesseractCommit&&manifestJson.RootElement.GetProperty("leptonicaCommit").GetString()==OcrProvenanceFacts.LeptonicaCommit&&manifestJson.RootElement.GetProperty("modelsCommit").GetString()==OcrProvenanceFacts.ModelsCommit&&OcrProvenanceFacts.TransformProfile=="png-nearest-1024-straight-alpha-white-ppm-v1"&&OcrProvenanceFacts.Languages=="kor+eng"&&OcrProvenanceFacts.Oem==1&&OcrProvenanceFacts.Psm==6,"Exact pinned commits/closed transform/language/OEM/PSM policy");
@@ -46,12 +51,21 @@ internal static partial class Program
             }
             Require(JsonSerializer.Serialize(active.Workspace.Capture())==baseline,"Linked runtime primitive changes no body/metadata/schema/attachment/history and applies no candidate");
             observed.Clear();using(var canceledInput=Capture())using(var cancel=new CancellationTokenSource())
-            {cancel.Cancel();try{bundle.StartLinked(canceledInput,models,cancel.Token);throw new Exception("Pre-canceled linked native input accepted");}catch(OperationCanceledException){}Require(observed.All(bytes=>bytes.All(value=>value==0)),"Pre-start cancellation disposes actual authenticated linked raster");}
+            {cancel.Cancel();using var starter=new LinkedOcrStarter(bundle,canceledInput,models,cancel.Token);running=starter.Operation;starter.Start();try{using var unexpected=await running.Completion;throw new Exception("Pre-canceled linked native input accepted");}catch(OperationCanceledException){}await running.Settled;running=null;Require(observed.All(bytes=>bytes.All(value=>value==0)),"Pre-start cancellation disposes actual authenticated linked raster");}
             observed.Clear();using(var failedInput=Capture())
-            {try{bundle.StartLinked(failedInput,Path.Combine(root,"missing-synthetic-models"));throw new Exception("Missing models accepted");}catch(Exception error)when(error is IOException or UnauthorizedAccessException){}Require(observed.All(bytes=>bytes.All(value=>value==0)),"Actual model verification failure disposes authenticated input before native candidate");}
+            {using var starter=new LinkedOcrStarter(bundle,failedInput,Path.Combine(root,"missing-synthetic-models"));running=starter.Operation;starter.Start();try{using var unexpected=await running.Completion;throw new Exception("Missing models accepted");}catch(Exception error)when(error is IOException or UnauthorizedAccessException){}await running.Settled;running=null;Require(observed.All(bytes=>bytes.All(value=>value==0)),"Actual model verification failure disposes authenticated input before native candidate");}
+            observed.Clear();using(var failedResultInput=Capture())
+            {
+                var resultBuffers=new List<byte[]>();
+                running=OwnedOcrDerivation.StartVerified(bundle,failedResultInput,models,default,bytes=>{resultBuffers.Add(bytes);throw new IOException("Synthetic result allocation observer failure");});
+                try{using var unexpected=await running.Completion.WaitAsync(TimeSpan.FromSeconds(30));throw new Exception("Throwing result observer accepted");}catch(IOException error)when(error.Message=="Synthetic result allocation observer failure"){}
+                await running.Settled.WaitAsync(TimeSpan.FromSeconds(30));running=null;
+                Require(resultBuffers.Count==1&&resultBuffers.All(bytes=>bytes.All(value=>value==0))&&observed.All(bytes=>bytes.All(value=>value==0)),"Actual verified native completion followed by result allocation observer failure drains and zeroes all owned buffers");
+                foreach(string path in new[]{Path.Combine(bundle.Root,"tesseract.exe"),Path.Combine(models,"kor.traineddata"),Path.Combine(models,"eng.traineddata"),Path.Combine(models,"Apache2.txt")}){using var released=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.None);}
+            }
             observed.Clear();using(var cancel=new CancellationTokenSource())using(var lockInput=Capture())
             {
-                running=bundle.StartLinked(lockInput,models,cancel.Token);cancel.Cancel();Task locking=active.LockAsync();Require(active.KeysReleased,"Lock releases keys independently of already-detached native OCR cleanup");
+                using var starter=new LinkedOcrStarter(bundle,lockInput,models,cancel.Token);running=starter.Operation;starter.Start();cancel.Cancel();Task locking=active.LockAsync();Require(active.KeysReleased,"Lock releases keys independently of already-detached native OCR cleanup");
                 try{result=await running.Completion.WaitAsync(TimeSpan.FromSeconds(30));}catch(OperationCanceledException){}catch(InvalidDataException){}finally{if(result is not null){byte[] late=Field<byte[]>(result,"utf8");result.Dispose();Require(late.All(value=>value==0),"Any native result winning cancellation race is discarded and zeroed without application");result=null;}}
                 await running.Settled.WaitAsync(TimeSpan.FromSeconds(30));running=null;await locking;Require(observed.All(bytes=>bytes.All(value=>value==0)),"Canceled native process settles owned raster cleanup with source session keys released");
             }

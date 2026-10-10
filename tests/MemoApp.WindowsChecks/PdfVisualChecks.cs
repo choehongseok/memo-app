@@ -17,6 +17,14 @@ internal static partial class Program
 {
     private static async Task PdfVisualRun()
     {
+        foreach(var vector in new(byte[] Pbgra,byte[] Expected)[]{([0,0,0,0],[255,255,255]),([0,1,1,1],[255,255,254]),([0,64,128,128],[255,191,127]),([20,100,200,254],[201,101,21]),([20,100,200,255],[200,100,20])})
+        {
+            byte[] rgb=[0,0,0];PdfVisualRenderer.CompositeWhiteRgb(vector.Pbgra,rgb);
+            Require(rgb.SequenceEqual(vector.Expected),"Premultiplied raster white composition handles exact alpha0/1/128/254/255 without multiplying alpha twice");
+        }
+        byte[] untouched=[7,8,9];bool invalidPremultiplied=false;
+        try{PdfVisualRenderer.CompositeWhiteRgb([0,129,0,128],untouched);}catch(InvalidDataException){invalidPremultiplied=true;}
+        Require(invalidPremultiplied&&untouched.SequenceEqual(new byte[]{7,8,9}),"Invalid premultiplied channels are refused before writing opaque RGB");
         using(var choices=new PdfExportModeChoiceWindow(()=>true))
         {
             Require(choices.FindName("TextModeChoice") is RadioButton text&&text.Content.ToString()!.Contains("검색/복사")&&choices.FindName("VisualModeChoice") is RadioButton visual&&visual.Content.ToString()!.Contains("미지원"),"Native PDF dialog presents both explicit capabilities");
@@ -165,7 +173,24 @@ internal static partial class Program
         var reference=new TextBlock{Text=layout,FontFamily=new FontFamily("Global User Interface"),FontSize=11*96.0/72,LineHeight=24,LineStackingStrategy=LineStackingStrategy.BlockLineHeight,TextWrapping=TextWrapping.Wrap,FlowDirection=FlowDirection.LeftToRight,Foreground=Brushes.Black,Width=210*96.0/25.4-2*40*96.0/72,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Top,Margin=new Thickness(40*96.0/72,40*96.0/72,0,0),Language=System.Windows.Markup.XmlLanguage.GetLanguage("ko-KR")};
         TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);page.Children.Add(reference);page.Measure(new Size(794,1123));page.Arrange(new Rect(0,0,794,1123));page.UpdateLayout();
         var bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);byte[] bgra=new byte[794*1123*4],rgb=new byte[794*1123*3];
-        try{bitmap.CopyPixels(bgra,794*4,0);for(int i=0,j=0;i<bgra.Length;i+=4,j+=3){Require(bgra[i+3]==255,"Reference native white page is opaque");rgb[j]=bgra[i+2];rgb[j+1]=bgra[i+1];rgb[j+2]=bgra[i];}return rgb;}
+        try
+        {
+            bitmap.CopyPixels(bgra,794*4,0);
+            foreach(int corner in new[]{0,(794-1)*4,(1123-1)*794*4,bgra.Length-4})Require(bgra[corner]==255&&bgra[corner+1]==255&&bgra[corner+2]==255&&bgra[corner+3]==255,"Independent native reference has an opaque white page background");
+            for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
+            {
+                int alpha=bgra[i+3];Require(bgra[i]<=alpha&&bgra[i+1]<=alpha&&bgra[i+2]<=alpha,"Independent native reference has valid premultiplied channels");
+                // Independent floating equation: recover straight color, then composite over an opaque white canvas.
+                // The renderer's integer conversion is not called by this TextBlock reference.
+                double coverage=alpha/255.0;
+                for(int channel=0;channel<3;channel++)
+                {
+                    double straight=alpha==0?0:bgra[i+2-channel]/coverage;
+                    rgb[j+channel]=(byte)Math.Round(straight*coverage+255*(1-coverage),MidpointRounding.AwayFromZero);
+                }
+            }
+            return rgb;
+        }
         finally{CryptographicOperations.ZeroMemory(bgra);bitmap.Clear();page.Children.Clear();}
     }
     private static bool VisualPdfReferenceMatches(byte[] actual,byte[] expected)

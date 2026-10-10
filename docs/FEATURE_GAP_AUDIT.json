@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "f9cd3f0800504ebca8bef19867cc72baf2c48178",
-    "working_tree": "f9Windows38010263700 entireFAIL DIB writerlock/visualPDF opacity; O06Core/H09detachedruntime working phase fullCorePASS; O06UI excluded",
+    "head": "c3b4f639095476c84721dc78a4f590834c703831",
+    "working_tree": "c3 Windows38011908810 entireFAIL2; postfix schema11/grant/stagedruntime fullCorePASS; linkedUI/compositing/fixture written and reviewed, nativegate pending",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "후속 O06/H09 Core 소스 잠정 phase: root통합 Core+Contractbuild 실제0warnings0errors(/tmp/memo-o06-h09-full-build.log) 및 전체Core exit0(/tmp/memo-o06-h09-full-core.log). O06 actualmissingAPI RED→targetGREEN와 독립 postreview 추가Critical/Important없음: live 동일ID branch보존·진짜displayed/confirmedtoken·더티save체크포인트·실제currentrootkey·암호premergecopy·callback-free wholepublish·실패/취소/재열기·다른thread거절 확인. WindowsUI/actualnative는후속. H09 detachedruntime samelease SHA/header/decode, verifiedbundle+exactPPMhash/ownedUTF8singleconsume 코드를 연결하고 실제focused/ownedfailureGREEN 및 독립읽기review추가Important없음; genuine linkedengine/provenance·issuergrantregistry·schema11·검색/UI는 아직없다. 실제pre11 unchanged10 binary에서 frozen10 2912B SHA256da2e67991474b41fc02315b44f63125305a172bf1a19ebf6b66e2e244ec9d28e 확보(knownzero-imagev2/policy/D11 synthetic). 이 자료는encryptedobject/recognitionproof가 아니다.\n\n2026-10-10 저장 소스f9cd3f0800504ebca8bef19867cc72baf2c48178/tree4320766c305c30257b1536e05a3e06450e05e4f0 Windows38010263700/job114088383076 전체FAIL. nativeOCR/build/fullCore PASS, 기존 PDFplaintext 및 새 PDFauthority PASS로 이전 dirty-Capture oracle 수정 확인. H01세 image그룹도PASS. DIB그룹은 writer.lock cleanup IOException으로FAIL하여 원래실패/수명경계를 진단하며, 새 visualPDF는 실제 white-backed raster alpha guard에서FAIL하여 원래 픽셀 oracle를 유지해 원인을 조사한다. publish/package/install/networkobservation/uploadSKIPPED, 기존artifact11647312201보존. O06/H09후속working source는 이 gate에 포함하지 않았다.",
+    "current_change_verification": "2026-10-10 후속 작업 상태: 저장된 소스 c3b4f639095476c84721dc78a4f590834c703831 / tree3b71117b1de506201659419eb51fe1190e8a4a9e의 실제 Windows38011908810/job114093572015 전체FAIL. DIB 붙여넣기/재열기, 원본 연결 nativeOCR의 실제 원본·PPM·TextSHA·고정 엔진/모델·handle정리, H01세그룹 및 PDF텍스트권한 PASS. 실패는 O06UI 검사 준비의 빈 실제 선택목록과 N02 내부(59,72) alpha254(96DPI/모서리255). 목록을 실제로 채우고 선택을 확인하는 fixture수정 및 검증된 premultiplied white 합성 수정은 독립 소스 검토 통과, 새 native검사 대기. package/install/uploadSKIPPED.\n\n후속 schema11/H09 Core 작업은 통합build0warnings0errors(/tmp/memo-h09-consolidated-build.log), schema11·issuergrant·detachedstarter·고립cleanupfault 각각 실제exit0, 전체Core회귀exit0(/tmp/memo-h09-schema-grant-full-core.log), Python39검사PASS. 정확한 legacy1–10, 원래 메모/참조별 OCR metadata/search, hidden11 monotonic guard, cap4·원래note/session/epoch·실제operation identity, nativehost retirement, 성공한 실제settlement만 slot회수, 실패한 결과buffer정리 경계의 독립 review에 추가Critical/Important없음. 별도 고립cleanupfault 검사를 Windowsworkflow에 추가했으며 전체회귀와 분리한 실제process에서만 실행한다. 새로운 UI와 stagedruntime의 실제Windows 검사는 아직 대기다. 기존 artifact11647312201(d8bccaab)의 포함 기능과 이 후속 소스를 구분하며 중복 업로드하지 않았다. 119진행/13미착수/N09차단1/M06정규화1, 전체ID완료/사용자수용0을 유지한다. 아래에는 이전 단계의 증거를 보존한다.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "f9cd3f0 committed; stagedO06Core/H09runtime/DIBdispose/visualalpha diagnostic follows, nativegate pending"
+    "supplemental_source": "Current c3 committed; subsequent schema11/linkedUI/compositing/fixture phase working, not yet published"
   },
   "summary": {
     "original_id_count": 134,
@@ -70,7 +70,7 @@
   },
   "evidence_validation": {
     "method": "local pathlib.exists for every relative evidence path; JSON exact134 unique IDs compared to FEATURES and original source tokens",
-    "path_count": 155,
+    "path_count": 176,
     "missing_paths": [],
     "source_bytes": 27417,
     "source_sha256": "29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d",
@@ -1795,8 +1795,8 @@
     },
     {
       "id": "H02",
-      "implemented": "RawPNG existingroute plus bounded CF_DIB8/header40 BI_RGB24/32→opaqueRGBPNG explicitbutton/panelfocusCtrlV working source; CoreRED→fullGREEN/independentreview.",
-      "remaining": "ActualWindows38010263700 passes priorLeftCtrl boundary but same-root encryptedreopen failswriter.lock: fixture nowexplicitlyDisposes keysreleased originalsession beforeOpen; nativewholegroup rerunpending. DIBV5/generalformats/larger/editorinlinepaste remain, OSconversioncannotbeexcluded.",
+      "implemented": "ActualWindows38011908810 clipboardDIB fullgroupPASS including disposal-before-reopen; supported24/32 BI_RGB boundaries remain bounded.",
+      "remaining": "DIBV5/generalformats/larger/editorinlinepaste remain; OSconversioncannotbeexcluded.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -1812,10 +1812,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "ActualWindows38010263700 passes priorLeftCtrl boundary but same-root encryptedreopen failswriter.lock: fixture nowexplicitlyDisposes keysreleased originalsession beforeOpen; nativewholegroup rerunpending. DIBV5/generalformats/larger/editorinlinepaste remain, OSconversioncannotbeexcluded."
+          "DIBV5/generalformats/larger/editorinlinepaste remain; OSconversioncannotbeexcluded."
         ],
         "inspection": [
-          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
+          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1991,8 +1991,8 @@
     },
     {
       "id": "H09",
-      "implemented": "Attachment filename (therefore extension text) search integrated into All/Attachments search. OCR accepted as separate encrypted plain note searchable in Body/All. Detached source-bound OCR input/result/verifiedPPM provenance runtime contract Core implemented/target/fullGREEN; native linked fixture written. No persistedOCR/search bridge yet.",
-      "remaining": "No attachment-linked OCR result metadata/ref or search predicate; SearchField.Attachments checks only attachment names. Generic OCR result note has no source attachment identity. Original specifically couples attachment search and T12 OCR: retain encrypted source-linked OCR derivation and include it in attachment-search results without indexing locked data. Issuergrantregistry/schema11 metadata/search/UI future; syntheticstamp is not issuedpermission or replayenforcement.",
+      "implemented": "Note-scoped encrypted OCR metadata/search schema11, genuine single-use originalissuer grants, preallocated detached runtime starter implemented; targeted/fullCorePASS and independent source reviewclear. Prior c3 actual native source/PPM/provenance primitivePASS with syntheticstamp. Explicit source-linked recognize/apply UI implemented and reviewed with actualbaselinePE missingAPI RED; 4projectcrossbuild0w0e.",
+      "remaining": "Genuine issued staged runtime +linkedUI save/reopen/search actualWindows proof pending. Generic filebodysearch/accuracycorpus remain; historical storedfacts are not runtime execution proof.",
       "category": "independent-code",
       "minimum_user_action": "None. Independently review new stored OCR/reference structure before encrypted persistence; do not request real OCR images.",
       "evidence": [
@@ -2005,7 +2005,18 @@
         "src/MemoApp.Core/Transfer/AttachmentOcrInput.cs",
         "src/MemoApp.Core/Transfer/OwnedOcrDerivation.cs",
         "tests/MemoApp.ContractChecks/AttachmentOcrInputChecks.cs",
-        "tests/MemoApp.WindowsChecks/LinkedOcrRuntimeChecks.cs"
+        "tests/MemoApp.WindowsChecks/LinkedOcrRuntimeChecks.cs",
+        "src/MemoApp.Core/Storage/StoredAttachmentOcrResult.cs",
+        "src/MemoApp.Core/Storage/AttachmentOcrValidation.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.Ocr.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.Ocr.cs",
+        "src/MemoApp.Core/Transfer/LinkedOcrStarter.cs",
+        "tests/MemoApp.ContractChecks/Schema11OcrChecks.cs",
+        "tests/MemoApp.ContractChecks/AttachmentOcrGrantChecks.cs",
+        "tests/MemoApp.ContractChecks/LinkedOcrStarterChecks.cs",
+        "tests/MemoApp.ContractChecks/OcrCleanupFaultChecks.cs",
+        "src/MemoApp.Windows/InstalledOcrBackend.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentLinkedOcrUiChecks.cs"
       ],
       "name": "첨부파일 검색",
       "normalized": "첨부파일 검색",
@@ -2013,10 +2024,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "No attachment-linked OCR result metadata/ref or search predicate; SearchField.Attachments checks only attachment names. Generic OCR result note has no source attachment identity. Original specifically couples attachment search and T12 OCR: retain encrypted source-linked OCR derivation and include it in attachment-search results without indexing locked data. Issuergrantregistry/schema11 metadata/search/UI future; syntheticstamp is not issuedpermission or replayenforcement."
+          "Genuine issued staged runtime +linkedUI save/reopen/search actualWindows proof pending. Generic filebodysearch/accuracycorpus remain; historical storedfacts are not runtime execution proof."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2480,8 +2491,8 @@
     },
     {
       "id": "N02",
-      "implemented": "Existing limitedtextPDF preserved; operationCTS revocationfix/newnativefixture pending. InertCoreRasterPDF RED→GREEN/independentPoppler A4/exactcorners PASS.",
-      "remaining": "ActualWindows38010263700 textauthority PASS; visualPDF failswhitebackedalpha guard. Retainedguard nowdiagnosespixel/alpha/DPI; actualcause/fix/nativepixelproofpending. Rich/table/Markdown/image rendering and uservieweracceptance remain.",
+      "implemented": "TextPDF actualauthorityPASS; displayPDF boundedraster/nativeglyph audits implemented. Actualc3 interioralpha254 diagnosed, strict premultiplied white compositing + independentreference/fixedvectors written and reviewed.",
+      "remaining": "New display compositing/nativepixel regression pending. Rich/table/Markdown/image rendering and user viewer acceptance remain.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -2498,10 +2509,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "ActualWindows38010263700 textauthority PASS; visualPDF failswhitebackedalpha guard. Retainedguard nowdiagnosespixel/alpha/DPI; actualcause/fix/nativepixelproofpending. Rich/table/Markdown/image rendering and uservieweracceptance remain."
+          "New display compositing/nativepixel regression pending. Rich/table/Markdown/image rendering and user viewer acceptance remain."
         ],
         "inspection": [
-          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
+          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2888,8 +2899,8 @@
     },
     {
       "id": "O06",
-      "implemented": "Same-ID retainedlive backup branch union Core keeps currenthead, genuine displayed/confirmed owner tokens, committedprepreview checkpoint, actualcurrentrootauth, encryptedpremergecopy, durable pendingbranch DTO; focused/fullCorePASS and independentpostreviewclear.",
-      "remaining": "Explicit nativeWindows merge/comparison UI and actual lifecycle/regression gate pending. Two-parent causalresolution/deleted or discarded resurrection/root-key adoption/fullnetworksync remain outside firstvertical; not wholeO06 complete.",
+      "implemented": "Same-ID live branchunion with unchangedcurrenthead, genuine displayed/confirmedowner tokens, dirtysave checkpoint/currentkey/premergeciphercopy; CorefullPASS. Windows comparison/durablebranch UI implemented and reviewed.",
+      "remaining": "Actualc3 UIfixtureemptyselector failure fixed by genuine nativepopulation/selectionassert; newnativewhole lifecycle pending. Two-parent causalresolution/deleted/discarded resurrection/root-key adoption/fullnetworksync remain outside firstunit.",
       "category": "independent-code",
       "minimum_user_action": null,
       "evidence": [
@@ -2902,7 +2913,10 @@
         "src/MemoApp.Core/Editing/SaveCoordinator.BackupMerge.cs",
         "src/MemoApp.Core/History/RevisionBranchAnalysis.cs",
         "tests/MemoApp.ContractChecks/BackupMergeChecks.cs",
-        "tests/MemoApp.ContractChecks/BackupMergeLifecycleChecks.cs"
+        "tests/MemoApp.ContractChecks/BackupMergeLifecycleChecks.cs",
+        "src/MemoApp.Windows/MainWindow.BackupMerge.cs",
+        "src/MemoApp.Windows/BackupMergeWindow.cs",
+        "tests/MemoApp.WindowsChecks/BackupMergeUiChecks.cs"
       ],
       "name": "백업 파일 선택 후 복구",
       "normalized": "백업 파일 선택 후 복구",
@@ -2910,10 +2924,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Explicit nativeWindows merge/comparison UI and actual lifecycle/regression gate pending. Two-parent causalresolution/deleted or discarded resurrection/root-key adoption/fullnetworksync remain outside firstvertical; not wholeO06 complete."
+          "Actualc3 UIfixtureemptyselector failure fixed by genuine nativepopulation/selectionassert; newnativewhole lifecycle pending. Two-parent causalresolution/deleted/discarded resurrection/root-key adoption/fullnetworksync remain outside firstunit."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."

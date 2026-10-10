@@ -6,7 +6,7 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10 or 11)) throw new InvalidDataException("Unsupported schema");
         if(version<9&&root.TryGetProperty("uiDevices",out var legacyDevices)&&legacyDevices.ValueKind==JsonValueKind.Array)
             foreach(var device in legacyDevices.EnumerateArray())if(device.ValueKind==JsonValueKind.Object&&device.TryGetProperty("automaticBackupPolicy",out _))throw new InvalidDataException("Older schema backup policy field refused");
         if(version<8&&root.TryGetProperty("discardedRevisions",out _))throw new InvalidDataException("Older schema discarded evidence refused");
@@ -24,6 +24,7 @@ internal static class SnapshotValidation
             foreach(var item in root.GetProperty("attachmentObjects").EnumerateArray()){Fields(item,["objectId","rootId","name","mime","length","sha256","wrappedKey","chunks"]);Array(item,"chunks",64);}
         }
         Array(root, "notes", 100); Array(root, "history", 10000); Array(root, "tombstones", 100);
+        AttachmentOcrValidation.Json(root,version);
         foreach (var note in root.GetProperty("notes").EnumerateArray())
         {
             Fields(note, ["noteId", "revisionId", "parents", "createdAt", "modifiedAt", "title", "text", "mode", "scope"]);
@@ -104,9 +105,10 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10 or 11) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
         if(snapshot.DiscardedRevisions is null||snapshot.DiscardedRevisions.Length>10100||snapshot.DiscardedRevisions.Length+snapshot.History.Length>10100||snapshot.SchemaVersion<8&&snapshot.DiscardedRevisions.Length!=0)throw new InvalidDataException("Discarded evidence count/schema limit");
         var attachmentObjects=AttachmentValidation.Objects(snapshot);
+        AttachmentOcrValidation.Snapshot(snapshot);
         bool legacy = snapshot.SchemaVersion == 1;
         if(snapshot.SchemaVersion<3&&snapshot.UiDevices.Length!=0)throw new InvalidDataException("Older payload cannot carry UI records");
         if (legacy && (snapshot.Folders.Length != 0 || snapshot.Tags.Length != 0)) throw new InvalidDataException("Legacy schema cannot carry organization");
@@ -203,6 +205,10 @@ internal static class SnapshotValidation
             }
         }
         // Event/import preflight must reject the same payload budget as Prepare before publishing any draft.
+        PayloadBudget(snapshot);
+    }
+    internal static void PayloadBudget(VaultSnapshot snapshot)
+    {
         using var counter = new PayloadCounter(VaultEnvelope.MaxFile - (snapshot.SchemaVersion>=5?308:232));
         SnapshotSerialization.Write(counter,snapshot);
     }

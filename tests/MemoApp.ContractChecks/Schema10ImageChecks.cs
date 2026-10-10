@@ -50,7 +50,7 @@ internal static class Schema10ImageChecks
             {
                 var note=session.Workspace.Notes.Single(n=>n.Id==noteId);VaultChecks.Require(reopened.Loaded.SchemaVersion==10&&reopened.Loaded.AttachmentRootId==rootId&&RichDocumentCodec.Images(note.Document!).Single().AttachmentId==id,"Actual encrypted image10 restart retains exact placement and root");Schema10ImageHiddenChecks.RequirePng(session,note,id);
                 var lower=reopened.Loaded with{SchemaVersion=9,Notes=[],History=[]};VaultChecks.ExpectFailure(()=>reopened.Prepare(lower),"Loaded10 refuses9 after restart");VaultChecks.ExpectFailure(()=>reopened.InitializeAttachmentRoot(lower),"Loaded10 root helper refuses9");
-                VaultChecks.ExpectFailure(()=>VaultEnvelope.Decrypt(Schema2Checks.Encode(System.Text.Json.JsonSerializer.SerializeToNode(reopened.Loaded,SnapshotSerialization.Options(10))!.AsObject(),secret),secret),"Envelope1 cannot authenticate payload10/root2 semantics");VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(reopened.Loaded with{SchemaVersion=11}),"Future payload11 refused");VaultChecks.Require(await session.LockAsync(),"Image10 restart lock");
+                VaultChecks.ExpectFailure(()=>VaultEnvelope.Decrypt(Schema2Checks.Encode(System.Text.Json.JsonSerializer.SerializeToNode(reopened.Loaded,SnapshotSerialization.Options(10))!.AsObject(),secret),secret),"Envelope1 cannot authenticate payload10/root2 semantics");VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(reopened.Loaded with{SchemaVersion=12}),"Future payload12 refused");VaultChecks.Require(await session.LockAsync(),"Image10 restart lock");
             }
             foreach(string archive in new[]{backup,locked})
             {

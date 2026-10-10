@@ -83,6 +83,8 @@ jobs:
         run: dotnet build MemoApp.slnx -c Release -p:NativeOcrBundle="${{ env.MEMO_OCR_BUNDLE }}"
       - name: Synthetic contract checks
         run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build
+      - name: Isolated OCR cleanup fault checks
+        run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build -- --ocr-cleanup-fault-only
       - name: Actual Windows WPF synthetic control checks
         run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
       - name: Publish unsigned synthetic-data Windows x64 trial

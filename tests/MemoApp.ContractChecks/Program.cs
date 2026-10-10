@@ -4,6 +4,10 @@ using MemoApp.Core;
 if (args.Length==2&&args[0]=="--ocr-native-probe") { await LocalOcrChecks.NativeProbe(args[1]); return; }
 if (args.Length==2&&args[0]=="--ocr-linux-probe") { await LocalOcrChecks.LinuxProbe(args[1]); return; }
 if (LocalOcrChecks.TryWorker(args)) return;
+if (args.Contains("--ocr-cleanup-fault-only")) { await OcrCleanupFaultChecks.Run(); return; }
+if (args.Contains("--linked-ocr-starter-only")) { await LinkedOcrStarterChecks.Run(); return; }
+if (args.Contains("--schema11-ocr-only")) { await Schema11OcrChecks.Run(); return; }
+if (args.Contains("--attachment-ocr-grant-only")) { await AttachmentOcrGrantChecks.Run(); return; }
 if (args.Contains("--attachment-ocr-input-only")) { await AttachmentOcrInputChecks.Run(); return; }
 if (args.Contains("--o06-merge-only")) { await BackupMergeChecks.Run(); return; }
 if (args.Contains("--ocr-process-only")) { await LocalOcrChecks.ProcessChecks(); return; }
@@ -98,6 +102,9 @@ await LocalOcrChecks.ProcessChecks();
 EditingChecks.Run();
 await BackupMergeChecks.Run();
 await AttachmentOcrInputChecks.Run();
+await LinkedOcrStarterChecks.Run();
+await Schema11OcrChecks.Run();
+await AttachmentOcrGrantChecks.Run();
 SpreadsheetMappingChecks.Run();
 await Schema9Checks.Run();
 await Schema9HiddenChecks.Run();
