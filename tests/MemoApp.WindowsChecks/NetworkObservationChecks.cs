@@ -25,7 +25,7 @@ internal static partial class Program
         try
         {
             InstalledNetworkObservation.VerifySyntheticSockets();
-            await NetworkPositiveProbe();NetworkProtocolChecks();
+            await NetworkPositiveProbe();await NetworkProtocolChecksAsync();
             string engine=Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,"ocr","tesseract.exe"));
             using var engineFile=new FileStream(engine,FileMode.Open,FileAccess.Read,FileShare.Read);
             using(var manifest=typeof(AttachmentPanel).Assembly.GetManifestResourceStream("MemoApp.OcrManifest")??throw new IOException("Observation fixed manifest missing"))
@@ -351,7 +351,7 @@ internal static partial class Program
             bool refused=false;try{InstalledNetworkObservation.Snapshot(identity,killed.Process);}catch(IOException){refused=true;}Require(refused,"Actually killed identity cannot yield a zero sample");
         }finally{await killed.Drain();}
     }
-    private static void NetworkProtocolChecks()
+    private static async Task NetworkProtocolChecksAsync()
     {
         bool rejected=false;try{InstalledNetworkObservation.SnapshotForChecks(1,static(IntPtr _,ref uint size)=>5);}catch(IOException){rejected=true;}Require(rejected,"Required native table failure cannot become zero observation");
         int queries=0;rejected=false;try{InstalledNetworkObservation.SnapshotForChecks(1,(IntPtr _,ref uint size)=>{queries++;size=4;return 122;});}catch(IOException){rejected=true;}Require(rejected&&queries==4,"Bounded unstable native tables fail after three attempts");
@@ -359,7 +359,7 @@ internal static partial class Program
         for(int count=0;count<2;count++)
         {
             var channel=Channel.CreateBounded<string>(16);byte[] bytes=count==0?Enumerable.Repeat((byte)'A',129).ToArray():Enumerable.Repeat((byte)'\n',8193).ToArray();
-            rejected=false;try{ReadBoundedLines(new MemoryStream(bytes,false),count==0?channel.Writer:null).GetAwaiter().GetResult();}catch(IOException){rejected=true;}Require(rejected,"Output line/transcript bounds before strings");
+            rejected=false;try{await ReadBoundedLines(new MemoryStream(bytes,false),count==0?channel.Writer:null);}catch(IOException){rejected=true;}Require(rejected,"Output line/transcript bounds before strings");
         }
         using(var cancel=new CancellationTokenSource())
         using(var pending=new PendingNetworkReadStream())
@@ -368,7 +368,7 @@ internal static partial class Program
             Task failed=ReadBoundedLines(new MemoryStream(Enumerable.Repeat((byte)'A',129).ToArray(),false),null,firstChunk,firstLine,cancel.Token);
             Task waiting=ReadBoundedLines(pending,null,secondChunk,secondLine,cancel.Token);
             Require(failed.IsFaulted&&pending.Started&&!waiting.IsCompleted,"One reader fault does not claim other real reader settled");
-            cancel.Cancel();bool actualFailure=false;try{Task.WhenAll(failed,waiting).GetAwaiter().GetResult();}catch(IOException){actualFailure=true;}
+            cancel.Cancel();bool actualFailure=false;try{await Task.WhenAll(failed,waiting);}catch(IOException){actualFailure=true;}
             Require(actualFailure&&failed.IsCompleted&&waiting.IsCompleted&&pending.Terminal&&new[]{firstChunk,firstLine,secondChunk,secondLine}.All(a=>a.All(b=>b==0)),"Cancellation is passed to actual reader and both terminal tasks/owned buffers are drained even first faults");
         }
         Console.WriteLine("NETWORK_FAILURE_CONTRACTS nativeTableFailure=True missingCoverage=True boundedOutput=True actualReaderCancelAndDrain=True");
