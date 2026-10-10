@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "a16271cb84091a7f34ead2937537ba95989d084e",
-    "working_tree": "a162 emoji diagnostic source committed; N04 authenticatedPNG Word phase focusedCore/crossbuild/review PASS, fullCore actualexit0/newnative pending; nextPDF localdraw-frame correction crossbuild/review PASS, native pending.",
+    "head": "c0865cbb7ee50dca36b09f1b12917e501bf093c4",
+    "working_tree": "c086 committed; PDF drawing replay diagnostics and H01 native framework prerequisite test staged; productv2 remains readonly; network observer delta under test-only development.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "Actual f1 Windows38016986323 and a162 Windows38017598386 wholeFAIL1 PDFemoji. Backupbranchresolution/backupmerge/DIB/H09/build/fullCore/isolatedcleanup PASS. OtherPDF vectors afteremoji not reached. Package/install/uploadSKIPPED. Existingartifact11647312201 remains d8bccaab; no finalartifact/useracceptance.",
+    "current_change_verification": "Actualc086 Windows38019390348 WPFFAIL1 PDFemoji; officeWord group PASS afterclosed-hostcleanup fix. Build/fullCore/isolatedcleanup/backupresolution/merge/DIB/H09 PASS. Samepeak rawBGRAgray132 withsamealpha254 excludeswhitecomposition; boundedreplaydiagnostic nativepending. Package/install/uploadSKIPPED, no newartifact. H01framework prerequisite/native identity proof pending; no productv2editing enabled.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "N04 capture/writer/UI source paused; actualtargetGREEN and independentpostreviewclear. Pendinglocaldraw-frame correction uses unchanged nativeoracle."
+    "supplemental_source": "N04 authenticated inlinePNG Word source is committed and fullCore/schema/compatibleviewer verified; actual nativeOffice group failed closed-host cleanup, fix pending native evidence. Source-literal Markdown is a disclosed supported projection; optional renderedMarkdown is not an explicit original requirement."
   },
   "summary": {
     "original_id_count": 134,
@@ -33,15 +33,15 @@
     },
     "in_progress_audit_category_counts": {
       "decision": 1,
-      "independent-code": 8,
-      "independent-test": 5,
+      "independent-code": 7,
+      "independent-test": 6,
       "physical-user": 105
     },
     "all_category_counts": {
       "blocked-format": 1,
       "decision": 1,
-      "independent-code": 21,
-      "independent-test": 5,
+      "independent-code": 20,
+      "independent-test": 6,
       "normalized": 1,
       "physical-user": 105
     },
@@ -2551,8 +2551,8 @@
     {
       "id": "N04",
       "implemented": "Existing rich styles/list/checklist/table/inertURL plus authenticated canonicalv2 exact inlinePNG DOCX embedding. Closed sourceowner cap1/64Mpixel bound/samelease PNG authentication, fixeddata-only sequential decoder+boundedZIP worker, actualsettlement and monotonic UI/filewriter authority. FocusedCore/crossbuild/independentreview PASS; independentOpenXML3.4.1 and installedLibreOfficeDev actualsyntheticrender PASS.",
-      "remaining": "New nativeWindows inlinePNG Word command/lock/reentry gate and actualMicrosoftWord/useracceptance; renderedMarkdown remains source-literal projection. Generalattachments/OCR/history notembedded; encryptedwholevault transfer preserves originals.",
-      "category": "independent-code",
+      "remaining": "Actual c086 Windows38019390348 office-plaintext-export PASS; wholeWindows remainsFAIL1 unrelated PDFemoji, so package/install/newartifact absent. ActualMicrosoftWord/useracceptance unverified. Markdown disclosed source-literal projection; renderedMarkdown optional inferred enhancement, not explicit originalrequirement. Generalattachments/OCR/history excluded; encryptedwholevault preserves originals.",
+      "category": "independent-test",
       "minimum_user_action": "None before nativegate. Synthetic existingLibreOffice compatible-viewer render performed; actualMicrosoftWord acceptance later if used.",
       "evidence": [
         "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
@@ -2575,11 +2575,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "Render supported Markdown export within approved bounded document/output and source authority contracts."
-        ],
+        "code": [],
         "inspection": [
-          "Run new actualWindows inlinePNG Office route and retain independent schema/viewer evidence separate from useracceptance."
+          "Verify package/install after resolvingPDFgate; compatibleviewer/schema evidence separate from actualMicrosoftWord/useracceptance."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."

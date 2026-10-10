@@ -36,15 +36,16 @@ internal static partial class Program
             string actualRasterAudit="";
             using var prepared=await PdfVisualRenderer.RenderPlainAsync([new("",text)],()=>true,CancellationToken.None,
                 buffer=>{if(buffer.Length==794*1123*4)actualRasterAudit=VisualPdfBgraAudit(buffer);});
-            byte[] rgb=VisualPdfFirstRgb(prepared.Bytes),reference=VisualPdfTextBlockReference(text,out string referenceAudit);
+            byte[]? rgb=null,reference=null;
             try
             {
+                rgb=VisualPdfFirstRgb(prepared.Bytes);reference=VisualPdfTextBlockReference(text,out string referenceAudit,rgb);
                 bool matches=rgb.Length==794*1123*3&&VisualPdfReferenceMatches(rgb,reference);
                 if(!matches)Console.WriteLine(VisualPdfSyntheticDiagnostic(rgb,reference,text)+" actualRaster="+actualRasterAudit+" reference="+referenceAudit);
                 Require(matches,"Native TextFormatter/glyph-audited PDF pixels match independent TextBlock: "+Convert.ToHexString(Encoding.UTF8.GetBytes(text)));
                 string grammar=Encoding.Latin1.GetString(prepared.Bytes);Require(grammar.Contains("/Subtype /Image")&&grammar.Contains("/DeviceRGB")&&!grammar.Contains("/ToUnicode")&&!grammar.Contains("/Type /Font"),"Display PDF contains raster pages and no searchable text/font objects");
             }
-            finally{CryptographicOperations.ZeroMemory(rgb);CryptographicOperations.ZeroMemory(reference);}
+            finally{if(rgb is not null)CryptographicOperations.ZeroMemory(rgb);if(reference is not null)CryptographicOperations.ZeroMemory(reference);}
         }
         foreach(string invalid in new[]{"\ud800","\0","\u0001","אב","مرحبا","👩\u200d💻","☀\ufe0f","🇰🇷","👍🏽","e"+new string('\u0301',129)})
         {
@@ -72,9 +73,9 @@ internal static partial class Program
             Require(Encoding.Latin1.GetString(boundary.Bytes).Contains("/Count 2 "),"Native fixed line/ink layout paginates the 43rd line to a second page");
             for(int page=0;page<2;page++)
             {
-                byte[] actual=VisualPdfFirstRgb(boundary.Bytes,page),reference=VisualPdfTextBlockReference(string.Join('\n',page==0?boundaryLines.Take(42):boundaryLines.Skip(42)));
-                try{Require(VisualPdfReferenceMatches(actual,reference)&&VisualPdfWhiteBorder(actual),"Last full-page line and next-page ink match native reference without edge clipping: "+page);}
-                finally{CryptographicOperations.ZeroMemory(actual);CryptographicOperations.ZeroMemory(reference);}
+                byte[]? actual=null,reference=null;
+                try{actual=VisualPdfFirstRgb(boundary.Bytes,page);reference=VisualPdfTextBlockReference(string.Join('\n',page==0?boundaryLines.Take(42):boundaryLines.Skip(42)));Require(VisualPdfReferenceMatches(actual,reference)&&VisualPdfWhiteBorder(actual),"Last full-page line and next-page ink match native reference without edge clipping: "+page);}
+                finally{if(actual is not null)CryptographicOperations.ZeroMemory(actual);if(reference is not null)CryptographicOperations.ZeroMemory(reference);}
             }
         }
         bool overPages=false;try{using var unused=await PdfVisualRenderer.RenderPlainAsync([new("",new string('\n',42*256))],()=>true,CancellationToken.None);}catch(InvalidDataException){overPages=true;}
@@ -172,15 +173,16 @@ internal static partial class Program
         using var input=new MemoryStream(pdf,start,length,false);using var decoder=new ZLibStream(input,CompressionMode.Decompress);byte[] rgb=new byte[794*1123*3];decoder.ReadExactly(rgb);Require(decoder.ReadByte()==-1,"Visual PDF exact fixed raster dimensions");return rgb;
     }
     private static byte[] VisualPdfTextBlockReference(string text)=>VisualPdfTextBlockReference(text,out _);
-    private static byte[] VisualPdfTextBlockReference(string text,out string audit)
+    private static byte[] VisualPdfTextBlockReference(string text,out string audit,byte[]? actual=null)
     {
         string layout=text.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n').Replace("\t","    ",StringComparison.Ordinal);
         var page=new Grid{Width=794,Height=1123,Background=Brushes.White};
         var reference=new TextBlock{Text=layout,FontFamily=new FontFamily("Global User Interface"),FontSize=11*96.0/72,LineHeight=24,LineStackingStrategy=LineStackingStrategy.BlockLineHeight,TextWrapping=TextWrapping.Wrap,FlowDirection=FlowDirection.LeftToRight,Foreground=Brushes.Black,Width=210*96.0/25.4-2*40*96.0/72,HorizontalAlignment=HorizontalAlignment.Left,VerticalAlignment=VerticalAlignment.Top,Margin=new Thickness(40*96.0/72,40*96.0/72,0,0),Language=System.Windows.Markup.XmlLanguage.GetLanguage("ko-KR")};
         TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);page.Children.Add(reference);page.Measure(new Size(794,1123));page.Arrange(new Rect(0,0,794,1123));page.UpdateLayout();
-        var bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);byte[] bgra=new byte[794*1123*4],rgb=new byte[794*1123*3];
+        var bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);byte[]? bgra=null,rgb=null;bool transferred=false;
         try
         {
+            bitmap.Render(page);bgra=new byte[794*1123*4];rgb=new byte[794*1123*3];
             audit=VisualPdfReferenceAudit(page,reference);
             bitmap.CopyPixels(bgra,794*4,0);
             audit+=" raster="+VisualPdfBgraAudit(bgra);
@@ -197,9 +199,16 @@ internal static partial class Program
                     rgb[j+channel]=(byte)Math.Round(straight*coverage+255*(1-coverage),MidpointRounding.AwayFromZero);
                 }
             }
-            return rgb;
+            if(text=="😀"&&actual is not null&&!VisualPdfReferenceMatches(actual,rgb))audit+=" referenceDrawingReplay="+VisualPdfReferenceDrawingReplay(reference,rgb);
+            transferred=true;return rgb;
         }
-        finally{CryptographicOperations.ZeroMemory(bgra);bitmap.Clear();page.Children.Clear();}
+        finally
+        {
+            if(bgra is not null)CryptographicOperations.ZeroMemory(bgra);
+            try{try{bitmap.Clear();}finally{page.Children.Clear();}}
+            catch{if(rgb is not null)CryptographicOperations.ZeroMemory(rgb);throw;}
+            finally{if(!transferred&&rgb is not null)CryptographicOperations.ZeroMemory(rgb);}
+        }
     }
     // Bounded summaries of borrowed fixed-synthetic pixels; retain no raster bytes.
     private static string VisualPdfBgraAudit(byte[] bgra)
@@ -248,31 +257,97 @@ internal static partial class Program
         string glyphs=string.Join(";",line.GetIndexedGlyphRuns().Take(8).Select(r=>VisualPdfGlyphAudit(r.GlyphRun)));
         var ink=(Rect)owner.GetMethod("AuditLine",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,[line,layout,0,Math.Min(line.Length,layout.Length)])!;
         double above=ink.IsEmpty?0:Math.Min(0,ink.Top);
-        return $"SYNTHETIC PDF pixels actualBounds={a} referenceBounds={b} first=({first%794},{first/794}) peak={peak}@({peakAt%794},{peakAt/794}) sum={sum} large={large} bestTranslation=({bestX},{bestY}) translatedSum={best} lineHeight={line.Height:R} baseline={line.Baseline:R} extent={line.Extent:R} overhangLeading={line.OverhangLeading:R} overhangTrailing={line.OverhangTrailing:R} overhangAfter={line.OverhangAfter:R} width={line.WidthIncludingTrailingWhitespace:R} faces={faces} inkTop={ink.Top:R} inkBottom={ink.Bottom:R} drawY={PdfVisualRenderer.Margin-above:R} textSourcePpd={source.PixelsPerDip:R} renderingTier={RenderCapability.Tier} glyphs={glyphs}";
+        string replay=VisualPdfReplayAudit(line,above,actual);
+        return $"SYNTHETIC PDF pixels actualBounds={a} referenceBounds={b} first=({first%794},{first/794}) peak={peak}@({peakAt%794},{peakAt/794}) sum={sum} large={large} bestTranslation=({bestX},{bestY}) translatedSum={best} lineHeight={line.Height:R} baseline={line.Baseline:R} extent={line.Extent:R} overhangLeading={line.OverhangLeading:R} overhangTrailing={line.OverhangTrailing:R} overhangAfter={line.OverhangAfter:R} width={line.WidthIncludingTrailingWhitespace:R} faces={faces} inkTop={ink.Top:R} inkBottom={ink.Bottom:R} drawY={PdfVisualRenderer.Margin-above:R} textSourcePpd={source.PixelsPerDip:R} renderingTier={RenderCapability.Tier} glyphs={glyphs} replay={replay}";
     }
     // Diagnostic data from the exact unchanged independent reference visual; fixed synthetic text only.
     private static string VisualPdfReferenceAudit(Grid page,TextBlock reference)
+    {
+        var dpi=VisualTreeHelper.GetDpi(reference);var offset=VisualTreeHelper.GetOffset(reference);var origin=reference.TransformToAncestor(page).Transform(new Point(0,0));
+        return $"baseline={reference.BaselineOffset:R} visualOffset=({offset.X:R},{offset.Y:R}) origin=({origin.X:R},{origin.Y:R}) dpi=({dpi.DpiScaleX:R},{dpi.DpiScaleY:R},{dpi.PixelsPerDip:R}) desired=({reference.DesiredSize.Width:R},{reference.DesiredSize.Height:R}) render=({reference.RenderSize.Width:R},{reference.RenderSize.Height:R}) layoutRounding={reference.UseLayoutRounding} snap={reference.SnapsToDevicePixels} formatting={TextOptions.GetTextFormattingMode(reference)} rendering={TextOptions.GetTextRenderingMode(reference)} hinting={TextOptions.GetTextHintingMode(reference)} clearType={RenderOptions.GetClearTypeHint(reference)} glyphs="+VisualPdfDrawingAudit(VisualTreeHelper.GetDrawing(reference));
+    }
+    // A first-line reproduction is accepted as representative only when its entire raster matches.
+    private static string VisualPdfReplayAudit(TextLine line,double above,byte[] actual)
+    {
+        var visual=new DrawingVisual();TextOptions.SetTextFormattingMode(visual,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(visual,TextRenderingMode.Grayscale);
+        using(var context=visual.RenderOpen())
+        {
+            context.DrawRectangle(Brushes.White,null,new Rect(0,0,794,1123));
+            line.Draw(context,new Point(PdfVisualRenderer.Margin,PdfVisualRenderer.Margin-above),InvertAxes.None);
+        }
+        return VisualPdfRasterReplayAudit(visual,actual)+$" formatting={TextOptions.GetTextFormattingMode(visual)} rendering={TextOptions.GetTextRenderingMode(visual)} hinting={TextOptions.GetTextHintingMode(visual)} clearType={RenderOptions.GetClearTypeHint(visual)} drawing="+VisualPdfDrawingAudit(VisualTreeHelper.GetDrawing(visual));
+    }
+    private static string VisualPdfReferenceDrawingReplay(TextBlock reference,byte[] expected)
+    {
+        ContainerVisual? root=null,offset=null;
+        try
+        {
+        Drawing drawing=VisualTreeHelper.GetDrawing(reference)!;
+        var direct=new DrawingVisual();TextOptions.SetTextFormattingMode(direct,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(direct,TextRenderingMode.Grayscale);
+        using(var context=direct.RenderOpen())
+        {
+            context.DrawRectangle(Brushes.White,null,new Rect(0,0,794,1123));
+            context.PushTransform(new TranslateTransform(PdfVisualRenderer.Margin,PdfVisualRenderer.Margin));
+            try{context.DrawDrawing(drawing);}finally{context.Pop();}
+        }
+        root=new ContainerVisual();TextOptions.SetTextFormattingMode(root,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(root,TextRenderingMode.Grayscale);
+        var white=new DrawingVisual();using(var context=white.RenderOpen())context.DrawRectangle(Brushes.White,null,new Rect(0,0,794,1123));root.Children.Add(white);
+        offset=new ContainerVisual{Offset=new Vector(PdfVisualRenderer.Margin,PdfVisualRenderer.Margin)};
+        var child=new DrawingVisual();using(var context=child.RenderOpen())context.DrawDrawing(drawing);offset.Children.Add(child);root.Children.Add(offset);
+        return "directTransform={"+VisualPdfRasterReplayAudit(direct,expected)+"} childOffset={"+VisualPdfRasterReplayAudit(root,expected)+"}";
+        }
+        finally{try{root?.Children.Clear();}finally{offset?.Children.Clear();}}
+    }
+    private static string VisualPdfRasterReplayAudit(Visual visual,byte[] expected)
+    {
+        var bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);
+        byte[]? bgra=null,rgb=null;
+        try
+        {
+            bitmap.Render(visual);bgra=new byte[794*1123*4];rgb=new byte[794*1123*3];bitmap.CopyPixels(bgra,794*4,0);
+            for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
+            {
+                int alpha=bgra[i+3];double coverage=alpha/255.0;
+                for(int channel=0;channel<3;channel++)
+                {
+                    double straight=alpha==0?0:bgra[i+2-channel]/coverage;
+                    rgb[j+channel]=(byte)Math.Round(straight*coverage+255*(1-coverage),MidpointRounding.AwayFromZero);
+                }
+            }
+            long sum=0;int peak=0,large=0;
+            for(int i=0;i<rgb.Length;i+=3){int delta=0;for(int c=0;c<3;c++)delta=Math.Max(delta,Math.Abs(rgb[i+c]-expected[i+c]));sum+=delta;peak=Math.Max(peak,delta);if(delta>32)large++;}
+            return $"entireExpectedRgbEqual={rgb.AsSpan().SequenceEqual(expected)} representative="+(rgb.AsSpan().SequenceEqual(expected)?"verified":"unverified")+$" sum={sum} peak={peak} large={large} "+VisualPdfBgraAudit(bgra);
+        }
+        finally{if(bgra is not null)CryptographicOperations.ZeroMemory(bgra);if(rgb is not null)CryptographicOperations.ZeroMemory(rgb);bitmap.Clear();}
+    }
+    private static string VisualPdfDrawingAudit(Drawing? root)
     {
         var descriptions=new List<string>();
         void Inspect(Drawing? drawing,int depth)
         {
             if(drawing is null||depth>16||descriptions.Count>=16)return;
-            if(drawing is GlyphRunDrawing glyph){descriptions.Add(VisualPdfGlyphAudit(glyph.GlyphRun));return;}
+            if(drawing is GlyphRunDrawing glyph)
+            {
+                string brush=glyph.ForegroundBrush is SolidColorBrush solid?$"solid({solid.Color}) opacity={solid.Opacity:R}":glyph.ForegroundBrush?.GetType().Name??"null";
+                descriptions.Add(VisualPdfGlyphAudit(glyph.GlyphRun)+" brush="+brush);return;
+            }
             if(drawing is DrawingGroup group)
             {
-                if(group.GuidelineSet is { } guides)descriptions.Add("guidelineY="+string.Join(",",guides.GuidelinesY.Take(8).Select(VisualPdfNumber)));
+                var matrix=group.Transform?.Value??Matrix.Identity;
+                descriptions.Add($"group opacity={group.Opacity:R} matrix=({matrix.M11:R},{matrix.M12:R},{matrix.M21:R},{matrix.M22:R},{matrix.OffsetX:R},{matrix.OffsetY:R})"+
+                    " guidelineX="+string.Join(",",group.GuidelineSet?.GuidelinesX.Take(8).Select(VisualPdfNumber)??Array.Empty<string>())+
+                    " guidelineY="+string.Join(",",group.GuidelineSet?.GuidelinesY.Take(8).Select(VisualPdfNumber)??Array.Empty<string>()));
                 foreach(var child in group.Children)Inspect(child,depth+1);
             }
         }
-        Inspect(VisualTreeHelper.GetDrawing(reference),0);
-        var dpi=VisualTreeHelper.GetDpi(reference);var offset=VisualTreeHelper.GetOffset(reference);var origin=reference.TransformToAncestor(page).Transform(new Point(0,0));
-        return $"baseline={reference.BaselineOffset:R} visualOffset=({offset.X:R},{offset.Y:R}) origin=({origin.X:R},{origin.Y:R}) dpi=({dpi.DpiScaleX:R},{dpi.DpiScaleY:R},{dpi.PixelsPerDip:R}) desired=({reference.DesiredSize.Width:R},{reference.DesiredSize.Height:R}) render=({reference.RenderSize.Width:R},{reference.RenderSize.Height:R}) layoutRounding={reference.UseLayoutRounding} snap={reference.SnapsToDevicePixels} formatting={TextOptions.GetTextFormattingMode(reference)} rendering={TextOptions.GetTextRenderingMode(reference)} glyphs="+string.Join(";",descriptions);
+        Inspect(root,0);return string.Join(";",descriptions);
     }
     private static string VisualPdfNumber(double value)=>value.ToString("R",System.Globalization.CultureInfo.InvariantCulture);
     private static string VisualPdfGlyphAudit(GlyphRun glyph)
     {
         var ink=glyph.ComputeInkBoundingBox();
-        return "face="+Path.GetFileName(glyph.GlyphTypeface.FontUri.LocalPath)+" em="+VisualPdfNumber(glyph.FontRenderingEmSize)+" base=("+VisualPdfNumber(glyph.BaselineOrigin.X)+","+VisualPdfNumber(glyph.BaselineOrigin.Y)+") ink=("+VisualPdfNumber(ink.Left)+","+VisualPdfNumber(ink.Top)+","+VisualPdfNumber(ink.Right)+","+VisualPdfNumber(ink.Bottom)+") glyph="+string.Join(",",glyph.GlyphIndices.Take(32))+" advance="+string.Join(",",glyph.AdvanceWidths.Take(32).Select(VisualPdfNumber));
+        return "face="+Path.GetFileName(glyph.GlyphTypeface.FontUri.LocalPath)+" em="+VisualPdfNumber(glyph.FontRenderingEmSize)+" base=("+VisualPdfNumber(glyph.BaselineOrigin.X)+","+VisualPdfNumber(glyph.BaselineOrigin.Y)+") ink=("+VisualPdfNumber(ink.Left)+","+VisualPdfNumber(ink.Top)+","+VisualPdfNumber(ink.Right)+","+VisualPdfNumber(ink.Bottom)+") glyph="+string.Join(",",glyph.GlyphIndices.Take(32))+" advance="+string.Join(",",glyph.AdvanceWidths.Take(32).Select(VisualPdfNumber))+
+            $" pixelsPerDip={glyph.PixelsPerDip:R} bidi={glyph.BidiLevel} sideways={glyph.IsSideways} style={glyph.GlyphTypeface.StyleSimulations} offsets="+string.Join(",",glyph.GlyphOffsets?.Take(32).Select(p=>$"({p.X:R},{p.Y:R})")??Array.Empty<string>());
     }
     private static bool VisualPdfWhiteBorder(byte[] rgb)
     {

@@ -24,6 +24,9 @@ internal static partial class Program
         var arguments=Environment.GetCommandLineArgs();
         if(arguments.Length==3&&arguments[1]=="--installed-package")return InstalledPackageRun(arguments[2]);
         if(arguments.Contains("--image-shutdown-worker"))return ImageShutdownWorker();
+        if(arguments.Contains("--network-observation-only"))return NetworkObservationParentRun().GetAwaiter().GetResult();
+        if(arguments.Contains("--network-observation-child"))return NetworkObservationChildEntry();
+        if(arguments.Contains("--network-positive-child")){NetworkPositiveChildRun().GetAwaiter().GetResult();return 0;}
         int result = 1; var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += async (_, _) =>
         {
@@ -75,6 +78,9 @@ internal static partial class Program
                 groups=groups.Append(("ocr-product-native",(Func<Task>)OcrProductRun)).Append(("ocr-shared-settlement",(Func<Task>)OcrSettlementUiRun)).ToArray();
                 groups=groups.Append(("rich-image-document",(Func<Task>)RichImageDocumentRun)).Append(("rich-image-publication",(Func<Task>)RichImagePublicationRun)).ToArray();
                 groups=groups.Append(("rich-image-product",(Func<Task>)RichImageProductRun)).ToArray();
+                groups=groups.Append(("runtime-network-observation",(Func<Task>)NetworkObservationRun)).ToArray();
+                groups=groups.Append(("rich-image-editor-prerequisite",(Func<Task>)RichImageEditorPrerequisiteRun)).ToArray();
+                if(arguments.Contains("--h01-v2-prerequisite-only"))groups=groups.Where(group=>group.Name=="rich-image-editor-prerequisite").ToArray();
                 if(arguments.Contains("--h01-image-only"))groups=groups.Where(group=>group.Name is "rich-image-document" or "rich-image-publication" or "rich-image-product").ToArray();
                 if(arguments.Contains("--backup-merge-only"))groups=groups.Where(group=>group.Name=="backup-same-id-merge").ToArray();
                 if(arguments.Contains("--branch-resolution-only"))groups=groups.Where(group=>group.Name=="backup-branch-resolution").ToArray();

@@ -10,6 +10,7 @@ internal static class InstalledNetworkObservation
     internal const int IntervalMilliseconds = 50;
     private const uint AfInet = 2, AfInet6 = 23, TcpOwnerPidAll = 5, UdpOwnerPid = 1;
     private const uint InsufficientBuffer = 122;
+    private static readonly byte[] ClearBlock=new byte[1024];
     private const int MaximumTableBytes = 1024 * 1024, MaximumAttempts = 3;
 
     // DWORD/UCHAR layouts from Microsoft SDK documentation. Explicit offsets avoid
@@ -58,13 +59,15 @@ internal static class InstalledNetworkObservation
         Console.WriteLine($"NETWORK_OBSERVER_SELF_CHECK family={family} tcpListenerSeen={tcpSeen} udpBoundSeen={udpSeen}");
     }
 
-    private static Counts Snapshot(uint pid) => new(ReadRows(Tables[0], pid, null, out _), ReadRows(Tables[1], pid, null, out _), ReadRows(Tables[2], pid, null, out _), ReadRows(Tables[3], pid, null, out _));
+    internal static Counts Snapshot(uint pid) => new(ReadRows(Tables[0], pid, null, out _), ReadRows(Tables[1], pid, null, out _), ReadRows(Tables[2], pid, null, out _), ReadRows(Tables[3], pid, null, out _));
 
-    private static int ReadRows(Table table, uint pid, int? syntheticPort, out bool fixtureSeen)
+    internal delegate uint NativeQuery(IntPtr buffer,ref uint size);
+    internal static Counts SnapshotForChecks(uint pid,NativeQuery query)=>new(ReadRows(Tables[0],pid,null,out _,query),ReadRows(Tables[1],pid,null,out _,query),ReadRows(Tables[2],pid,null,out _,query),ReadRows(Tables[3],pid,null,out _,query));
+    private static int ReadRows(Table table, uint pid, int? syntheticPort, out bool fixtureSeen,NativeQuery? testQuery=null)
     {
         fixtureSeen = false;
         uint size = 0;
-        uint error = Query(table, IntPtr.Zero, ref size);
+        uint error = testQuery is null?Query(table,IntPtr.Zero,ref size):testQuery(IntPtr.Zero,ref size);
         if (error != InsufficientBuffer) throw NativeFailure(table, error);
         for (int attempt = 0; attempt < MaximumAttempts; attempt++)
         {
@@ -73,7 +76,7 @@ internal static class InstalledNetworkObservation
             IntPtr buffer = Marshal.AllocHGlobal(allocated);
             try
             {
-                error = Query(table, buffer, ref size);
+                error = testQuery is null?Query(table,buffer,ref size):testQuery(buffer,ref size);
                 if (error == InsufficientBuffer) continue;
                 if (error != 0) throw NativeFailure(table, error);
                 if (size < sizeof(uint) || size > allocated) throw new IOException("Network observer native table returned invalid byte length");
@@ -94,7 +97,7 @@ internal static class InstalledNetworkObservation
                 }
                 return owned;
             }
-            finally { Marshal.FreeHGlobal(buffer); }
+            finally { for(int clear=0;clear<allocated;clear+=ClearBlock.Length)Marshal.Copy(ClearBlock,0,IntPtr.Add(buffer,clear),Math.Min(ClearBlock.Length,allocated-clear)); Marshal.FreeHGlobal(buffer); }
         }
         throw new IOException("Network observer native table did not stabilize within three bounded attempts");
     }
@@ -108,8 +111,19 @@ internal static class InstalledNetworkObservation
     [DllImport("iphlpapi.dll", ExactSpelling = true)]
     private static extern uint GetExtendedUdpTable(IntPtr table, ref uint size, [MarshalAs(UnmanagedType.Bool)] bool order, uint family, uint tableClass, uint reserved);
 
+    internal readonly record struct Identity(int Pid,long Creation)
+    {
+        internal static Identity Capture(Process process)
+        { process.Refresh();if(process.HasExited)throw new IOException("Observation process already exited");return new(process.Id,process.StartTime.ToUniversalTime().ToFileTimeUtc()); }
+        internal void RequireLive(Process process)
+        { if(Capture(process)!=this)throw new IOException("Observation process identity changed"); }
+    }
+    internal static Counts Snapshot(Identity identity,Process process)
+    {identity.RequireLive(process);var counts=Snapshot(checked((uint)identity.Pid));identity.RequireLive(process);return counts;}
+
     internal sealed class ChildMonitor(Process child, string scenario)
     {
+        private readonly Identity identity=Identity.Capture(child);
         private readonly Stopwatch elapsed = Stopwatch.StartNew();
         private int samples;
         private long previousSample, maximumGap;
@@ -117,7 +131,7 @@ internal static class InstalledNetworkObservation
         {
             child.Refresh();
             if (child.HasExited) throw new IOException("Installed network observation child exited before sample");
-            Counts counts = Snapshot(checked((uint)child.Id));
+            Counts counts = Snapshot(identity,child);
             child.Refresh();
             if (child.HasExited) throw new IOException("Installed network observation child exited during sample");
             long now = elapsed.ElapsedMilliseconds;
