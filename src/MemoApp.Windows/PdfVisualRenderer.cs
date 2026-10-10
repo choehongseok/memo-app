@@ -61,7 +61,7 @@ internal static class PdfVisualRenderer
         void BeginPage()
         {
             Current();if(pages>=PdfRasterDocumentBuilder.MaxPages)throw Refused();
-            page=new DrawingVisual();TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);
+            page=new PlainPageVisual();TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);
             drawing=page.RenderOpen();drawing.DrawRectangle(Brushes.White,null,new Rect(0,0,PageWidth,PageHeight));y=Margin;
         }
         async Task Yield()
@@ -223,6 +223,12 @@ internal static class PdfVisualRenderer
     private static bool Finite(double value)=>double.IsFinite(value);
     private static InvalidDataException Refused()=>new("Display PDF source, page or geometry limit");
 
+    // TextOptions' attached rendering mode is applied to native visuals by FrameworkElement.
+    // DrawingVisual needs its native mode set directly; storing the attached value is insufficient.
+    private sealed class PlainPageVisual:DrawingVisual
+    {
+        public PlainPageVisual(){VisualTextRenderingMode=TextRenderingMode.Grayscale;}
+    }
     private sealed class PlainRunProperties:TextRunProperties
     {
         public override Typeface Typeface{get;}=new(new FontFamily("Global User Interface"),FontStyles.Normal,FontWeights.Normal,FontStretches.Normal);

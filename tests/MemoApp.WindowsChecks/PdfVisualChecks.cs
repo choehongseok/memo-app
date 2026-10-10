@@ -273,13 +273,14 @@ internal static partial class Program
     // A first-line reproduction is accepted as representative only when its entire raster matches.
     private static string VisualPdfReplayAudit(TextLine line,double above,byte[] actual)
     {
-        var visual=new DrawingVisual();TextOptions.SetTextFormattingMode(visual,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(visual,TextRenderingMode.Grayscale);
+        var visual=(DrawingVisual)Activator.CreateInstance(typeof(PdfVisualRenderer).GetNestedType("PlainPageVisual",BindingFlags.NonPublic)!,true)!;
+        TextOptions.SetTextFormattingMode(visual,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(visual,TextRenderingMode.Grayscale);
         using(var context=visual.RenderOpen())
         {
             context.DrawRectangle(Brushes.White,null,new Rect(0,0,794,1123));
             line.Draw(context,new Point(PdfVisualRenderer.Margin,PdfVisualRenderer.Margin-above),InvertAxes.None);
         }
-        return VisualPdfRasterReplayAudit(visual,actual)+$" formatting={TextOptions.GetTextFormattingMode(visual)} rendering={TextOptions.GetTextRenderingMode(visual)} hinting={TextOptions.GetTextHintingMode(visual)} clearType={RenderOptions.GetClearTypeHint(visual)} drawing="+VisualPdfDrawingAudit(VisualTreeHelper.GetDrawing(visual));
+        return "exactProductVisual="+visual.GetType().Name+" "+VisualPdfRasterReplayAudit(visual,actual)+$" formatting={TextOptions.GetTextFormattingMode(visual)} rendering={TextOptions.GetTextRenderingMode(visual)} hinting={TextOptions.GetTextHintingMode(visual)} clearType={RenderOptions.GetClearTypeHint(visual)} drawing="+VisualPdfDrawingAudit(VisualTreeHelper.GetDrawing(visual));
     }
     private static string VisualPdfReferenceDrawingReplay(TextBlock reference,byte[] expected)
     {

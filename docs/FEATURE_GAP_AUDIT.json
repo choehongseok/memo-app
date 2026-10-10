@@ -3,7 +3,7 @@
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
     "head": "c0865cbb7ee50dca36b09f1b12917e501bf093c4",
-    "working_tree": "Published source515c008/tree d4bdf917 actual Windows38021487234 wholeFAIL2 (PDF emoji and H01 composition-return fixture); network observation and Office nativePASS. Corrected H01 return semantics and generic OCR pending fixture staged; productv2 remains readonly.",
+    "working_tree": "Actualcf7 wholeFAIL2 PDFemoji/OCRpendingedit; H01prerequisitePASS. ScopednativeGrayscale renderer/OCRfixturefixes reviewed/crossbuildPASS, nativepending; separateH01Core/editor implementationinprogress notinthispublishedsnapshot.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,7 +19,7 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "Actual515c008 run38021487234/job114123242815 build/fullCore/isolatedcleanup PASS, WPF FAIL2 PDFemoji/H01 prerequisite. Word and runtime-network-observation PASS. ActualPDF replay wholeRGB matches output; replaying referenceDrawing also yields actualratherthan initialTextBlock reference, unresolvednativevisual/timing. H01 actualstartEvent1 then incorrectsuccess-bool assertion fails; returnhandle correction staged/nativepending. Package/install/uploadSKIPPED, no newartifact.",
+    "current_change_verification": "Actualcf7 run38022122133/job114125165867 build/fullCore/cleanup PASS; WPF FAIL2 PDFemoji/OCRpendingeditfixture. H01nativeprerequisite/Word/DIB/H09/networkgroupsPASS. Package/install/uploadSKIPPED. Proposedscopedfixes crossbuild0w0e/independentPREPOSTclear; nativepending.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
     "supplemental_source": "N04 authenticated inlinePNG Word source is committed and fullCore/schema/compatibleviewer verified; actual nativeOffice group failed closed-host cleanup, fix pending native evidence. Source-literal Markdown is a disclosed supported projection; optional renderedMarkdown is not an explicit original requirement."
   },
@@ -1763,7 +1763,7 @@
     {
       "id": "H01",
       "implemented": "Canonical strictdocv2/schema10 PNG refs/read-only ordered viewer/manual display/remove; actualWindows38009222772 document/publication/product PASS, including same-version immediateepochpixelclear.",
-      "remaining": "Authenticated inline PNG Word export passed actual c086. Editable v2 surrounding text remains unimplemented: approved inferred continuation awaits actual native placeholder identity/UndoRedo prerequisite, then closed Core/editor/host implementation and independent review. General formats, resizing and editor image paste/drop are optional extensions. User acceptance remains unconfirmed.",
+      "remaining": "Actualcf7 native placeholder/composition/UndoRedo prerequisite passed. Approved inferred editable-v2 surrounding text Core/editor/host implementation and independent source/native review remain; published product v2 stays readonly. PNG Word embedding passed. General formats/resizing/editor image paste-drop are optional extensions; physical IME/user acceptance remain unconfirmed.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -1787,7 +1787,7 @@
           "After native prerequisite proof, implement the approved closed v2 text transaction, exact-reference placeholders and Main/Sticky integration; preserve original source/history/image authority and readonly refusal."
         ],
         "inspection": [
-          "Verify actual native prerequisite; synthetic composition is not physical OS IME acceptance. Keep component PASS, whole gate and package evidence separate."
+          "Retain actualcf7 exact-placeholder/events/Unicode/UndoRedo prerequisite evidence separately from product editor native checks and physical OS IME acceptance. Validate approved Core/editor/host implementation before final artifacts."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2493,7 +2493,7 @@
     {
       "id": "N02",
       "implemented": "TextPDF actualauthorityPASS; displayPDF boundedraster/nativeglyph audits implemented. Actualf1/a162 baseline fix passes firstHangul/CJK/combining/Jamo vectors; unchangedemoji pixeloracleFAIL despite identical glyph/emsize/advance/DPI. Reference localglyphguideline vsbakedfractionalglobaldraworigin difference diagnosed; localdraw-frame correction pendingactualverification.",
-      "remaining": "Actual515 native emoji still fails unchanged reference/threshold (peak132, sum3740). Actual renderer replay wholeRGB verified; reference drawing replays also produce actual raster, unlike live TextBlock. Native visual/timing cause, later wrap/42–43page/clipping and subsequent rich/table/Markdown/image verticals remain unresolved. Viewer/user acceptance remains unconfirmed.",
+      "remaining": "Actualcf7 native emoji failed unchanged oracle; live-versus-replayed controls and primary WPF source isolate missing native TextRenderingMode propagation on DrawingVisual. Minimal private native-Grayscale visual fix is staged/reviewed/crossbuild PASS; sameoracle native gate and later wrap/42–43page/clipping pending. Rich/table/Markdown/image verticals and viewer/user acceptance remain distinct.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -3633,7 +3633,7 @@
     {
       "id": "T12",
       "implemented": "Fixed source-built Tesseract5.5.3/Leptonica1.87.0 kor+eng native OCR, explicit hash-validated public model installation/selection default off, app-wide input/admission/settlement, read-only result then new encrypted plain note/body search/restart. Actual Korean/English synthetic Windows OCR/product/install gates passed in latest whole CI. Actual c086 linked OCR runtime/UI and schema11 authority/search groups passed. Actual515c008 native bounded observer passed: positive TCP/UDP v4/v6 and crossprocess PID+creation, six host phases sampled, two actual fixed Tesseract child identities/five aggregate active samples; sampled rows zero. This is scoped observation, not complete offline/firewall assurance or installed unlocked EXE evidence.",
-      "remaining": "Fixed native OCR and linked authority/selection/source/native-setter/lock/settlement regressions have actual evidence. Bounded runtime observation passed actual515; generic pending-result races, synthetic accuracy corpus and CPU/RAM measurements remain pending. Unsupported image formats are optional extensions; broad OCR accuracy and user acceptance remain unconfirmed.",
+      "remaining": "Fixed native OCR, linked authority/native-setter/lock and bounded network observer have actual evidence. Generic pending-result seven-case native rerun is pending after narrow dirty-Capture provisional-ID fixture correction; accuracy corpus/CPU-RAM and user acceptance remain. Unsupported image formats are optional extensions.",
       "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [

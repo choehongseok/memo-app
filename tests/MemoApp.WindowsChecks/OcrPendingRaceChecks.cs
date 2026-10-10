@@ -81,11 +81,25 @@ internal static partial class Program
      await session.LockAsync();Require(faultObserved&&session.KeysReleased&&!session.IsBusy&&panel.IsDisposed,"Native cleanup callback failure still releases keys before pending Completion");break;
     case "dispose":panel.Dispose();window.Close();window=null;Require(panel.IsDisposed,"Pending host really disposed");break;
    }
-   string? expected=scenario=="lock-fault"?null:JsonSerializer.Serialize(session.Workspace.Capture());
+   var expected=scenario=="lock-fault"?null:session.Workspace.Capture();
+   long expectedVersion=note.EditVersion;var expectedModified=note.ModifiedAt;
+   if(scenario=="edit")Require(session.IsDirty,"Authorized source edit remains dirty before late completion");
    Require(!recognizing.IsCompleted&&!await probe.PreviewSelectedAsync(),"Revocation cannot fake pending operation settlement");
    backend.Deliver();Require(!await recognizing.WaitAsync(TimeSpan.FromSeconds(10)),"Late synthetic Completion refuses stale UI publication: "+scenario);
    Require(backend.Utf8.All(b=>b==0)&&panel.OcrResult.Text.Length==0&&!panel.OcrApplyButton.IsEnabled&&!await panel.ApplyOcrResultAsync(),"Late actual owned UTF8 is zeroed and cannot create an OCR note: "+scenario);
-   if(expected is not null)Require(JsonSerializer.Serialize(session.Workspace.Capture())==expected,"Complete source preserved after the authorized race action: "+scenario);
+   if(expected is not null)
+   {
+    var actual=session.Workspace.Capture();
+    if(scenario=="edit")
+    {
+     Require(session.IsDirty&&note.EditVersion==expectedVersion&&note.ModifiedAt==expectedModified,"Late completion preserves exact live dirty edit version/time");
+     // Capture assigns a new provisional revision ID on every dirty capture, without installing it.
+     // Normalize only that target ID; all source content, parents, history and objects stay exact.
+     Guid provisional=expected.Notes.Single(n=>n.NoteId==note.Id).RevisionId;
+     actual=actual with{Notes=actual.Notes.Select(n=>n.NoteId==note.Id?n with{RevisionId=provisional}:n).ToArray()};
+    }
+    Require(JsonSerializer.Serialize(actual)==JsonSerializer.Serialize(expected),"Complete source preserved after the authorized race action: "+scenario);
+   }
    Require(cipher.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"vault","current.vault"))),"Late result never writes source ciphertext: "+scenario);
    if(scenario!="settled-first")Require(!await probe.PreviewSelectedAsync(),"Completed UI result still cannot release unsuccessfully unsettled cleanup");
    backend.Settled.TrySetResult();await backend.Settled.Task;
