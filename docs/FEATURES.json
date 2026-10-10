@@ -1201,6 +1201,13 @@
           "environment": "GitHub Windows2022 SDK10.0.401/runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38004389975",
           "result": "Whole FAIL: native/build/fullCore PASS; Excel scalar/mapping, backup root/persistence and original Enter boundary/empty item UndoRedo PASS. Additional selected-body Enter fixture lacked keyboard focus; follow-up focus fix pending native gate. publish/install/upload SKIPPED."
+        },
+        {
+          "kind": "windows-component-partial",
+          "commit": "2163093533cff1f12210a6d09a778f896c4b595c",
+          "environment": "GitHub Windows Server2022 / fixedSDK10.0.401/runtime10.0.12",
+          "command": "Windows38008067402/job114081385426 fullCore+actualWPF",
+          "result": "PASS selected-body Enter completion, gray PNG shared display, rich-image-publication+product; entire gateFAIL only rich-image-document immediate same-source AcceptPrepared pixel-clear assertion; package/install/uploadSKIPPED. Next source synchronously subscribes workspace invalidation, newWindowspending."
         }
       ],
       "blocking_reason": "새 empty-item/same-item-selection Undo/Redo gate pending; original Enter/source-change/Lock boundary actualPASS. 사용자 수용 미확인."
@@ -2501,9 +2508,16 @@
           "environment": "GitHub Windows Server2022 / fixed official SDK10.0.401/runtime10.0.12",
           "command": "Full source/Python35/safety/build/Core/WPF/publish/408-filemanifest/actual installed EXE; https://github.com/choehongseok/memo-app/actions/runs/37922263494",
           "result": "PASS exact-head automatic component/control/package install/hash/Unicode shortcut/production title/localcoreclr/cleanexit; not full ID acceptance or user-PC IME/OS/DPI/trust/ACL"
+        },
+        {
+          "kind": "windows-component-partial",
+          "commit": "2163093533cff1f12210a6d09a778f896c4b595c",
+          "environment": "GitHub Windows Server2022 / fixedSDK10.0.401/runtime10.0.12",
+          "command": "Windows38008067402/job114081385426 fullCore+actualWPF",
+          "result": "PASS selected-body Enter completion, gray PNG shared display, rich-image-publication+product; entire gateFAIL only rich-image-document immediate same-source AcceptPrepared pixel-clear assertion; package/install/uploadSKIPPED. Next source synchronously subscribes workspace invalidation, newWindowspending."
         }
       ],
-      "blocking_reason": "후속 strict docv2/schema10 인증 PNG 블록 삽입·read-only 순서 보기·명시 표시/제거 개발 중. Core target 및 전체 회귀 PASS/독립review; Windows 선택 재진입 수정 후 actualWindows 대기. editable inline image·image paste/drop into editor·일반형식·Word image embedding·사용자 수용은 미완료."
+      "blocking_reason": "strictdocv2/schema10 인증PNG 블록·read-only순서·명시표시/제거 Core/full 및 Windowspublication/product PASS. 전체Windows2163093 FAIL immediateAcceptPrepared pixel-clear; workspace invalidation subscriptionfix/newWindows대기. editableinline/editorimagepaste/drop/일반형식/Wordembedding/사용자수용 미완료."
     },
     {
       "id": "H02",
@@ -2519,7 +2533,10 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Core/Transfer/ClipboardPngSource.cs",
-        "src/MemoApp.Windows/AttachmentPanel.Clipboard.cs"
+        "src/MemoApp.Windows/AttachmentPanel.Clipboard.cs",
+        "src/MemoApp.Core/Transfer/DibToPng.cs",
+        "src/MemoApp.Windows/NativeClipboardDibCapture.cs",
+        "src/MemoApp.Windows/AttachmentPanel.DibClipboard.cs"
       ],
       "planned_module": "Attachments",
       "test_evidence": [
@@ -2529,7 +2546,7 @@
           "result": "전체 SUCCESS/actual OS clipboard 관리창·스티키 버튼 암호 저장/restart, raw PNG 원본 불변, global admission, getter/sourceepoch/lock, anchored/unanchored acceptance, borrowed stream position/restorefailure scratchzero PASS."
         }
       ],
-      "blocking_reason": "첨부 영역 focus Ctrl+V/버튼 raw PNG byte[]/exact MemoryStream만 지원. Bitmap/DIB/자동 변환/일반 스크린샷·metadata PNG·인라인 삽입은 제한. 실제 물리 Ctrl+V/clipboard app/사용자 수용 미확인."
+      "blocking_reason": "후속 CF_DIB8 header40 BI_RGB24/32 bounded RGBPNG 변환·명시 버튼/첨부 영역 CtrlV 연결. Core actualRED→target/fullGREEN 및 independentreview; 새 nativeWindows는 대기. DIBV5/다른압축/큰스크린샷/편집기 CtrlV 직접 문서 삽입은 미완료; rawPNG 기존경로 유지."
     },
     {
       "id": "H03",
@@ -2738,9 +2755,16 @@
           "environment": "GitHub Windows Server2022 / fixed official SDK10.0.401/runtime10.0.12",
           "command": "Full source/Python35/safety/build/Core/WPF/publish/408-filemanifest/actual installed EXE; https://github.com/choehongseok/memo-app/actions/runs/37922263494",
           "result": "PASS exact-head automatic component/control/package install/hash/Unicode shortcut/production title/localcoreclr/cleanexit; not full ID acceptance or user-PC IME/OS/DPI/trust/ACL"
+        },
+        {
+          "kind": "windows-component-partial",
+          "commit": "2163093533cff1f12210a6d09a778f896c4b595c",
+          "environment": "GitHub Windows Server2022 / fixedSDK10.0.401/runtime10.0.12",
+          "command": "Windows38008067402/job114081385426 fullCore+actualWPF",
+          "result": "PASS selected-body Enter completion, gray PNG shared display, rich-image-publication+product; entire gateFAIL only rich-image-document immediate same-source AcceptPrepared pixel-clear assertion; package/install/uploadSKIPPED. Next source synchronously subscribes workspace invalidation, newWindowspending."
         }
       ],
-      "blocking_reason": "기존 RGB/RGBA8 제한PNG에 scalar metadata actualWindowsPASS. 후속 gray8/gray-alpha8 CoreRED→GREEN/독립review, 새Windows공유경로 대기. JPEG·palette/interlace·text/ICC/EXIF/APNG 및 실제사용자수용 미완료."
+      "blocking_reason": "RGB/RGBA/gray/gray-alpha8 boundedPNG sharedclipboard/암호재열기/exactBGRA·alpha·96DPI actualWindows38008067402 PASS relevantgroup; entiregateFAIL separateH01epoch. JPEG/palette/interlace/ICC/EXIF/APNG 등과 실제사용자수용 미완료."
     },
     {
       "id": "H09",

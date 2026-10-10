@@ -4,6 +4,8 @@
 
 ## 현재 검증과 산출물 범위
 
+현재저장2163093/[Windows38008067402](https://github.com/choehongseok/memo-app/actions/runs/38008067402)는 전체FAIL이다. selected-body Enter·grayPNG·H01publication/product PASS, unchangedAcceptPrepared pixel-clear만FAIL→동기workspaceevent수정/새gate대기. 후속H02 boundedDIB·기존PDFauthority·inertRasterPDFCore를 분리검증하며 renderer/UI·O06 branchmerge는 다음독립계획이다.
+
 후속 소스 `af297201`의 [Windows gate38004389975](https://github.com/choehongseok/memo-app/actions/runs/38004389975)는 전체 FAIL이다. Excel 매핑·schema9 persistence·기존 Enter boundary·빈 항목 Undo/Redo는 PASS였고, selected-body Enter fixture의 focus 누락으로 다음 검사가 FAIL했다. focus 수정·H01 이미지 문서·H08 gray PNG 새 Windows 검사는 아직 대기다.
 
 이전 소스 `5db5d8a`의 [Windows gate38002826135](https://github.com/choehongseok/memo-app/actions/runs/38002826135)는 전체 FAIL이다. native/build/fullCore 및 원래 checklist Enter source-version·lock boundary는 PASS였으나 추가 Excel 재열기 fixture, 백업 정책 미저장 날짜 기대 fixture, 빈 체크 항목 Undo exact-source 검사가 FAIL했다. 후속 암호 파일 복사 재열기·정책 fault fixture·Undo 원문 복원을 수정하고 시트/열 매핑·설치 실행 network 관찰 검사를 추가했다. 새 Windows 결과는 다음 소스 gate에서 구분한다.

@@ -6,6 +6,8 @@ public sealed class ClipboardPngSource : IDisposable
     private byte[] bytes;
     private bool disposed;
     private ClipboardPngSource(byte[] bytes)=>this.bytes=bytes;
+    // Converter has validated the complete PNG; ownership transfers without another plaintext copy.
+    internal static ClipboardPngSource TakeValidatedOwnership(byte[] owned) => new(owned);
     public ReadOnlySpan<byte> Content=>disposed?throw new ObjectDisposedException(nameof(ClipboardPngSource)):bytes;
     public static ClipboardPngSource Capture(byte[] borrowed)
     {

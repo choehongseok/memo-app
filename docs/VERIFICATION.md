@@ -446,3 +446,14 @@ H01 actual reflective API/schema10 unsupported RED 뒤 typed codec/record-local 
 H01 신규 codec/스키마10/hidden/admission 및 기존 전체 Core 실제 exit0: /tmp/memo-h01-full-core.log. 첫 전체 교차빌드는 RichImageProductChecks.cs의 StoredNote.Id 오타(실제 API는 NoteId) 한 건으로 FAIL(0warnings/1error, /tmp/memo-h01-whole-build.log); Windows 성공으로 표시하지 않는다. 독립 후검토는 첨부 버튼 IsEnabled 재진입 때 선택된 PNG ID/generation을 다시 확인하지 않는 Important를 발견했다. 수정과 실제 두 PNG 선택 전환 회귀를 진행하며 새 gate 결과 전 전체 성공을 주장하지 않는다.
 
 H01 후속 source pause에서 전체 4project 교차 build 실제 exit0/0warnings/0errors(/tmp/memo-h01-whole-green-build.log). 선택 ID·단조 generation·callback 후 terminal검사, native caret away/back 후 generation 검사 및 실제 WPF 회귀를 추가했다. 독립 읽기 재검토 기존Important 해소/추가Critical·Important없음; 독립 실행 및 실제 새 Windows PASS와 구분한다. Python39 및 원문27417B/해시/134ID/M06 검사 PASS.
+
+## 2026-10-10 H01 actual failure and H02/PDF follow-up
+
+2026-10-10 저장 소스2163093533cff1f12210a6d09a778f896c4b595c/tree936c57cc3331e0679a74dc14b08dcc31cc5bee7b Windows38008067402/job114081385426 전체FAIL. nativeOCR/build0w0e/fullCore 및 actualWPF selected-body Enter completion/기존boundary/gray shareddisplay/H01publication·product PASS. H01 unchangedAcceptPrepared immediatepixel-clear assertion만FAIL. Workspace.AcceptPrepared는 AttachmentReadInvalidating으로 globalpreviewepoch를 증가시키지만 새view는 NotePropertyChanged/sessionChanged/prepaint만 감시해 동기clear를 놓쳤다. 원래actualREDoracle를 유지하고 해당workspaceevent에 즉시InvalidateImageDisplay를 연결/Dispose때해제한다. 독립읽기재검토 추가Important없음; 새WindowsPASS는 아직미확인. package/install/networkobservation/uploadSKIPPED, 기존artifact11647312201보존.
+
+후속H02 CF_DIB8/header40 BI_RGB24/32 ≤4MiB→opaqueRGBPNG actualCoreRED→GREEN/fullCoreexit0. source/dims/stride/tail/PNGoutputcap/borrowed원본/allocation취소·오류zeroing 및 strictgrammar검사. 초기Refresh 선택generation 및 OLE전sequence Important수정/독립재검토추가없음; nativegetters/cleanup/lockedworker슬롯/암호첨부/savefault/명시H01참조/actualnativeclipboard 픽셀·lock tests작성, Windows실행은대기. rawPNG기존동작보존/편집기CtrlV범위미확장.
+
+N02 기존textPDF의 operationCTS는 선택away/back/sourceEditVersion/sameversionAcceptPrepared/lock/close에 단조취소하고 실제blockedCreateNew 뒤token검사를 유지한다. closedCTS 접근Important는 entryguard+postclose무callback회귀로수정/독립재검토. 새nativeWindows대기. 별도 inertRasterPDFCore actualmissingAPIRED→targetGREEN/build0w0e, strictRGB/A4/xref/16MiB/256page/faultedbuilder/allocationzero 계약. 독립Poppler pdfinfo1page/A4/PDF1.7/noJS 및96DPI렌더794x1123의 비대칭4corner exactRGB/whitecenter PASS. 렌더PPMSHA256 c82d41dcf511db0e6cbe8b9279c5aaafb29557be06ef6e9ffaf9035e3f3c9dad. WindowsUnicodeformatter/표시PDFUI는후속이며 현재제품제공·전체N02완료로표시하지않음.
+
+
+후속sourcepause 4projectbuild0warnings/0errors actualPASS /tmp/memo-h02-whole-green-build.log; fullCoreDIB+raster+기존회귀 exit0 /tmp/memo-h02-raster-full-core.log. 첫build nullablefixture CS8600/CS8602만FAIL 후 null이면throw하는 bitmap단언으로수정. source134/Python39 PASS. 실제새Windowsgate전 전체Windows성공/설치산출물·수용을주장하지않는다.

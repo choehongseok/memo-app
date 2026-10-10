@@ -16,6 +16,7 @@ namespace MemoApp.Windows;
 public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisplayHost
 {
     private SaveCoordinator? session;
+    private EditingWorkspace? workspace;
     private NoteDraft? note;
     private Func<bool>? current;
     private Action<string>? notice;
@@ -31,9 +32,10 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
         :this(session,note,current,notice,new ImagePreviewBackend()){}
     internal RichImageDocumentView(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend)
     {
-        Dispatcher.VerifyAccess();this.session=session;this.note=note;this.current=current;this.notice=notice;this.backend=backend;observedEpoch=session.AttachmentPreviewEpoch;
+        Dispatcher.VerifyAccess();this.session=session;workspace=session.Workspace;this.note=note;this.current=current;this.notice=notice;this.backend=backend;observedEpoch=session.AttachmentPreviewEpoch;
         Content=new ScrollViewer{Content=BlocksHost,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,MaxHeight=600};
         session.Conceal+=Dispose;session.Changed+=StateChanged;note.PropertyChanged+=NoteChanged;
+        workspace.AttachmentReadInvalidating+=AttachmentReadsInvalidating;
         IsVisibleChanged+=VisibilityChanged;Dispatcher.ShutdownStarted+=DispatcherClosing;CompositionTarget.Rendering+=Rendering;Refresh();
     }
     internal Image ImageForBlock(int index)=>images[index];
@@ -49,6 +51,7 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
         Dispatcher.VerifyAccess();if(IsDisposed)return;if(!Live()){Dispose();return;}
         if(session!.AttachmentPreviewEpoch!=observedEpoch){observedEpoch=session.AttachmentPreviewEpoch;InvalidateImageDisplay();}
     }
+    private void AttachmentReadsInvalidating(NoteDraft? source)=>InvalidateImageDisplay();
     private void Rendering(object? sender,EventArgs e)=>StateChanged();
     private void VisibilityChanged(object sender,DependencyPropertyChangedEventArgs e){if(!IsVisible)InvalidateImageDisplay();}
     private void DispatcherClosing(object? sender,EventArgs e)=>Dispose();
@@ -186,7 +189,8 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
     }
     public void Dispose()
     {
-        Dispatcher.VerifyAccess();if(IsDisposed)return;IsDisposed=true;InvalidateImageDisplay();var active=session;var source=note;session=null;note=null;current=null;notice=null;projected=null;refreshPending=false;
+        Dispatcher.VerifyAccess();if(IsDisposed)return;IsDisposed=true;InvalidateImageDisplay();var active=session;var source=note;var previousWorkspace=workspace;session=null;workspace=null;note=null;current=null;notice=null;projected=null;refreshPending=false;
+        if(previousWorkspace is not null)previousWorkspace.AttachmentReadInvalidating-=AttachmentReadsInvalidating;
         if(active is not null){active.Conceal-=Dispose;active.Changed-=StateChanged;}if(source is not null)source.PropertyChanged-=NoteChanged;IsVisibleChanged-=VisibilityChanged;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=Rendering;
         try{Visibility=Visibility.Collapsed;}catch{}try{Content=null;}catch{}try{BlocksHost.Children.Clear();}catch{}images.Clear();
     }

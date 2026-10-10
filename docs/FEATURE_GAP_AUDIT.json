@@ -2,12 +2,12 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
-    "working_tree": "af297201 whole Windows FAIL; later H01/schema10+gray PNG+focus fixture working changes not yet committed/native-verified.",
+    "head": "2163093533cff1f12210a6d09a778f896c4b595c",
+    "working_tree": "H01 wholeWindows38008067402 FAIL; boundedDIB/PDFauthority/inertRasterCore/epochfix working followup, nextactualWindowspending",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
-    "date": "2026-10-09",
+    "date": "2026-10-10",
     "audit_inputs": [
       "/tmp/memo-root-audit.json",
       "/tmp/memo-editor-audit.json",
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "후속 저장 소스 af297201d6dd83bcf7d0f632ce610af8e5d318ac / Windows38004389975/job114069706281 전체 FAIL. native OCR bundle·build0warnings0errors·fullCore PASS. actual WPF 원래 Enter/source-version/lock boundary, Excel scalar 및 새 시트·열 매핑, 백업 정책 persistence/예약 실패, empty checklist first/middle/last+Undo/Redo PASS. 다음 selected-body Enter 검사는 키보드 focus 없는 fixture에서 FAIL했다. 공식 WPF main 소스의 OnEnterBreak focus precondition과 기존 AtEnd focus를 비교해 fixture에 실제 focus·정확 DELETE 선택·CanExecute 단언을 추가했다. 이 수정의 실제 Windows 성공은 아직 미확인이다. publish/install/network observation/upload SKIPPED이며 기존 artifact11647312201은 보존한다.\n\n후속 H08 gray8/gray-alpha8 actual Core RED→GREEN 및 독립 읽기 검토 추가Important없음; Windows clipboard/암호 재열기/정확 BGRA·alpha·DPI·lock fixture는 대기다. H01은 독립 구현 전 보안 검토 및 H01_INLINE_IMAGE_PLAN에 따라 strict docv2/스키마10·기존 인증 PNG 블록 삽입/명시 표시를 개발한다. v1 opaque·기존1..9 writer/원문·134ID/M06를 유지하며 새v2는 native capture로 덮어쓰지 않는다. 실제 prechange9 DLL로 frozen9 2710B SHA256 cde32f87ced6cbf5828c2c6ad3547e23243588aa719d727cd963fc6945518050을 확보했다. missingAPI/schema10 actualRED→codec/참조 GREEN; hidden10 전체검증으로 title257 복구가 막히는 독립Important는 actualRED→narrow권한 검증 GREEN으로 수정했다. 알려진 v2 Word 미지원 capability도 actualRED→파일 구성 전 거절 GREEN. lifecycle 및 전체 Core는 실제 PASS다. 첫 교차빌드는 Windows fixture NoteId 오타로 FAIL, 수정과 선택 재진입 Important 보완 후 다시 검증한다. 새 actualWindows는 대기이므로 전체 성공·새 산출물·사용자 수용을 주장하지 않는다.\nH01 전체 Core exit0, 4project 교차빌드0warnings/0errors, Python39/원문134 PASS. PNG 선택·커서 재진입 Important 코드상해소/독립 재검토 추가Important없음. 실제 새로운 Windows gate는 대기.",
+    "current_change_verification": "2026-10-10 저장 소스2163093533cff1f12210a6d09a778f896c4b595c/tree936c57cc3331e0679a74dc14b08dcc31cc5bee7b Windows38008067402/job114081385426 전체FAIL. nativeOCR/build0w0e/fullCore 및 actualWPF selected-body Enter completion/기존boundary/gray shareddisplay/H01publication·product PASS. H01 unchangedAcceptPrepared immediatepixel-clear assertion만FAIL. Workspace.AcceptPrepared는 AttachmentReadInvalidating으로 globalpreviewepoch를 증가시키지만 새view는 NotePropertyChanged/sessionChanged/prepaint만 감시해 동기clear를 놓쳤다. 원래actualREDoracle를 유지하고 해당workspaceevent에 즉시InvalidateImageDisplay를 연결/Dispose때해제한다. 독립읽기재검토 추가Important없음; 새WindowsPASS는 아직미확인. package/install/networkobservation/uploadSKIPPED, 기존artifact11647312201보존.\n\n후속H02 CF_DIB8/header40 BI_RGB24/32 ≤4MiB→opaqueRGBPNG actualCoreRED→GREEN/fullCoreexit0. source/dims/stride/tail/PNGoutputcap/borrowed원본/allocation취소·오류zeroing 및 strictgrammar검사. 초기Refresh 선택generation 및 OLE전sequence Important수정/독립재검토추가없음; nativegetters/cleanup/lockedworker슬롯/암호첨부/savefault/명시H01참조/actualnativeclipboard 픽셀·lock tests작성, Windows실행은대기. rawPNG기존동작보존/편집기CtrlV범위미확장.\n\nN02 기존textPDF의 operationCTS는 선택away/back/sourceEditVersion/sameversionAcceptPrepared/lock/close에 단조취소하고 실제blockedCreateNew 뒤token검사를 유지한다. closedCTS 접근Important는 entryguard+postclose무callback회귀로수정/독립재검토. 새nativeWindows대기. 별도 inertRasterPDFCore actualmissingAPIRED→targetGREEN/build0w0e, strictRGB/A4/xref/16MiB/256page/faultedbuilder/allocationzero 계약. 독립Poppler pdfinfo1page/A4/PDF1.7/noJS 및96DPI렌더794x1123의 비대칭4corner exactRGB/whitecenter PASS. 렌더PPMSHA256 c82d41dcf511db0e6cbe8b9279c5aaafb29557be06ef6e9ffaf9035e3f3c9dad. WindowsUnicodeformatter/표시PDFUI는후속이며 현재제품제공·전체N02완료로표시하지않음.\n\n",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "af297201 committed source plus explicitly uncommitted H01/schema10/gray PNG/focus-fixture changes"
+    "supplemental_source": "2163093 committed plus explicitly working H02/PDFauthority/inertRaster/epochfix"
   },
   "summary": {
     "original_id_count": 134,
@@ -34,16 +34,16 @@
     "in_progress_audit_category_counts": {
       "decision": 1,
       "independent-code": 8,
-      "independent-test": 6,
-      "physical-user": 104
+      "independent-test": 5,
+      "physical-user": 105
     },
     "all_category_counts": {
       "blocked-format": 1,
       "decision": 1,
       "independent-code": 21,
-      "independent-test": 6,
+      "independent-test": 5,
       "normalized": 1,
-      "physical-user": 104
+      "physical-user": 105
     },
     "full_feature_completion": 0,
     "user_acceptance_confirmed": 0,
@@ -70,7 +70,7 @@
   },
   "evidence_validation": {
     "method": "local pathlib.exists for every relative evidence path; JSON exact134 unique IDs compared to FEATURES and original source tokens",
-    "path_count": 140,
+    "path_count": 146,
     "missing_paths": [],
     "source_bytes": 27417,
     "source_sha256": "29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d",
@@ -910,10 +910,10 @@
     },
     {
       "id": "C10",
-      "implemented": "Canonical checklist checked states and actual Windows37999870635 three-item native Enter/styles/siblings/UndoRedo PASS. Same native operation source-version boundary FAIL; dirty final EndChange authority guard and empty-item/same-item selected Enter follow-up in progress. Dirty same-item body selection Enter 및 빈 항목 first/middle/last 종료를 canonical/Undo unit 안에 연결했다; prefix/cross-item 선택은 안전 거절, actual Windows gate pending.",
-      "remaining": "Windows38004389975 original Enter/version/lock and empty first/middle/last+UndoRedo PASS. Additional selected body native Enter failed in fixture lacking keyboard focus. Focus/selection/CanExecute assertions added without production/scaffold/oracle weakening; next native gate pending.",
-      "category": "independent-test",
-      "minimum_user_action": null,
+      "implemented": "Actual Windows38008067402 Enter selected-body completion, boundary/version/lock and empty first/middle/last UndoRedo PASS.",
+      "remaining": "Relevant actual Windows checks PASS; physical IME/keyboard acceptance remains.",
+      "category": "physical-user",
+      "minimum_user_action": "Physical synthetic input/viewer acceptance only; no implementation decision pending.",
       "evidence": [
         "src/MemoApp.Core/Documents/StyledDocument.cs",
         "src/MemoApp.Windows/StructuredNoteEditor.cs",
@@ -930,7 +930,7 @@
       "additional_actions": {
         "code": [],
         "inspection": [
-          "Windows37999870635 boundary FAIL 보존 후 실제 수정본 gate 결과를 확인한다."
+          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1764,10 +1764,10 @@
     },
     {
       "id": "H01",
-      "implemented": "Images stored as opaque encrypted attachments, selected PNG explicit preview, clipboard PNG/file drop partial flows.",
-      "remaining": "Canonical strict docv2/schema10 PNG block references, read-only positioned viewer/manual click, atomic source/history preservation are in development with actual Core RED→target GREEN. Encrypted lifecycle/fullCore/actualWindows pending. Editable image/inline paste-drop/general formats/Word embedding remain independent code and user acceptance is unverified.",
+      "implemented": "Canonical strictdocv2/schema10 PNG block refs/read-only ordered viewer/manual display/remove; fullCore and Windowspublication/product PASS.",
+      "remaining": "Actual Windows38008067402 entireFAIL only immediate same-source AcceptPrepared pixel-clear; synchronousworkspaceinvalidation fix independentreview/newgatepending. Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain.",
       "category": "independent-code",
-      "minimum_user_action": "None. Add safe attachment-ID image node, reference validation/history preservation and explicit decode without external fetch; storage review required by AGENTS.",
+      "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
         "src/MemoApp.Core/Documents/StyledDocument.cs",
         "src/MemoApp.Windows/StructuredNoteEditor.cs",
@@ -1781,10 +1781,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "No canonical image node or inline image insertion/rendering; RichDocumentCodec only handles paragraph/list/checklist/table, and StructuredNoteEditor rejects embedded inlines. PRODUCT_SPEC explicitly includes image nodes. Attachment-panel preview alone does not complete the inline document-image scope."
+          "Actual Windows38008067402 entireFAIL only immediate same-source AcceptPrepared pixel-clear; synchronousworkspaceinvalidation fix independentreview/newgatepending. Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1795,10 +1795,10 @@
     },
     {
       "id": "H02",
-      "implemented": "Attachment-panel focus Ctrl+V/button reads raw PNG only (byte[] or exact MemoryStream), bounded copy/source guards/encrypted attach, actual Windows tests.",
-      "remaining": "PNG scalar metadata supported and actual clipboard route PASS. Ordinary Windows Bitmap/DIB screenshot representations and image paste into the editor remain independent code; bounded explicit input/routing and OS clipboard preservation needed.",
+      "implemented": "RawPNG existingroute plus bounded CF_DIB8/header40 BI_RGB24/32→opaqueRGBPNG explicitbutton/panelfocusCtrlV working source; CoreRED→fullGREEN/independentreview.",
+      "remaining": "NativeCF_DIB/authority/cleanup/worker-settlement/encryptedrestart tests awaitingactualWindows. DIBV5/otherformats/largerinputs and editorfocus inlinepaste remain. OSsynthesizedconversioncannotbeexcluded.",
       "category": "independent-code",
-      "minimum_user_action": "None. Implement and test with synthetic clipboard Bitmap/DIB; physical screenshot Ctrl+V acceptance later.",
+      "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
         "src/MemoApp.Windows/AttachmentPanel.Clipboard.cs",
         "src/MemoApp.Core/Transfer/ClipboardPngSource.cs",
@@ -1812,10 +1812,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Ordinary Windows screenshot/image clipboard Bitmap/DIB representations unsupported; rich/plain editor focus pastes text and does not route image insertion. PNG metadata rejected. Need bounded explicit non-auto-converting bitmap/DIB capture and user image-paste routing/inline insertion, preserving OS clipboard."
+          "NativeCF_DIB/authority/cleanup/worker-settlement/encryptedrestart tests awaitingactualWindows. DIBV5/otherformats/largerinputs and editorfocus inlinepaste remain. OSsynthesizedconversioncannotbeexcluded."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1957,10 +1957,10 @@
     },
     {
       "id": "H08",
-      "implemented": "Bounded RGB/RGBA8 noninterlaced PNG explicit preview plus strictly bounded sRGB/gAMA/pHYs scalar chunks; actual Windows37999870635 png-scalar-metadata, clipboard/encrypted reopen/original bytes, OCR product+shared settlement PASS. Color/physical metadata is uninterpreted.",
-      "remaining": "Gray8/gray-alpha8 and scalar metadata added to bounded RGB/RGBA8 PNG; gray Core RED→GREEN/independent review, actual Windows gray display pending. JPEG/palette/interlace/text/ICC/EXIF/animation remain unsupported; broader format support and actual acceptance remain.",
+      "implemented": "RGB/RGBA/gray/gray-alpha8 boundedPNG metadata/pixels/sharedclipboard/encryptedreopen actualWindows38008067402 relevantPASS.",
+      "remaining": "BroadJPEG/palette/interlace/ICC/EXIF/animation unsupported; actualuseracceptance remains. EntireWindowsgate failedseparateH01epoch.",
       "category": "independent-code",
-      "minimum_user_action": "None. Use public/synthetic image fixtures and reviewed decoder dependency if needed.",
+      "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
         "src/MemoApp.Core/Transfer/PngPreviewProfile.cs",
         "src/MemoApp.Core/Transfer/PngPixelDecoder.cs",
@@ -1977,10 +1977,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "bounded JPEG·PNG palette/interlace/필요한 ancillary 지원을 독립 보안검토·원본 보존 경계 내에서 계속 구현한다."
+          "BroadJPEG/palette/interlace/ICC/EXIF/animation unsupported; actualuseracceptance remains. EntireWindowsgate failedseparateH01epoch."
         ],
         "inspection": [
-          "현재 scalar profile Windows PASS를 보존하며 새 형식에 독립 decoder/원본/잠금/Windows 검사를 추가한다."
+          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2476,10 +2476,10 @@
     },
     {
       "id": "N02",
-      "implemented": "Actual multi-note PDF plaintext export with fixed embedded Korean-capable font, page/byte/selection bounds, installed font/license validation and WPF source/modal/lock tests; independent Poppler extraction/render evidence recorded.",
-      "remaining": "Cannot export common otherwise valid note Unicode (emoji, combining marks, supplementary characters) and does not preserve rich tables/styles/images or rendered Markdown. Original names PDF export without an explicit text-only restriction; restricted projection is a working baseline, not full document export. Add broader fonts/shaping and canonical rich/Markdown layout before claiming broad completion; existing Windows PDF reader user acceptance remains.",
+      "implemented": "Existing limitedtextPDF preserved; operationCTS revocationfix/newnativefixture pending. InertCoreRasterPDF RED→GREEN/independentPoppler A4/exactcorners PASS.",
+      "remaining": "WindowsUnicodeformatter/explicitdisplayPDFUI plus rich/table/Markdown/image rendering remain independentcode. Inertwriter is not productexport support. Actualvieweruseracceptance remains.",
       "category": "independent-code",
-      "minimum_user_action": "None for implementation. Later open synthetic generated PDF in installed Windows viewer.",
+      "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
         "src/MemoApp.Core/Transfer/PdfTextTransfer.cs",
         "src/MemoApp.Core/Transfer/PdfExportFont.cs",
@@ -2494,10 +2494,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Cannot export common otherwise valid note Unicode (emoji, combining marks, supplementary characters) and does not preserve rich tables/styles/images or rendered Markdown. Original names PDF export without an explicit text-only restriction; restricted projection is a working baseline, not full document export. Add broader fonts/shaping and canonical rich/Markdown layout before claiming broad completion; existing Windows PDF reader user acceptance remains."
+          "WindowsUnicodeformatter/explicitdisplayPDFUI plus rich/table/Markdown/image rendering remain independentcode. Inertwriter is not productexport support. Actualvieweruseracceptance remains."
         ],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."

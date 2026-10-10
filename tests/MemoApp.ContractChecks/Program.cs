@@ -39,6 +39,7 @@ if (args.Contains("--attachment-source-only")) { AttachmentSourceChecks.Run(); r
 if (args.Contains("--attachment-metadata-only")) { AttachmentMetadataChecks.Run(); return; }
 if (args.Contains("--png-profile-only")) { PngProfileChecks.Run(); return; }
 if (args.Contains("--png-decoder-only")) { PngDecoderChecks.Run(); return; }
+if (args.Contains("--dib-to-png-only")) { DibToPngChecks.Run(); return; }
 if (args.Contains("--bounded-file-only")) { BoundedFileReaderChecks.Run(); return; }
 if (args.Contains("--markdown-file-only")) { await MarkdownFileTransferChecks.Run(); return; }
 if (args.Contains("--attachment-file-only")) { await AttachmentFileTransferChecks.Run(); return; }
@@ -52,6 +53,7 @@ if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
 if (args.Contains("--startup-only")) { StartupChecks.Run(); StartupRegistrationChecks.Run(); return; }
 if (args.Length==2&&args[0]=="--pdf-probe") { PdfTextExportChecks.WriteProbe(args[1]); return; }
 if (args.Contains("--pdf-export-only")) { PdfTextExportChecks.Run(); return; }
+if (args.Contains("--pdf-raster-only")) { PdfRasterDocumentChecks.Run(); return; }
 if (args.Contains("--path-links-only")) { await FilePathLinkChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
 if (args.Contains("--device-search-activation-only")) { await DeviceSearchActivationChecks.Run(); return; }
@@ -111,6 +113,8 @@ await AttachmentFileTransferChecks.Run();
 await MarkdownFileTransferChecks.Run();
 BoundedFileReaderChecks.Run();
 PngDecoderChecks.Run();
+DibToPngChecks.Run();
+PdfRasterDocumentChecks.Run();
 RichDocumentChecks.Run();
 MarkdownChecks.Run();
 await MarkdownQueueChecks.Run();

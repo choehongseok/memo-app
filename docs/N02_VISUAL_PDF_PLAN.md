@@ -29,15 +29,20 @@
 - combining mark의 ink가 line advance 밖에 있거나 페이지 끝에서 잘릴 수 있다. Task 2가 ink bounds·마지막 줄·긴 grapheme 거절을 검증한다.
 - 압축이 잘되는 fixture만 통과해 실제 RGB 메모리를 과다 할당할 수 있다. Task 1이 incompressible RGB·누적 출력·257쪽·단일 raw 페이지 수명을 검증한다.
 - UI yield 사이의 편집·동일 버전 스냅샷 수락·선택 변경·잠금이 원래 작업을 무효화한다. Task 3에서 각 페이지와 파일 생성 직전 권한을 검증한다.
+- 현재 선택 membership만 비교하면 선택을 다른 메모로 바꿨다가 되돌린 사건을 놓친다. 준비 단계뿐 아니라 blocked `CreateNew` 동안의 edit·selection round trip·동일 버전 `AcceptPrepared`도 export별 linked cancellation을 영구 취소해야 한다. UI/source owner를 파일 worker에 전달하여 검사하지 않는다.
 - bitmap renderer/파일 worker가 원래 session·NoteDraft·UI·키 owner를 보유할 수 있다. Task 3에서 compiled worker field graph와 잠금 즉시 key release를 확인한다.
 
 ## 첫 단위 지원 경계
 
 폰트 family는 기기에 설치된 고정 후보 `Segoe UI`, `Malgun Gothic`, `Segoe UI Symbol`, `Segoe UI Emoji`로 한정한다. 실제 shaping 결과의 각 `GlyphTypeface`도 허용 family인지 확인하여 암묵적 fallback으로 다른 설치 글꼴을 가져오지 않는다. 확인된 Windows 시스템 글꼴만 사용하고, 임의 face/file/URI 선택 UI는 만들지 않는다. 미설치 face·알 수 없는 fallback·glyph 0·불완전 source coverage는 파일 생성 전에 명시 거절한다. `GlyphTypeface.FontUri`가 외부/네트워크 리소스인 결과는 거절하며 이 값으로 추가 리소스를 로드하지 않는다.
 
+family metadata 일치만으로 Windows 시스템 글꼴 origin/권리를 증명하지 않는다. 실제 resolved face의 승인된 로컬 시스템 설치 origin을 확인하고 사용자 설치·예상하지 않은 파일 origin은 거절한다. 기존 공식 Windows font FAQ는 제3자 설치 글꼴의 권리 근거가 아니다. font 파일 다운로드·embedding·추가 배포는 이 단위에 포함하지 않는다.
+
 원문 Unicode를 정규화하거나 바꾸지 않는다. 잘못된 surrogate와 제어 문자는 거절하되 CR/LF/탭은 기존 읽기용 줄 배치 및 탭 4공백 정책을 명시한다. 실제 native 검사 대상은 한글·영문·기존 한자, `e\u0301` 등 결합 문자, 분해 한글, 단일 supplementary emoji `😀`, 글꼴이 실제 지원하는 supplementary 문자다. 지원 font 이름만으로 모든 문자를 허용하지 않는다. 합성 검사에서 확인하지 않은 ZWJ/variation selector/국기·피부색 조합, bidi/RTL, 컬러 emoji 표현은 첫 단위에서 거절하거나 미지원으로 명확히 구분한다. WPF가 그리는 확인된 흑백 emoji 모양을 허용할 수 있으나 원래 컬러 외형 보존을 주장하지 않는다.
 
 `TextFormatter.FormatLine` 결과의 `TextLine.GetIndexedGlyphRuns()`를 검사하며, 원래 source index/length와 glyph coverage를 비교한다. 단순 UTF-16 `char` 분할로 줄을 끊지 않는다. 표시할 수 없는 긴 클러스터를 잘라 그리지 않고 거절한다. 줄 advance와 ink bounds를 함께 고려하여 다음 줄·페이지 위치를 계산한다. 빈 줄·선행/후행/연속 공백을 trim하지 않으며, note 간 구분과 제목·본문 순서를 고정한다.
+
+coverage는 UTF-16 글자 수와 glyph 수의 1:1 비교로 판단하지 않는다. surrogate·combining·ligature의 실제 cluster mapping과 원문 범위를 감사하고, 합성 paragraph terminator 및 선언한 CR/LF/탭 배치와 공백을 missing glyph와 구분한다. 실제 source 소비가 매 줄 양수로 진행되는지 확인한다. 지원을 입증하지 않은 bidi/format/variation selector/ZWJ/modifier는 formatter 호출 전 명시 거절하며 긴 cluster를 잘라 한도에 맞추지 않는다.
 
 ## 파일 구조와 인터페이스 후보
 
@@ -53,6 +58,8 @@
 | 기존 PDF 검사·Windows/Contract `Program.cs` | 기존 텍스트 PDF 회귀 유지와 새 group 등록 |
 
 Core 후보 API는 `PdfRasterDocumentBuilder(CancellationToken token)`, `void AddRgbPage(int width,int height,ReadOnlySpan<byte> rgb)`, `PreparedTextExport Finish()`, `Dispose()`다. Add는 RGB 길이·794×1123 크기를 확인하고 같은 호출 안에서 압축을 끝낸다. 호출자가 raw RGB를 종료 시 지울 수 있으며 builder는 raw 페이지를 보유하지 않는다. Finish만 완성 byte 소유자를 반환한다. PDF font/text/URI/annotation/action 객체는 만들지 않는다.
+
+Add 또는 Finish의 실패·취소 뒤 builder는 faulted 상태가 되어 후속 Finish로 이전 정상 페이지만 반환할 수 없다. finished/disposed 상태도 재사용을 거절한다. 압축 stream에 쓰는 중 용량을 검사하고 final xref/trailer 공간을 포함하여 누적 한도를 적용한다. 종료 시 출력·임시 owned 배열을 지우되 native surface의 즉시 해제·완전 삭제를 주장하지 않는다.
 
 Windows 입력 후보는 `VisualPdfSource(string Title,string Body)`와 `CapturePlainSources(IEnumerable<NoteDraft> notes)`다. Capture는 source owner에서 기존 `TextTransfer.Capture` 검증을 거치고 plain 여부·입력 한도를 확인한다. `Task<PreparedTextExport> RenderPlainAsync(IReadOnlyList<VisualPdfSource> sources,Func<bool> current,CancellationToken token)`는 UI dispatcher에서만 호출한다. `current`와 source owner는 UI 준비 작업에만 있으며, 별도 파일 worker에는 기존 `WritePdfExportAsync(PreparedTextExport,string,CancellationToken,IAtomicVaultFiles?)` 패턴으로 전달하지 않는다.
 
@@ -77,6 +84,7 @@ Windows 입력 후보는 `VisualPdfSource(string Title,string Body)`와 `Capture
 - [ ] 허용 font와 실제 fallback 검사, glyph 0/coverage 누락, invalid Unicode, unsupported sequence, rich/Markdown 거절, ink/page 경계 잘림 및 257쪽 실패 검사를 작성한다.
 - [ ] `TextFormatter`/`TextLine`을 소유 UI에서 생성·dispose하고, 페이지별 native Draw 결과를 흰 배경 794×1123 bitmap에 렌더한다. `CopyPixels` 후 RGB 변환은 alpha/channel 검사를 포함하며 raw 배열과 bitmap을 다음 페이지 전에 해제/clear한다.
 - [ ] 페이지마다 dispatcher yield 전후에 current/token을 검사하여 잠금·입력이 처리될 기회를 만든다. TextLine/native 그림 준비 중 모든 페이지를 거대한 visual/tree/bitmap으로 합치지 않는다.
+- [ ] 한 페이지가 UI를 오래 막지 않도록 측정한 bounded line batch 사이에도 yield/current/token 검사를 한다. 페이지 간 yield만으로 잠금 처리 시간 상한을 주장하지 않는다.
 - [ ] 실제 WPF glyph·픽셀 결과를 확인한 범위만 지원으로 기록하고, 독립 PDF viewer에서 동일 페이지가 읽을 수 있게 그려지는지 확인한다. 96 DPI 작은 글자의 품질은 별도 수용 근거가 필요하다.
 
 ## Task 3: 명시 내보내기 경계와 기존 PDF 회귀
@@ -88,6 +96,7 @@ Windows 입력 후보는 `VisualPdfSource(string Title,string Body)`와 `Capture
 - [ ] 두 모드 선택·기본 No·선택 취소·목적지 취소·plain 전용 안내·미지원 모드 무파일·기존 텍스트 PDF 원래 출력의 RED 검사부터 작성한다.
 - [ ] 페이지 중간에 edit/version/선택/UI epoch/동일 버전 AcceptPrepared를 바꾸거나 잠그는 fixture를 작성한다. 전체 candidate가 취소되고 새 파일이 없으며 원래 snapshot/cipher가 정확히 같아야 한다.
 - [ ] 완성 후보만 CreateNew를 호출하도록 기존 파일 경계를 연결한다. 파일 worker compiled closure가 PreparedTextExport/string/token/backend만 보유하는지 검사한다. paused CreateNew 중 잠금은 즉시 키를 종료하고 늦은 파일은 plaintext를 쓰지 않아야 한다.
+- [ ] export별 cancellation은 note EditVersion·workspace source invalidation/동일 버전 acceptance·selection event·session/lock/close에 동기적으로 연결하고 finally에 모든 구독을 해제한다. 선택이 원래대로 돌아와도 취소는 되돌리지 않는다. paused CreateNew 동안 edit/selection round trip/AcceptPrepared를 각각 검증하며 late 생성된 빈 파일은 부분 파일 가능성 안내와 구분 없이 숨기지 않는다.
 - [ ] 기존 text PDF unsupported 문자 거절·modal/native setter·nooverwrite·source invariance 회귀와 새 `pdf-visual-export` group을 실제 Windows에서 함께 실행한다. 후속 Windows 명령은 `dotnet run --project tests/MemoApp.WindowsChecks -c Release` 또는 기존 Windows workflow의 같은 검사 EXE이며 모든 group 실패 0이 GREEN 조건이다. Linux 교차 build를 native 실행 근거로 쓰지 않는다. package/installed 버튼·명시 안내도 해당 소스에서 확인한다.
 - [ ] 완료 문구는 `표시용 PDF를 저장했습니다. 이 PDF에는 검색·복사용 텍스트가 없습니다.`로 한정한다. 실패 문구는 원본/기존 파일 보존, 문자·품질/한도 거절과 부분 파일 가능성을 사실대로 알린다. 후속 docs/원장에는 실제 검사 범위만 반영한다.
 
@@ -110,3 +119,5 @@ canonical rich v1의 run 스타일·목록·표 및 `SafeMarkdown.Preview` 블�
 - [Windows font FAQ](https://learn.microsoft.com/en-us/typography/fonts/font-faq): Windows 시스템 글꼴로 문장·문구를 그린 graphic 출력과 font 파일 재배포/embedding은 다른 범주다. 제3자 설치 글꼴의 권리까지 이 FAQ로 추정하지 않는다.
 
 현재 상태: 계획만 작성. 구현/RED·GREEN/native 픽셀/독립 viewer/패키지·사용자 수용은 아직 실행·완료하지 않았다. 일반 기능 승인 재요청 없이 기존 승인 범위와 부모의 실행 순서에 따라 후속 구현할 수 있다.
+
+별도 기존 텍스트 PDF 권한 보완: `MainWindow.PdfExport.cs` export별 취소/구독 경계와 `PdfExportAuthorityChecks.cs`의 native setter·confirm/picker selection round trip 및 paused CreateNew edit/selection/동일 버전 acceptance/close fixture를 먼저 추가했다. 실제 Windows RED/GREEN 실행은 이 Linux 환경에서 불가하여 대기이며 이 변경은 raster 구현·native shaping·viewer 성공 근거가 아니다. 기존 text/font/limits 및 `TextTransfer.WritePrepared`의 CreateNew 후 token 검사를 유지한다.
