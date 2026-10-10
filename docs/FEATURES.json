@@ -2541,9 +2541,16 @@
           "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38030056668",
           "result": "Actual child-content/child-editor/MainDC/StickyDC native unwind and fresh bootstrap owner cases PASS. Generic full-view two closed native edit receipts/coalescing/immediate redaction/nested child-count preservation PASS; final count/TextDP/pixel/raw-node assertion FAIL without individual values. Final lock case not reached. Whole gate FAIL2 including unchanged old automatic-backup-persistence; install/upload skipped. Test-only split diagnostics next, product cause unestablished."
+        },
+        {
+          "kind": "windows-native-term-diagnostic",
+          "commit": "ce8a331b1c3c7b3b36c4a7f37b6cb85ee4492db0",
+          "environment": "GitHub Windows Server2022 / fixed runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38030898564",
+          "result": "Generic final actual owned+mountedTextRange/body projection/count4/image nodes/pixels absent/versionDelta2 all exact; only premeasure TextBlock.Text witness false. Test now checks actual ranges and stronger immediate old range redaction. Final host lock not reached; whole FAIL2 includes recent-state race in backup fixture. No product change; corrected native gate pending."
         }
       ],
-      "blocking_reason": "strictdocv2/schema10 인증 PNG 삽입·표시/제거·암호 재실행은 final35 설치 gate PASS. 후속 closed rich-v2 주변 텍스트 Core/독립 native editor 및 host 구조 순회·컨텍스트 전환·bootstrap 재생성은 run161 해당 사례 PASS. 일반 전체 이미지 화면의 마지막 재구축 assertion은 어느 항목이 실패했는지 미확정이며 개별 진단을 추가한다. 마지막 host lock 사례 미도달·전체 gate/설치 미완료·사용자 수용 미확인."
+      "blocking_reason": "Core/독립 native editor 및 host 구조 순회·컨텍스트/선택·bootstrap 재생성은 해당 Windows 사례 PASS. run162 일반 화면의 실제 표시 본문·이미지·블록 수는 정확했고 Text 속성만 달라 시험을 실제 TextRange로 수정했다. 이전 본문/캡션 즉시 폐기도 강화검사한다. 마지막 host lock·새 전체 gate/설치·사용자 수용은 대기다."
     },
     {
       "id": "H02",
