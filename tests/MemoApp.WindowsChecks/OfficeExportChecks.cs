@@ -95,7 +95,7 @@ internal static partial class Program
             paused=new();pending=Word("closed.docx",files:paused);
             try{await paused.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));SetField(main,"confirmedExit",true);main.Close();Require(!pending.IsCompleted,"Actual host close leaves prepared ZIP owned through still-blocked file worker");paused.Continue.TrySetResult();Require(!await pending&&new FileInfo(Path.Combine(dir,"closed.docx")).Length==0,"Actual closed host cancellation writes no late Word plaintext");Require(!await Word("after-close.docx",()=>throw new Exception("Closed host never confirms"),()=>throw new Exception("Closed host never picks")),"Post-close Word entry refuses before disposed file-operation CTS access");}
             finally{paused.Continue.TrySetResult();await pending;pending=null;paused=null;}
-            await active.LockAsync();Require(active.KeysReleased&&!active.IsBusy,"Closed Word host writer/session really settled before disposal");active.Dispose();SetField(main,"session",null!);main=null;
+            RetireClosedWordHostConceal(main,active);await active.LockAsync();Require(active.KeysReleased&&!active.IsBusy,"Closed Word host writer/session really settled before disposal");active.Dispose();SetField(main,"session",null!);main=null;
         }
         finally
         {
@@ -103,10 +103,16 @@ internal static partial class Program
             try
             {
                 paused?.Continue.TrySetResult();try{if(pending is not null)await pending;}
-                finally{if(main is not null){var active=Field<SaveCoordinator?>(main,"session");try{if(active is not null)await active.LockAsync();}finally{if(active is null||active.IsLocked&&active.KeysReleased&&!active.IsBusy){active?.Dispose();SetField(main,"session",null!);SetField(main,"confirmedExit",true);main.Close();cleaned=pending is null||pending.IsCompleted;}}}}
+                finally{if(main is not null){var active=Field<SaveCoordinator?>(main,"session");try{if(active is not null){RetireClosedWordHostConceal(main,active);await active.LockAsync();}}finally{if(active is null||active.IsLocked&&active.KeysReleased&&!active.IsBusy){active?.Dispose();SetField(main,"session",null!);SetField(main,"confirmedExit",true);main.Close();cleaned=pending is null||pending.IsCompleted;}}}}
             }
             finally{CryptographicOperations.ZeroMemory(secret);if(cleaned)Directory.Delete(dir,true);}
         }
+    }
+    private static void RetireClosedWordHostConceal(MainWindow main,SaveCoordinator active)
+    {
+        // Actual Closed already disposed fileOperations. This fixture owns the now-detached
+        // session cleanup; retire only the obsolete native host callback before LockAsync.
+        if(Field<bool>(main,"windowClosed"))active.Conceal-=(Action)typeof(MainWindow).GetMethod("ConcealViews",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.CreateDelegate(typeof(Action),main);
     }
     private static byte[] MalformedWordPixelPng()
     {

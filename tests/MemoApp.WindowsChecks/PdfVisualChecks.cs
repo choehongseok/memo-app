@@ -33,12 +33,14 @@ internal static partial class Program
         }
         foreach(string text in new[]{"한글 漢字 ABC","e\u0301","\u1100\u1161","😀","  A  B  ","A\r\nB\rC\n\nD\tE",new string('W',240)+"e\u0301",""})
         {
-            using var prepared=await PdfVisualRenderer.RenderPlainAsync([new("",text)],()=>true,CancellationToken.None);
+            string actualRasterAudit="";
+            using var prepared=await PdfVisualRenderer.RenderPlainAsync([new("",text)],()=>true,CancellationToken.None,
+                buffer=>{if(buffer.Length==794*1123*4)actualRasterAudit=VisualPdfBgraAudit(buffer);});
             byte[] rgb=VisualPdfFirstRgb(prepared.Bytes),reference=VisualPdfTextBlockReference(text,out string referenceAudit);
             try
             {
                 bool matches=rgb.Length==794*1123*3&&VisualPdfReferenceMatches(rgb,reference);
-                if(!matches)Console.WriteLine(VisualPdfSyntheticDiagnostic(rgb,reference,text)+" reference="+referenceAudit);
+                if(!matches)Console.WriteLine(VisualPdfSyntheticDiagnostic(rgb,reference,text)+" actualRaster="+actualRasterAudit+" reference="+referenceAudit);
                 Require(matches,"Native TextFormatter/glyph-audited PDF pixels match independent TextBlock: "+Convert.ToHexString(Encoding.UTF8.GetBytes(text)));
                 string grammar=Encoding.Latin1.GetString(prepared.Bytes);Require(grammar.Contains("/Subtype /Image")&&grammar.Contains("/DeviceRGB")&&!grammar.Contains("/ToUnicode")&&!grammar.Contains("/Type /Font"),"Display PDF contains raster pages and no searchable text/font objects");
             }
@@ -181,6 +183,7 @@ internal static partial class Program
         {
             audit=VisualPdfReferenceAudit(page,reference);
             bitmap.CopyPixels(bgra,794*4,0);
+            audit+=" raster="+VisualPdfBgraAudit(bgra);
             foreach(int corner in new[]{0,(794-1)*4,(1123-1)*794*4,bgra.Length-4})Require(bgra[corner]==255&&bgra[corner+1]==255&&bgra[corner+2]==255&&bgra[corner+3]==255,"Independent native reference has an opaque white page background");
             for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
             {
@@ -197,6 +200,19 @@ internal static partial class Program
             return rgb;
         }
         finally{CryptographicOperations.ZeroMemory(bgra);bitmap.Clear();page.Children.Clear();}
+    }
+    // Bounded summaries of borrowed fixed-synthetic pixels; retain no raster bytes.
+    private static string VisualPdfBgraAudit(byte[] bgra)
+    {
+        int minAlpha=255,below255=0,invalidPremultiplied=0;var histogram=new int[16];
+        for(int i=0;i<bgra.Length;i+=4)
+        {
+            int alpha=bgra[i+3];minAlpha=Math.Min(minAlpha,alpha);
+            if(alpha<255){below255++;histogram[alpha/16]++;}
+            if(bgra[i]>alpha||bgra[i+1]>alpha||bgra[i+2]>alpha)invalidPremultiplied++;
+        }
+        string Pixel(int x,int y){int i=(y*794+x)*4;return $"({x},{y})=[{bgra[i]},{bgra[i+1]},{bgra[i+2]},{bgra[i+3]}]";}
+        return $"minAlpha={minAlpha} below255={below255} alphaBins16="+string.Join(",",histogram)+$" invalidPremultiplied={invalidPremultiplied} bgra="+Pixel(60,57)+","+Pixel(62,71);
     }
     private static bool VisualPdfReferenceMatches(byte[] actual,byte[] expected)
     {
