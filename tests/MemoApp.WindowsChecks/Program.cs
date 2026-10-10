@@ -60,6 +60,7 @@ internal static partial class Program
                 groups=groups.Append(("pdf-plaintext-export",(Func<Task>)PdfExportRun)).ToArray();
                 groups=groups.Append(("pdf-export-authority",(Func<Task>)PdfExportAuthorityRun)).ToArray();
                 groups=groups.Append(("pdf-visual-export",(Func<Task>)PdfVisualRun)).ToArray();
+                groups=groups.Append(("pdf-system-font-inventory",(Func<Task>)PdfSystemFontInventoryRun)).ToArray();
                 groups=groups.Append(("office-plaintext-export",(Func<Task>)OfficeExportRun)).ToArray();
                 groups=groups.Append(("whole-encrypted-transfer",(Func<Task>)WholeTransferRun)).ToArray();
                 groups=groups.Append(("automatic-encrypted-trash",(Func<Task>)AutomaticTrashRun)).ToArray();
@@ -94,13 +95,14 @@ internal static partial class Program
                 if(arguments.Contains("--ocr-linked-only"))groups=groups.Where(group=>group.Name=="ocr-linked-runtime").ToArray();
                 if(arguments.Contains("--ocr-corpus-only"))groups=groups.Where(group=>group.Name=="ocr-synthetic-corpus").ToArray();
                 if(arguments.Contains("--attachment-linked-ocr-only"))groups=groups.Where(group=>group.Name=="attachment-linked-ocr-ui").ToArray();
+                if(arguments.Contains("--pdf-system-font-inventory-only"))groups=groups.Where(group=>group.Name=="pdf-system-font-inventory").ToArray();
                 if(arguments.Contains("--pdf-visual-only"))groups=groups.Where(group=>group.Name=="pdf-visual-export").ToArray();
                 if(arguments.Contains("--clipboard-dib-only"))groups=groups.Where(group=>group.Name=="clipboard-dib-input").ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {
                     try{await group.Run();Console.WriteLine("PASS: WPF group "+group.Name);}
-                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);if(group.Name is "trial-installer" or "clipboard-dib-input" or "pdf-visual-export" or "rich-image-text-editor" or "rich-image-text-host" or "ocr-synthetic-corpus" or "ocr-linked-runtime" or "automatic-backup-persistence"){string stack=e.ToString();Console.Error.WriteLine(stack[..Math.Min(stack.Length,8192)]);}}
+                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);if(group.Name is "trial-installer" or "clipboard-dib-input" or "pdf-visual-export" or "pdf-system-font-inventory" or "rich-image-text-editor" or "rich-image-text-host" or "ocr-synthetic-corpus" or "ocr-linked-runtime" or "automatic-backup-persistence"){string stack=e.ToString();Console.Error.WriteLine(stack[..Math.Min(stack.Length,8192)]);}}
                     finally{foreach(var window in app.Windows.Cast<Window>().Where(w=>w.Content is StructuredNoteEditor or MarkdownNotePreview).ToArray()){((IDisposable)window.Content).Dispose();window.Close();}}
                 }
                 if(failures.Count==0){Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)");result=0;}

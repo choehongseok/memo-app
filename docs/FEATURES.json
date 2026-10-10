@@ -2548,6 +2548,13 @@
           "environment": "GitHub Windows Server2022 / fixed runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38030898564",
           "result": "Generic final actual owned+mountedTextRange/body projection/count4/image nodes/pixels absent/versionDelta2 all exact; only premeasure TextBlock.Text witness false. Test now checks actual ranges and stronger immediate old range redaction. Final host lock not reached; whole FAIL2 includes recent-state race in backup fixture. No product change; corrected native gate pending."
+        },
+        {
+          "kind": "windows-native-installed-partial",
+          "commit": "2c6ae370bef41d3bfe17afa23f10f312727e99fc",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38031611352",
+          "result": "Entire Core/native/build/publish/package/actual installed EXE gate SUCCESS. All27 image text host cases including lock, immediate retained DP+TextRange clearing and actual mounted current text; single backup success/files2/same-day refusal; OCR four synthetic conditions PASS. Artifact upload SKIPPED; previous11659571081 excludes this source. Partial original ID evidence; physical/user acceptance and whole134 completion remain unverified."
         }
       ],
       "blocking_reason": "Core/독립 native editor 및 host 구조 순회·컨텍스트/선택·bootstrap 재생성은 해당 Windows 사례 PASS. run162 일반 화면의 실제 표시 본문·이미지·블록 수는 정확했고 Text 속성만 달라 시험을 실제 TextRange로 수정했다. 이전 본문/캡션 즉시 폐기도 강화검사한다. 마지막 host lock·새 전체 gate/설치·사용자 수용은 대기다."
@@ -2802,6 +2809,13 @@
           "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
           "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
+        },
+        {
+          "kind": "windows-native-installed-partial",
+          "commit": "2c6ae370bef41d3bfe17afa23f10f312727e99fc",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38031611352",
+          "result": "Entire Core/native/build/publish/package/actual installed EXE gate SUCCESS. All27 image text host cases including lock, immediate retained DP+TextRange clearing and actual mounted current text; single backup success/files2/same-day refusal; OCR four synthetic conditions PASS. Artifact upload SKIPPED; previous11659571081 excludes this source. Partial original ID evidence; physical/user acceptance and whole134 completion remain unverified."
         }
       ],
       "blocking_reason": "RGB/RGBA/gray/gray-alpha8 boundedPNG 공유 표시·암호 재실행·exactBGRA/alpha/96DPI는 final35 전체 Windows/설치 gate PASS. JPEG/palette/interlace/ICC/EXIF/APNG 등과 실제 사용자 수용 미완료. 후속 rich-v2 host는 별도 run160 native 오류 수정 중."
@@ -2862,6 +2876,13 @@
           "environment": "GitHub Windows Server2022 / fixed linked Tesseract native runtime",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38027695906",
           "result": "One synthetic image in four fixed original/gray/nearest-2x/low-contrast conditions PASS; normalized scalar errors0/30, raw errors6/42. Exact original oracle retained; variants diagnostic only, authentic read lease but no issued apply grant. Not broad Korean quality, CPU/RSS or full ID acceptance."
+        },
+        {
+          "kind": "windows-native-installed-partial",
+          "commit": "2c6ae370bef41d3bfe17afa23f10f312727e99fc",
+          "environment": "GitHub Windows Server2022 / SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38031611352",
+          "result": "Entire Core/native/build/publish/package/actual installed EXE gate SUCCESS. All27 image text host cases including lock, immediate retained DP+TextRange clearing and actual mounted current text; single backup success/files2/same-day refusal; OCR four synthetic conditions PASS. Artifact upload SKIPPED; previous11659571081 excludes this source. Partial original ID evidence; physical/user acceptance and whole134 completion remain unverified."
         }
       ],
       "blocking_reason": null
@@ -3436,7 +3457,8 @@
         "src/MemoApp.Windows/MainWindow.PdfExport.cs",
         "src/MemoApp.Core/Transfer/PdfRasterDocumentBuilder.cs",
         "src/MemoApp.Windows/PdfVisualRenderer.cs",
-        "src/MemoApp.Windows/MainWindow.VisualPdfExport.cs"
+        "src/MemoApp.Windows/MainWindow.VisualPdfExport.cs",
+        "src/MemoApp.Core/Transfer/RichParagraphPdfSource.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
@@ -3447,9 +3469,15 @@
           "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
           "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
+        },
+        {
+          "kind": "core-rich-paragraph-capture-partial",
+          "environment": "Linux cloud x86_64 / SDK10.0.401",
+          "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release -- --pdf-rich-paragraph-capture-only; full Core; WindowsChecks crossbuild",
+          "result": "Actual missingAPI RED134 then focusedGREEN0/fullCore0/crossbuild0warnings0errors. Exact raw/projection/style/whole refusal/grapheme/CRLF/source and payload budgets/cipher history OCR preservation tested; independent sourcePOSTclear. Actual Windows font inventory/approval/styled renderer/nativeviewer/host integration pending; no N02/full134/user acceptance completion claim."
         }
       ],
-      "blocking_reason": "평문 projection 및 bounded plain Unicode 표시 PDF는 final35 전체 Windows/설치 gate PASS. Rich-v1 paragraph/run 확장 계획은 H01 host gate 이후 조건부 PRE이며 미활성. Rich/list/table/Markdown/image fidelity 및 실제 Windows PDF reader·사용자 수용은 미완료."
+      "blocking_reason": "Bounded plain Unicode 표시 PDF는 final35 및 2c6 run163 전체 Windows/실제 설치 gate PASS. H01/corpus gate 종료 후 rich-v1 paragraph/run inert capture 및 test-only actual font inventory만 활성화. 실제 bold face 승인·서식 renderer·native/viewer·정확한 선택 순서 검증은 대기. Rich list/table/Markdown/image fidelity 및 물리 사용자 수용은 미완료."
     },
     {
       "id": "N03",

@@ -66,6 +66,7 @@ if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
 if (args.Contains("--startup-only")) { StartupChecks.Run(); StartupRegistrationChecks.Run(); return; }
 if (args.Length==2&&args[0]=="--pdf-probe") { PdfTextExportChecks.WriteProbe(args[1]); return; }
 if (args.Contains("--pdf-export-only")) { PdfTextExportChecks.Run(); return; }
+if (args.Contains("--pdf-rich-paragraph-capture-only")) { await RichParagraphPdfSourceChecks.Run(); return; }
 if (args.Contains("--pdf-raster-only")) { PdfRasterDocumentChecks.Run(); return; }
 if (args.Contains("--path-links-only")) { await FilePathLinkChecks.Run(); return; }
 if (args.Contains("--schema-only")) { await Schema2Checks.Run(); return; }
@@ -188,3 +189,4 @@ await Schema10ImageHiddenChecks.Run();
 
 await InlineImageAdmissionChecks.Run();
 await RichImageTextEditingChecks.Run();
+await RichParagraphPdfSourceChecks.Run();
