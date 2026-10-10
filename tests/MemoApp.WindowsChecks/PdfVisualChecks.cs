@@ -34,11 +34,11 @@ internal static partial class Program
         foreach(string text in new[]{"한글 漢字 ABC","e\u0301","\u1100\u1161","😀","  A  B  ","A\r\nB\rC\n\nD\tE",new string('W',240)+"e\u0301",""})
         {
             using var prepared=await PdfVisualRenderer.RenderPlainAsync([new("",text)],()=>true,CancellationToken.None);
-            byte[] rgb=VisualPdfFirstRgb(prepared.Bytes),reference=VisualPdfTextBlockReference(text);
+            byte[] rgb=VisualPdfFirstRgb(prepared.Bytes),reference=VisualPdfTextBlockReference(text,out string referenceAudit);
             try
             {
                 bool matches=rgb.Length==794*1123*3&&VisualPdfReferenceMatches(rgb,reference);
-                if(!matches)Console.WriteLine(VisualPdfSyntheticDiagnostic(rgb,reference,text));
+                if(!matches)Console.WriteLine(VisualPdfSyntheticDiagnostic(rgb,reference,text)+" reference="+referenceAudit);
                 Require(matches,"Native TextFormatter/glyph-audited PDF pixels match independent TextBlock: "+Convert.ToHexString(Encoding.UTF8.GetBytes(text)));
                 string grammar=Encoding.Latin1.GetString(prepared.Bytes);Require(grammar.Contains("/Subtype /Image")&&grammar.Contains("/DeviceRGB")&&!grammar.Contains("/ToUnicode")&&!grammar.Contains("/Type /Font"),"Display PDF contains raster pages and no searchable text/font objects");
             }
@@ -169,7 +169,8 @@ internal static partial class Program
         int lengthEnd=grammar.IndexOf(' ',lengthStart),length=int.Parse(grammar[lengthStart..lengthEnd],System.Globalization.CultureInfo.InvariantCulture),start=grammar.IndexOf("stream\n",lengthEnd,StringComparison.Ordinal)+7;
         using var input=new MemoryStream(pdf,start,length,false);using var decoder=new ZLibStream(input,CompressionMode.Decompress);byte[] rgb=new byte[794*1123*3];decoder.ReadExactly(rgb);Require(decoder.ReadByte()==-1,"Visual PDF exact fixed raster dimensions");return rgb;
     }
-    private static byte[] VisualPdfTextBlockReference(string text)
+    private static byte[] VisualPdfTextBlockReference(string text)=>VisualPdfTextBlockReference(text,out _);
+    private static byte[] VisualPdfTextBlockReference(string text,out string audit)
     {
         string layout=text.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n').Replace("\t","    ",StringComparison.Ordinal);
         var page=new Grid{Width=794,Height=1123,Background=Brushes.White};
@@ -178,6 +179,7 @@ internal static partial class Program
         var bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);byte[] bgra=new byte[794*1123*4],rgb=new byte[794*1123*3];
         try
         {
+            audit=VisualPdfReferenceAudit(page,reference);
             bitmap.CopyPixels(bgra,794*4,0);
             foreach(int corner in new[]{0,(794-1)*4,(1123-1)*794*4,bgra.Length-4})Require(bgra[corner]==255&&bgra[corner+1]==255&&bgra[corner+2]==255&&bgra[corner+3]==255,"Independent native reference has an opaque white page background");
             for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
@@ -227,7 +229,34 @@ internal static partial class Program
         var source=(TextSource)Activator.CreateInstance(owner.GetNestedType("PlainTextSource",BindingFlags.NonPublic)!,flags,null,[layout,run],null)!;
         using var formatter=TextFormatter.Create(TextFormattingMode.Ideal);using var line=formatter.FormatLine(source,0,210*96.0/25.4-2*40*96.0/72,paragraph,null);
         string faces=string.Join(",",line.GetIndexedGlyphRuns().Select(r=>Path.GetFileName(r.GlyphRun.GlyphTypeface.FontUri.LocalPath)).Distinct());
-        return $"SYNTHETIC PDF pixels actualBounds={a} referenceBounds={b} first=({first%794},{first/794}) peak={peak}@({peakAt%794},{peakAt/794}) sum={sum} large={large} bestTranslation=({bestX},{bestY}) translatedSum={best} lineHeight={line.Height:R} baseline={line.Baseline:R} extent={line.Extent:R} overhangLeading={line.OverhangLeading:R} overhangTrailing={line.OverhangTrailing:R} overhangAfter={line.OverhangAfter:R} width={line.WidthIncludingTrailingWhitespace:R} faces={faces}";
+        string glyphs=string.Join(";",line.GetIndexedGlyphRuns().Take(8).Select(r=>VisualPdfGlyphAudit(r.GlyphRun)));
+        var ink=(Rect)owner.GetMethod("AuditLine",BindingFlags.NonPublic|BindingFlags.Static)!.Invoke(null,[line,layout,0,Math.Min(line.Length,layout.Length)])!;
+        double above=ink.IsEmpty?0:Math.Min(0,ink.Top);
+        return $"SYNTHETIC PDF pixels actualBounds={a} referenceBounds={b} first=({first%794},{first/794}) peak={peak}@({peakAt%794},{peakAt/794}) sum={sum} large={large} bestTranslation=({bestX},{bestY}) translatedSum={best} lineHeight={line.Height:R} baseline={line.Baseline:R} extent={line.Extent:R} overhangLeading={line.OverhangLeading:R} overhangTrailing={line.OverhangTrailing:R} overhangAfter={line.OverhangAfter:R} width={line.WidthIncludingTrailingWhitespace:R} faces={faces} inkTop={ink.Top:R} inkBottom={ink.Bottom:R} drawY={PdfVisualRenderer.Margin-above:R} textSourcePpd={source.PixelsPerDip:R} renderingTier={RenderCapability.Tier} glyphs={glyphs}";
+    }
+    // Diagnostic data from the exact unchanged independent reference visual; fixed synthetic text only.
+    private static string VisualPdfReferenceAudit(Grid page,TextBlock reference)
+    {
+        var descriptions=new List<string>();
+        void Inspect(Drawing? drawing,int depth)
+        {
+            if(drawing is null||depth>16||descriptions.Count>=16)return;
+            if(drawing is GlyphRunDrawing glyph){descriptions.Add(VisualPdfGlyphAudit(glyph.GlyphRun));return;}
+            if(drawing is DrawingGroup group)
+            {
+                if(group.GuidelineSet is { } guides)descriptions.Add("guidelineY="+string.Join(",",guides.GuidelinesY.Take(8).Select(VisualPdfNumber)));
+                foreach(var child in group.Children)Inspect(child,depth+1);
+            }
+        }
+        Inspect(VisualTreeHelper.GetDrawing(reference),0);
+        var dpi=VisualTreeHelper.GetDpi(reference);var offset=VisualTreeHelper.GetOffset(reference);var origin=reference.TransformToAncestor(page).Transform(new Point(0,0));
+        return $"baseline={reference.BaselineOffset:R} visualOffset=({offset.X:R},{offset.Y:R}) origin=({origin.X:R},{origin.Y:R}) dpi=({dpi.DpiScaleX:R},{dpi.DpiScaleY:R},{dpi.PixelsPerDip:R}) desired=({reference.DesiredSize.Width:R},{reference.DesiredSize.Height:R}) render=({reference.RenderSize.Width:R},{reference.RenderSize.Height:R}) layoutRounding={reference.UseLayoutRounding} snap={reference.SnapsToDevicePixels} formatting={TextOptions.GetTextFormattingMode(reference)} rendering={TextOptions.GetTextRenderingMode(reference)} glyphs="+string.Join(";",descriptions);
+    }
+    private static string VisualPdfNumber(double value)=>value.ToString("R",System.Globalization.CultureInfo.InvariantCulture);
+    private static string VisualPdfGlyphAudit(GlyphRun glyph)
+    {
+        var ink=glyph.ComputeInkBoundingBox();
+        return "face="+Path.GetFileName(glyph.GlyphTypeface.FontUri.LocalPath)+" em="+VisualPdfNumber(glyph.FontRenderingEmSize)+" base=("+VisualPdfNumber(glyph.BaselineOrigin.X)+","+VisualPdfNumber(glyph.BaselineOrigin.Y)+") ink=("+VisualPdfNumber(ink.Left)+","+VisualPdfNumber(ink.Top)+","+VisualPdfNumber(ink.Right)+","+VisualPdfNumber(ink.Bottom)+") glyph="+string.Join(",",glyph.GlyphIndices.Take(32))+" advance="+string.Join(",",glyph.AdvanceWidths.Take(32).Select(VisualPdfNumber));
     }
     private static bool VisualPdfWhiteBorder(byte[] rgb)
     {
