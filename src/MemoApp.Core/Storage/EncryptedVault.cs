@@ -51,6 +51,29 @@ public sealed partial class EncryptedVault : IDisposable
     internal bool VerifyRecoverySecret(byte[] secret) => !keysReleased && secret.Length == 32 && CryptographicOperations.FixedTimeEquals(secret, recoveryKey);
     public bool IsFaulted => faulted;
     internal bool AttachmentRootAnchored {get{lock(gate)return attachmentRootAnchored&&attachmentUseAllowed&&!keysReleased&&!disposed&&!faulted;}}
+    // Prior-authenticated manifest facts only; never decrypt, read plaintext or activate a root.
+    internal bool IsCurrentAnchoredAttachmentRoot(Guid expectedRoot)
+    {
+        lock(gate)
+        {
+            long epoch=Volatile.Read(ref attachmentUseEpoch);
+            bool Live()=>expectedRoot!=Guid.Empty&&attachmentRootId==expectedRoot&&attachmentRootKey is not null
+                &&attachmentRootAnchored&&attachmentUseAllowed&&!keysReleased&&!disposed&&!faulted;
+            return Live()&&epoch==Volatile.Read(ref attachmentUseEpoch)&&Live();
+        }
+    }
+    internal bool IsKnownAuthenticatedAttachmentDescriptor(StoredAttachmentObject item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        lock(gate)
+        {
+            long epoch=Volatile.Read(ref attachmentUseEpoch);Guid expectedRoot=attachmentRootId;
+            bool Live()=>expectedRoot!=Guid.Empty&&attachmentRootId==expectedRoot&&item.RootId==expectedRoot
+                &&attachmentRootKey is not null&&attachmentRootAnchored&&attachmentUseAllowed&&!keysReleased&&!disposed&&!faulted;
+            if(!Live()||!knownAttachmentObjects.TryGetValue(item.ObjectId,out var known)||!AttachmentValidation.SameObject(known,item))return false;
+            return epoch==Volatile.Read(ref attachmentUseEpoch)&&Live();
+        }
+    }
     public IReadOnlyList<CandidateState> FailureCandidates { get; private set; } = [];
     private EncryptedVault(string root, FileStream writerLock, byte[] recoveryKey, VaultSnapshot loaded, Guid vaultId, ulong sequence, ulong wraps, byte[]? current, IAtomicVaultFiles files, byte[]? authenticated = null,byte[]? ownedAttachmentRoot=null,bool rootAnchored=false)
     {

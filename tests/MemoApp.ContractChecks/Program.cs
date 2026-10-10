@@ -22,6 +22,7 @@ if (args.Contains("--word-image-context-only")) { await WordImageContextChecks.R
 if (args.Contains("--word-image-export-only")) { await WordImageExportChecks.Run(); return; }
 if (args.Contains("--word-image-all-only")) { await WordImageContextChecks.Run(); await WordImageExportChecks.Run(); return; }
 if (args.Contains("--h01-insertion-admission-only")) { await InlineImageAdmissionChecks.Run(); return; }
+if (args.Contains("--h01-text-editor-only")) { await RichImageTextEditingChecks.Run(); return; }
 if (args.Contains("--h01-codec-only")) { await InlineImageChecks.Run(); return; }
 if (args.Contains("--h01-schema-only")) { await Schema10ImageChecks.Run(); await Schema10ImageHiddenChecks.Run(); await InlineImageAdmissionChecks.Run(); return; }
 if (args.Contains("--h01-image-only")) { await InlineImageChecks.Run(); await Schema10ImageChecks.Run(); await Schema10ImageHiddenChecks.Run(); await InlineImageAdmissionChecks.Run(); return; }
@@ -186,3 +187,4 @@ await Schema10ImageChecks.Run();
 await Schema10ImageHiddenChecks.Run();
 
 await InlineImageAdmissionChecks.Run();
+await RichImageTextEditingChecks.Run();

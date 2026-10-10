@@ -12,7 +12,7 @@
 
 ## Current prerequisite source evidence
 
-The test-only `RichImageEditorPrerequisiteChecks.cs` and runner are implemented after independent PRE. Cleanup issues were corrected and final independent source review has no Critical/Important findings. Combined Windows crossbuild is 0 warnings/errors. Actual native placeholder/Undo/Redo/manager composition proof remains pending; no Core authority, v2 editor or host is enabled. Manager-driven synthetic composition is separate from physical OS IME acceptance.
+The test-only `RichImageEditorPrerequisiteChecks.cs` and runner are implemented after independent PRE. Actual cf7 run38022122133 and final35 run38023414844 passed native placeholder/Undo/Redo/manager composition boundaries0/1/3/repeated0,2,3 with exact events/Unicode and Paragraph/Run identity. Manager-driven synthetic composition is separate from physical OS IME acceptance and new product-editor verification. Final35/artifact11659571081 retains the read-only v2 host. The nine-file uncompiled Core/editor WIP was archived while the parent prioritized PDF/OCR gates; after renewed continuation authorization and independent recovery PRE it was restored once on the identical app/test baseline, with archive/ref/patch preserved. Focused/new-native/POST/host verification remains required; restoration is not completion.
 
 ## Requirement provenance and feasibility
 

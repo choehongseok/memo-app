@@ -41,9 +41,15 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     {
         internal int EventDepth{get;private set;}
         internal Action? EventFinished;
+        internal Action? MutationStarting;
+        internal long MutationGeneration{get;private set;}
         protected override void OnTextChanged(TextChangedEventArgs e)
         {
-            EventDepth++;try{base.OnTextChanged(e);}finally{EventDepth--;if(EventDepth==0)EventFinished?.Invoke();}
+            MutationGeneration++;EventDepth++;try{MutationStarting?.Invoke();base.OnTextChanged(e);}finally{EventDepth--;if(EventDepth==0)EventFinished?.Invoke();}
+        }
+        protected override void OnSelectionChanged(RoutedEventArgs e)
+        {
+            MutationGeneration++;MutationStarting?.Invoke();base.OnSelectionChanged(e);
         }
     }
     private readonly NativeRichTextBox native=new(){AllowDrop=false,IsUndoEnabled=true,UndoLimit=100,AcceptsTab=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Padding=new(8)};
@@ -52,8 +58,10 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     public RichTextBox RichInput=>native;
     public bool IsDisposed=>disposed;
     public StructuredNoteEditor(EditingWorkspace workspace,NoteDraft note,Func<bool> current,Action<string> notice)
+        :this(workspace,note,current,notice,null){}
+    private StructuredNoteEditor(EditingWorkspace workspace,NoteDraft note,Func<bool> current,Action<string> notice,SaveCoordinator? imageSession)
     {
-        this.workspace=workspace;this.note=note;this.current=current;this.notice=notice;
+        this.workspace=workspace;this.note=note;this.current=current;this.notice=notice;native.MutationStarting=ImageTextNativeMutation;
         native.EventFinished=()=>{if(!disposed&&(refreshPending||waitingTransaction))QueueRefresh();};
         transactionRetry.Tick+=(_,_)=>{transactionRetry.Stop();if(!disposed&&waitingTransaction){waitingTransaction=false;if(Live())ScheduleRefresh();else ClearSensitive();}};
         var root=new DockPanel();DockPanel.SetDock(toolbar,Dock.Top);root.Children.Add(toolbar);DockPanel.SetDock(state,Dock.Top);root.Children.Add(state);root.Children.Add(RichInput);Content=root;
@@ -69,7 +77,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete),true);
         RichInput.PreviewDragOver+=RejectDrop;RichInput.PreviewDrop+=RejectDrop;
         CommandManager.AddPreviewExecutedHandler(RichInput,PreviewCommand);
-        note.PropertyChanged+=DraftChanged;PublishProjection();
+        note.PropertyChanged+=DraftChanged;try{InitializeImageTextEditing(imageSession);PublishProjection();}catch{ClearSensitive();throw;}
     }
     private void Button(string label,Action action){var button=new Button{Content=label,Padding=new(6,3,6,3),Margin=new(0,0,4,0),Focusable=false};button.Click+=(_,_)=>action();toolbar.Children.Add(button);}
     private static bool SafeFontName(string name)=>name.Length is >0 and <=128&&RichDocumentCodec.IsWellFormedUnicode(name)&&name.All(c=>char.IsLetterOrDigit(c)||c is ' ' or '-' or '_' or '.');
@@ -79,7 +87,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     private void DraftChanged(object? sender,PropertyChangedEventArgs e)
     {
-        if(disposed)return;if(!Live()){ClearSensitive();return;}
+        if(disposed)return;if(!Live()){ClearSensitive();return;}if(ImageTextDraftChanged())return;
         if(!committing && e.PropertyName is nameof(NoteDraft.Document) or nameof(NoteDraft.Mode) && (projected!=note!.Document||projectedContentVersion!=note.ContentVersion))Rebuild();
     }
     private void Rebuild()
@@ -109,7 +117,13 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
                 }
                 catch(InvalidDataException){document.Blocks.Clear();limitation="이 PC의 미지원 글꼴/서식 — 전체 원문을 보존하며 읽기 전용입니다.";}
             }
-            if(source.SchemaVersion==2)limitation="이미지 문서는 읽기 전용입니다. 이미지 표시·블록 제거는 문서 보기에서 명시적으로 실행하세요.";
+            if(source.SchemaVersion==2)
+            {
+                limitation="이미지 문서는 읽기 전용입니다. 이미지 표시·블록 제거는 문서 보기에서 명시적으로 실행하세요.";
+                if(info.Supported&&imageEditSession is not null)
+                    try{ready=BuildImageTextProjection(source,document);if(!ready){RetireImageTextProjection();document.Blocks.Clear();}}
+                    catch(Exception error)when(error is InvalidDataException or InvalidOperationException){RetireImageTextProjection();document.Blocks.Clear();ready=false;}
+            }
             if(!ready)document.Blocks.Add(new Paragraph(new Run(text)));
             if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
             var previous=projected;long previousContentVersion=projectedContentVersion;var oldNative=RichInput.Document;projected=source;projectedContentVersion=target.ContentVersion;editable=false;composing=false;
@@ -127,8 +141,10 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
             // A native setter raises external handlers. Never reattach this local document after that boundary.
             if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
             projectionSource=source;
-            RichInput.IsReadOnly=!ready;toolbar.IsEnabled=ready;state.Text=ready?"서식 원문을 암호 저장합니다. 외부 링크·이미지는 자동 실행하지 않습니다.":limitation;
-            if(Same())RichInput.IsUndoEnabled=ready;else if(!Live())ClearSensitive();else refreshPending=true;
+            RichInput.IsReadOnly=!ready;if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
+            toolbar.IsEnabled=ready;if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
+            state.Text=ready?"서식 원문을 암호 저장합니다. 외부 링크·이미지는 자동 실행하지 않습니다.":limitation;
+            if(Same()){RichInput.IsUndoEnabled=ready;if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;}}else if(!Live())ClearSensitive();else refreshPending=true;
         }
         finally
         {
@@ -267,6 +283,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     private StyledDocument CaptureDocument()
     {
+        if(note?.Document?.SchemaVersion==2&&imageEditSession is not null)return CaptureImageTextDocument(RichInput.Document);
         if(note?.Document?.SchemaVersion!=1)throw new InvalidDataException("Image documents cannot be captured as native v1 text");
         return CaptureNativeDocument(RichInput.Document);
     }
@@ -276,9 +293,15 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         foreach(var block in document.Blocks)
         {
             if(++count>1024)throw new InvalidDataException("Native block budget");
+            nodes.Add(CaptureNativeBlock(block,ref count));
+        }
+        return new(1,new JsonObject{["nodes"]=nodes}.ToJsonString());
+    }
+    private static JsonObject CaptureNativeBlock(Block block,ref int count)
+    {
             switch(block)
             {
-                case Paragraph paragraph:nodes.Add(new JsonObject{["type"]="paragraph",["runs"]=ReadRuns(paragraph,ref count)});break;
+                case Paragraph paragraph:return new JsonObject{["type"]="paragraph",["runs"]=ReadRuns(paragraph,ref count)};
                 case List list:
                     bool checklist=(bool)list.GetValue(ChecklistProperty);if(list.StartIndex!=1||checklist&&list.MarkerStyle!=TextMarkerStyle.None||!checklist&&list.MarkerStyle is not (TextMarkerStyle.Disc or TextMarkerStyle.Decimal))throw new InvalidDataException("Unsupported native list marker");
                     var items=new JsonArray();foreach(var item in list.ListItems)
@@ -288,19 +311,17 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
                         var runs=ReadRuns(paragraph,ref count,scaffold);var entry=new JsonObject{["runs"]=runs};if(scaffold is not null)entry["checked"]=scaffold.Text=="[x] ";
                         items.Add(entry);
                     }
-                    var node=new JsonObject{["type"]=checklist?"checklist":"list",["items"]=items};if(!checklist)node["ordered"]=list.MarkerStyle==TextMarkerStyle.Decimal;nodes.Add(node);break;
+                    var node=new JsonObject{["type"]=checklist?"checklist":"list",["items"]=items};if(!checklist)node["ordered"]=list.MarkerStyle==TextMarkerStyle.Decimal;return node;
                 case Table table:
-                    var rows=new JsonArray();foreach(var group in table.RowGroups)foreach(var row in group.Rows){var cells=new JsonArray();foreach(var cell in row.Cells){if(cell.ColumnSpan!=1||cell.RowSpan!=1)throw new InvalidDataException("Merged cells outside supported model");cells.Add(new JsonObject{["runs"]=ReadRuns(OnlyParagraph(cell.Blocks),ref count)});}rows.Add(cells);}nodes.Add(new JsonObject{["type"]="table",["rows"]=rows});break;
+                    var rows=new JsonArray();foreach(var group in table.RowGroups)foreach(var row in group.Rows){var cells=new JsonArray();foreach(var cell in row.Cells){if(cell.ColumnSpan!=1||cell.RowSpan!=1)throw new InvalidDataException("Merged cells outside supported model");cells.Add(new JsonObject{["runs"]=ReadRuns(OnlyParagraph(cell.Blocks),ref count)});}rows.Add(cells);}return new JsonObject{["type"]="table",["rows"]=rows};
                 default:throw new InvalidDataException("Unsupported native block");
             }
-        }
-        return new(1,new JsonObject{["nodes"]=nodes}.ToJsonString());
     }
     private void Changed(object sender,TextChangedEventArgs e)
     {
         if(composing||checklistEnterActive)return;CommitNative(e.UndoAction is UndoAction.Undo or UndoAction.Redo);
     }
-    private void CompositionStart(object sender,TextCompositionEventArgs e){if(Live()&&editable&&!rebuilding){compositionToken++;composing=true;}}
+    private void CompositionStart(object sender,TextCompositionEventArgs e){if(imageEditContext is not null&&!ImageTextCommandAllowed()){e.Handled=true;return;}if(Live()&&editable&&!rebuilding){compositionToken++;composing=true;}}
     private void CompositionUpdate(object sender,TextCompositionEventArgs e){if(!composing)CompositionStart(sender,e);}
     private void CompositionComplete(object sender,TextCompositionEventArgs e)
     {
@@ -315,18 +336,18 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     private void CommitNative(bool restoreProjectionSource=false)
     {
-        if(rebuilding||committing||!Live()||!editable)return;
-        try{var captured=CaptureDocument();
+        if(rebuilding||committing)return;
+        try{BeginImageTextNativeGuard();if(!Live()||!editable)return;var captured=CaptureDocument();
             // Native Undo restores the model, but capture has its own JSON field order/run
             // normalization. Returning to the projection's original model must restore
             // its owned source bytes, including styled empty runs and JSON field order.
             if(restoreProjectionSource&&projectionSource is { } original&&Equivalent(original,captured))captured=original;
-            long expected=note!.ContentVersion+(note.Document==captured?0:1);committing=true;workspace!.SetRichDocument(note,captured);if(Live()){if(note!.Document==captured&&note.ContentVersion==expected){projected=captured;projectedContentVersion=expected;}else Rebuild();}}
+            long expected=note!.ContentVersion+(note.Document==captured?0:1);committing=true;if(imageEditSession is not null&&note.Document?.SchemaVersion==2){CommitImageTextDocument(captured);return;}workspace!.SetRichDocument(note,captured);if(Live()){if(note!.Document==captured&&note.ContentVersion==expected){projected=captured;projectedContentVersion=expected;}else Rebuild();}}
         catch{if(Live()){Rebuild();notice?.Invoke("지원하지 않는 서식/내용 또는 한도입니다. 편집을 적용하지 않고 기존 문서와 이력을 보존했습니다.");}}
-        finally{committing=false;}
+        finally{committing=false;EndImageTextNativeGuard();}
     }
     private void Format(DependencyProperty property,object value)
-    {if(!Live()||!editable)return;try{RichInput.Selection.ApplyPropertyValue(property,value);RichInput.Focus();}catch{if(Live())Rebuild();}}
+    {if(!Live()||!editable||!ImageTextCommandAllowed())return;try{var allowed=CaptureImageTextCommandGuard();if(allowed?.Invoke()==false)return;RichInput.Selection.ApplyPropertyValue(property,value);if(Live())RichInput.Focus();}catch{if(Live())Rebuild();}}
     public void ApplyBold()=>Format(TextElement.FontWeightProperty,RichInput.Selection.GetPropertyValue(TextElement.FontWeightProperty).Equals(FontWeights.Bold)?FontWeights.Normal:FontWeights.Bold);
     public void ApplyFontSize(double size){if(!double.IsFinite(size)||size is <8 or >96)return;Format(TextElement.FontSizeProperty,size);}
     public void ApplyFontFamily(string name)
@@ -346,10 +367,10 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     public void ApplyForeground(string hex)=>ApplyColor(hex,TextElement.ForegroundProperty);
     public void ApplyHighlight(string hex)=>ApplyColor(hex,TextElement.BackgroundProperty);
     public void ToggleList(bool ordered)
-    {if(!Live()||!editable)return;try{(ordered?EditingCommands.ToggleNumbering:EditingCommands.ToggleBullets).Execute(null,RichInput);}catch{if(Live())Rebuild();}}
+    {if(!Live()||!editable||!ImageTextCommandAllowed())return;try{(ordered?EditingCommands.ToggleNumbering:EditingCommands.ToggleBullets).Execute(null,RichInput);}catch{if(Live())Rebuild();}}
     private void NativeChange(Action edit)
     {
-        if(!Live()||!editable)return;RichInput.BeginChange();try{edit();}catch{if(Live())Rebuild();}finally{RichInput.EndChange();}RichInput.Focus();
+        if(!Live()||!editable||!ImageTextCommandAllowed())return;var allowed=CaptureImageTextCommandGuard();RichInput.BeginChange();try{if(allowed?.Invoke()!=false)edit();}catch{if(Live())Rebuild();}finally{RichInput.EndChange();}if(Live())RichInput.Focus();
     }
     public void InsertChecklist()
     {
@@ -388,13 +409,13 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     public void PasteData(IDataObject data)
     {
-        if(!Live()||!editable)return;
-        var target=note!;var owner=workspace!;var source=target.Document;long version=target.EditVersion;var native=RichInput.Document;var start=RichInput.Selection.Start;var end=RichInput.Selection.End;
-        bool Same()=>Live()&&ReferenceEquals(note,target)&&ReferenceEquals(workspace,owner)&&ReferenceEquals(target.Document,source)&&target.EditVersion==version&&ReferenceEquals(RichInput.Document,native)&&RichInput.Selection.Start.CompareTo(start)==0&&RichInput.Selection.End.CompareTo(end)==0;
+        if(!Live()||!editable||!ImageTextCommandAllowed())return;
+        var target=note!;var owner=workspace!;var source=target.Document;long version=target.EditVersion;var native=RichInput.Document;var start=RichInput.Selection.Start;var end=RichInput.Selection.End;var imageAllowed=CaptureImageTextCommandGuard();
+        bool Same()=>Live()&&ReferenceEquals(note,target)&&ReferenceEquals(workspace,owner)&&ReferenceEquals(target.Document,source)&&target.EditVersion==version&&ReferenceEquals(RichInput.Document,native)&&RichInput.Selection.Start.CompareTo(start)==0&&RichInput.Selection.End.CompareTo(end)==0&&imageAllowed?.Invoke()!=false;
         try
         {
             bool present=data.GetDataPresent(DataFormats.UnicodeText,false);if(!Same()||!present)return;
-            object value=data.GetData(DataFormats.UnicodeText,false);if(!Same()||value is not string text||text.Length>RichDocumentCodec.MaxText||!RichDocumentCodec.IsWellFormedUnicode(text))return;
+            object value=data.GetData(DataFormats.UnicodeText,false);if(!Same()||!ImageTextCommandAllowed()||value is not string text||text.Length>RichDocumentCodec.MaxText||!RichDocumentCodec.IsWellFormedUnicode(text))return;
             string normalized=text.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n');if(!Same())return;RichInput.Selection.Text=normalized;
         }
         catch{if(Live()){Rebuild();notice?.Invoke("붙여넣기 실패 — 기존 문서를 보존했습니다.");}}
@@ -403,24 +424,31 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     private static void RejectDrop(object sender,DragEventArgs e){e.Effects=DragDropEffects.None;e.Handled=true;}
     private void PreviewCommand(object sender,ExecutedRoutedEventArgs e)
     {
+        if(imageEditContext is not null&&e.Command!=ApplicationCommands.Undo&&e.Command!=ApplicationCommands.Redo&&e.Command!=ApplicationCommands.Copy&&!ImageDeletionCommandAllowed(e.Command)){e.Handled=true;return;}
         if(e.Command==EditingCommands.EnterParagraphBreak&&!checklistEnterActive&&RichInput.CaretPosition.Paragraph?.Parent is ListItem item&&item.Parent is List list&&(bool)list.GetValue(ChecklistProperty))
         {e.Handled=true;EnterChecklistItem(item,list);return;}
         if(e.Command is RoutedCommand command && command.Name is "ToggleItalic" or "AlignCenter" or "AlignRight" or "AlignJustify" or "IncreaseIndentation" or "DecreaseIndentation" or "ToggleSubscript" or "ToggleSuperscript")e.Handled=true;
     }
     public void ClearSensitive()
     {
-        if(disposed)return;disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
-        var oldNote=note;projected=projectionSource=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
+        if(disposed)return;var ownedNativeDocuments=CaptureOwnedNativeDocumentsForCleanup();disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;native.MutationStarting=null;EndImageTextNativeGuard();editable=false;rebuilding=true;
+        var oldNote=note;ClearImageTextEditing();projected=projectionSource=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
         // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
-        RichInput.TextChanged-=Changed;RichInput.SelectionChanged-=CaretSelectionChanged;DataObject.RemovePastingHandler(RichInput,Pasting);
-        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));
-        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate));
-        RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete));
-        RichInput.PreviewMouseLeftButtonUp-=LinkClick;RichInput.PreviewDragOver-=RejectDrop;RichInput.PreviewDrop-=RejectDrop;CommandManager.RemovePreviewExecutedHandler(RichInput,PreviewCommand);
-        foreach(Action cleanup in new Action[]{()=>Visibility=Visibility.Collapsed,()=>RichInput.IsUndoEnabled=false,()=>RichInput.IsReadOnly=true,()=>RichInput.DataContext=null,()=>state.Text="",()=>toolbar.IsEnabled=false,()=>linkInput.IsUndoEnabled=false,linkInput.Clear,()=>RichInput.Document.Blocks.Clear()})
+        foreach(Action detach in new Action[]{()=>RichInput.TextChanged-=Changed,()=>RichInput.SelectionChanged-=CaretSelectionChanged,()=>DataObject.RemovePastingHandler(RichInput,Pasting),
+            ()=>RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart)),
+            ()=>RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate)),
+            ()=>RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete)),
+            ()=>RichInput.PreviewMouseLeftButtonUp-=LinkClick,()=>RichInput.PreviewDragOver-=RejectDrop,()=>RichInput.PreviewDrop-=RejectDrop,()=>CommandManager.RemovePreviewExecutedHandler(RichInput,PreviewCommand)})
+            try{detach();}catch(Exception){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
+        foreach(Action cleanup in new Action[]{()=>Visibility=Visibility.Collapsed,()=>RichInput.IsUndoEnabled=false,()=>RichInput.IsReadOnly=true,()=>RichInput.DataContext=null,()=>state.Text="",()=>toolbar.IsEnabled=false,()=>linkInput.IsUndoEnabled=false,linkInput.Clear})
         {
-            try{cleanup();}catch(Exception error) when(error is not OutOfMemoryException){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
+            try{cleanup();}catch(Exception){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
         }
+        // A replacement can detach the original graph before concealment. Redact
+        // every exact owned graph independently so later reattachment stays empty.
+        foreach(var document in ownedNativeDocuments)
+            try{document.Blocks.Clear();}catch(Exception){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
+        try{RichInput.Document.Blocks.Clear();}catch(Exception){CleanupErrorCode="RICH_VIEW_CLEANUP_FAILURE";}
         rebuilding=false;
     }
     public void Dispose()=>ClearSensitive();

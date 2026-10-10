@@ -81,6 +81,12 @@ public sealed class NoteDraft : INotifyPropertyChanged
     { title=source.Title;text=source.Text;metadata=source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds;ModifiedAt=source.ModifiedAt;EditVersion++; }
     internal void StageOcrMetadata(StoredNote source)
     { metadata=source.Metadata;ModifiedAt=source.ModifiedAt;EditVersion++; }
+    internal void StageRichImageTextDraft(StoredNote source, long editVersion, long contentVersion)
+    { text=source.Text;document=source.Document;ModifiedAt=source.ModifiedAt;EditVersion=editVersion;ContentVersion=contentVersion; }
+    internal PropertyChangedEventArgs[] PrepareRichImageTextNotifications() =>
+        [new(nameof(Text)),new(nameof(Document)),new(nameof(ModifiedAt)),PreparedRevisionNotification,new(nameof(ContentVersion))];
+    internal void PublishRichImageTextDraft(PropertyChangedEventArgs[] notifications)
+    { foreach (var args in notifications) PropertyChanged?.Invoke(this,args); }
     internal void StageEvent(StoredNote source,bool replaceContent=false)
     {
         if (IsClosed) throw new InvalidOperationException("Editing session is closed");

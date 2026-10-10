@@ -81,6 +81,8 @@ internal static partial class Program
                 groups=groups.Append(("ocr-pending-races",(Func<Task>)OcrPendingRaceRun)).ToArray();
                 groups=groups.Append(("runtime-network-observation",(Func<Task>)NetworkObservationRun)).ToArray();
                 groups=groups.Append(("rich-image-editor-prerequisite",(Func<Task>)RichImageEditorPrerequisiteRun)).ToArray();
+                groups=groups.Append(("rich-image-text-editor",(Func<Task>)RichImageTextEditorRun)).ToArray();
+                if(arguments.Contains("--h01-v2-text-editor-only"))groups=groups.Where(group=>group.Name=="rich-image-text-editor").ToArray();
                 if(arguments.Contains("--ocr-pending-only"))groups=groups.Where(group=>group.Name=="ocr-pending-races").ToArray();
                 if(arguments.Contains("--h01-v2-prerequisite-only"))groups=groups.Where(group=>group.Name=="rich-image-editor-prerequisite").ToArray();
                 if(arguments.Contains("--h01-image-only"))groups=groups.Where(group=>group.Name is "rich-image-document" or "rich-image-publication" or "rich-image-product").ToArray();
@@ -94,7 +96,7 @@ internal static partial class Program
                 foreach(var group in groups)
                 {
                     try{await group.Run();Console.WriteLine("PASS: WPF group "+group.Name);}
-                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);if(group.Name is "trial-installer" or "clipboard-dib-input" or "pdf-visual-export"){string stack=e.ToString();Console.Error.WriteLine(stack[..Math.Min(stack.Length,8192)]);}}
+                    catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);if(group.Name is "trial-installer" or "clipboard-dib-input" or "pdf-visual-export" or "rich-image-text-editor"){string stack=e.ToString();Console.Error.WriteLine(stack[..Math.Min(stack.Length,8192)]);}}
                     finally{foreach(var window in app.Windows.Cast<Window>().Where(w=>w.Content is StructuredNoteEditor or MarkdownNotePreview).ToArray()){((IDisposable)window.Content).Dispose();window.Close();}}
                 }
                 if(failures.Count==0){Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)");result=0;}
