@@ -2,7 +2,7 @@ using MemoApp.Core.Storage;
 namespace MemoApp.Core.Editing;
 
 // Called on a single UI context. File commits run off-context and are strictly chained.
-public sealed class SaveCoordinator : IDisposable
+public sealed partial class SaveCoordinator : IDisposable
 {
     private readonly EncryptedVault vault;
     private readonly TimeProvider clock;

@@ -38,9 +38,20 @@ internal static class AttachmentValidation
     {if(ids.IsDefault||ids.Length>MaxReferences||ids.Distinct().Count()!=ids.Length||ids.Any(id=>!objects.Contains(id))||schema<5&&ids.Length!=0)throw new InvalidDataException("Attachment references/schema");}
     internal static bool SameObject(StoredAttachmentObject left,StoredAttachmentObject right)=>
         left.ObjectId==right.ObjectId&&left.RootId==right.RootId&&left.Name==right.Name&&left.Mime==right.Mime&&left.Length==right.Length&&left.Sha256==right.Sha256&&left.WrappedKey==right.WrappedKey&&left.Chunks.SequenceEqual(right.Chunks);
-    internal static void Document(StyledDocument? document,int schema)
+    internal static void Document(StyledDocument? document,int schema,ImmutableArray<Guid> references,ImmutableArray<StoredAttachmentObject> objects)
     {
-        if(schema<5||document is null)return;
+        if(document is null)return;
+        if(document.SchemaVersion==2)
+        {
+            if(schema<10)throw new InvalidDataException("Document v2 requires payload10");
+            foreach(var image in RichDocumentCodec.Images(document))
+            {
+                var item=objects.SingleOrDefault(item=>item.ObjectId==image.AttachmentId);
+                if(!references.Contains(image.AttachmentId)||item is null||item.Mime!="image/png")throw new InvalidDataException("Inline image requires this record's authenticated PNG attachment");
+            }
+            return;
+        }
+        if(schema<5||schema>=10)return;
         // Image/opaque-reference interpretation is a later unit; never silently ignore its references.
         using var parsed=System.Text.Json.JsonDocument.Parse(document.SourceJson,new(){MaxDepth=16});
         var pending=new Stack<System.Text.Json.JsonElement>();pending.Push(parsed.RootElement);

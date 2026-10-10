@@ -6,7 +6,7 @@ internal static class SnapshotValidation
     internal static void Json(JsonElement root)
     {
         Fields(root, ["schemaVersion", "deviceId", "notes", "history", "tombstones"]);
-        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9)) throw new InvalidDataException("Unsupported schema");
+        if (!root.GetProperty("schemaVersion").TryGetInt32(out int version) || version is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10)) throw new InvalidDataException("Unsupported schema");
         if(version<9&&root.TryGetProperty("uiDevices",out var legacyDevices)&&legacyDevices.ValueKind==JsonValueKind.Array)
             foreach(var device in legacyDevices.EnumerateArray())if(device.ValueKind==JsonValueKind.Object&&device.TryGetProperty("automaticBackupPolicy",out _))throw new InvalidDataException("Older schema backup policy field refused");
         if(version<8&&root.TryGetProperty("discardedRevisions",out _))throw new InvalidDataException("Older schema discarded evidence refused");
@@ -104,7 +104,7 @@ internal static class SnapshotValidation
     }
     internal static void Validate(VaultSnapshot snapshot)
     {
-        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
+        if (snapshot.SchemaVersion is not (1 or 2 or 3 or 4 or 5 or 6 or 7 or 8 or 9 or 10) || snapshot.DeviceId == Guid.Empty || snapshot.Notes is null || snapshot.Notes.Length > 100 || snapshot.History is null || snapshot.History.Length > 10000 || snapshot.Tombstones is null || snapshot.Tombstones.Length>100 || snapshot.Folders is null || snapshot.Tags is null || snapshot.Folders.Length > 100 || snapshot.Tags.Length > 100 || snapshot.UiDevices is null || snapshot.UiDevices.Length>32) throw new InvalidDataException("Unsupported snapshot or record limit");
         if(snapshot.DiscardedRevisions is null||snapshot.DiscardedRevisions.Length>10100||snapshot.DiscardedRevisions.Length+snapshot.History.Length>10100||snapshot.SchemaVersion<8&&snapshot.DiscardedRevisions.Length!=0)throw new InvalidDataException("Discarded evidence count/schema limit");
         var attachmentObjects=AttachmentValidation.Objects(snapshot);
         bool legacy = snapshot.SchemaVersion == 1;
@@ -132,13 +132,13 @@ internal static class SnapshotValidation
             FilePathLinkValidation.Links(metadata.FilePathLinks,snapshot.SchemaVersion);
             if (legacy && (metadata.FolderId is not null || metadata.TagIds.Length != 0 || metadata.Color != "yellow" || metadata.Important || metadata.Favorite || metadata.Pinned || metadata.Archived || metadata.Deleted || metadata.Order != 0)) throw new InvalidDataException("Legacy metadata not supported");
         }
-        void Content(string mode,StyledDocument? document,string text)
+        void Content(string mode,StyledDocument? document,string text,System.Collections.Immutable.ImmutableArray<Guid> references)
         {
             if(!RichDocumentCodec.IsWellFormedUnicode(text)||mode is not ("plain" or "markdown" or "rich")||snapshot.SchemaVersion<4&&(mode!="plain"||document is not null))throw new InvalidDataException("Invalid document mode/Unicode/version");
             if(mode=="rich")
             {
                 if(document is null)throw new InvalidDataException("Rich source required");var info=RichDocumentCodec.Inspect(document);
-                AttachmentValidation.Document(document,snapshot.SchemaVersion);
+                AttachmentValidation.Document(document,snapshot.SchemaVersion,references,snapshot.AttachmentObjects);
                 if(info.Supported&&!string.Equals(info.Text,text,StringComparison.Ordinal))throw new InvalidDataException("Rich projection/source mismatch");
             }
             else if(document is not null)throw new InvalidDataException("Plain/Markdown source must not carry rich data");
@@ -148,12 +148,12 @@ internal static class SnapshotValidation
         foreach (var note in snapshot.Notes)
         {
             if (note is null || note.NoteId == Guid.Empty || !ids.Add(note.NoteId) || note.RevisionId == Guid.Empty || !revisions.Add(note.RevisionId) || note.Title is null || note.Text is null || note.Title.Length > 256 || !RichDocumentCodec.IsWellFormedUnicode(note.Title) || note.Text.Length > 65536 || !Parents(note.Parents, note.RevisionId) || note.Scope != "device-only" || note.CreatedAt.Offset != TimeSpan.Zero || note.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid note fields or unsupported mode");
-            Content(note.Mode,note.Document,note.Text);AttachmentValidation.References(note.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(note.Metadata); graph.Add(note.RevisionId, (note.NoteId, note.Parents));
+            Content(note.Mode,note.Document,note.Text,note.AttachmentIds);AttachmentValidation.References(note.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(note.Metadata); graph.Add(note.RevisionId, (note.NoteId, note.Parents));
         }
         foreach (var revision in snapshot.History)
         {
             if (revision is null || !ids.Contains(revision.NoteId) || revision.RevisionId == Guid.Empty || !revisions.Add(revision.RevisionId) || !Parents(revision.Parents, revision.RevisionId) || revision.Title is null || revision.Title.Length > 256 || !RichDocumentCodec.IsWellFormedUnicode(revision.Title) || revision.Text is null || revision.Text.Length > 65536 || revision.ModifiedAt.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid history");
-            Content(revision.Mode,revision.Document,revision.Text);AttachmentValidation.References(revision.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
+            Content(revision.Mode,revision.Document,revision.Text,revision.AttachmentIds);AttachmentValidation.References(revision.AttachmentIds,attachmentObjects,snapshot.SchemaVersion);Meta(revision.Metadata); graph.Add(revision.RevisionId, (revision.NoteId, revision.Parents));
         }
         if (snapshot.History.GroupBy(r => r.NoteId).Any(g => g.Count() > 512)) throw new InvalidDataException("History limit exceeded");
         var discardedIds=new HashSet<Guid>();

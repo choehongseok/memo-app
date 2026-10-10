@@ -10,7 +10,7 @@ using Microsoft.Win32;
 namespace MemoApp.Windows;
 
 // Opaque originals, explicit bounded PNG display and consented external plaintext copies.
-public sealed partial class AttachmentPanel : UserControl,IDisposable
+public sealed partial class AttachmentPanel : UserControl,IDisposable,IImageDisplayHost
 {
     private SaveCoordinator? session;
     private NoteDraft? note;
@@ -25,7 +25,7 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
     private long previewGeneration,observedPreviewEpoch;
     private readonly Button preview=new(){Content="선택 이미지 미리보기",Padding=new(6,3,6,3),Margin=new(6,0,0,0),IsEnabled=false};
     public Image PreviewImage{get;}=new(){MaxWidth=1024,MaxHeight=240,Stretch=Stretch.Uniform,Visibility=Visibility.Collapsed};
-    private sealed record Entry(Guid Id,string Label);
+    private sealed record Entry(Guid Id,string Label,string Mime);
     public ListBox FilesList{get;}=new(){MaxHeight=110,MinHeight=24,DisplayMemberPath="Label",Margin=new(0,4,0,0)};
     public bool IsDisposed{get;private set;}
     public AttachmentPanel(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice)
@@ -38,10 +38,10 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
     {
         Dispatcher.VerifyAccess();previewBackend=backend;filePathProfile=uiDeviceId;
         this.session=session;this.note=note;this.current=current;this.notice=notice;observedPreviewEpoch=session.AttachmentPreviewEpoch;
-        var content=new StackPanel();var buttons=new WrapPanel();buttons.Children.Add(add);buttons.Children.Add(detach);buttons.Children.Add(preview);buttons.Children.Add(pastePng);buttons.Children.Add(OpenButton);content.Children.Add(buttons);
+        var content=new StackPanel();var buttons=new WrapPanel();buttons.Children.Add(add);buttons.Children.Add(detach);buttons.Children.Add(preview);buttons.Children.Add(pastePng);buttons.Children.Add(OpenButton);buttons.Children.Add(inlineImage);content.Children.Add(buttons);
         content.Children.Add(new TextBlock{Text="원본 파일 4 MiB · 메모당 16개 · 보존 파일 합계 8 MiB · 자동 실행 없음",TextWrapping=TextWrapping.Wrap});content.Children.Add(FilesList);content.Children.Add(new TextBlock{Text="이미지 파일 한 개를 여기에 끌어놓으면 원본을 암호 첨부로 복사합니다. 미리보기는 선택 후 버튼으로 표시하며 제한된 PNG와 고정 색 공간·픽셀 밀도 정보만 지원합니다. 표시 색상·비율은 원본 메타데이터에 맞춰 보정하지 않습니다.",TextWrapping=TextWrapping.Wrap});content.Children.Add(new TextBlock{Text="첨부 영역에 초점을 둔 Ctrl+V/PNG 붙이기는 자동 변환 없는 제한 PNG만 받습니다. Bitmap/DIB·일반 스크린샷은 지원하지 않을 수 있습니다. OS 클립보드 원본은 앱 잠금 후에도 남습니다.",TextWrapping=TextWrapping.Wrap});content.Children.Add(PreviewImage);AddOcrControls(content);AddPathControls(content);Content=content;
         AllowDrop=true;PreviewDragOver+=ImageDragOver;PreviewDrop+=ImageDrop;
-        add.Click+=AddClicked;pastePng.Click+=PastePngClicked;PreviewKeyDown+=ClipboardKeyDown;detach.Click+=DetachClicked;preview.Click+=PreviewClicked;OpenButton.Click+=OpenClicked;FilesList.MouseDoubleClick+=AttachmentDoubleClick;FilesList.SelectionChanged+=SelectionChanged;Dispatcher.ShutdownStarted+=DispatcherClosing;
+        add.Click+=AddClicked;pastePng.Click+=PastePngClicked;PreviewKeyDown+=ClipboardKeyDown;detach.Click+=DetachClicked;preview.Click+=PreviewClicked;inlineImage.Click+=InlineImageClicked;OpenButton.Click+=OpenClicked;FilesList.MouseDoubleClick+=AttachmentDoubleClick;FilesList.SelectionChanged+=SelectionChanged;Dispatcher.ShutdownStarted+=DispatcherClosing;
         session.Workspace.Changed+=Refresh;session.Conceal+=Dispose;session.Changed+=PreviewStateChanged;CompositionTarget.Rendering+=PreviewRendering;note.PropertyChanged+=NoteChanged;Refresh();
     }
     private bool Current()=>!IsDisposed&&session is {IsLocked:false} active&&note is {IsClosed:false,IsDeleted:false} source&&active.Workspace.Notes.Contains(source)&&current?.Invoke()==true;
@@ -50,7 +50,7 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
     private void NoteChanged(object? sender,PropertyChangedEventArgs e)
     {InvalidatePreview();if(e.PropertyName is nameof(NoteDraft.IsClosed) or nameof(NoteDraft.IsDeleted)){if(!Current())Dispose();}}
     private void SelectionChanged(object sender,SelectionChangedEventArgs e)
-    {InvalidatePreview();detach.IsEnabled=preview.IsEnabled=OpenButton.IsEnabled=Current()&&!busy&&FilesList.SelectedItem is Entry;RefreshOcr();}
+    {inlineSelectionGeneration++;InvalidatePreview();invalidateInlineImage?.Invoke();detach.IsEnabled=preview.IsEnabled=OpenButton.IsEnabled=Current()&&!busy&&FilesList.SelectedItem is Entry;RefreshOcr();RefreshInlineImage();}
     private void PreviewRendering(object? sender,EventArgs e)=>PreviewStateChanged();
     private void PreviewStateChanged()
     {
@@ -59,6 +59,7 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
     }
     private void DispatcherClosing(object? sender,EventArgs e)=>Dispose();
     private async void PreviewClicked(object sender,RoutedEventArgs e)=>await PreviewSelectedAsync();
+    void IImageDisplayHost.InvalidateImageDisplay()=>InvalidatePreview();
     internal void InvalidatePreview()
     {
         Dispatcher.VerifyAccess();previewGeneration++;ClearOcr();var cancel=previewCancellation;previewCancellation=null;
@@ -204,12 +205,12 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
         {
             var active=session!;var source=note!;long version=source.EditVersion;
             Guid? selected=(FilesList.SelectedItem as Entry)?.Id;
-            var entries=active.Workspace.DescribeAttachments(source).Select(item=>new Entry(item.Id,$"{item.Name} · {item.Length:N0} bytes")).ToArray();
+            var entries=active.Workspace.DescribeAttachments(source).Select(item=>new Entry(item.Id,$"{item.Name} · {item.Length:N0} bytes",item.Mime)).ToArray();
             if(!Same(active,source,version))return;FilesList.ItemsSource=entries;
             if(!Same(active,source,version)){ClearLabels();return;}
             FilesList.SelectedItem=entries.FirstOrDefault(item=>item.Id==selected);
             if(!Same(active,source,version)){ClearLabels();return;}
-            add.IsEnabled=pastePng.IsEnabled=!busy;detach.IsEnabled=preview.IsEnabled=OpenButton.IsEnabled=!busy&&FilesList.SelectedItem is Entry;RefreshPathLinks();RefreshOcr();
+            add.IsEnabled=pastePng.IsEnabled=!busy;detach.IsEnabled=preview.IsEnabled=OpenButton.IsEnabled=!busy&&FilesList.SelectedItem is Entry;RefreshPathLinks();RefreshOcr();RefreshInlineImage();
         }
         catch{if(!IsDisposed)ClearLabels();}
         finally
@@ -227,6 +228,7 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
         try{detach.IsEnabled=false;}catch{}
         try{preview.IsEnabled=false;}catch{}
         try{OpenButton.IsEnabled=false;}catch{}
+        try{inlineImage.IsEnabled=false;}catch{}
     }
     public void Dispose()
     {
@@ -235,6 +237,6 @@ public sealed partial class AttachmentPanel : UserControl,IDisposable
         // Conceal this host before native collection callbacks; parents also conceal independently.
         try{Visibility=Visibility.Collapsed;}catch{}
         try{Content=null;}catch{}
-        try{cancellation.Cancel();}catch{}DisposeOcr();DisposePathControls();ClearLabels();add.Click-=AddClicked;pastePng.Click-=PastePngClicked;PreviewKeyDown-=ClipboardKeyDown;detach.Click-=DetachClicked;OpenButton.Click-=OpenClicked;FilesList.MouseDoubleClick-=AttachmentDoubleClick;FilesList.SelectionChanged-=SelectionChanged;preview.Click-=PreviewClicked;PreviewDragOver-=ImageDragOver;PreviewDrop-=ImageDrop;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=PreviewRendering;cancellation.Dispose();
+        try{cancellation.Cancel();}catch{}DisposeOcr();DisposePathControls();ClearLabels();add.Click-=AddClicked;pastePng.Click-=PastePngClicked;PreviewKeyDown-=ClipboardKeyDown;detach.Click-=DetachClicked;OpenButton.Click-=OpenClicked;FilesList.MouseDoubleClick-=AttachmentDoubleClick;FilesList.SelectionChanged-=SelectionChanged;preview.Click-=PreviewClicked;inlineImage.Click-=InlineImageClicked;insertInlineImage=null;canInsertInlineImage=null;invalidateInlineImage=null;PreviewDragOver-=ImageDragOver;PreviewDrop-=ImageDrop;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=PreviewRendering;cancellation.Dispose();
     }
 }

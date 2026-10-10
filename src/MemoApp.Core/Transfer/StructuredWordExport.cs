@@ -28,6 +28,8 @@ public static class StructuredWordExport
         int sourceBytes = 0, canonicalBytes = 0;
         foreach (var note in notes)
         {
+            if(note.Mode == "rich" && note.Document?.SchemaVersion != 1)
+                throw new InvalidOperationException("Word export does not support version2 image documents. Original document and attachments are preserved.");
             using var validated = TextTransfer.Capture(note);
             sourceBytes = checked(sourceBytes + validated.Bytes.Length);
             if (sourceBytes > Limit) throw new InvalidDataException("Word source byte limit");

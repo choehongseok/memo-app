@@ -23,12 +23,17 @@ internal class ImagePreviewBackend
     }
 }
 
+internal interface IImageDisplayHost
+{
+    void InvalidateImageDisplay();
+}
+
 internal static class ImagePreviewAdmission
 {
     private static readonly object gate=new();
     private static Dispatcher? dispatcher;
     private static bool occupied;
-    private static AttachmentPanel? displayed;
+    private static IImageDisplayHost? displayed;
     internal static bool TryEnter(Dispatcher context)
     {
         context.VerifyAccess();
@@ -42,10 +47,10 @@ internal static class ImagePreviewAdmission
     internal static void Exit(){lock(gate){occupied=false;}}
     internal static void ClearDisplayed()
     {
-        dispatcher?.VerifyAccess();var old=displayed;displayed=null;old?.InvalidatePreview();
+        dispatcher?.VerifyAccess();var old=displayed;displayed=null;old?.InvalidateImageDisplay();
     }
-    internal static void PublishHost(AttachmentPanel panel)
+    internal static void PublishHost(IImageDisplayHost panel)
     {dispatcher?.VerifyAccess();displayed=panel;}
-    internal static void Forget(AttachmentPanel panel)
+    internal static void Forget(IImageDisplayHost panel)
     {dispatcher?.VerifyAccess();if(ReferenceEquals(displayed,panel))displayed=null;}
 }

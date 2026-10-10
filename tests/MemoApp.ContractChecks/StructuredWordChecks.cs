@@ -12,6 +12,7 @@ internal static class StructuredWordChecks
 {
     internal static void Run()
     {
+        VersionedImageCapabilityRefusal();
         var exporter = typeof(TextTransfer).Assembly.GetType("MemoApp.Core.Transfer.StructuredWordExport");
         VaultChecks.Require(exporter is not null, "N04 canonical rich Word exporter is missing");
         var capture = exporter!.GetMethod("Capture", [typeof(IEnumerable<NoteDraft>)])!;
@@ -111,5 +112,34 @@ internal static class StructuredWordChecks
             Console.WriteLine("PASS: N04 canonical rich DOCX run formatting, inert links, numbered lists/checklists/tables, source fidelity and bounded package; actual Word acceptance unverified");
         }
         finally { workspace.Clear(); Directory.Delete(root, true); }
+    }
+
+    private static void VersionedImageCapabilityRefusal()
+    {
+        // After removing the final image, a document still owns version 2. Word
+        // capability must be explicit even when all remaining blocks look like v1.
+        Guid id = Guid.NewGuid();
+        var documents = new StyledDocument[]
+        {
+            new(2, "{\"nodes\":[{\"type\":\"paragraph\",\"runs\":[{\"text\":\"synthetic remaining text\"}]}]}"),
+            new(2, "{\"nodes\":[{\"type\":\"image\",\"attachmentId\":\"" + id.ToString("D") + "\",\"alt\":\"synthetic.png\"}]}")
+        };
+        foreach(var document in documents)
+        {
+            var info = RichDocumentCodec.Inspect(document);
+            VaultChecks.Require(info.Supported, "Word capability fixture is known canonical v2, rather than unknown-source refusal");
+            var now = DateTimeOffset.UnixEpoch;
+            var stored = new MemoApp.Core.Storage.StoredNote(Guid.NewGuid(), Guid.NewGuid(), [], now, now, "synthetic", info.Text!, "rich")
+            { Document = document, AttachmentIds = [id] };
+            var note = new NoteDraft(TimeProvider.System, stored);
+            string source = note.Document!.SourceJson;
+            try
+            {
+                VaultChecks.ExpectFailure(() => StructuredWordExport.Capture([note]), "Word explicitly refuses version2 before producing a package");
+                VaultChecks.ExpectFailure(() => OfficeTextTransfer.Capture([note], OfficeTextFormat.Word), "Production Word route preserves version2 capability refusal");
+                VaultChecks.Require(note.Document.SourceJson == source && note.EditVersion == 0 && note.Text == info.Text, "Version2 Word refusal preserves exact source/text/version");
+            }
+            finally { note.Close(); }
+        }
     }
 }

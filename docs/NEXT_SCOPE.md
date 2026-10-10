@@ -1,63 +1,40 @@
 # 후속 구현 원장 (범위 보존)
 
-현재 119개 구현·부분 연결/13개 미착수/N09 차단1/M06 정규화1이며 전체 ID 완료·사용자 수용은 0입니다. 기존 Windows 시험판 d8bccaab의 자동 검사 성공을 134개 완성으로 해석하지 않습니다. 후속 ID별 감사는 FEATURE_GAP_AUDIT.json에 기록하며, 독립 구현·추가 자동검사·실제 기기 수용·외부 연결/결정을 구분해 계속 진행합니다.
+현재 119개 구현·부분 연결/13개 미착수/N09 차단1/M06 정규화1로 총134개이며 전체 ID 완료·사용자 수용은 0이다. 상태의 기준은 [FEATURES.json](FEATURES.json), 남은 독립 작업은 [FEATURE_GAP_AUDIT.md](FEATURE_GAP_AUDIT.md) 및 [FEATURE_GAP_AUDIT.json](FEATURE_GAP_AUDIT.json), 실행 근거는 [STATUS.md](STATUS.md)다. 원문134 ID·M06·27,417바이트와 원문 해시를 유지한다.
 
-앱 자료·암호·잠금·M06·원본27417bytes/hash를 유지하고, 기존 개발 계획/FEATURES의 acceptance_criteria 및 implementation/test_evidence를 기준으로 독립 단위를 계속 진행합니다. 이미지 clipboard/drop/inline은 같은 앱 전체 작업 한도·늦은 결과 폐기·무실행 첨부 경계를 따라야 합니다. 암호/복구/동기화/업데이트는 별도 보안 검토를 거쳐야 합니다. Android와 로컬 OCR/음성/AI는 실제 실행 도구·모델 라이선스·자원·통신 차단 검증이 필요합니다. 외부서비스나 유료 의존성을 기본값으로 추가하지 않습니다. 서명/배포 신뢰·비용·권한 등의 새 중요한 결정만 사용자에게 분리해 보고합니다.
+## 현재 검증과 산출물 범위
 
-| ID | 원문 기능 | 현재 상태 |
-|---|---|---|
-| A09 | 최근 사용한 메모 보기 | 진행 중: Windows37932435158 최근/저장검색 UI 합성 전체 회귀 통과, 실제 수용 미확인 |
-| D11 | 휴지통 자동 비우기 | 진행 중: schema8 백업 선행 정리·Windows37995312568/37995989631 합성 검사 통과, 물리 수용 미확인 |
-| E08 | 검색 결과에서 해당 문장 강조 | 진행 중: Windows37925174477 합성 회귀 통과, 실제 사용자 수용 미확인 |
-| E10 | 자주 쓰는 검색조건 저장 | 진행 중: Windows37932435158 최근/저장검색 UI 합성 전체 회귀 통과, 실제 수용 미확인 |
-| H02 | Ctrl+V로 이미지 붙이기 | 진행 중: Windows37941822384 raw PNG/실제 OS clipboard 버튼 합성 검사 통과, 형식/물리 입력 제한은 FEATURES 참조 |
-| H03 | 이미지 드래그앤드롭 | 진행 중: Windows37926846176 합성 검사 통과 |
-| H06 | 첨부파일 클릭해서 열기 | 진행 중: Windows37949800474 명시 평문 사본/native launch 경계 통과, 외부 앱 실제 사용자 수용은 미확인 |
-| H07 | 파일 경로만 연결 | 미착수 |
-| L01 | Windows 시작 시 자동 실행 | 미착수 |
-| L02 | 시스템 트레이 상주 | 진행 중: Windows37955393341 트레이/잠금/native 합성 검사 통과; 이번 실행 opt-in, 실제 물리/Explorer 수용 미확인 |
-| L03 | 창을 닫아도 트레이에서 계속 실행 | 진행 중: Windows37955393341 트레이/잠금/native 합성 검사 통과; 이번 실행 opt-in, 실제 물리/Explorer 수용 미확인 |
-| L05 | 트레이 우클릭으로 새 메모 | 진행 중: Windows37955393341 트레이/잠금/native 합성 검사 통과; 이번 실행 opt-in, 실제 물리/Explorer 수용 미확인 |
-| L06 | 트레이에서 최근 메모 바로 열기 | 진행 중: Windows37955393341 트레이/잠금/native 합성 검사 통과; 이번 실행 opt-in, 실제 물리/Explorer 수용 미확인 |
-| L09 | 자동 업데이트 | 미착수 |
-| L10 | 수동 업데이트 | 미착수 |
-| N02 | PDF 내보내기 | 미착수 |
-| N03 | Excel 내보내기 | 진행 중: 연결·합성 검사 통과, 세부 미완료/사용자 수용은 FEATURES 참조 |
-| N04 | Word 내보내기 | 진행 중: 연결·합성 검사 통과, 세부 미완료/사용자 수용은 FEATURES 참조 |
-| N05 | 여러 메모 일괄 내보내기 | 진행 중: Windows37927873556 선택 TXT 합성 검사 통과 |
-| N07 | Excel 가져오기 | 진행 중: Windows37940341144 첫 시트 plain 문자열 합성 검사 통과; 지원 제한/사용자 수용은 FEATURES 참조 |
-| N08 | 다른 메모 프로그램 자료 가져오기 | 진행 중: Windows37953672481 단일 UTF8 .md raw 새 메모/원문·observer·lock 합성 검사 통과; 전체 vault/첨부/타 형식은 미지원 |
-| N09 | S메모 자료 가져오기 | 차단됨 |
-| N10 | 전체 자료를 한 파일로 이전 | 진행 중: 연결·합성 검사 통과, 세부 미완료/사용자 수용은 FEATURES 참조 |
-| O01 | 자동 백업 | 진행 중: Windows37933940176 통과, 세션 설정/가득 참 시 중단; 재실행 유지·자동 정리 미완료 |
-| O02 | 종료 시 백업 | 진행 중: Windows37933940176 통과, 세션 설정/가득 참 시 중단; 재실행 유지·자동 정리 미완료 |
-| O03 | 하루 한 번 백업 | 진행 중: Windows37933940176 통과, 세션 설정/가득 참 시 중단; 재실행 유지·자동 정리 미완료 |
-| O04 | 백업 보관 개수 설정 | 진행 중: Windows37933940176 통과, 세션 설정/가득 참 시 중단; 재실행 유지·자동 정리 미완료 |
-| O08 | 백업 미리보기 | 진행 중: Windows37943750235 bounded 동일 vault 읽기/native stale/lock 검사 통과, 제한/수용은 FEATURES 참조 |
-| O09 | 특정 메모 선택 복구 | 진행 중: Windows37947499629 같은 vault 새 복사/원본해시·선택·잠금 경계 통과, 제한/수용은 FEATURES 참조 |
-| P02 | 집 PC와 다른 PC에서 사용 | 진행 중: 연결·합성 검사 통과, 세부 미완료/사용자 수용은 FEATURES 참조 |
-| P03 | USB로 데이터 직접 이동 | 진행 중: 연결·합성 검사 통과, 세부 미완료/사용자 수용은 FEATURES 참조 |
-| P05 | 여러 PC 자동 동기화 | 미착수 |
-| P06 | PC별 서로 다른 메모 일부 유지 | 미착수 |
-| Q03 | 휴대폰에서 메모 작성·수정 | 미착수 |
-| Q04 | Android 앱 | 미착수 |
-| Q06 | PC·휴대폰 자동 동기화 | 미착수 |
-| Q07 | 휴대폰 사진 촬영 후 메모 추가 | 미착수 |
-| Q08 | 휴대폰 알림 | 미착수 |
-| T12 | OCR로 이미지 글자 추출 | 진행 중: actual Windows37991107459/37995989631 제품 OCR·한글영문·별도 plain 암호 저장/검색/재실행 PASS. 후속726038 scalarPNG 공유경로 PASS; 일반 이미지·통신 관찰/corpus/수명 경계 검사는 남음 |
-| T13 | 음성으로 메모 작성 | 미착수 |
-| T14 | AI 요약 | 미착수 |
-| T15 | AI 문장 다듬기 | 미착수 |
-| T16 | AI에게 내 메모 내용 질문 | 미착수 |
+후속 소스 `af297201`의 [Windows gate38004389975](https://github.com/choehongseok/memo-app/actions/runs/38004389975)는 전체 FAIL이다. Excel 매핑·schema9 persistence·기존 Enter boundary·빈 항목 Undo/Redo는 PASS였고, selected-body Enter fixture의 focus 누락으로 다음 검사가 FAIL했다. focus 수정·H01 이미지 문서·H08 gray PNG 새 Windows 검사는 아직 대기다.
 
-진행 중 ID의 미완료는 docs/FEATURES.json의 blocking_reason과 기존 계획에 기록되어 있습니다. 자동 삭제/평문 export/외부 열기/OS 상주 등은 실제 자료 보존·잠금·명시 동의 경계를 먼저 검증합니다. 최종 설치 시험판의 사용자 시험목록은 USER-TESTS.md입니다.
+이전 소스 `5db5d8a`의 [Windows gate38002826135](https://github.com/choehongseok/memo-app/actions/runs/38002826135)는 전체 FAIL이다. native/build/fullCore 및 원래 checklist Enter source-version·lock boundary는 PASS였으나 추가 Excel 재열기 fixture, 백업 정책 미저장 날짜 기대 fixture, 빈 체크 항목 Undo exact-source 검사가 FAIL했다. 후속 암호 파일 복사 재열기·정책 fault fixture·Undo 원문 복원을 수정하고 시트/열 매핑·설치 실행 network 관찰 검사를 추가했다. 새 Windows 결과는 다음 소스 gate에서 구분한다.
 
-## 계속 구현할 우선순위
-1. E08 기존 검색 문맥 강조: 저장형식 변경 없는 bounded UI. 공통 literal/NFC/512자 원본불변과Windows stale/reentry/lock를검사한다.
-2. H03 기존 암호 첨부의 이미지 파일 drop: 단일local FileDrop 원본 경로만 받아 기존reader/atomic attach/save에연결. URI/HTML/여러파일/잘못된source/늦은OLE callback거절; image decode는기존명시preview뿐. 별도native입력경계읽기검토후연결한다.
-3. A09 최근 열어본 메모/E10 자주 쓰는 검색조건: 기존기기별암호UI기록에한도있는메타데이터로연결하는설계·마이그레이션/복구보존검토가필요하다. 사용자의Windows시험을기다릴의존성은없다.
-4. N05 일괄내보내기/O01~O04 자동암호백업·보관/R·T 나머지수용조건: 파일목적지명시확인·CreateNew·취소/잠금/일부실패보존·원본복구를전제로계속한다. 자동삭제는원문수용조건과데이터보존정책을분리검토한다.
-5. H02 clipboard/inline image·H06 외부열기·L01~L06 OS수명/트레이: untrustednative입력·externalprocess/평문temp·키수명에맞는별도보안경계와실제Windows자동검사를우선한다. 사용자PC검사는자동검사의대체가아닌후속수용조건이다.
-6. 업데이트/동기화/Android/local engines: 서명신뢰·별도권한/계정/모델license/SDK·자원·실기기의실제의존성을확인하여보고한다. 외부/유료서비스나계정연결을임의추가하지않고다른로컬기능은병행계속한다.
+기존 최종 시험판 `d8bccaab`의 [Windows37995989631](https://github.com/choehongseok/memo-app/actions/runs/37995989631) 및 artifact `11647312201`은 보존한다. 그 시험판은 실제 OCR·schema8 자동 휴지통 정리를 포함하지만 이후 schema9 백업 정책·Word canonical 서식·Excel scalar/매핑·체크목록 Enter/Undo 보완을 포함한다고 표시하지 않는다. 기존 시험판 안내는 [WINDOWS-TRIAL-2026-10-09.md](WINDOWS-TRIAL-2026-10-09.md), 사용자 확인 목록은 [USER-TESTS.md](USER-TESTS.md)다. 동일 소스/검사의 CI·산출물 업로드를 반복하지 않는다.
 
-사용자시험이현재E08/H03의구현을막는구체적의존성은없다. 517bcf0ZIP은검증된중간산출물로보존하고동일source/test의CI/업로드를반복하지않는다. 이후최종산출물은추가구현의새검증된소스가준비됐을때새로만든다.
+## 이미 연결한 기능과 남은 경계
+
+| ID | 현재 상태와 남은 작업 |
+|---|---|
+| A09·E10 | 최근 메모·저장 검색조건의 기기별 암호 UI 기록과 Windows 합성 검사가 연결됨. 신규 미구현 기능으로 재작업하지 않으며 실제 사용자 수용은 별도다. |
+| E08 | 원본불변 최대512자 검색 문맥 강조와 Windows 합성 검사 연결됨. 실제 사용자 수용 미확인이다. |
+| H03 | 암호 첨부 패널의 단일 로컬 이미지 FileDrop과 실제 routed Windows 검사 연결됨. 물리 drag 수용 미확인이다. |
+| H07 | 기기 소유 파일 경로 metadata·복구 보존·명시 열기 권한 및 Windows37963072226 검사 연결됨. 원본 파일 암호화·경로 경쟁 방어를 제공하지 않으며 실제 외부 앱/깨진 링크 수용은 남는다. |
+| L01·L02·L03·L05·L06 | 시작 등록·트레이·세션 수명과 설치 실행 검사가 연결됨. 실제 로그인/로그아웃·Explorer·물리 사용자 수용은 별도다. |
+| D11 | 기본off 백업 선행 휴지통 정리와 Windows 합성 검사 연결됨. 기존 시험판은 schema8이며 후속 schema9 호환은 새 gate와 구분한다. |
+| N02 | 제목/본문 평문 PDF와 Windows37980813931 검사 연결됨. 전체 Unicode shaping·서식/표/그림·rendered Markdown 보존 및 실제 viewer 수용은 남는다. |
+| N04 | canonical 글자·목록·체크 상태·표와 inert 링크 주소를 DOCX로 연결함. 그림·rendered Markdown 및 실제 Word viewer 수용은 남고 새 Windows gate 대기다. |
+| N07 | 명시 시트·제목/본문 열·첫 행 제외와 기존 템플릿 선택, SHA256 원본 연결·전체 후보 거절을 구현함. af297201 실제 매핑/modal lock/재열기 검사는 PASS다. 날짜는 raw serial이며 수식·.xls는 지원하지 않는다. |
+| N08 | 단일 strict UTF8 .md 제목/raw 본문 어댑터와 Windows 합성 검사가 연결됨. 실제 Obsidian 생성 파일의 버전·바이트/해시 근거는 미확보다. 전체 vault·플러그인·첨부를 보편적 필수 범위로 확대하지 않는다. |
+| O01·O02·O03 | schema9 암호 저장 정책과 root identity 검사를 연결함. af297201 실제 재실행/OFF/설정 경쟁/예약·실패/복구 검사는 PASS다. |
+| O04 | 현재 세션 보관 한도 설정·가득 찬 경우 중단을 연결함. 원장의 재실행 유지·보관 정리 미완료를 유지하며 백업 자동 삭제는 별도 정책 결정 전 실행하지 않는다. |
+| T12 | 실제 로컬 한글/영문 OCR·별도 plain 암호 적용·검색·재실행 Windows 검사 연결됨. 일반 입력 확대·정확도 corpus·자원/통신 관찰·추가 수명 경계는 남는다. |
+
+## 계속 진행할 독립 작업
+
+1. 현재 Windows gate에서 C10 빈 항목 Undo/Redo 원문 복원, N07 매핑·원본 변경·modal 잠금, O01~O03 persisted 정책과 설치 실행 owning-PID 통신 관찰을 확인한다. 실패는 기능/fixture 원인을 분리해 고치며 strict scaffold·원본 보존·권한 조건을 완화하지 않는다.
+2. H01/H02 문서 내부 이미지와 일반 clipboard Bitmap/DIB 입력을 bounded·명시 입력으로 연결한다. H08/T12의 일반 이미지 형식 확대, 합성 입력 corpus와 느린 실행/선택·epoch·잠금 경계 검사를 진행한다. 이미 연결한 H03 drop을 미구현으로 취급하지 않는다.
+3. H09 첨부에 연결된 암호 OCR 파생 정보와 검색 조건, O06 동일 ID 충돌 보존 merge 및 삭제/복구 epoch 정합성을 구현한다. 네트워크 동기화와 구분해 독립 계약·검사를 진행한다.
+4. N02 전체 Unicode shaping·rich/Markdown 출력, N04 그림·rendered Markdown을 보완한다. N08은 알려진 앱 버전이 실제 저장한 비민감 합성 파일의 출처·해시·예상 매핑을 확보하고 검증한다. 공식 형식 문서나 릴리스 사실만으로 생성 버전 호환을 주장하지 않는다. 확인된 403/restricted 접근은 우회하지 않는다.
+5. P01/T12 통신 관찰·자원/정확도 등 독립 검사를 진행하고 실제 오프라인·IME·모니터/DPI·OS 수명·viewer 수용은 사용자 기기 확인으로 별도 기록한다. 물리 수용 대기로 독립 구현·검사를 중단하지 않는다.
+6. 미착수13개는 L09·L10, P05·P06, Q03·Q04·Q06·Q07·Q08, T13·T14·T15·T16이다. 업데이트 게시자 인증/rollback·실패 복구, 변경 단위 E2EE 동기화·충돌/기기 범위, Android 원문 보존 편집, 실제 로컬 음성·AI 엔진/모델 계약을 진행한다. 오프라인 계약/fixture 작업과 실제 서명 신뢰·기기 등록·SDK 약관·모델 접근 결정을 분리한다.
+
+Android SDK 약관은 이미 전달한 응답 대기를 유지하며 승인 전 설치/수락하지 않고 반복 질문하지 않는다. 공식 음성·AI 모델 경로의 확인된 403은 우회하지 않는다. N09는 알려진 S메모 앱 버전의 공개 또는 전적으로 합성된 파일 근거가 필요한 별도 차단1로 유지한다. 외부/유료 서비스나 계정을 임의 추가하지 않는다. 저장·암호화·복구·동기화·업데이트는 별도 보안 검토를 거치며 실메모·키·토큰·사용자 백업을 저장소/로그/CI에 넣지 않는다.

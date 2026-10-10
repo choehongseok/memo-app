@@ -5,3 +5,9 @@
 SHA-256: `96845312b47eca214aaf8a72fa5a41c650f18dc3be0c516791257375daf5925f`.
 
 Schema9Checks verifies the frozen hash and exact schema8 deserialize/serialize bytes. Existing schema1..7 fixed byte/hash checks remain unchanged. This plaintext fixture contains only synthetic IDs and content; no user vault, key, token, or backup.
+
+`frozen-schema9.json` is the exact 2710-byte policy-bearing output of the real pre-H01 Core binary, captured before any schema10/codec production edits using a standalone harness referencing the copied binary. It derives only synthetic records from the existing frozen8 fixture and adds the schema9 opt-in policy.
+
+Fixture SHA-256: `cde32f87ced6cbf5828c2c6ad3547e23243588aa719d727cd963fc6945518050`.
+
+The pre-H01 baseline DLL was copied to `/tmp/memo-frozen9-baseline/MemoApp.Core.dll`: 2413056 bytes, SHA-256 `d88729a4dfb6b10cce728063e37f148ffb5e7b95fd04798dd96c959fff6bfa49`. Its standalone capture source and project were kept in the same temporary directory. The frozen output is committed for regression checking; the binary is not a repository deliverable. No post-change serializer was used to generate or claim the original fixture.

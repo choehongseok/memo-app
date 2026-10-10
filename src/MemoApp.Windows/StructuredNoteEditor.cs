@@ -26,6 +26,9 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     private bool rebuilding,committing,disposed,editable,refreshPending,composing;
     private long projectionGeneration;
     private long compositionToken;
+    private long caretSelectionGeneration;
+    internal long CaretSelectionGeneration=>caretSelectionGeneration;
+    private void CaretSelectionChanged(object sender,RoutedEventArgs e)=>caretSelectionGeneration++;
     public string? CleanupErrorCode{get;private set;}
     private readonly TextBlock state=new(){TextWrapping=TextWrapping.Wrap,Margin=new(4)};
     private readonly TextBox linkInput=new(){Width=190,MaxLength=2048,ToolTip="http/https 링크를 원문에 보존 (자동 실행 없음)"};
@@ -60,7 +63,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         var foreground=new ComboBox{Width=65,ItemsSource=new[]{"#000000","#FFFFFF","#CC0000","#0044CC","#006600","#663399"},ToolTip="글자색"};foreground.SelectionChanged+=(_,_)=>{if(foreground.SelectedItem is string hex)ApplyForeground(hex);};toolbar.Children.Add(foreground);
         var highlight=new ComboBox{Width=65,ItemsSource=new[]{"#FFFF00","#CCFFCC","#FFCCDD","#CCCCFF","#FFFFFF"},ToolTip="형광펜"};highlight.SelectionChanged+=(_,_)=>{if(highlight.SelectedItem is string hex)ApplyHighlight(hex);};toolbar.Children.Add(highlight);
         Button("• 목록",()=>ToggleList(false));Button("1. 목록",()=>ToggleList(true));Button("체크목록",InsertChecklist);Button("체크",ToggleChecked);Button("2×2 표",()=>InsertTable(2,2));toolbar.Children.Add(linkInput);Button("링크 표시 추가",()=>ApplyLink(linkInput.Text));Button("선택 링크 열기",OpenSelectedLinkWithConfirmation);RichInput.PreviewMouseLeftButtonUp+=LinkClick;
-        RichInput.TextChanged+=Changed;DataObject.AddPastingHandler(RichInput,Pasting);
+        RichInput.TextChanged+=Changed;RichInput.SelectionChanged+=CaretSelectionChanged;DataObject.AddPastingHandler(RichInput,Pasting);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart),true);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate),true);
         RichInput.AddHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete),true);
@@ -95,7 +98,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
             // Build and verify a detached document before its single native publish.
             var document=new FlowDocument{FontFamily=new FontFamily("Segoe UI"),FontSize=14,PagePadding=new(0),TextAlignment=TextAlignment.Left,Foreground=RichInput.Foreground};
             var info=RichDocumentCodec.Inspect(source);bool ready=false;string limitation=info.Limitation;
-            if(info.Supported)
+            if(info.Supported&&source.SchemaVersion==1)
             {
                 using var json=JsonDocument.Parse(source.SourceJson,new(){MaxDepth=16});
                 try
@@ -106,6 +109,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
                 }
                 catch(InvalidDataException){document.Blocks.Clear();limitation="이 PC의 미지원 글꼴/서식 — 전체 원문을 보존하며 읽기 전용입니다.";}
             }
+            if(source.SchemaVersion==2)limitation="이미지 문서는 읽기 전용입니다. 이미지 표시·블록 제거는 문서 보기에서 명시적으로 실행하세요.";
             if(!ready)document.Blocks.Add(new Paragraph(new Run(text)));
             if(!Same()){if(!Live())ClearSensitive();else refreshPending=true;return;}
             var previous=projected;long previousContentVersion=projectedContentVersion;var oldNative=RichInput.Document;projected=source;projectedContentVersion=target.ContentVersion;editable=false;composing=false;
@@ -248,7 +252,24 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         }
         return JsonNode.DeepEquals(Normalize(left),Normalize(right));
     }
-    private StyledDocument CaptureDocument()=>CaptureNativeDocument(RichInput.Document);
+    public bool TryGetCollapsedBlockBoundary(out int boundary)
+    {
+        boundary=0;
+        if(disposed||!editable||rebuilding||committing||composing||refreshPending||native.EventDepth!=0||note?.Document is not {SchemaVersion:1} source||!ReferenceEquals(projected,source)||!RichInput.Selection.IsEmpty)return false;
+        var target=note!;long version=target.EditVersion,selection=caretSelectionGeneration;var start=RichInput.Selection.Start;var end=RichInput.Selection.End;
+        bool Unchanged()=>!disposed&&editable&&!composing&&ReferenceEquals(note,target)&&ReferenceEquals(target.Document,source)&&ReferenceEquals(projected,source)&&target.EditVersion==version&&selection==caretSelectionGeneration&&RichInput.Selection.IsEmpty&&RichInput.Selection.Start.CompareTo(start)==0&&RichInput.Selection.End.CompareTo(end)==0;
+        if(!Live()||!Unchanged())return false;
+        DependencyObject? cursor=start.Paragraph;
+        while(cursor is FrameworkContentElement element&&element.Parent is not FlowDocument)cursor=element.Parent;
+        if(cursor is not Block block||!ReferenceEquals(block.Parent,RichInput.Document))return false;
+        int index=0;foreach(var candidate in RichInput.Document.Blocks){if(ReferenceEquals(candidate,block)){boundary=index+1;return Live()&&Unchanged();}index++;}
+        return false;
+    }
+    private StyledDocument CaptureDocument()
+    {
+        if(note?.Document?.SchemaVersion!=1)throw new InvalidDataException("Image documents cannot be captured as native v1 text");
+        return CaptureNativeDocument(RichInput.Document);
+    }
     private static StyledDocument CaptureNativeDocument(FlowDocument document)
     {
         var nodes=new JsonArray();int count=0;
@@ -391,7 +412,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         if(disposed)return;disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;editable=false;rebuilding=true;
         var oldNote=note;projected=projectionSource=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
         // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
-        RichInput.TextChanged-=Changed;DataObject.RemovePastingHandler(RichInput,Pasting);
+        RichInput.TextChanged-=Changed;RichInput.SelectionChanged-=CaretSelectionChanged;DataObject.RemovePastingHandler(RichInput,Pasting);
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,new TextCompositionEventHandler(CompositionStart));
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,new TextCompositionEventHandler(CompositionUpdate));
         RichInput.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,new TextCompositionEventHandler(CompositionComplete));

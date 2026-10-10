@@ -106,7 +106,7 @@ public partial class MainWindow : Window
         // Native hiding happens before encryption, async I/O, or clearing bound objects.
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
-        EditingPanel.Visibility = Visibility.Collapsed;ClearMarkdownPreview();ClearStructuredEditor();ClearAttachmentPanel();
+        EditingPanel.Visibility = Visibility.Collapsed;ClearMarkdownPreview();ClearStructuredEditor();ClearInlineImageView();ClearAttachmentPanel();
         Editor.DataContext = null; Editor.IsEnabled = false; NotesList.ItemsSource = null;
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false; BodyEditor.Clear(); TitleEditor.Clear();
         loadingUi = true;
@@ -189,7 +189,7 @@ public partial class MainWindow : Window
     {var previous=markdownPreview;markdownPreview=null;markdownNote=null;MarkdownHost.Content=null;MarkdownHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ClearStructuredEditor()
     {
-        var previous=structuredEditor;structuredEditor=null;structuredNote=null;StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;previous?.Dispose();
+        var previous=structuredEditor;structuredEditor=null;structuredNote=null;if(previous is not null&&ReferenceEquals(StructuredHost.Content,previous)){StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;}previous?.Dispose();
     }
     private void ClearAttachmentPanel()
     {
@@ -204,6 +204,7 @@ public partial class MainWindow : Window
         ClearAttachmentPanel();long epoch=uiEpoch;bool attached=false;AttachmentPanel? created=null;
         bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&active.Workspace.Notes.Contains(selected)&&selected is {IsClosed:false,IsDeleted:false}&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
         created=new(active,selected,Current,message=>{if(Current())Notice.Text=message;},uiDeviceId);
+        ConfigureInlineImageInsertion(created,active,selected,Current);
         if(Current()){attachmentPanel=created;attachmentNote=selected;AttachmentHost.Content=created;AttachmentHost.Visibility=Visibility.Visible;attached=true;}else created.Dispose();
     }
     private void SelectEditor()
@@ -212,8 +213,11 @@ public partial class MainWindow : Window
         if(changed){BodyEditor.IsUndoEnabled=TitleEditor.IsUndoEnabled=false;BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Clear();}
         Editor.DataContext=selected;Editor.IsEnabled=session is {IsLocked:false}&&!concealing&&selected is {IsDeleted:false};
         TitleEditor.IsUndoEnabled=Editor.IsEnabled;selectedBodyMode=selected?.Mode;
-        if(selected is {Mode:"rich",IsDeleted:false}&&session is {IsLocked:false} active&&!concealing)
+        if(selected is {Mode:"rich",IsDeleted:false,Document:{SchemaVersion:2}}&&session is {IsLocked:false} imageActive&&!concealing)
+        {ClearStructuredEditor();ConfigureInlineImageView(imageActive,selected);}
+        else if(selected is {Mode:"rich",IsDeleted:false}&&session is {IsLocked:false} active&&!concealing)
         {
+            ClearInlineImageView();
             BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.IsUndoEnabled=false;BodyEditor.Clear();BodyEditor.IsReadOnly=true;BodyEditor.Visibility=Visibility.Collapsed;StructuredHost.Visibility=Visibility.Visible;
             if(!ReferenceEquals(structuredNote,selected)||structuredEditor is null||structuredEditor.IsDisposed)
             {
@@ -225,7 +229,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            ClearStructuredEditor();BodyEditor.Visibility=Visibility.Visible;BodyEditor.IsReadOnly=!Editor.IsEnabled||selected?.Mode=="rich";BodyEditor.IsUndoEnabled=Editor.IsEnabled&&selected?.Mode!="rich";
+            ClearStructuredEditor();ClearInlineImageView();BodyEditor.Visibility=Visibility.Visible;BodyEditor.IsReadOnly=!Editor.IsEnabled||selected?.Mode=="rich";BodyEditor.IsUndoEnabled=Editor.IsEnabled&&selected?.Mode!="rich";
             if(selected?.Mode=="rich"){BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.Text=selected.Text;}
             else if(!BindingOperations.IsDataBound(BodyEditor,TextBox.TextProperty))BodyEditor.SetBinding(TextBox.TextProperty,new Binding(nameof(NoteDraft.Text)){UpdateSourceTrigger=UpdateSourceTrigger.PropertyChanged});
         }

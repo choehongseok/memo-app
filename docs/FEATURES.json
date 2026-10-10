@@ -1194,7 +1194,14 @@
           "result": "PASS",
           "limitations": "제한된 known rich/readonly Markdown 및 합성 제어시험; C12 링크는 자동실행 없는 삽입/보존이며 명시 클릭 실행은 아직 없다. 물리IME/OS SessionLock/ACL/사용자수용/전체134완료가 아니다."
         },
-        "5db5d8a actual Windows38002826135: rich-checklist-enter and source-version/Lock rich-checklist-enter-boundary PASS. New empty-item native Undo completion FAIL; exact initial projection source restoration and synthetic diagnostics follow-up pending gate."
+        "5db5d8a actual Windows38002826135: rich-checklist-enter and source-version/Lock rich-checklist-enter-boundary PASS. New empty-item native Undo completion FAIL; exact initial projection source restoration and synthetic diagnostics follow-up pending gate.",
+        {
+          "kind": "actual-windows-partial-gate",
+          "commit": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
+          "environment": "GitHub Windows2022 SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38004389975",
+          "result": "Whole FAIL: native/build/fullCore PASS; Excel scalar/mapping, backup root/persistence and original Enter boundary/empty item UndoRedo PASS. Additional selected-body Enter fixture lacked keyboard focus; follow-up focus fix pending native gate. publish/install/upload SKIPPED."
+        }
       ],
       "blocking_reason": "새 empty-item/same-item-selection Undo/Redo gate pending; original Enter/source-change/Lock boundary actualPASS. 사용자 수용 미확인."
     },
@@ -2473,7 +2480,11 @@
       ],
       "implementation_locations": [
         "src/MemoApp.Windows/AttachmentPanel.cs",
-        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs"
+        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs",
+        "src/MemoApp.Core/Documents/RichDocumentImageEdit.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.InlineImages.cs",
+        "src/MemoApp.Windows/RichImageDocumentView.cs",
+        "src/MemoApp.Windows/AttachmentPanel.InlineImages.cs"
       ],
       "planned_module": "Attachments",
       "test_evidence": [
@@ -2492,7 +2503,7 @@
           "result": "PASS exact-head automatic component/control/package install/hash/Unicode shortcut/production title/localcoreclr/cleanexit; not full ID acceptance or user-PC IME/OS/DPI/trust/ACL"
         }
       ],
-      "blocking_reason": "PNG 원본 첨부·선택 미리보기 부분 연결. inline image-node/clipboard/drop 및 전체 이미지 수용은 미완료."
+      "blocking_reason": "후속 strict docv2/schema10 인증 PNG 블록 삽입·read-only 순서 보기·명시 표시/제거 개발 중. Core target 및 전체 회귀 PASS/독립review; Windows 선택 재진입 수정 후 actualWindows 대기. editable inline image·image paste/drop into editor·일반형식·Word image embedding·사용자 수용은 미완료."
     },
     {
       "id": "H02",
@@ -2729,7 +2740,7 @@
           "result": "PASS exact-head automatic component/control/package install/hash/Unicode shortcut/production title/localcoreclr/cleanexit; not full ID acceptance or user-PC IME/OS/DPI/trust/ACL"
         }
       ],
-      "blocking_reason": "제한 RGB/RGBA PNG만 명시 미리보기. 앱 전체 lifetime slot·epoch/stale 결과 폐기 검사. 전체 형식/사용자 수용 미완료."
+      "blocking_reason": "기존 RGB/RGBA8 제한PNG에 scalar metadata actualWindowsPASS. 후속 gray8/gray-alpha8 CoreRED→GREEN/독립review, 새Windows공유경로 대기. JPEG·palette/interlace·text/ICC/EXIF/APNG 및 실제사용자수용 미완료."
     },
     {
       "id": "H09",
@@ -3493,9 +3504,16 @@
           "environment": "Linux SDK10.0.401 + Windows Actions37940341144",
           "result": "전체 Windows SUCCESS/excel-text-import PASS: bounded 첫 시트 plain 문자열·원본 불변·암호 restart·전체 candidate와 dirty savefailure 보존·picker/confirm/lock/sourceguard. 후속 observer 예외 안내 추가 검사는 다음 소스에서 확인한다."
         },
-        "후속 dirty: actual XLSX ZIP numeric lexical long integer/boolean exact import and source preservation Linux target GREEN. date serial raw numeric only/no display-date inference; new WPF encrypted restart test pending Windows."
+        "후속 dirty: actual XLSX ZIP numeric lexical long integer/boolean exact import and source preservation Linux target GREEN. date serial raw numeric only/no display-date inference; new WPF encrypted restart test pending Windows.",
+        {
+          "kind": "actual-windows-partial-gate",
+          "commit": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
+          "environment": "GitHub Windows2022 SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38004389975",
+          "result": "Whole FAIL: native/build/fullCore PASS; Excel scalar/mapping, backup root/persistence and original Enter boundary/empty item UndoRedo PASS. Additional selected-body Enter fixture lacked keyboard focus; follow-up focus fix pending native gate. publish/install/upload SKIPPED."
+        }
       ],
-      "blocking_reason": "명시 시트/제목·본문 열 매핑·firstrow skip·기존templatechoice 및 SHA bound read 연결, CoretargetGREEN. 새 WPF/modalLock/재열기 gate 대기; 수식실행·날짜표시해석·xls 없음, 사용자 수용 별도."
+      "blocking_reason": "명시 시트/제목·본문 열 매핑·firstrow skip·known-template·SHA 원본연결은 actual Windows38004389975 relevant group PASS. 전체gate는 별도C10 fixture FAIL. 수식 실행·날짜 표시 추론·xls 없음; 실제 Excel 사용자 수용 미확인."
     },
     {
       "id": "N08",
@@ -3602,9 +3620,16 @@
       "test_evidence": [
         "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
         "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant.",
-        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged."
+        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged.",
+        {
+          "kind": "actual-windows-partial-gate",
+          "commit": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
+          "environment": "GitHub Windows2022 SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38004389975",
+          "result": "Whole FAIL: native/build/fullCore PASS; Excel scalar/mapping, backup root/persistence and original Enter boundary/empty item UndoRedo PASS. Additional selected-body Enter fixture lacked keyboard focus; follow-up focus fix pending native gate. publish/install/upload SKIPPED."
+        }
       ],
-      "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
+      "blocking_reason": "schema9 기기별 암호 정책/root identity·restart/OFF/예약 실패의 actual Windows38004389975 relevant group PASS. 전체gate는 별도C10 fixture FAIL. 실제 사용자 기기 수용·자동 old-backup rotation 미완료."
     },
     {
       "id": "O02",
@@ -3631,9 +3656,16 @@
       "test_evidence": [
         "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
         "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant.",
-        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged."
+        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged.",
+        {
+          "kind": "actual-windows-partial-gate",
+          "commit": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
+          "environment": "GitHub Windows2022 SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38004389975",
+          "result": "Whole FAIL: native/build/fullCore PASS; Excel scalar/mapping, backup root/persistence and original Enter boundary/empty item UndoRedo PASS. Additional selected-body Enter fixture lacked keyboard focus; follow-up focus fix pending native gate. publish/install/upload SKIPPED."
+        }
       ],
-      "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
+      "blocking_reason": "schema9 기기별 암호 정책/root identity·restart/OFF/예약 실패의 actual Windows38004389975 relevant group PASS. 전체gate는 별도C10 fixture FAIL. 실제 사용자 기기 수용·자동 old-backup rotation 미완료."
     },
     {
       "id": "O03",
@@ -3660,9 +3692,16 @@
       "test_evidence": [
         "079dbe4 Windows37933940176 전체 SUCCESS: session opt-in save/daily/exit, capacity during save wait, immediate key release, final dirty exit actual restore; Core detached ciphertext/whole originals verified.",
         "후속 dirty schema9 default-off encrypted policy fullCore GREEN: exact prechange8, strict1..8omit/refuse, sticky9/D11/hidden-unprepared/root/attachment/recovery. Windows opt-in save-before-active/token/root ID/day reservation/hidden-only OFF/recovery sanitize implemented; actual Windows gate pending. Independent review Important3 fixed, later read-only review no remainingImportant.",
-        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged."
+        "5db5d8a actual Windows38002826135 root-binding PASS. Persistent group FAIL on false fixture assumption (preflight-refused reservation day is not stored); corrected expected committed-day semantics plus actual commit-file fault fixture pending gate. Production preflight unchanged.",
+        {
+          "kind": "actual-windows-partial-gate",
+          "commit": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
+          "environment": "GitHub Windows2022 SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38004389975",
+          "result": "Whole FAIL: native/build/fullCore PASS; Excel scalar/mapping, backup root/persistence and original Enter boundary/empty item UndoRedo PASS. Additional selected-body Enter fixture lacked keyboard focus; follow-up focus fix pending native gate. publish/install/upload SKIPPED."
+        }
       ],
-      "blocking_reason": "새 persisted opt-in Windows 복원·OFF/설정 경쟁·UTC일 예약·root identity·명시 복구 sanitation actual gate 및 사용자 수용은 대기; runtime 설정 취소와 마지막 저장 설정 잔존을 구분한다."
+      "blocking_reason": "schema9 기기별 암호 정책/root identity·restart/OFF/예약 실패의 actual Windows38004389975 relevant group PASS. 전체gate는 별도C10 fixture FAIL. 실제 사용자 기기 수용·자동 old-backup rotation 미완료."
     },
     {
       "id": "O04",

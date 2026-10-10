@@ -48,6 +48,7 @@ internal static partial class Program
                 groups=groups.Append(("encrypted-backup-preview",(Func<Task>)BackupPreviewRun)).ToArray();
                 groups=groups.Append(("clipboard-png-input",(Func<Task>)ClipboardPngRun)).ToArray();
                 groups=groups.Append(("png-scalar-metadata",(Func<Task>)PngMetadataRun)).ToArray();
+                groups=groups.Append(("png-gray-shared-display",(Func<Task>)PngGrayRun)).ToArray();
                 groups=groups.Append(("excel-text-import",(Func<Task>)ExcelImportRun)).ToArray();
                 groups=groups.Append(("excel-sheet-column-mapping",(Func<Task>)ExcelMappingRun)).ToArray();
                 groups=groups.Append(("pdf-plaintext-export",(Func<Task>)PdfExportRun)).ToArray();
@@ -65,6 +66,9 @@ internal static partial class Program
                 groups=groups.Append(("search-match-preview",(Func<Task>)SearchMatchRun)).ToArray();
                 groups=groups.Append(("image-selected-png",(Func<Task>)ImagePreviewRun)).Append(("image-paused-races",(Func<Task>)ImagePreviewRacesRun)).Append(("image-commit-fault",(Func<Task>)ImagePreviewFaultRun)).Append(("image-dispatcher-shutdown",(Func<Task>)ImageShutdownRun)).Append(("explicit-full-exit",(Func<Task>)ExitMenuRun)).Append(("trial-installer",(Func<Task>)TrialInstallerRun)).ToArray();
                 groups=groups.Append(("ocr-product-native",(Func<Task>)OcrProductRun)).Append(("ocr-shared-settlement",(Func<Task>)OcrSettlementUiRun)).ToArray();
+                groups=groups.Append(("rich-image-document",(Func<Task>)RichImageDocumentRun)).Append(("rich-image-publication",(Func<Task>)RichImagePublicationRun)).ToArray();
+                groups=groups.Append(("rich-image-product",(Func<Task>)RichImageProductRun)).ToArray();
+                if(arguments.Contains("--h01-image-only"))groups=groups.Where(group=>group.Name is "rich-image-document" or "rich-image-publication" or "rich-image-product").ToArray();
                 if(Environment.GetCommandLineArgs().Contains("--nested-native-worker"))groups=[("nested-native-isolated",RichNestedNativeWorker)];
                 foreach(var group in groups)
                 {

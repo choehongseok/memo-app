@@ -15,6 +15,8 @@ public partial class MainWindow
     internal async Task<bool> ExportSelectedOfficeAsync(OfficeTextFormat format,Func<bool> confirm,Func<string?> choose,IAtomicVaultFiles? files=null)
     {
         Dispatcher.VerifyAccess();if(officeExportBusy||!Enum.IsDefined(format)||CaptureBatch(false) is not{ } request)return false;
+        if(format==OfficeTextFormat.Word&&request.Notes.Any(note=>note.Mode=="rich"&&note.Document?.SchemaVersion!=1))
+        {Notice.Text="이 서식 문서의 Word 내보내기를 아직 지원하지 않습니다. 문서와 첨부 원본을 함께 보존하려면 전체 암호 이전 파일을 사용하세요.";return false;}
         long sourceEpoch=request.Session.AttachmentPreviewEpoch;var versions=request.Notes.Select(n=>n.EditVersion).ToArray();var token=fileOperations.Token;
         bool Current()=>CurrentBatch(request)&&sourceEpoch==request.Session.AttachmentPreviewEpoch&&request.Notes.Where((n,i)=>n.EditVersion!=versions[i]).Any()==false&&NotesList.SelectedItems.Count==request.Notes.Length&&request.Notes.All(n=>NotesList.SelectedItems.Contains(n));
         officeExportBusy=true;

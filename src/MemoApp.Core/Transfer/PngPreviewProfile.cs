@@ -23,8 +23,8 @@ internal static class PngPreviewProfile
             {
                 if(!type.SequenceEqual("IHDR"u8)||length!=13)throw Refused();
                 var header=source.Slice(position+8,13);uint w=BinaryPrimitives.ReadUInt32BigEndian(header),h=BinaryPrimitives.ReadUInt32BigEndian(header[4..]);
-                if(w is <1 or >4096||h is <1 or >4096||header[8]!=8||header[9] is not (2 or 6)||header[10]!=0||header[11]!=0||header[12]!=0)throw Refused();
-                long total=checked((long)w*h);if(total>4194304)throw Refused();width=(int)w;height=(int)h;pixels=(int)total;channels=header[9]==6?4:3;
+                if(w is <1 or >4096||h is <1 or >4096||header[8]!=8||header[9] is not (0 or 2 or 4 or 6)||header[10]!=0||header[11]!=0||header[12]!=0)throw Refused();
+                long total=checked((long)w*h);if(total>4194304)throw Refused();width=(int)w;height=(int)h;pixels=(int)total;channels=header[9] switch{0=>1,2=>3,4=>2,6=>4,_=>throw Refused()};
                 structure=checked(structure+length);
             }
             else if(type.SequenceEqual("sRGB"u8))

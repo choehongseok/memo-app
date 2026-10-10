@@ -21,7 +21,7 @@ internal static partial class Program
             string notice="";using var view=new StructuredNoteEditor(workspace,note,()=>true,message=>notice=message);var window=new Window{Content=view};
             try
             {
-                window.Show();await Idle();string baseline=note.Document!.SourceJson;
+                window.Show();await Idle();view.RichInput.Focus();await Idle();Require(!view.RichInput.IsReadOnly&&view.RichInput.IsKeyboardFocused,"Empty checklist fixture is editable and keyboard focused before actual Enter; index="+emptyIndex);string baseline=note.Document!.SourceJson;
                 var paragraph=(Paragraph)view.RichInput.Document.Blocks.OfType<NativeList>().Single().ListItems.ElementAt(emptyIndex).Blocks.FirstBlock;
                 var end=paragraph.ContentEnd.GetInsertionPosition(LogicalDirection.Backward);view.RichInput.Selection.Select(end,end);
                 EditingCommands.EnterParagraphBreak.Execute(null,view.RichInput);await Idle();
@@ -44,11 +44,19 @@ internal static partial class Program
             string notice="";using var view=new StructuredNoteEditor(workspace,note,()=>true,message=>notice=message);var window=new Window{Content=view};
             try
             {
-                window.Show();await Idle();string baseline=note.Document!.SourceJson;var paragraph=(Paragraph)view.RichInput.Document.Blocks.OfType<NativeList>().Single().ListItems.FirstListItem.Blocks.FirstBlock;
+                window.Show();await Idle();
+                string State()=>"readonly="+view.RichInput.IsReadOnly+", focus="+view.RichInput.IsKeyboardFocused+", canEnter="+EditingCommands.EnterParagraphBreak.CanExecute(null,view.RichInput)+", selection="+view.RichInput.Selection.Text+", sameParagraph="+(view.RichInput.Selection.Start.Paragraph==view.RichInput.Selection.End.Paragraph)+", nativeItemCount="+view.RichInput.Document.Blocks.OfType<NativeList>().Sum(list=>list.ListItems.Count)+", native="+string.Join(" | ",view.RichInput.Document.Blocks.OfType<NativeList>().SelectMany(list=>list.ListItems).Select(item=>string.Join(" / ",item.Blocks.OfType<Paragraph>().Select(paragraph=>new TextRange(paragraph.ContentStart,paragraph.ContentEnd).Text))))+", notice="+notice+", source="+note.Document!.SourceJson;
+                Require(!view.RichInput.IsReadOnly,"Selected-body fixture must render an editable canonical checklist; "+State());
+                // WPF's CanExecute accepts an enabled editor, but OnEnterBreak additionally
+                // requires keyboard focus. A physical Enter has that focus already.
+                view.RichInput.Focus();await Idle();Require(view.RichInput.IsKeyboardFocused&&!view.RichInput.IsReadOnly,"Selected-body actual Enter fixture must own editable keyboard focus; "+State());
+                string baseline=note.Document!.SourceJson;var paragraph=(Paragraph)view.RichInput.Document.Blocks.OfType<NativeList>().Single().ListItems.FirstListItem.Blocks.FirstBlock;
                 var body=paragraph.Inlines.OfType<Run>().Last();view.RichInput.Selection.Select(body.ContentStart.GetPositionAtOffset(4)!,body.ContentStart.GetPositionAtOffset(10)!);
+                Require(view.RichInput.Selection.Text=="DELETE"&&view.RichInput.Selection.Start.Paragraph==paragraph&&view.RichInput.Selection.End.Paragraph==paragraph,"Selected-body fixture selects exactly DELETE inside one body run; "+State());
+                Require(EditingCommands.EnterParagraphBreak.CanExecute(null,view.RichInput),"Selected-body native Enter must be executable; "+State());
                 EditingCommands.EnterParagraphBreak.Execute(null,view.RichInput);await Idle();
                 var items=JsonNode.Parse(note.Document!.SourceJson)!["nodes"]![0]!["items"]!.AsArray();
-                Require(items.Count==2&&items[0]!["checked"]!.GetValue<bool>()&&!items[1]!["checked"]!.GetValue<bool>(),"Selected body Enter creates independent unchecked item and preserves original checked state; notice="+notice);
+                Require(items.Count==2&&items[0]!["checked"]!.GetValue<bool>()&&!items[1]!["checked"]!.GetValue<bool>(),"Selected body Enter creates independent unchecked item and preserves original checked state; "+State());
                 for(int index=0;index<2;index++){var runs=items[index]!["runs"]!.AsArray();Require(string.Concat(runs.Select(run=>run!["text"]!.GetValue<string>()))==(index==0?"left":"[x] right"),"Selected body Enter deletes exactly the selection and preserves literal [x] body");Require(runs.Where(run=>run!["text"]!.GetValue<string>().Length>0).All(run=>run!["bold"]!.GetValue<bool>()&&run["foreground"]!.GetValue<string>()=="#FF123456"),"Selected body split preserves explicit bold/color styles");}
                 string split=note.Document.SourceJson;view.RichInput.Undo();await Idle();Require(note.Document!.SourceJson==baseline&&view.RichInput.CanRedo,"Undo selection Enter restores exact body/styles/check state");view.RichInput.Redo();await Idle();Require(note.Document!.SourceJson==split,"Redo selection Enter restores exact canonical split");
                 var nativeItems=view.RichInput.Document.Blocks.OfType<NativeList>().Single().ListItems.ToArray();var firstBody=((Paragraph)nativeItems[0].Blocks.FirstBlock).Inlines.OfType<Run>().Last();var secondBody=((Paragraph)nativeItems[1].Blocks.FirstBlock).Inlines.OfType<Run>().Last();view.RichInput.Selection.Select(firstBody.ContentStart,secondBody.ContentEnd);notice="";EditingCommands.EnterParagraphBreak.Execute(null,view.RichInput);await Idle();Require(note.Document.SourceJson==split&&notice.Length>0,"Enter selection across items is refused with a notice and preserves source");

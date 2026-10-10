@@ -16,7 +16,7 @@ public sealed partial class EditingWorkspace
     private Guid attachmentRootId;
     private ImmutableArray<StoredAttachmentObject> attachmentObjects=[];
     private bool closed;
-    private bool searchStateEnabled,filePathsEnabled,discardedEnabled,backupPolicyEnabled;
+    private bool searchStateEnabled,filePathsEnabled,discardedEnabled,backupPolicyEnabled,inlineImagesEnabled;
     private StoredDiscardedRevision[] discardedRevisions=[];
     private StoredTombstone[] discardedMarkers=[];
     public EditingWorkspace(TimeProvider clock, VaultSnapshot? initial = null, VaultSnapshot? displayed = null)
@@ -28,6 +28,7 @@ public sealed partial class EditingWorkspace
         var visible = displayed ?? basis;
         searchStateEnabled=visible.SchemaVersion>=6||basis.SchemaVersion>=6;
         filePathsEnabled=visible.SchemaVersion>=7||basis.SchemaVersion>=7;
+        inlineImagesEnabled=visible.SchemaVersion>=10||basis.SchemaVersion>=10;
         backupPolicyEnabled=visible.SchemaVersion>=9||basis.SchemaVersion>=9;
         discardedEnabled=visible.SchemaVersion>=8||basis.SchemaVersion>=8;
         if(discardedEnabled)discardedRevisions=DiscardedEvidence.Clone(visible.DiscardedRevisions);
@@ -53,7 +54,7 @@ public sealed partial class EditingWorkspace
     }
     public void SetRichDocument(NoteDraft note,StyledDocument document)
     {
-        RequireNote(note);if(note.Mode!="rich"||note.Document is null||!RichDocumentCodec.Inspect(note.Document).Supported)throw new InvalidOperationException("Rich original is not editable");
+        RequireNote(note);ArgumentNullException.ThrowIfNull(document);if(note.Document?.SchemaVersion==2||document.SchemaVersion==2)throw new InvalidOperationException("Image documents require explicit canonical operations");if(note.Mode!="rich"||note.Document is null||!RichDocumentCodec.Inspect(note.Document).Supported)throw new InvalidOperationException("Rich original is not editable");
         var info=RichDocumentCodec.Inspect(document);if(!info.Supported)throw new InvalidOperationException("Unsupported new rich document");
         if(note.Document==document)return;
         var before=Capture();var current=before.Notes.Single(n=>n.NoteId==note.Id);var history=before.History.ToList();var now=clock.GetUtcNow();
@@ -91,7 +92,7 @@ public sealed partial class EditingWorkspace
     {
         var device=GetUiDevice(profile);if(device.AutomaticBackupPolicy==policy)return;
         var updated=devices.Where(d=>d.UiDeviceId!=profile).Append(device with{AutomaticBackupPolicy=policy}).ToArray();
-        var candidate=Capture() with{SchemaVersion=9,UiDevices=updated};VaultEnvelope.Validate(candidate);
+        var before=Capture();var candidate=before with{SchemaVersion=Math.Max(9,before.SchemaVersion),UiDevices=updated};VaultEnvelope.Validate(candidate);
         backupPolicyEnabled=true;discardedEnabled=true;devices.Clear();devices.AddRange(updated);Changed?.Invoke();
     }
     public void SetUiPreferences(Guid profile,UiPreferences preferences)
@@ -166,7 +167,7 @@ public sealed partial class EditingWorkspace
         ApplyEvents(new Dictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> { [note.Id] = (title, text, metadata) });
     private void ApplyContentEvent(NoteDraft note,string text,string mode,StyledDocument? document,NoteMetadata metadata)=>
         ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,text,metadata)},new Dictionary<Guid,(string Mode,StyledDocument? Document)>{[note.Id]=(mode,document)});
-    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null,ImmutableArray<StoredAttachmentObject>? stagedObjects=null,bool activateFilePaths=false)
+    private void ApplyEvents(IReadOnlyDictionary<Guid, (string Title, string Text, NoteMetadata Metadata)> changes,IReadOnlyDictionary<Guid,(string Mode,StyledDocument? Document)>? formats=null,StoredTag[]? stagedTags=null,IReadOnlyDictionary<Guid,ImmutableArray<Guid>>? attachments=null,ImmutableArray<StoredAttachmentObject>? stagedObjects=null,bool activateFilePaths=false,bool activateInlineImages=false)
     {
         if (changes.Count == 0) return;
         var before = Capture(); VaultEnvelope.Validate(before); var history = before.History.ToList();
@@ -181,6 +182,7 @@ public sealed partial class EditingWorkspace
         var tombstones = before.Tombstones.Where(t => nextNotes.All(n => n.NoteId != t.NoteId))
             .Concat(nextNotes.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
         var next = before with { Notes = nextNotes, History = history.ToArray(), Tombstones = tombstones,Tags=stagedTags??before.Tags,AttachmentObjects=stagedObjects??before.AttachmentObjects };
+        if(activateInlineImages&&next.SchemaVersion<10)next=next with{SchemaVersion=10};
         if(activateFilePaths&&next.SchemaVersion<7)next=next with{SchemaVersion=7};
         if(searchStateEnabled)next=next with{UiDevices=SanitizeRecent(nextNotes)};
         VaultEnvelope.Validate(next);
@@ -287,6 +289,7 @@ public sealed partial class EditingWorkspace
     {
         RequireNote(note);
         if(!note.AttachmentIds.Contains(id))throw new ArgumentException("Unknown active attachment reference");
+        if(note.Document is not null&&RichDocumentCodec.Images(note.Document).Any(image=>image.AttachmentId==id))throw new InvalidOperationException("Remove active image blocks before detaching their attachment");
         ApplyEvents(new Dictionary<Guid,(string Title,string Text,NoteMetadata Metadata)>{[note.Id]=(note.Title,note.Text,note.Metadata)},attachments:new Dictionary<Guid,ImmutableArray<Guid>>{[note.Id]=note.AttachmentIds.Remove(id)});
     }
     internal StoredAttachmentObject AttachmentObject(NoteDraft note,Guid id)
@@ -307,18 +310,20 @@ public sealed partial class EditingWorkspace
         }).ToArray();
         var contentless = basis.Tombstones.Where(t => current.All(n => n.NoteId != t.NoteId));
         var tombstones = contentless.Concat(current.Where(n => n.Metadata.Deleted).Select(n => new StoredTombstone(n.NoteId, n.RevisionId, (Guid[])n.Parents.Clone()))).ToArray();
-        return new(backupPolicyEnabled?9:discardedEnabled?8:filePathsEnabled?7:searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, DiscardedRevisions=DiscardedEvidence.Clone(discardedRevisions), Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
+        return new(inlineImagesEnabled?10:backupPolicyEnabled?9:discardedEnabled?8:filePathsEnabled?7:searchStateEnabled?6:attachmentRootId==Guid.Empty?4:5, basis.DeviceId, current) { History = history.ToArray(), Tombstones = tombstones, DiscardedRevisions=DiscardedEvidence.Clone(discardedRevisions), Folders = folders.ToArray(), Tags = tags.ToArray(),UiDevices=devices.ToArray(),AttachmentRootId=attachmentRootId,AttachmentObjects=attachmentObjects };
     }
     public void AcceptPrepared(VaultSnapshot snapshot)
     {
         EnsureOpen();
         if(snapshot.SchemaVersion>=8)VaultEnvelope.Validate(snapshot);
+        if(inlineImagesEnabled&&snapshot.SchemaVersion<10)throw new InvalidOperationException("Inline image payload downgrade refused");
         if(backupPolicyEnabled&&snapshot.SchemaVersion<9)throw new InvalidOperationException("Backup policy downgrade refused");
         if(discardedEnabled&&snapshot.SchemaVersion<8)throw new InvalidOperationException("Discarded evidence downgrade refused");
         if(discardedEnabled||snapshot.SchemaVersion>=8)DiscardedEvidence.RequirePreserved(discardedRevisions,discardedMarkers,snapshot);
         if(filePathsEnabled&&snapshot.SchemaVersion<7)throw new InvalidOperationException("File path metadata downgrade refused");
         if(searchStateEnabled&&snapshot.SchemaVersion<6)throw new InvalidOperationException("Search UI state downgrade refused");
         InvalidateAttachmentReads(null);
+        if(snapshot.SchemaVersion>=10)inlineImagesEnabled=true;
         if(snapshot.SchemaVersion>=9)backupPolicyEnabled=true;
         if(snapshot.SchemaVersion>=6)searchStateEnabled=true;
         if(snapshot.SchemaVersion>=7)filePathsEnabled=true;
@@ -332,6 +337,6 @@ public sealed partial class EditingWorkspace
         if (closed) return;
         InvalidateAttachmentReads(null);
         closed = true; foreach (var note in notes.ToArray()) note.Close();
-        notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear();discardedRevisions=[];discardedMarkers=[];attachmentRootId=Guid.Empty;attachmentObjects=[]; basis = new(4, Guid.Empty, []);
+        inlineImagesEnabled=false;notes.Clear(); folders.Clear(); tags.Clear(); devices.Clear();acceptedVersions.Clear();discardedRevisions=[];discardedMarkers=[];attachmentRootId=Guid.Empty;attachmentObjects=[]; basis = new(4, Guid.Empty, []);
     }
 }

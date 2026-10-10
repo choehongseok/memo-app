@@ -55,8 +55,16 @@ internal static class PngPixelDecoder
                             {
                                 int from = checked((int)((long)x * header.Width / header.PreviewWidth) * header.Channels);
                                 int to = checked((outputY * header.PreviewWidth + x) * 4);
-                                pixels![to] = current[from + 2]; pixels[to + 1] = current[from + 1]; pixels[to + 2] = current[from];
-                                pixels[to + 3] = header.Channels == 4 ? current[from + 3] : (byte)255;
+                                if (header.Channels <= 2)
+                                {
+                                    pixels![to] = current[from]; pixels[to + 1] = current[from]; pixels[to + 2] = current[from];
+                                    pixels[to + 3] = header.Channels == 2 ? current[from + 1] : (byte)255;
+                                }
+                                else
+                                {
+                                    pixels![to] = current[from + 2]; pixels[to + 1] = current[from + 1]; pixels[to + 2] = current[from];
+                                    pixels[to + 3] = header.Channels == 4 ? current[from + 3] : (byte)255;
+                                }
                             }
                             outputY++;
                         }

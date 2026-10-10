@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "5db5d8a5247b2b4d72d04743de12c364a34fcd45",
-    "working_tree": "5db5d8a Windows38002826135 in progress; later working changes not represented as already committed or accepted.",
+    "head": "af297201d6dd83bcf7d0f632ce610af8e5d318ac",
+    "working_tree": "af297201 whole Windows FAIL; later H01/schema10+gray PNG+focus fixture working changes not yet committed/native-verified.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "5db5d8a actual Windows38002826135 native/build0w0e/fullCore PASS; original Enter boundary+PNG+Word rich+root-binding PASS, additional Excel writer-lock reopen fixture/policy preflight-day expectation/empty item Undo exact-source FAIL. publish/install/upload SKIPPED. Follow-up independent cipher-copy reopen, committed-day failure semantics + true sourcecommit failure, projection exact-source Undo fixes; explicit Excel sheet/column mapping and installed-ownPID network snapshot added. Actual Linux new fullCore/crossbuild0w0e/Python39/source134 PASS; next actual Windows gate pending, no new artifact/wholecompletion claims.",
+    "current_change_verification": "후속 저장 소스 af297201d6dd83bcf7d0f632ce610af8e5d318ac / Windows38004389975/job114069706281 전체 FAIL. native OCR bundle·build0warnings0errors·fullCore PASS. actual WPF 원래 Enter/source-version/lock boundary, Excel scalar 및 새 시트·열 매핑, 백업 정책 persistence/예약 실패, empty checklist first/middle/last+Undo/Redo PASS. 다음 selected-body Enter 검사는 키보드 focus 없는 fixture에서 FAIL했다. 공식 WPF main 소스의 OnEnterBreak focus precondition과 기존 AtEnd focus를 비교해 fixture에 실제 focus·정확 DELETE 선택·CanExecute 단언을 추가했다. 이 수정의 실제 Windows 성공은 아직 미확인이다. publish/install/network observation/upload SKIPPED이며 기존 artifact11647312201은 보존한다.\n\n후속 H08 gray8/gray-alpha8 actual Core RED→GREEN 및 독립 읽기 검토 추가Important없음; Windows clipboard/암호 재열기/정확 BGRA·alpha·DPI·lock fixture는 대기다. H01은 독립 구현 전 보안 검토 및 H01_INLINE_IMAGE_PLAN에 따라 strict docv2/스키마10·기존 인증 PNG 블록 삽입/명시 표시를 개발한다. v1 opaque·기존1..9 writer/원문·134ID/M06를 유지하며 새v2는 native capture로 덮어쓰지 않는다. 실제 prechange9 DLL로 frozen9 2710B SHA256 cde32f87ced6cbf5828c2c6ad3547e23243588aa719d727cd963fc6945518050을 확보했다. missingAPI/schema10 actualRED→codec/참조 GREEN; hidden10 전체검증으로 title257 복구가 막히는 독립Important는 actualRED→narrow권한 검증 GREEN으로 수정했다. 알려진 v2 Word 미지원 capability도 actualRED→파일 구성 전 거절 GREEN. lifecycle 및 전체 Core는 실제 PASS다. 첫 교차빌드는 Windows fixture NoteId 오타로 FAIL, 수정과 선택 재진입 Important 보완 후 다시 검증한다. 새 actualWindows는 대기이므로 전체 성공·새 산출물·사용자 수용을 주장하지 않는다.\nH01 전체 Core exit0, 4project 교차빌드0warnings/0errors, Python39/원문134 PASS. PNG 선택·커서 재진입 Important 코드상해소/독립 재검토 추가Important없음. 실제 새로운 Windows gate는 대기.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "5db5d8a committed source; explicit later Excel mapping/P01 observation working changes"
+    "supplemental_source": "af297201 committed source plus explicitly uncommitted H01/schema10/gray PNG/focus-fixture changes"
   },
   "summary": {
     "original_id_count": 134,
@@ -34,16 +34,16 @@
     "in_progress_audit_category_counts": {
       "decision": 1,
       "independent-code": 8,
-      "independent-test": 10,
-      "physical-user": 100
+      "independent-test": 6,
+      "physical-user": 104
     },
     "all_category_counts": {
       "blocked-format": 1,
       "decision": 1,
       "independent-code": 21,
-      "independent-test": 10,
+      "independent-test": 6,
       "normalized": 1,
-      "physical-user": 100
+      "physical-user": 104
     },
     "full_feature_completion": 0,
     "user_acceptance_confirmed": 0,
@@ -911,7 +911,7 @@
     {
       "id": "C10",
       "implemented": "Canonical checklist checked states and actual Windows37999870635 three-item native Enter/styles/siblings/UndoRedo PASS. Same native operation source-version boundary FAIL; dirty final EndChange authority guard and empty-item/same-item selected Enter follow-up in progress. Dirty same-item body selection Enter 및 빈 항목 first/middle/last 종료를 canonical/Undo unit 안에 연결했다; prefix/cross-item 선택은 안전 거절, actual Windows gate pending.",
-      "remaining": "Original Enter/source-version/lock boundary actual Windows38002826135 PASS. Empty item first/middle/last Undo exact-source completion FAIL; original projection SourceJson restoration implemented with strict Equivalent/UndoAction guard, awaiting Windows. No loosened scaffold/style validation.",
+      "remaining": "Windows38004389975 original Enter/version/lock and empty first/middle/last+UndoRedo PASS. Additional selected body native Enter failed in fixture lacking keyboard focus. Focus/selection/CanExecute assertions added without production/scaffold/oracle weakening; next native gate pending.",
       "category": "independent-test",
       "minimum_user_action": null,
       "evidence": [
@@ -1765,7 +1765,7 @@
     {
       "id": "H01",
       "implemented": "Images stored as opaque encrypted attachments, selected PNG explicit preview, clipboard PNG/file drop partial flows.",
-      "remaining": "No canonical image node or inline image insertion/rendering; RichDocumentCodec only handles paragraph/list/checklist/table, and StructuredNoteEditor rejects embedded inlines. PRODUCT_SPEC explicitly includes image nodes. Attachment-panel preview alone does not complete the inline document-image scope.",
+      "remaining": "Canonical strict docv2/schema10 PNG block references, read-only positioned viewer/manual click, atomic source/history preservation are in development with actual Core RED→target GREEN. Encrypted lifecycle/fullCore/actualWindows pending. Editable image/inline paste-drop/general formats/Word embedding remain independent code and user acceptance is unverified.",
       "category": "independent-code",
       "minimum_user_action": "None. Add safe attachment-ID image node, reference validation/history preservation and explicit decode without external fetch; storage review required by AGENTS.",
       "evidence": [
@@ -1796,7 +1796,7 @@
     {
       "id": "H02",
       "implemented": "Attachment-panel focus Ctrl+V/button reads raw PNG only (byte[] or exact MemoryStream), bounded copy/source guards/encrypted attach, actual Windows tests.",
-      "remaining": "Ordinary Windows screenshot/image clipboard Bitmap/DIB representations unsupported; rich/plain editor focus pastes text and does not route image insertion. PNG metadata rejected. Need bounded explicit non-auto-converting bitmap/DIB capture and user image-paste routing/inline insertion, preserving OS clipboard.",
+      "remaining": "PNG scalar metadata supported and actual clipboard route PASS. Ordinary Windows Bitmap/DIB screenshot representations and image paste into the editor remain independent code; bounded explicit input/routing and OS clipboard preservation needed.",
       "category": "independent-code",
       "minimum_user_action": "None. Implement and test with synthetic clipboard Bitmap/DIB; physical screenshot Ctrl+V acceptance later.",
       "evidence": [
@@ -1958,7 +1958,7 @@
     {
       "id": "H08",
       "implemented": "Bounded RGB/RGBA8 noninterlaced PNG explicit preview plus strictly bounded sRGB/gAMA/pHYs scalar chunks; actual Windows37999870635 png-scalar-metadata, clipboard/encrypted reopen/original bytes, OCR product+shared settlement PASS. Color/physical metadata is uninterpreted.",
-      "remaining": "JPEG·palette/interlace·text/ICC/EXIF/animation은 아직 지원하지 않는다. 범용 이미지 표시 확대와 실제 사용자 수용이 남는다.",
+      "remaining": "Gray8/gray-alpha8 and scalar metadata added to bounded RGB/RGBA8 PNG; gray Core RED→GREEN/independent review, actual Windows gray display pending. JPEG/palette/interlace/text/ICC/EXIF/animation remain unsupported; broader format support and actual acceptance remain.",
       "category": "independent-code",
       "minimum_user_action": "None. Use public/synthetic image fixtures and reviewed decoder dependency if needed.",
       "evidence": [
@@ -2623,8 +2623,8 @@
     {
       "id": "N07",
       "implemented": "Bounded first-sheet title/body XLSX import extended in dirty code to exact lexical numeric scalars and TRUE/FALSE; no float conversion, date serial remains numeric. Actual ZIP reader+atomic import Linux GREEN; actual WPF/encrypted restart test added pending Windows. Follow-up explicit sheet/column mapping and source SHA binding Core fullGREEN, actual modal revoke/worker ownership/encrypted snapshot tests pending newWindows.",
-      "remaining": "明示 sheet/title/bodycolumn/firstrow skip + known-template choice now connected; SHA-bound source/whole-candidate Core GREEN. Actual Windows mapped import/modal-lock/native controls/source changes/cipher-copy reopen verification pending. Date serial remains raw, formulas refused, .xls not supported; all possible Excel formats are not required.",
-      "category": "independent-test",
+      "remaining": "Explicit sheet/title/body column/first-row skip and known-template choice, SHA-bound source, whole-candidate rejection and independent encrypted-copy reopen actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Date remains raw serial; formulas/.xls unsupported; physical Excel acceptance unverified.",
+      "category": "physical-user",
       "minimum_user_action": "None. Synthetic/public XLSX fixtures and ordinary schema choices are sufficient; no personal workbook needed.",
       "evidence": [
         "src/MemoApp.Core/Transfer/ExcelTextTransfer.cs",
@@ -2646,11 +2646,9 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [],
-        "inspection": [
-          "다음 Windows source gate에서 old scalar reopen fixture와 새 mapping/modal lock/hash/wholecandidate 검사를 실제 확인한다."
-        ],
+        "inspection": [],
         "physical_user": [
-          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+          "Explicit sheet/title/body column/first-row skip and known-template choice, SHA-bound source, whole-candidate rejection and independent encrypted-copy reopen actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Date remains raw serial; formulas/.xls unsupported; physical Excel acceptance unverified."
         ],
         "decision": [],
         "access": []
@@ -2751,8 +2749,8 @@
     {
       "id": "O01",
       "implemented": "Opt-in after-successful-save encrypted automatic backup, latest committed detached bytes and bounded owned capacity. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
-      "remaining": "Persistent policy code connected, root-native identity actualWindows PASS. Additional policy group failed a preflight-rejected uncommitted-day expectation; exact committed-day semantics and actual sourcecommit fault fixture corrected, pending Windows persistence/restart/OFF/rejected-config/hidden/recovery proof.",
-      "category": "independent-test",
+      "remaining": "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy.",
+      "category": "physical-user",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
@@ -2766,11 +2764,9 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [],
-        "inspection": [
-          "강화 schema1..8 exact/D11 sticky9 전체 회귀와 실제 Windows 정책/동시성 gate 실행."
-        ],
+        "inspection": [],
         "physical_user": [
-          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+          "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy."
         ],
         "decision": [],
         "access": []
@@ -2779,8 +2775,8 @@
     {
       "id": "O02",
       "implemented": "Opt-in final dirty-state exit backup after immediate lock/key release; settles previous backup without self-deadlock. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
-      "remaining": "Persistent policy code connected, root-native identity actualWindows PASS. Additional policy group failed a preflight-rejected uncommitted-day expectation; exact committed-day semantics and actual sourcecommit fault fixture corrected, pending Windows persistence/restart/OFF/rejected-config/hidden/recovery proof.",
-      "category": "independent-test",
+      "remaining": "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy.",
+      "category": "physical-user",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
@@ -2794,11 +2790,9 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [],
-        "inspection": [
-          "강화 schema1..8 exact/D11 sticky9 전체 회귀와 실제 Windows 정책/동시성 gate 실행."
-        ],
+        "inspection": [],
         "physical_user": [
-          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+          "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy."
         ],
         "decision": [],
         "access": []
@@ -2807,8 +2801,8 @@
     {
       "id": "O03",
       "implemented": "UTC-day automatic backup while running/unlocked, failed-day attempt throttle and latest-save gate. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
-      "remaining": "Persistent policy code connected, root-native identity actualWindows PASS. Additional policy group failed a preflight-rejected uncommitted-day expectation; exact committed-day semantics and actual sourcecommit fault fixture corrected, pending Windows persistence/restart/OFF/rejected-config/hidden/recovery proof.",
-      "category": "independent-test",
+      "remaining": "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy.",
+      "category": "physical-user",
       "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
@@ -2820,11 +2814,9 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [],
-        "inspection": [
-          "강화 schema1..8 exact/D11 sticky9 전체 회귀와 실제 Windows 정책/동시성 gate 실행."
-        ],
+        "inspection": [],
         "physical_user": [
-          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+          "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy."
         ],
         "decision": [],
         "access": []

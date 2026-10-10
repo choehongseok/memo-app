@@ -2,7 +2,8 @@ namespace MemoApp.Core.Documents;
 // Owned immutable source, including whitespace/escapes/order and opaque future fields.
 public sealed record StyledDocument(int SchemaVersion,string SourceJson);
 public sealed record RichDocumentInfo(bool Supported,string? Text,string Limitation);
-public static class RichDocumentCodec
+public sealed record StoredInlineImage(int BlockIndex,Guid AttachmentId,string Alt);
+public static partial class RichDocumentCodec
 {
     public const int MaxSourceBytes=1024*1024,MaxText=65536;
     private static readonly System.Text.UTF8Encoding Utf8=new(false,true);
@@ -24,7 +25,7 @@ public static class RichDocumentCodec
     public static RichDocumentInfo Inspect(StyledDocument document)
     {
         ArgumentNullException.ThrowIfNull(document);
-        if(document.SchemaVersion!=1||document.SourceJson is null||!IsWellFormedUnicode(document.SourceJson)||Utf8.GetByteCount(document.SourceJson)>MaxSourceBytes)throw new InvalidDataException("Unsupported/bounded rich document");
+        if(document.SchemaVersion is not(1 or 2)||document.SourceJson is null||!IsWellFormedUnicode(document.SourceJson)||Utf8.GetByteCount(document.SourceJson)>MaxSourceBytes)throw new InvalidDataException("Unsupported/bounded rich document");
         using var parsed=System.Text.Json.JsonDocument.Parse(document.SourceJson,new(){MaxDepth=16});
         ValidateJson(parsed.RootElement);
         var root=parsed.RootElement;if(root.ValueKind!=System.Text.Json.JsonValueKind.Object||!root.TryGetProperty("nodes",out var blocks)||blocks.ValueKind!=System.Text.Json.JsonValueKind.Array||blocks.GetArrayLength()>1024)throw new InvalidDataException("Rich nodes required/bounded");
@@ -32,7 +33,7 @@ public static class RichDocumentCodec
         void Fields(System.Text.Json.JsonElement value,string[] known)
         {
             if(value.ValueKind!=System.Text.Json.JsonValueKind.Object)throw new InvalidDataException("Rich object required");
-            if(value.EnumerateObject().Any(p=>!known.Contains(p.Name,StringComparer.Ordinal)))supported=false;
+            if(value.EnumerateObject().Any(p=>!known.Contains(p.Name,StringComparer.Ordinal))){if(document.SchemaVersion==2)throw new InvalidDataException("Unknown v2 document fields");supported=false;}
         }
         string String(System.Text.Json.JsonElement value,string name,int bound)
         {
@@ -79,6 +80,10 @@ public static class RichDocumentCodec
             string type=String(block,"type",128);
             switch(type)
             {
+                case "image" when document.SchemaVersion==2:
+                    Fields(block,["type","attachmentId","alt"]);string encoded=String(block,"attachmentId",36),alt=String(block,"alt",256);
+                    if(encoded.Length!=36||!Guid.TryParseExact(encoded,"D",out var attachmentId)||attachmentId==Guid.Empty||encoded!=attachmentId.ToString("D")||alt.Length==0||alt.Trim()!=alt||alt.Any(char.IsControl))throw new InvalidDataException("Invalid canonical image identity/alt");
+                    Append("[이미지: "+alt+"]");break;
                 case "paragraph":Fields(block,["type","runs"]);ReadRuns(block);break;
                 case "list":case "checklist":
                     Fields(block,type=="list"?["type","ordered","items"]:["type","items"]);if(type=="list")Flag(block,"ordered");
@@ -97,9 +102,10 @@ public static class RichDocumentCodec
                         if(!firstRow)Append("\n");firstRow=false;bool firstCell=true;foreach(var cell in row.EnumerateArray()){CountNode();if(!firstCell)Append("\t");firstCell=false;Fields(cell,["runs"]);ReadRuns(cell);}
                     }
                     break;
-                default:supported=false;break;
+                default:if(document.SchemaVersion==2)throw new InvalidDataException("Unknown v2 document node");supported=false;break;
             }
         }
+        if(document.SchemaVersion==2&&!supported)throw new InvalidDataException("Unsupported v2 document value");
         return new(supported,supported?text.ToString():null,supported?"":"미지원 문서/서식 — 원문과 인증된 본문을 보존하며 읽기 전용입니다.");
     }
     private static void ValidateJson(System.Text.Json.JsonElement root)
