@@ -1,0 +1,34 @@
+using System.IO;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
+using MemoApp.Core.Editing;
+using MemoApp.Core.Storage;
+using MemoApp.Windows;
+internal static partial class Program
+{
+    private static async Task MarkdownImportRun()
+    {
+        string dir=Path.Combine(Path.GetTempPath(),"memo-wpf-markdown-import-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dir);byte[] secret=EncryptedVault.GenerateRecoverySecret();MainWindow? main=null;
+        try
+        {
+            string root=Path.Combine(dir,"vault"),path=Path.Combine(dir,"합성 Obsidian.md"),raw="---\r\naliases: [합성]\r\n---\n# **원문**\r\n[[메모]] ![[image.png]]\r<script>literal</script>\n";byte[] original=new UTF8Encoding(false,true).GetBytes(raw);File.WriteAllBytes(path,original);
+            main=new MainWindow(root);main.Show();Require(main.FindName("MarkdownImportButton") is Button,"Explicit raw Markdown file import control is missing");Invoke(main,"StartSession",EncryptedVault.Create(root,secret,secret));var active=Field<SaveCoordinator>(main,"session");Field<DispatcherTimer>(main,"timer").Stop();var note=active.Workspace.CreateNote();note.Text="current preserved";Invoke(main,"RefreshNotes",note);await Idle();await Field<Task>(main,"recentTask");Require(await active.SaveAsync(),"Markdown native baseline");
+            var method=typeof(MainWindow).GetMethod("ImportMarkdownAsync",BindingFlags.Instance|BindingFlags.NonPublic)??throw new Exception("Source guarded Markdown import command missing");Task<bool> Import(Func<string?> choose,Func<bool> confirm)=>(Task<bool>)method.Invoke(main,[choose,confirm])!;
+            var enabled=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(Button));bool failOnce=true;EventHandler disabling=(_,_)=>{if(failOnce&&!Control<Button>(main,"MarkdownImportButton").IsEnabled){failOnce=false;throw new IOException("Synthetic Markdown disable fault");}};enabled.AddValueChanged(Control<Button>(main,"MarkdownImportButton"),disabling);try{Require(!await Import(()=>throw new Exception("No picker after native disable failure"),()=>true)&&!Field<bool>(main,"markdownImportBusy"),"Native disable failure releases Markdown import slot");}finally{enabled.RemoveValueChanged(Control<Button>(main,"MarkdownImportButton"),disabling);}
+            Require(!await Import(()=>null,()=>throw new Exception("No confirm on cancel"))&&active.Workspace.Notes.Count==1,"Canceled Markdown picker leaves original only");
+            Require(!await Import(()=>{note.Title="newer";return path;},()=>throw new Exception("No confirm after picker edit"))&&active.Workspace.Notes.Count==1,"Picker edit revokes before read/import");Require(await active.SaveAsync(),"Picker edit saved");
+            Require(!await Import(()=>path,()=>false)&&active.Workspace.Notes.Count==1,"Limitations confirmation cancellation preserves current");
+            Require(!await Import(()=>path,()=>{note.Title="confirm source edit";return true;})&&active.Workspace.Notes.Count==1,"Confirmation edit rejects stale source");Require(await active.SaveAsync(),"Confirm edit saved");
+            Require(!await Import(()=>path,()=>{var folders=Control<ComboBox>(main,"FolderFilter");folders.SelectedIndex=-1;folders.SelectedIndex=0;return true;})&&active.Workspace.Notes.Count==1,"Transient folder/selection change rejects original frame even when value restored");await Idle();await Field<Task>(main,"recentTask");
+            Require(await Import(()=>path,()=>true)&&active.Workspace.Notes.Count==2&&active.Workspace.Notes.Single(n=>n.Id!=note.Id).Mode=="markdown"&&active.Workspace.Notes.Single(n=>n.Id!=note.Id).Text==raw&&note.Text=="current preserved"&&File.ReadAllBytes(path).SequenceEqual(original),"Actual native Markdown import preserves raw newlines/extensions and existing/current/source bytes");await Field<Task>(main,"recentTask");
+            await Idle();Require(await active.SaveAsync(),"Accepted recent metadata settled before observer injection");await Idle();
+            byte[] accepted=File.ReadAllBytes(Path.Combine(root,"current.vault"));Action failObserver=()=>throw new IOException("Synthetic import observer failure");active.Workspace.Changed+=failObserver;try{bool result=await Import(()=>path,()=>true),appliedNotice=Control<TextBlock>(main,"Notice").Text.Contains("추가 이후"),sameCipher=File.ReadAllBytes(Path.Combine(root,"current.vault")).SequenceEqual(accepted);Require(!result&&active.Workspace.Notes.Count==3&&active.IsDirty&&appliedNotice&&sameCipher,$"Observer after applied fresh note: result={result} count={active.Workspace.Notes.Count} dirty={active.IsDirty} appliedNotice={appliedNotice} sameCipher={sameCipher}");}finally{active.Workspace.Changed-=failObserver;}Require(await active.SaveAsync(),"Observer failure explicit save repaired");
+            Task<bool>? locking=null;Require(!await Import(()=>path,()=>{locking=active.LockAsync();return true;}),"Confirmation lock discards late imported strings before apply");await locking!;Require(!Control<Button>(main,"MarkdownImportButton").IsEnabled&&active.KeysReleased,"Lock disables Markdown import and ends keys");
+        }
+        finally{if(main is not null){var active=Field<SaveCoordinator?>(main,"session");if(active is not null&&!active.IsLocked)await active.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();}CryptographicOperations.ZeroMemory(secret);Directory.Delete(dir,true);}
+    }
+}

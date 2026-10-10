@@ -1,7 +1,7 @@
-# 메모앱 제품 명세 — 단계 0
+# 메모앱 제품 명세
 
 ## 목적과 명세 권위
-개인정보를 포함한 S메모를 대체하는 한국어 Windows 앱이다. 중앙 관리창·독립 바탕화면 포스트잇이 중심이고 Android, 여러 PC, 종단간 암호화 동기화, 로컬 OCR·음성·AI까지 최종 범위에 포함한다. 핵심 메모는 계정·서버·인터넷 없이 사용한다. 이번 이관 작업은 **단계 0 개발 준비만**이며 제품 기능 구현을 시작하지 않는다.
+개인정보를 포함한 S메모를 대체하는 한국어 Windows 앱이다. 중앙 관리창·독립 바탕화면 포스트잇이 중심이고 Android, 여러 PC, 종단간 암호화 동기화, 로컬 OCR·음성·AI까지 최종 범위에 포함한다. 핵심 메모는 계정·서버·인터넷 없이 사용한다. 단계 0 준비 이후 최신 사용자 요청으로 **단계 1 실제 개발이 승인**되었다. 중요한 암호 저장/복구 구현은 부모 작업의 독립 검토를 선행한다.
 
 원선택과 운영 지시는 [SOURCE_PROMPT.txt](SOURCE_PROMPT.txt)에 누락 없이 보존했다(27,417바이트, SHA256 `29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d`). 문서 간 충돌 시 원문과 이후 명시적 사용자 변경을 우선한다. 기능별 추적·상태·수용 조건은 FEATURES.json의 134 ID가 유일한 원장이다. STATUS는 진행, VERIFICATION은 실행 근거, README는 사용 안내만 담당한다.
 
@@ -28,9 +28,9 @@ Android: 네이티브 Kotlin + Jetpack Compose 방향을 선택한다. .NET WPF 
 배포: 이후 Windows win-x64 독립 실행 시험판 zip(포터블) 및 설치형을 분리한다. ARM64는 실행 환경 확인 후 지원 목록에 반영한다. 설치형 포맷·배포 서명 인증서·Android 서명키는 이번 골격에 포함하지 않는다. 이번 CI의 DLL/EXE는 런타임 의존 개발 골격이며 설치 가능한 완성 시험판이 아니다. 자동 업데이트·공개 배포는 하지 않는다.
 
 ## 모듈 경계
-UI(Windows/Android), Documents, Notes/Organization, Storage, Cryptography/KeyAccess, Search, Attachments, History, Recovery, ImportExport, Sync, LocalIntelligence, Lifecycle/Updates를 분리한다. Core의 DocumentContract는 **직렬화 계약 골격만**이며 저장·암호화·검증기·동기화 구현이 아니다. Windows UI는 준비 안내만 표시한다. 메모 기능이 있는 것으로 보이게 하는 가짜 버튼은 없다.
+UI(Windows/Android), Documents, Notes/Organization, Storage, Cryptography/KeyAccess, Search, Attachments, History, Recovery, ImportExport, Sync, LocalIntelligence, Lifecycle/Updates를 분리한다. Core의 DocumentContract는 **직렬화 계약 골격만**이며 저장·암호화·검증기·동기화 구현이 아니다. 현재 Windows 기본 UI는 합성 자료용 암호 vault 생성/복구 비밀 해제, 일반 메모 편집, 암호 자동 저장, 재실행 복원, 포스트잇, 즉시 잠금과 명시적 후보 복구에 연결되어 있다. Windows 실제 실행은 아직 미검증이며 --editing-preview 모드는 제거했다.
 
-Storage는 검증된 암호화 envelope만 받는 계약으로 설계한다. UI/검색/AI는 잠금 해제된 메모리 자료에만 접근한다. 통신 모듈은 기본 비활성이고 저장 계층이 네트워크 클라이언트를 갖지 않는다. 단계 0에는 어떤 실행 중 네트워크·저장 코드도 넣지 않는다.
+Storage는 검증된 암호화 envelope만 받는 계약으로 설계한다. UI/검색/AI는 잠금 해제된 메모리 자료에만 접근한다. 통신 모듈은 기본 비활성이고 저장 계층이 네트워크 클라이언트를 갖지 않는다. 현재 저장은 VaultEnvelope/EncryptedVault, UI 세션 및 직렬 비동기 commit/즉시 잠금은 SaveCoordinator가 담당한다. 실행 중 네트워크·외부 API·텔레메트리 코드는 없다. Windows 통신 관찰 실험은 미실행.
 
 ## 문서·데이터 계약 v1
 Windows 편집기 내부 파일을 원본으로 쓰지 않는다. UTF-8 JSON의 버전 있는 블록 문서를 기준으로 rich/plain/markdown을 구분한다. rich는 paragraph/list/checklist/table/link/image 등 노드와 runs/marks를 갖는다. 각 노드의 알 수 없는 필드는 opaque로 보존하고 편집 불가능한 노드는 읽기 전용으로 유지한다. 이를 지원하지 못하는 클라이언트는 저장 자체를 차단한다. WPF FlowDocument는 투영이며 보존용 원본이 아니다.
@@ -46,7 +46,7 @@ DB schemaVersion/document schemaVersion/envelopeVersion/syncVersion은 별개다
 
 결정 방향: 유지보수되는 플랫폼 AEAD(예: .NET AesGcm/Android AES-GCM)와 안전한 RNG를 사용한다. 자체 암호 알고리즘·독자 보안 프로토콜 구현 금지. [Microsoft API 문서](https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesgcm?view=net-10.0)는 같은 키에서 nonce 재사용을 금지한다. 후보 envelope는 version, keyId/epoch, objectId, nonce, ciphertext, tag로 구성하며 타입·버전·ID·리비전은 AAD에 인증한다. 외부 노출 필드는 무작위 ID·길이·알고리즘 버전 최소치만 허용한다.
 
-각 객체/첨부는 무작위 데이터 키를 사용하고 vault key로 wrap한다. 수정·청크 암호화 nonce 정책, 키별 사용 한도·회전, 다중 기기 키 충돌 방지, AAD 인코딩·키 계층 및 키 wrap 방식은 독립 보안 검토 후 고정한다. 현재는 **암호 코드·키·암호 파일을 만들지 않았다**. 공개 암호 표준을 선택했다는 사실만으로 자체 동기화 프로토콜 안전성을 주장하지 않는다.
+각 객체/첨부는 무작위 데이터 키를 사용하고 vault key로 wrap한다. 수정·청크 암호화 nonce 정책, 키별 사용 한도·회전, 다중 기기 키 충돌 방지, AAD 인코딩·키 계층 및 키 wrap 방식은 독립 보안 검토 후 고정한다. 현재 단일 snapshot 암호 코드와 런타임 생성 합성 키/시험 파일을 구현·시험했다. 실제 사용자 키/자료는 사용하거나 저장소에 넣지 않았다. 공개 암호 표준을 선택했다는 사실만으로 자체 동기화 프로토콜 안전성을 주장하지 않는다.
 
 vault key와 보호 수단을 분리한다. [Windows DPAPI CurrentUser](https://learn.microsoft.com/en-us/dotnet/standard/security/how-to-use-data-protection)는 기기/계정 접근용 wrap이며 유일한 복구 수단이 아니다. Hello는 잠금 해제 사용자 확인 역할·키 접근 연동을 실제 검증해야 한다. Android Keystore wrapping key는 사용자 인증 조건과 하드웨어 지원 수준을 기록한다. 생체인증 UI만 띄우고 평문 키를 남기는 구현은 금지한다.
 
@@ -56,7 +56,7 @@ vault key와 보호 수단을 분리한다. [Windows DPAPI CurrentUser](https://
 
 신뢰 경계: Markdown 스크립트/매크로/외부 URL 이미지 자동 실행 금지. 첨부·수입·백업의 파일 수·총 크기·압축 비율·경로/중복·형식 제한, symlink/zip-slip 방어, staging 검증이 필요하다. 외부 파일 열기/평문 내보내기는 대상과 캐시 잔류 위험을 알린 뒤 수행한다. 업데이트는 배포자 서명·출처·버전/rollback 정책 확인, 실패하면 차단. 체크섬은 서명 대체가 아니다. 개발키와 배포키를 분리한다.
 
-현재 보안 문서는 작성자 자체 검토만 했다. 저장·암호화·복구·동기화·업데이트 구현 전 별도 검토 1회가 필수다. 독립 검토를 수행했다고 기록하지 않는다. 검토 없이 후보 nonce/KDF/키등록 규칙을 보안 구현으로 확정하지 않는다.
+54ae10c 설계 문구를 부모의 별도 검토자가 검토했고 조건부 구현 결과를 전달했다. 코드 열람·실행·전문 감사는 아니며 구현은 작성자가 조건별 시험으로 검증했다. 저장·암호화·복구·동기화·업데이트 구현 전 별도 검토 1회가 필수다. 독립 검토를 수행했다고 기록하지 않는다. 검토 없이 후보 nonce/KDF/키등록 규칙을 보안 구현으로 확정하지 않는다.
 
 ## 복구·백업 계약
 전체 백업은 암호화 단일 컨테이너에 문서·첨부·이력·tombstone·암호화 키복구 패키지와 인증 manifest를 포함한다. preview도 암호 해제 후 메모리에서만 제공한다. 자동/종료/일간/수동 백업은 정책 scheduler, 보관 개수는 성공 백업 확인 후 적용한다.
@@ -85,7 +85,7 @@ T12~T16은 로컬 엔진이 기본, 외부 API 필수 의존성 없음, 실패 �
 AI 질문은 허용한 잠금 해제 메모만 검색하고 근거 note/revision을 표시한다. 문서 내 명령은 자료로만 취급한다. 파일/외부 통신 도구 접근을 제공하지 않는다. 문장 다듬기·요약 반영은 미리보기/사용자 선택/이력 보존. 잠금·제외 메모의 embedding/OCR/음성 파생물도 같은 권한·암호화 경계를 따른다.
 
 ## 단계와 종료 조건
-0: 현재 저장소/정책 확인, 문서·134 ID·계약·보안 설계, 빌드/검사 골격, S메모 조사 착수. 현재 원격·Windows 실행과 보안 상세 검토는 차단/미실행이며 완전 종료라고 주장하지 않는다.
+0: 현재 저장소/정책 확인, 문서·134 ID·계약·보안 설계, 빌드/검사 골격, S메모 조사 착수. 현재 원격·Windows 실행은 차단/미실행이며 완전 종료라고 주장하지 않는다.
 1: 암호 저장·자동 저장·재실행/장애 복원, 중앙 창/포스트잇, 폴더·검색·이력·휴지통·암호 백업의 작은 Windows 완성 흐름. 첫 저장 전에 별도 보안 검토.
 2: 선택 Windows A~E/H/L/M/N/O/R/S/T08~T10, 수동 PC 이전, 표·Markdown·첨부·설치형/포터블 완성.
 3: 여러 PC E2EE 자동 동기화·기기 전용 메모·등록/해제·수정/삭제/복구 충돌 시험. 가상 서버와 실제 운영 결과 구분.
@@ -97,3 +97,28 @@ AI 질문은 허용한 잠금 해제 메모만 검색하고 근거 note/revision
 
 ## 변경 기록
 2026-10-02: 이번 범위를 단계 0으로 제한(이관 요청). 원문 최종 제품 범위는 그대로 유지. 지원 기간과 Windows 기본 후보를 근거로 .NET 10/WPF 선택. 코드 의존성 없이 계약/검사 골격만 작성. 중요 보안 선택은 자체 검토한 후보이며 구현 전 별도 검토 필요. GitHub Forbidden으로 원격 정책/현재 HEAD/Windows CI 가용성을 확인하지 못함.
+
+2026-10-02 후속 사용자 요청: 단계 1 실제 개발 승인. 상세 설계/중요 선택 검토는 STAGE1_SECURITY_REVIEW.md, 단일 실행 계획은 STAGE1_PLAN.md. 독립 편집 상태·개발용 Windows 바인딩을 먼저 작성하고 암호/복구 코드는 독립 검토 대기.
+
+## 현재 첫 저장 구현과 제한
+코드 기준 67fe9c5. 지원 중 .NET 10/WPF, Microsoft 공식 runtime pack 10.0.12를 포함한 Windows x64 self-contained unsigned 개발 시험판. Linux 교차 publish이며 Windows 실행 성공 아님. 실제 개인정보 사용 준비 완료 아님.
+
+실제 저장 payload는 VaultSnapshot.cs(schemaVersion=1/deviceId/notes/history/tombstones). notes는 plain/device-only만 지원. 전체 JSON/이력/목록은 암호화한다. DocumentContract는 향후 서식 호환 모델 골격으로 별도 유지하며 미지원 schema/mode/필드는 쓰기 차단한다. UUID 관계·중복·revision cycle/계수·EOF·depth16 검사를 적용한다. 처음 100 notes, title256/text65536 UTF-16 code units, envelope16MiB, parents8, history 총10000/메모512, tombstones100 및 현재 tombstone 부모0 제한. 한도 초과는 실패로 표시하고 기존 파일을 덮지 않는다. 134개 최종 범위 축소 아님.
+
+고정 envelope v1: magic MEMOV001(8), version u32=1, AES-GCM algorithm u32=1, vaultId/epoch/snapshotId 각16 UUID big-endian, sequence/wrapCount u64 little-endian, payloadLength u32 little-endian. header84 bytes 전체와 purpose byte(1=recovery wrap,2=DEK wrap,3=payload)를 AAD로 인증. recovery wrap/DEK wrap 각각 nonce12+cipher32+tag16, payload nonce12+cipher[length]+tag16. EOF/전체16MiB/필드/알고리즘/UUID/nonce·tag 고정 길이 검증. 매 Seal nonce CSPRNG, 매 snapshot DEK32, writer 세션/명시 복구마다 vaultKey32와 epoch 새로 생성. 모든 wrap 시도 2회 합산 카운터와 2^20 쓰기 가드; 실패 시도는 현재 세션에서 유지. 인증 카운터의 rollback/과거 파일 replay/프로세스 종료로 사라진 실패 시도 누계는 증명하지 못함. 한도 소진 시 쓰기 중단; 완전 키 회전 UI는 미제공.
+
+복구 비밀32 bytes의 canonical base64url43 글자, 새 자료 생성 전 정확 재입력. 파일에 recovery-wrapped vaultKey 포함. 재시작/잠금 해제는 비밀 재입력만. DPAPI 자동 접근 off/미제공(같은 계정 접근 권한은 별도 앱 인증 아님), Hello 미제공/미검증, 비밀번호/Argon2id 미제공. 비밀 자동 clipboard/log 기록 없음. UI·managed string/감염 OS의 완전 메모리 삭제를 보장하지 않음.
+
+단일 FileShare.None writer와 직렬 commit, 예상 base digest 비교를 적용한다. 같은 dir의 pending-[id].vault에 암호문만 create-new/write/Flush(true), current 교체 시 매번 고유 previous-[id].vault에 기존 파일을 보존한다. corrupt main 복구도 기존 정상 candidate를 덮지 않는다. replace 오류는 실제 후보 해시를 인증된 원본/새 암호문과 비교해 분류하고 이후 쓰기 중단. 모르는 결과는 unverified-preserved로 남김. expected fingerprint는 main을 복호화한 **동일 bytes**에서 계산. 다른 actor가 OS lock을 무시하면 검사와 replace 사이 TOCTOU 가능성까지 완전히 제거했다고 주장하지 않음. Flush/Replace의 전원 장애 완전 내구성도 보장하지 않음.
+
+암호 previous/pending은 자동 삭제하지 않는다. 디스크 사용량이 늘 수 있으며 복구 화면은 current와 최근128개 후보만 검사한다. 표시된 선택 후보는 AEAD/JSON/관계를 검증한 뒤 명시 확인으로 적용, 새 key epoch와 snapshot으로 전환한다. 과거 전체 snapshot의 유효 replay를 감지하거나 삭제 부활/동기화 문제를 해결한 것으로 주장하지 않는다. 병합·선택 메모 복구·정식 백업 일정/보관 정책은 미제공.
+
+잠금은 모든 UI/독립창을 먼저 가리고 입력/세션 epoch를 폐기한다. 최신 dirty를 동결하여 암호문으로 준비한 뒤 키를 즉시 zero하고 직렬 disk commit 완료를 기다린다. 실패는 ciphertext pending(키 종료) 또는 plaintext-hidden(암호화 전 실패, 키 보유)을 구분한다. 숨겨진 상태는 정확 비밀 재입력으로만 편집 재개. 암호문 보류 사본은 create-new로 내보낼 수 있다. 정상 종료는 저장/잠금 완료 후 수행하며 미저장 대기 데이터 포기는 별도 UI 확인이다. 5분 idle/Windows SessionLock 연결은 작성됐으나 실제 Windows event/화면/IME/ACL/다른 계정 검증은 미실행.
+
+
+## 2026-10-07 후속 구현 기록 (앞선 v1 기록과 구분)
+현재818a531 코드의 payload는schema3이며 폴더/태그/metadata·암호휴지통·이력·장치별UI프로필을추가했다. 기존envelope1/nonce/키정책은유지하며 v1/v2 첫v3저장은정확한원본ciphertext를previous로보존한다. Windows개별/일괄 일반메모·검색·이력비교·수동암호백업·TXT·포터블·순서·장치창/설정/날짜위젯에 실제Core/WPF 자동시험이있다. 서식/Markdown/첨부/설치형/자동백업/동기화/Android/로컬엔진최종범위는그대로미완료다. 상세현재상태는FEATURES/STATUS/VERIFICATION을따른다.
+
+S메모형식조사보완: [공식기존복구안내](https://www.smemo.co.kr/html/restore_memo.html)는 syncmemo_data의개별RTF/STF본문확인을설명하고 STF도서식일수있음을명시한다. [2015 PC4.0공식공지](https://www.smemo.co.kr/web/notice?page=5)는3.5이하와저장형식이달라짐을설명한다. 이는버전별metadata/첨부/전체자료형식검증이아니며 현재앱버전의호환성으로확대하지않는다. N09에는버전별설명또는빈테스트환경의완전합성파일·기대매핑·hash가필요하며 사용자실자료/키/실행파일은요구하지않는다.
+
+현재 후속 개발 payload schema4는 exact Markdown rawText와 immutable rich SourceJson·full-content history를 추가했다. plain/markdown/rich 모드 전환은 명시 손실 확인 후 원본 revision을 보존하며 known/opaque 문서·이력·복제·숨김복구·v1/2/3 첫schema4 저장의 exact original ciphertext previous/failure 보존을 자동검사했다. 기본 rich Main/Sticky 공유편집과 제한서식 명령은 실제Windows 제어시험 근거가 있으며 completion/purge 후속회귀를 진행한다. Markdig1.4.0은 fixed AST-only/inert/bounded projector용 검토된 의존성으로 Core에 고정했다. 원본134범위·서식/Markdown/이미지·첨부/동기화/Android/로컬엔진 최종목표 및 사용자수용 미확인은 유지한다.

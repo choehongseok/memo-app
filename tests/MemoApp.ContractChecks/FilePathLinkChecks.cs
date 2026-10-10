@@ -1,0 +1,91 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using MemoApp.Core.Editing;
+using MemoApp.Core.Storage;
+internal static class FilePathLinkChecks
+{
+    internal static async Task Run()
+    {
+        Guid device=Guid.Parse("00000000-0000-0000-0000-000000000001"),root=Guid.Parse("00000000-0000-0000-0000-000000000002"),profile=Guid.Parse("00000000-0000-0000-0000-000000000003");
+        var note=new StoredNote(Guid.Parse("00000000-0000-0000-0000-000000000004"),Guid.Parse("00000000-0000-0000-0000-000000000005"),[],DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch,"SYNTHETIC_LEGACY","unchanged raw source");
+        string[] golden=["48524480e28ee42212a293ccd4b5a95555146a9c40ce38abdafc06b3053714aa","14cb093f5e6d2d4c383f441ff11c8d52d58a26ad8eac588507f6e3aefe584079","251f999cf54f538de960c7e3d64a4b46059084f7fc1b070c08dc52c5a9ca0295","1d12243cbabc2abd77fac30fe91b7dc80b979155a8c3f88fca5861fbe4fee770","55aa7905e3167aa3e6e7fa7900015fdacb56ce9d36f9669e0a99fba54a50b6f9","dfdeb31230a562408f2c6714666bc40f15b6f51826a3b2bb56b5e2ac9d80134b"];
+        for(int schema=1;schema<=6;schema++)
+        {
+            var snapshot=new VaultSnapshot(schema,device,[note]){UiDevices=schema>=3?[new(profile,new(),[])]:[],AttachmentRootId=schema>=5?root:Guid.Empty};byte[] bytes=SnapshotSerialization.Bytes(snapshot);VaultChecks.Require(SnapshotSerialization.Bytes(VaultEnvelope.ReadSnapshot(bytes)).SequenceEqual(bytes),"Legacy nonempty payload exact roundtrip");VaultChecks.Require(Convert.ToHexStringLower(SHA256.HashData(bytes))==golden[schema-1],"Frozen pre-file-path nonempty schema1..6 serializer exact bytes "+schema);
+        }
+        VaultChecks.Require(typeof(NoteMetadata).GetProperty("FilePathLinks") is not null,"Encrypted schema7 file-path metadata contract missing");
+        var link=new StoredFilePathLink(Guid.NewGuid(),profile,"합성 자료.txt",@"C:\합성 폴더\합성 자료.txt");
+        var seven=new VaultSnapshot(7,device,[note with{Metadata=new(){FilePathLinks=[link]}}]){AttachmentRootId=root,UiDevices=[new(profile,new(),[])]};
+        var restored=VaultEnvelope.ReadSnapshot(SnapshotSerialization.Bytes(seven));VaultChecks.Require(restored.Notes[0].Metadata.FilePathLinks.Single()==link,"Platform-independent Windows path exact structural roundtrip without file lookup");
+        foreach(var invalid in new[]{link with{Id=Guid.Empty},link with{UiDeviceId=Guid.Empty},link with{Name="different.txt"},link with{Path=@"\\server\share\합성 자료.txt"},link with{Path=@"C:\CON\합성 자료.txt"},link with{Path=@"C:\folder\..\합성 자료.txt"},link with{Path=@"C:\folder\합성 자료.txt:stream"},link with{Path="/tmp/\uD800"},link with{Path=new string('x',1025)},link with{Path="file:///tmp/합성 자료.txt"}})VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(seven with{Notes=[note with{Metadata=new(){FilePathLinks=[invalid]}}]}),"Malformed path link structural refusal");
+        VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(seven with{Notes=[note with{Metadata=new(){FilePathLinks=[link,link]}}]}),"Duplicate per-note link IDs");VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(seven with{Notes=[note with{Metadata=new(){FilePathLinks=default}}]}),"Default link collection refusal");
+        foreach(int schema in new[]{1,2,3,4,5,6})VaultChecks.ExpectFailure(()=>VaultEnvelope.Validate(seven with{SchemaVersion=schema}),"Earlier schemas cannot carry file links");
+        var json=JsonSerializer.SerializeToNode(seven,SnapshotSerialization.Options(seven.SchemaVersion))!;json["schemaVersion"]=6;VaultChecks.ExpectFailure(()=>VaultEnvelope.ReadSnapshot(JsonSerializer.SerializeToUtf8Bytes(json)),"Earlier JSON cannot silently carry new link fields");json["schemaVersion"]=12;VaultChecks.ExpectFailure(()=>VaultEnvelope.ReadSnapshot(JsonSerializer.SerializeToUtf8Bytes(json)),"Unknown future schema12 is rejected");
+        json=JsonSerializer.SerializeToNode(seven,SnapshotSerialization.Options(seven.SchemaVersion))!;json["notes"]![0]!["metadata"]!.AsObject().Remove("filePathLinks");VaultChecks.ExpectFailure(()=>VaultEnvelope.ReadSnapshot(JsonSerializer.SerializeToUtf8Bytes(json)),"Schema7 requires explicit file link array");
+        var workspace=new EditingWorkspace(TimeProvider.System,new VaultSnapshot(5,device,[note]){AttachmentRootId=root});var draft=workspace.Notes.Single();workspace.AddFilePathLink(draft,link);VaultChecks.Require(workspace.Capture().SchemaVersion==7&&draft.Text==note.Text&&draft.ContentVersion==0&&workspace.Capture().History.Count(h=>h.NoteId==draft.Id)==1,"Atomic path event explicitly activates schema7 with original content/history preserved");
+        workspace.RecordRecentNote(profile,draft);workspace.SaveSearch(profile,"SYNTHETIC",new(){Query="raw"});workspace.ClearRecentNotes(profile);VaultChecks.Require(workspace.Capture().SchemaVersion==7,"Existing UI/search operations cannot lower activated schema7");
+        var duplicate=workspace.Duplicate(draft);VaultChecks.Require(duplicate.Metadata.FilePathLinks.Single().UiDeviceId==profile,"Duplicate preserves original link owner profile");workspace.DetachFilePathLink(draft,link.Id);VaultChecks.Require(draft.Metadata.FilePathLinks.Length==0&&workspace.Capture().SchemaVersion==7&&workspace.Capture().History.Any(h=>h.NoteId==draft.Id&&h.Metadata.FilePathLinks.Any(l=>l==link)),"Detach preserves schema activation and encrypted history path, not external file deletion");
+        var before=SnapshotSerialization.Bytes(workspace.Capture());VaultChecks.ExpectFailure(()=>workspace.AcceptPrepared(workspace.Capture() with{SchemaVersion=6}),"Workspace metadata7 downgrade refused");VaultChecks.Require(before.SequenceEqual(SnapshotSerialization.Bytes(workspace.Capture())),"Downgrade refusal exact workspace invariance");workspace.Clear();
+        PayloadFailure(link);await EncryptedIntegration();
+        Console.WriteLine("PASS: frozen nonempty legacy1..6 bytes; schema7 path syntax/no lookup, scalar/count/legacy/future refusal, atomic metadata/history, owner-preserving duplicate and search downgrade guards");
+    }
+    private static async Task EncryptedIntegration()
+    {
+        string root=Path.Combine(Path.GetTempPath(),"memo-path-links-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);byte[] secret=EncryptedVault.GenerateRecoverySecret();Guid profile=Guid.NewGuid(),other=Guid.NewGuid();string external=Path.Combine(root,"합성 자료.txt"),vaultRoot=Path.Combine(root,"vault"),backup=Path.Combine(root,"copy.vault");byte[] original=[0,255,13,10,123];File.WriteAllBytes(external,original);StoredFilePathLink link=FilePathLink.Create(external,profile);
+        try
+        {
+            VaultChecks.Require(FilePathLink.ResolveForOpen(link,profile)==external&&File.ReadAllBytes(external).SequenceEqual(original),"Local path creation/resolution preserve exact external bytes");
+            VaultChecks.ExpectFailure(()=>FilePathLink.ResolveForOpen(link with{Path="invalid",Name="invalid"},other),"Foreign profile rejected before even path interpretation");
+            VaultChecks.ExpectFailure(()=>FilePathLink.Create(root,profile),"Directories cannot become file links");
+            string alias=Path.Combine(root,"alias.txt");try{File.CreateSymbolicLink(alias,external);VaultChecks.ExpectFailure(()=>FilePathLink.Create(alias,profile),"Symbolic leaf file refused");}catch(UnauthorizedAccessException)when(OperatingSystem.IsWindows()){} // Windows runner may lack symlink privilege.
+            Guid attached;
+            using(var session=new SaveCoordinator(EncryptedVault.Create(vaultRoot,secret,secret),TimeProvider.System))
+            {
+                var note=session.Workspace.CreateNote();note.Title="합성 경로 연결";note.Text="unchanged source";VaultChecks.Require(await session.PrepareAttachmentsAsync(),"Actual encrypted root prepared");attached=session.AttachBytes(note,original,"original.bin","application/octet-stream",note.EditVersion);VaultChecks.Require(await session.SaveAsync(),"Nonempty root5 baseline");session.Workspace.RecordRecentNote(profile,note);session.Workspace.SaveSearch(profile,"before7",new(){Query="unchanged"});VaultChecks.Require(await session.SaveAsync(),"Actual encrypted schema6 baseline before migration");var five=session.Workspace.Capture();VaultChecks.Require(five.SchemaVersion==6,"Migration starts from genuine schema6 with persisted UI conditions");byte[] cipher=File.ReadAllBytes(Path.Combine(vaultRoot,"current.vault"));
+                session.Workspace.AddFilePathLink(note,link);session.Workspace.RecordRecentNote(profile,note);session.Workspace.SaveSearch(profile,"saved",new(){Query="source"});var seven=session.Workspace.Capture();VaultChecks.Require(seven.SchemaVersion==7&&seven.AttachmentRootId==five.AttachmentRootId&&seven.AttachmentObjects.SequenceEqual(five.AttachmentObjects)&&note.Text=="unchanged source","Metadata7 preserves actual root/objects/plain source");VaultChecks.Require(await session.SaveAsync(),"Actual schema7 encrypted commit");VaultChecks.Require(Directory.GetFiles(vaultRoot,"previous-*.vault").Any(p=>File.ReadAllBytes(p).SequenceEqual(cipher)),"Original ciphertext preserved during migration");
+                foreach(string p in Directory.GetFiles(vaultRoot,"*.vault"))VaultChecks.Require(!System.Text.Encoding.UTF8.GetString(File.ReadAllBytes(p)).Contains(external,StringComparison.Ordinal),"External path absent from encrypted storage plaintext");
+                for(int i=1;i<16;i++)session.Workspace.AddFilePathLink(note,link with{Id=Guid.NewGuid()});byte[] before=SnapshotSerialization.Bytes(session.Workspace.Capture());VaultChecks.ExpectFailure(()=>session.Workspace.AddFilePathLink(note,link with{Id=Guid.NewGuid()}),"Link count17 rejected");VaultChecks.Require(before.SequenceEqual(SnapshotSerialization.Bytes(session.Workspace.Capture())),"Link capacity failure leaves entire workspace exact");
+                foreach(var item in note.Metadata.FilePathLinks.Skip(1).ToArray())session.Workspace.DetachFilePathLink(note,item.Id);
+                VaultChecks.Require(await session.SaveAsync()&&await session.BackupAsync(backup),"Latest encrypted link backup");byte[] backupBytes=File.ReadAllBytes(backup);try{VaultChecks.Require(session.PreviewEncryptedBackup(backupBytes).Notes.Single().NoteId==note.Id,"Schema7 authenticated read-only backup preview");var copied=session.ImportSelectedEncryptedBackup(backupBytes,[note.Id],session.AttachmentPreviewEpoch).Single();VaultChecks.Require(copied.Id!=note.Id&&copied.Metadata.FilePathLinks.Single()==link,"Selected backup copy preserves original owner/path exactly");VaultChecks.ExpectFailure(()=>FilePathLink.ResolveForOpen(copied.Metadata.FilePathLinks.Single(),other),"Backup does not reassign path to importing profile");}finally{CryptographicOperations.ZeroMemory(backupBytes);}
+                VaultChecks.Require(await session.SaveAsync(),"Copied schema7 commit");session.Workspace.DetachFilePathLink(note,link.Id);VaultChecks.Require(File.ReadAllBytes(external).SequenceEqual(original)&&await session.SaveAsync(),"Detach does not delete or change external file");VaultChecks.Require(await session.LockAsync()&&session.KeysReleased,"Schema7 keys released on lock");
+            }
+            await HiddenAndFailures(Path.Combine(root,"hidden"),secret,link);
+            File.Delete(external); // No filesystem access is allowed while decrypting historical/foreign path metadata.
+            using(var session=new SaveCoordinator(EncryptedVault.Open(vaultRoot,secret),TimeProvider.System))
+            {
+                VaultChecks.Require(session.Workspace.Capture().SchemaVersion==7&&session.Workspace.Notes.Count(n=>n.Metadata.FilePathLinks.Length==1)==1&&session.Workspace.Capture().History.Any(h=>h.Metadata.FilePathLinks.Any(l=>l==link)),"Restart authenticates deleted-source path/history without lookup");var note=session.Workspace.Notes.First(n=>n.AttachmentIds.Contains(attached));byte[] bytes=session.ReadAttachmentBytes(note,attached,note.EditVersion);try{VaultChecks.Require(bytes.SequenceEqual(original),"Schema7 original attachment still decrypts");}finally{CryptographicOperations.ZeroMemory(bytes);}await session.LockAsync();
+            }
+            string restoredRoot=Path.Combine(root,"restored");string candidate=EncryptedVault.ImportEncryptedCopy(restoredRoot,backup,secret);using(var session=new SaveCoordinator(EncryptedVault.Open(restoredRoot,secret,candidate),TimeProvider.System)){VaultChecks.Require(session.Workspace.Notes.Single().Metadata.FilePathLinks.Single()==link&&await session.SaveAsync(),"Fresh-root encrypted recovery retains exact foreign path without lookup");await session.LockAsync();}
+            using(var vault=EncryptedVault.Open(vaultRoot,secret))
+            {
+                var latest=vault.Loaded;var old=latest with{SchemaVersion=6,Notes=latest.Notes.Select(n=>n with{Metadata=n.Metadata with{FilePathLinks=[]}}).ToArray(),History=latest.History.Select(h=>h with{Metadata=h.Metadata with{FilePathLinks=[]}}).ToArray()};VaultChecks.ExpectFailure(()=>vault.Prepare(old),"Actual vault schema7 cannot downgrade to6");VaultChecks.ExpectFailure(()=>vault.InitializeAttachmentRoot(old),"Actual root helper refuses6 downgrade");VaultChecks.ExpectFailure(()=>vault.ValidateHiddenRoot(old),"Hidden root refuses6 downgrade");var legacy=new VaultSnapshot(4,latest.DeviceId,[]);VaultChecks.ExpectFailure(()=>vault.InitializeAttachmentRoot(legacy),"Legacy initialization cannot evade7 downgrade guard");
+            }
+        }
+        finally{CryptographicOperations.ZeroMemory(secret);Directory.Delete(root,true);}
+        Console.WriteLine("PASS: genuine encrypted schema7 save/restart/backup/selected copy, immutable original root/objects/ciphertext, exact external bytes/no payload, deleted-source no lookup, owner and root downgrade guards");
+    }
+
+    private static async Task HiddenAndFailures(string root,byte[] secret,StoredFilePathLink link)
+    {
+        var files=new FaultFiles();using(var session=new SaveCoordinator(EncryptedVault.Create(root,secret,secret,files),TimeProvider.System))
+        {
+            var note=session.Workspace.CreateNote();note.Text="original";VaultChecks.Require(await session.PrepareAttachmentsAsync()&&await session.SaveAsync(),"Failure baseline");byte[] old=File.ReadAllBytes(Path.Combine(root,"current.vault"));session.Workspace.AddFilePathLink(note,link);files.Fail=true;VaultChecks.Require(!await session.SaveAsync()&&session.IsDirty&&note.Metadata.FilePathLinks.Single()==link&&old.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"current.vault"))),"Flush failure keeps whole dirty7 and original ciphertext");VaultChecks.Require(!await session.LockAsync()&&session.KeysReleased,"Prepared ciphertext fault releases keys without deleting pending recovery candidate");
+        }
+        string pending=Directory.GetFiles(root,"pending-*.vault").Single();using(var recovered=EncryptedVault.Open(root,secret,Path.GetFileName(pending))){recovered.Save(recovered.Loaded);using var session=new SaveCoordinator(recovered,TimeProvider.System);VaultChecks.Require(session.Workspace.Capture().SchemaVersion==7&&session.Workspace.Notes.Single().Metadata.FilePathLinks.Single()==link&&await session.SaveAsync(),"Explicit pending candidate authentication/recovery retains exact link");await session.LockAsync();}
+        using(var vault=EncryptedVault.Open(root,secret))using(var session=new SaveCoordinator(vault,TimeProvider.System))
+        {
+            var note=session.Workspace.Notes.Single();note.Title="hidden latest";var wraps=typeof(EncryptedVault).GetField("wraps",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!;ulong before=(ulong)wraps.GetValue(vault)!;wraps.SetValue(vault,VaultEnvelope.MaxWraps);VaultChecks.Require(!await session.LockAsync()&&!session.KeysReleased&&session.IsLocked,"Pre-encryption exhausted budget retains hidden explicit recovery authority");session.ResumeHidden(secret);VaultChecks.Require(session.Workspace.Capture().SchemaVersion==7&&session.Workspace.Notes.Single().Title=="hidden latest"&&session.Workspace.Notes.Single().Metadata.FilePathLinks.Single()==link,"Hidden recovery exact latest schema7 links: schema="+session.Workspace.Capture().SchemaVersion+" title="+(session.Workspace.Notes.Single().Title=="hidden latest")+" link="+(session.Workspace.Notes.Single().Metadata.FilePathLinks.Single()==link));wraps.SetValue(vault,before);VaultChecks.Require(await session.SaveAsync()&&await session.LockAsync(),"Explicit hidden correction saves and releases keys");
+        }
+    }
+    private sealed class FaultFiles:IAtomicVaultFiles
+    {
+        private readonly AtomicVaultFiles actual=new();internal bool Fail;public Stream CreateNew(string path)=>actual.CreateNew(path);public void FlushToDisk(Stream stream){if(Fail)throw new IOException("Synthetic path flush fault");actual.FlushToDisk(stream);}public void Move(string a,string b)=>actual.Move(a,b);public void Replace(string a,string b,string c)=>actual.Replace(a,b,c);
+    }
+
+    private static void PayloadFailure(StoredFilePathLink link)
+    {
+        Guid id=Guid.NewGuid();var note=new StoredNote(id,Guid.NewGuid(),[],DateTimeOffset.UnixEpoch,DateTimeOffset.UnixEpoch,"near","body");var history=Enumerable.Range(0,255).Select(_=>new StoredRevision(id,Guid.NewGuid(),[],DateTimeOffset.UnixEpoch,"h",new string('x',65536))).ToArray();var six=new VaultSnapshot(6,Guid.NewGuid(),[note]){AttachmentRootId=Guid.NewGuid(),History=history};int limit=VaultEnvelope.MaxFile-308;int remaining=65536-(SnapshotSerialization.Bytes(six).Length-(limit-8));VaultChecks.Require(remaining is >=0 and <=65536,"Metadata6 near-byte-budget fixture");history[^1]=history[^1] with{Text=new string('x',remaining)};VaultEnvelope.Validate(six);var workspace=new EditingWorkspace(TimeProvider.System,six);try{byte[] before=SnapshotSerialization.Bytes(workspace.Capture());int events=0;workspace.Changed+=()=>events++;VaultChecks.ExpectFailure(()=>workspace.AddFilePathLink(workspace.Notes.Single(),link),"Whole payload refuses schema7 atomic event");VaultChecks.Require(events==0&&workspace.Capture().SchemaVersion==6&&before.SequenceEqual(SnapshotSerialization.Bytes(workspace.Capture())),"Payload refusal leaves entire original basis/content/history/schema exact");}finally{workspace.Clear();}
+    }
+
+}

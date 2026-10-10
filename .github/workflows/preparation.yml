@@ -1,18 +1,27 @@
 name: Preparation checks
 on:
   push:
+    branches: [main, preparation/stage-0]
   pull_request:
   workflow_dispatch:
+    inputs:
+      upload_trial:
+        description: 'Explicit trial upload only after confirming shared artifact storage allowance; may incur storage charges'
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   windows-skeleton:
     runs-on: windows-2022
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node24
         with:
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
       - name: Install fixed official SDK with SHA512 validation
         shell: pwsh
         run: |
@@ -34,23 +43,72 @@ jobs:
         run: |
           dotnet --info
           git rev-parse HEAD
+      - name: Record optional installed Microsoft MSI validation tools
+        shell: pwsh
+        run: |
+          $roots = @("${env:ProgramFiles(x86)}\Windows Kits", "$env:ProgramFiles\Windows Kits") | Select-Object -Unique
+          $names = @('msival2.exe', 'darice.cub', 'evalcom2.dll', 'orca.exe')
+          $found = @()
+          foreach ($root in $roots) {
+            if (Test-Path -LiteralPath $root) {
+              $found += Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction Stop | Where-Object { $_.Name -in $names }
+            }
+          }
+          if ($found.Count -eq 0) { Write-Output 'No native MSI ICE tool set found in installed Windows Kits; no SDK installed and no MSI executed' }
+          foreach ($file in ($found | Select-Object -First 50)) {
+            Write-Output "MSI tool inventory: $($file.FullName)"
+            if ($file.Extension -in @('.exe', '.dll')) {
+              $signature = Get-AuthenticodeSignature -FilePath $file.FullName
+              Write-Output "MSI tool signature: $($signature.Status) $($signature.SignerCertificate.Subject)"
+            }
+          }
       - name: Scope and safety checks
         shell: pwsh
         run: |
+          python -c "import hashlib, pathlib, subprocess; p='docs/SOURCE_PROMPT.txt'; blob=subprocess.check_output(['git','show','HEAD:'+p]); checkout=pathlib.Path(p).read_bytes(); print('source blob:',len(blob),hashlib.sha256(blob).hexdigest()); print('source checkout:',len(checkout),hashlib.sha256(checkout).hexdigest()); assert blob==checkout, 'Source checkout differs from Git blob'"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/verify_preparation.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -m unittest discover -s tests -p 'test_*.py' -v
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python tools/check_commit_safety.py
           exit $LASTEXITCODE
+      - name: Build fixed offline OCR engine and public model bundle
+        shell: pwsh
+        run: |
+          python tools/build_native_ocr.py "$env:RUNNER_TEMP/memo-native-product-ocr"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "MEMO_OCR_BUNDLE=$env:RUNNER_TEMP/memo-native-product-ocr/probe" | Out-File $env:GITHUB_ENV -Append
       - name: Build Windows skeleton
-        run: dotnet build MemoApp.slnx -c Release
+        run: dotnet build MemoApp.slnx -c Release -p:NativeOcrBundle="${{ env.MEMO_OCR_BUNDLE }}"
       - name: Synthetic contract checks
         run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build
-      - name: Publish development skeleton (runtime required)
-        run: dotnet publish src/MemoApp.Windows -c Release --no-restore -o artifacts/windows-skeleton
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Isolated OCR cleanup fault checks
+        run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build -- --ocr-cleanup-fault-only
+      - name: Actual Windows WPF synthetic control checks
+        run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
+      - name: Publish unsigned synthetic-data Windows x64 trial
+        run: dotnet publish src/MemoApp.Windows -p:NativeOcrBundle="${{ env.MEMO_OCR_BUNDLE }}" -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
+      - name: Package bounded per-user installation payload
+        shell: pwsh
+        run: |
+          Copy-Item "$env:DOTNET_ROOT/LICENSE.txt" artifacts/windows-x64-synthetic-trial/licenses/DotNet10.txt
+          Copy-Item "$env:DOTNET_ROOT/ThirdPartyNotices.txt" artifacts/windows-x64-synthetic-trial/licenses/DotNet10-ThirdPartyNotices.txt
+          Copy-Item "$env:DOTNET_ROOT/sdk/10.0.401/Sdks/Microsoft.NET.Sdk.WindowsDesktop/LICENSE.TXT" artifacts/windows-x64-synthetic-trial/licenses/WindowsDesktop10.txt
+          Copy-Item README.md artifacts/windows-x64-synthetic-trial/README.txt
+          Copy-Item docs/USER-TESTS.md artifacts/windows-x64-synthetic-trial/USER-TESTS.txt
+          python tools/package_trial.py artifacts/windows-x64-synthetic-trial
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Actual installed self-contained package checks
+        run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build -- --installed-package artifacts/windows-x64-synthetic-trial
+      - name: Check explicit final-trial upload request
+        id: final-trial
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'development/stage-1' && github.run_attempt == 1
+        run: python tools/check_artifact_request.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1, Node24
+        if: (github.event_name == 'workflow_dispatch' && inputs.upload_trial) || steps.final-trial.outputs.allowed == 'true'
         with:
-          name: windows-development-skeleton
-          path: artifacts/windows-skeleton
+          name: windows-x64-synthetic-trial
+          path: artifacts/windows-x64-synthetic-trial
           retention-days: 7
+          if-no-files-found: error

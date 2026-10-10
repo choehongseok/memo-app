@@ -1,0 +1,119 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using MemoApp.Core.Storage;
+using MemoApp.Core.Documents;
+using System.Collections.Immutable;
+namespace MemoApp.Core.Editing;
+
+// Unlocked shared draft. No disk I/O, keys, network or persistent search index.
+public sealed class NoteDraft : INotifyPropertyChanged
+{
+    private readonly TimeProvider clock;
+    private string title = "", text = "";
+    private string mode="plain";
+    private StyledDocument? document;
+    private ImmutableArray<Guid> attachmentIds=[];
+    private NoteMetadata metadata = new();
+    // Inert identity only: consumers may retain this token, never the live draft/event graph.
+    internal Action<NoteDraft,string,string,NoteMetadata>? OcrEditPreflight;
+    internal object AttachmentReadIdentity { get; } = new();
+    public event PropertyChangedEventHandler? PropertyChanged;
+    // Only this exact prepared event skips the workspace dirty watcher; real reentrant edits create new args.
+    internal PropertyChangedEventArgs PreparedRevisionNotification { get; } = new(nameof(EditVersion));
+    // Trusted internal revocation only. Never publish UI callbacks from this boundary.
+    internal event Action? AttachmentReadInvalidating;
+    private void InvalidateAttachmentReads()
+    {
+        if (AttachmentReadInvalidating is not { } handlers) return;
+        foreach (Action handler in handlers.GetInvocationList()) { try { handler(); } catch { } }
+    }
+    internal NoteDraft(TimeProvider clock, int order = 0)
+    {
+        this.clock = clock; metadata = new() { Order = order }; Id = Guid.NewGuid(); CreatedAt = ModifiedAt = clock.GetUtcNow();
+    }
+    internal NoteDraft(TimeProvider clock, StoredNote source) : this(clock)
+    {
+        Id = source.NoteId; CreatedAt = source.CreatedAt; ModifiedAt = source.ModifiedAt;
+        title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds;
+    }
+    public Guid Id { get; }
+    public Guid? FolderId => metadata.FolderId;
+    public bool IsDeleted => metadata.Deleted;
+    public NoteMetadata Metadata => metadata;
+    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset ModifiedAt { get; private set; }
+    public long EditVersion { get; private set; }
+    public long ContentVersion { get; private set; }
+    public bool IsClosed { get; private set; }
+    public string Mode=>mode;
+    public StyledDocument? Document=>document;
+    public ImmutableArray<Guid> AttachmentIds=>attachmentIds;
+    public string Title { get => title; set => Edit(ref title, value); }
+    public string Text { get => text; set {if(mode=="rich")throw new InvalidOperationException("Rich content must be edited as a complete document");Edit(ref text, value);} }
+    public bool Important { get => metadata.Important; set => SetMetadata(metadata with { Important = value }); }
+    public bool Favorite { get => metadata.Favorite; set => SetMetadata(metadata with { Favorite = value }); }
+    public bool Pinned { get => metadata.Pinned; set => SetMetadata(metadata with { Pinned = value }); }
+    public bool Archived { get => metadata.Archived; set => SetMetadata(metadata with { Archived = value }); }
+    public string Color { get => metadata.Color; set => SetMetadata(metadata with { Color = value }); }
+    private void EnsureEditable()
+    {
+        if (IsClosed || IsDeleted) throw new InvalidOperationException("Editing session or trash note is closed");
+    }
+    private void Edit(ref string field, string value, [CallerMemberName] string? property = null)
+    {
+        EnsureEditable(); ArgumentNullException.ThrowIfNull(value);
+        if (field == value) return;
+        OcrEditPreflight?.Invoke(this,property==nameof(Title)?value:title,property==nameof(Text)?value:text,metadata);
+        InvalidateAttachmentReads();
+        field = value;if(property==nameof(Text))ContentVersion++;Advance(); Notify(property);
+    }
+    internal void SetMetadata(NoteMetadata value, bool allowTrash = false)
+    {
+        if (IsClosed || IsDeleted && !allowTrash) throw new InvalidOperationException("Editing session or trash note is closed");
+        if (metadata == value) return;
+        OcrEditPreflight?.Invoke(this,title,text,value);
+        InvalidateAttachmentReads();
+        metadata = value; Advance();
+        foreach (var property in new[] { nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color) }) Notify(property);
+    }
+    // Prepared keep-current causal event: caller completed validation/invalidation before this swap.
+    internal void StagePreservedRevision(StoredNote source)
+    { title=source.Title;text=source.Text;metadata=source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds;ModifiedAt=source.ModifiedAt;EditVersion++; }
+    internal void StageOcrMetadata(StoredNote source)
+    { metadata=source.Metadata;ModifiedAt=source.ModifiedAt;EditVersion++; }
+    internal void StageRichImageTextDraft(StoredNote source, long editVersion, long contentVersion)
+    { text=source.Text;document=source.Document;ModifiedAt=source.ModifiedAt;EditVersion=editVersion;ContentVersion=contentVersion; }
+    internal PropertyChangedEventArgs[] PrepareRichImageTextNotifications() =>
+        [new(nameof(Text)),new(nameof(Document)),new(nameof(ModifiedAt)),PreparedRevisionNotification,new(nameof(ContentVersion))];
+    internal void PublishRichImageTextDraft(PropertyChangedEventArgs[] notifications)
+    { foreach (var args in notifications) PropertyChanged?.Invoke(this,args); }
+    internal void StageEvent(StoredNote source,bool replaceContent=false)
+    {
+        if (IsClosed) throw new InvalidOperationException("Editing session is closed");
+        InvalidateAttachmentReads();
+        if(replaceContent||text!=source.Text||mode!=source.Mode||document!=source.Document||!attachmentIds.SequenceEqual(source.AttachmentIds))ContentVersion++;
+        title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds; ModifiedAt = source.ModifiedAt; EditVersion++;
+    }
+    internal void PublishEvent()=>PublishEventCore(false);
+    internal void PublishPreservedRevision()=>PublishEventCore(true);
+    private void PublishEventCore(bool prepared)
+    {
+        foreach (var property in new[] { nameof(Title), nameof(Text),nameof(Mode),nameof(Document),nameof(AttachmentIds), nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color), nameof(ModifiedAt), nameof(EditVersion) })
+        {if(prepared&&property==nameof(EditVersion))PropertyChanged?.Invoke(this,PreparedRevisionNotification);else Notify(property);}
+    }
+    private void Advance()
+    {
+        EditVersion++; ModifiedAt = clock.GetUtcNow(); Notify(nameof(EditVersion)); Notify(nameof(ModifiedAt));
+    }
+    internal void StageClose()
+    {
+        InvalidateAttachmentReads();
+        OcrEditPreflight=null;IsClosed = true;ContentVersion++; title = text = ""; metadata = new();mode="plain";document=null;attachmentIds=[];
+    }
+    internal void Close(){StageClose();PublishClosed();}
+    internal void PublishClosed()
+    {
+        Notify(nameof(IsClosed)); Notify(nameof(Title)); Notify(nameof(Text)); Notify(nameof(Metadata));Notify(nameof(Mode));Notify(nameof(Document));Notify(nameof(AttachmentIds));
+    }
+    private void Notify(string? property) => PropertyChanged?.Invoke(this, new(property));
+}

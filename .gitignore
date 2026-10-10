@@ -26,3 +26,12 @@ SMemo*.exe
 user-data/
 models/
 __pycache__/
+*.vault
+writer.lock
+core
+core.*
+
+ui-device.id
+pending-ui-*.id
+
+.superpowers/

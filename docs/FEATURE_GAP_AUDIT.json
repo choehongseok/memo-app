@@ -1,0 +1,4048 @@
+{
+  "schema_version": 1,
+  "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
+  "snapshot_basis": {
+    "head": "c0865cbb7ee50dca36b09f1b12917e501bf093c4",
+    "working_tree": "Actualcf7 wholeFAIL2 PDFemoji/OCRpendingedit; H01prerequisitePASS. ScopednativeGrayscale renderer/OCRfixturefixes reviewed/crossbuildPASS, nativepending; separateH01Core/editor implementationinprogress notinthispublishedsnapshot.",
+    "dirty_changes_observed": [
+      "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
+    ],
+    "date": "2026-10-10",
+    "audit_inputs": [
+      "/tmp/memo-root-audit.json",
+      "/tmp/memo-editor-audit.json",
+      "/tmp/memo-storage-audit.json"
+    ],
+    "authority": [
+      "docs/SOURCE_PROMPT.txt",
+      "docs/PRODUCT_SPEC.md",
+      "docs/FEATURES.json",
+      "docs/NEXT_SCOPE.md"
+    ],
+    "current_change_verification": "Actualcf7 run38022122133/job114125165867 build/fullCore/cleanup PASS; WPF FAIL2 PDFemoji/OCRpendingeditfixture. H01nativeprerequisite/Word/DIB/H09/networkgroupsPASS. Package/install/uploadSKIPPED. Proposedscopedfixes crossbuild0w0e/independentPREPOSTclear; nativepending.",
+    "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
+    "supplemental_source": "N04 authenticated inlinePNG Word source is committed and fullCore/schema/compatibleviewer verified; actual nativeOffice group failed closed-host cleanup, fix pending native evidence. Source-literal Markdown is a disclosed supported projection; optional renderedMarkdown is not an explicit original requirement."
+  },
+  "summary": {
+    "original_id_count": 134,
+    "ledger_status_counts": {
+      "진행 중": 119,
+      "미착수": 13,
+      "정규화로 대체됨": 1,
+      "차단됨": 1
+    },
+    "in_progress_audit_category_counts": {
+      "independent-code": 3,
+      "independent-test": 10,
+      "physical-user": 106
+    },
+    "all_category_counts": {
+      "blocked-format": 1,
+      "independent-code": 16,
+      "independent-test": 10,
+      "normalized": 1,
+      "physical-user": 106
+    },
+    "full_feature_completion": 0,
+    "user_acceptance_confirmed": 0,
+    "audit_contract_count": 10,
+    "note": "119 진행은 부분 연결/구현이며 physical-user만이 아니다. 코드·검사·decision/access·실물 수용은 중첩될 수 있으므로 category는 대표 분류다. N09와 M06을 포함해134 exactIDs를 보존한다. SEC-*는 원선택 K ID가 아니라 별도 cross-cutting 감사 항목이다."
+  },
+  "cross_cutting_gates": [
+    "저장/암호화/복구/동기화/업데이트 변경 전 별도 보안 검토. 자체 검토와 독립 읽기 검토/실행/전문 감사를 구분한다.",
+    "합성 자료만 사용; 실제 메모·키·토큰·사용자 백업은 입력/Git/로그/CI에 금지.",
+    "공식 접근 거부 우회·paid signup·공개 배포·비가역 사용자 자료 삭제를 진행하지 않는다. 기존 Android pending 질문을 반복하지 않는다.",
+    "과거 Windows 자동 검사 PASS는 해당 commit/합성 경계 근거만이다. dirty 수정의 Windows CI와 실제 IME/OS 잠금/ACL/혼합DPI/USB/사용자 수용을 대신하지 않는다."
+  ],
+  "local_model_candidates": {
+    "selection": "조사 후보이며 선정 확정/다운로드/설치/추론 완료 아님",
+    "speech": "부모 전달 조사: whisper.cpp 1.9.5 MIT; tiny 약75MiB/base 약142MiB 후보",
+    "ai": "부모 전달 조사: llama.cpp v0.6.0 MIT / Qwen 공식0.6B GGUF Apache2 후보",
+    "failed_official_routes": [
+      "https://huggingface.co/api/models/ggerganov/whisper.cpp",
+      "https://huggingface.co/api/models/Qwen/Qwen3-0.6B-GGUF",
+      "GitHub official latest-release API (exact repository URL not preserved here)"
+    ],
+    "reported_error": "Tunnel connection failed:403 Forbidden",
+    "required_next": "정상 공식 접근 확보 후 정확한 실제 배포 manifest/license/hash와 자원·추론·네트워크 검증. 승인/접근 우회 금지."
+  },
+  "evidence_validation": {
+    "method": "local pathlib.exists for every relative evidence path; JSON exact134 unique IDs compared to FEATURES and original source tokens",
+    "path_count": 200,
+    "missing_paths": [],
+    "source_bytes": 27417,
+    "source_sha256": "29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d",
+    "limits": "경로 존재 확인은 모든 구현 동작의 독립 실행 검증을 뜻하지 않는다. 감사 입력의 과거 실행 서술은 재실행하지 않았다."
+  },
+  "features": [
+    {
+      "id": "A01",
+      "implemented": "새 메모 만들기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "새 합성 메모 생성·목록/편집 선택의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "새 합성 메모 생성·목록/편집 선택 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "새 메모 만들기",
+      "normalized": "새 메모 만들기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "새 합성 메모 생성·목록/편집 선택의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A02",
+      "implemented": "메모 수정의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 한글 IME 마지막 조합·공유 포스트잇 편집의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 한글 IME 마지막 조합·공유 포스트잇 편집 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 수정",
+      "normalized": "메모 수정",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 한글 IME 마지막 조합·공유 포스트잇 편집의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A03",
+      "implemented": "메모 삭제의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "합성 메모 삭제·암호 휴지통 확인의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "합성 메모 삭제·암호 휴지통 확인 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 삭제",
+      "normalized": "메모 삭제",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "합성 메모 삭제·암호 휴지통 확인의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A04",
+      "implemented": "메모 자동 저장의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "마지막 IME 조합 직후 종료·재실행 보존의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "마지막 IME 조합 직후 종료·재실행 보존 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 자동 저장",
+      "normalized": "메모 자동 저장",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "마지막 IME 조합 직후 종료·재실행 보존의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A05",
+      "implemented": "메모 복사·복제의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "서식/Markdown/첨부가 있는 합성 메모 복제·원본 유지의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "서식/Markdown/첨부가 있는 합성 메모 복제·원본 유지 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 복사·복제",
+      "normalized": "메모 복사·복제",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "서식/Markdown/첨부가 있는 합성 메모 복제·원본 유지의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A06",
+      "implemented": "메모 제목 사용의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "제목 수정과 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "제목 수정과 재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 제목 사용",
+      "normalized": "메모 제목 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "제목 수정과 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A07",
+      "implemented": "제목 없이 본문만 사용하는 간단 메모의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "빈 제목 메모의 표시/저장의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "빈 제목 메모의 표시/저장 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "제목 없이 본문만 사용하는 간단 메모",
+      "normalized": "제목 없이 본문만 사용하는 간단 메모",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "빈 제목 메모의 표시/저장의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A08",
+      "implemented": "여러 메모 동시에 열기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "여러 실제 포스트잇의 동일 메모 공유 편집의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "여러 실제 포스트잇의 동일 메모 공유 편집 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "여러 메모 동시에 열기",
+      "normalized": "여러 메모 동시에 열기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "여러 실제 포스트잇의 동일 메모 공유 편집의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A09",
+      "implemented": "최근 사용한 메모 보기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "최근 목록의 재실행·잠금 비노출의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "최근 목록의 재실행·잠금 비노출 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "최근 사용한 메모 보기",
+      "normalized": "최근 사용한 메모 보기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "최근 목록의 재실행·잠금 비노출의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "A10",
+      "implemented": "메모 작성일·수정일 표시의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "사용자 시간대와 날짜 표시 확인의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "사용자 시간대와 날짜 표시 확인 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 작성일·수정일 표시",
+      "normalized": "메모 작성일·수정일 표시",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "사용자 시간대와 날짜 표시 확인의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B01",
+      "implemented": "메모를 바탕화면에 작은 창으로 띄우기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 바탕화면 포스트잇 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 바탕화면 포스트잇 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모를 바탕화면에 작은 창으로 띄우기",
+      "normalized": "메모를 바탕화면에 작은 창으로 띄우기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 바탕화면 포스트잇 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B02",
+      "implemented": "재실행 후 메모 위치 기억의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "해당 모니터에서 창 위치 재실행 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "해당 모니터에서 창 위치 재실행 복원 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "재실행 후 메모 위치 기억",
+      "normalized": "재실행 후 메모 위치 기억",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "해당 모니터에서 창 위치 재실행 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B03",
+      "implemented": "메모 창 크기 기억의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "창 크기 재실행 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "창 크기 재실행 복원 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 창 크기 기억",
+      "normalized": "메모 창 크기 기억",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "창 크기 재실행 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B04",
+      "implemented": "메모별 색상 변경의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "포스트잇별 색상과 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "포스트잇별 색상과 재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모별 색상 변경",
+      "normalized": "메모별 색상 변경",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "포스트잇별 색상과 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B05",
+      "implemented": "메모 투명도 조절의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 모니터 투명도 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 모니터 투명도 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 투명도 조절",
+      "normalized": "메모 투명도 조절",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 모니터 투명도 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B06",
+      "implemented": "항상 위에 표시의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "다른 실제 앱 앞에서 항상 위 동작의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "다른 실제 앱 앞에서 항상 위 동작 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "항상 위에 표시",
+      "normalized": "항상 위에 표시",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "다른 실제 앱 앞에서 항상 위 동작의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B07",
+      "implemented": "메모 접기·펼치기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음; 최신 DesktopWindowController는 Folded를 암호 기기별 layout에 보존하므로 session-only 원장 문구는 낡음",
+      "remaining": "서식/첨부 포스트잇 접기/펼치기와 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "서식/첨부 포스트잇 접기/펼치기와 복원 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 접기·펼치기",
+      "normalized": "메모 접기·펼치기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "서식/첨부 포스트잇 접기/펼치기와 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B08",
+      "implemented": "메모 최소화의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "작업표시줄 최소화/복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "작업표시줄 최소화/복원 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 최소화",
+      "normalized": "메모 최소화",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "작업표시줄 최소화/복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B09",
+      "implemented": "여러 메모 한 번에 숨기기·표시하기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "전체 포스트잇 숨김/표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "전체 포스트잇 숨김/표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "여러 메모 한 번에 숨기기·표시하기",
+      "normalized": "여러 메모 한 번에 숨기기·표시하기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "전체 포스트잇 숨김/표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B10",
+      "implemented": "메모 화면 위치 자동 정렬의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 여러 모니터에서 자동 배열의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 여러 모니터에서 자동 배열 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 화면 위치 자동 정렬",
+      "normalized": "메모 화면 위치 자동 정렬",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 여러 모니터에서 자동 배열의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B11",
+      "implemented": "여러 모니터에서 메모 위치 기억의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "물리 혼합DPI·모니터 제거/재연결·키보드 Snap의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "물리 혼합DPI·모니터 제거/재연결·키보드 Snap (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "여러 모니터에서 메모 위치 기억",
+      "normalized": "여러 모니터에서 메모 위치 기억",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "물리 혼합DPI·모니터 제거/재연결·키보드 Snap의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B12",
+      "implemented": "특정 메모를 바탕화면에 고정의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 OS 이동/크기조절 요청 중 위치 고정의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 OS 이동/크기조절 요청 중 위치 고정 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "특정 메모를 바탕화면에 고정",
+      "normalized": "특정 메모를 바탕화면에 고정",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 OS 이동/크기조절 요청 중 위치 고정의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "B13",
+      "implemented": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "포스트잇을 닫은 메인창 전용 사용·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "포스트잇을 닫은 메인창 전용 사용·재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/DeviceUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용",
+      "normalized": "바탕화면 포스트잇 없이 메인 프로그램 안에서만 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "포스트잇을 닫은 메인창 전용 사용·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C01",
+      "implemented": "Installed safe-font toolbar and canonical fontFamily marks; real ApplyFontFamily test. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "글꼴 변경",
+      "normalized": "글꼴 변경",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C02",
+      "implemented": "8..96 font sizes and canonical fontSize; real formatting and Undo/Redo tests. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "글자 크기 변경",
+      "normalized": "글자 크기 변경",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C03",
+      "implemented": "Toggle bold with shared canonical projection and real two-view test. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "굵게",
+      "normalized": "굵게",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C04",
+      "implemented": "Underline toggle preserving other decorations; command and fidelity tests. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "밑줄",
+      "normalized": "밑줄",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C05",
+      "implemented": "Strike toggle preserving other decorations; command and fidelity tests. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "취소선",
+      "normalized": "취소선",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C06",
+      "implemented": "Color palette plus validated RGBA/hex canonical marks; command/fidelity tests. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "글자색 변경",
+      "normalized": "글자색 변경",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C07",
+      "implemented": "Highlight palette plus validated background marks; command/fidelity tests. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "형광펜·배경색",
+      "normalized": "형광펜·배경색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C08",
+      "implemented": "Real WPF bullet list toggling with canonical list conversion. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "글머리표",
+      "normalized": "글머리표",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C09",
+      "implemented": "Real WPF numbering toggle with canonical ordered=true list conversion. Encrypted history/restart and stale/lock projection handling are implemented.",
+      "remaining": "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later run synthetic typing/selection/formatting in Main and Sticky with Korean IME; no action needed to continue coding elsewhere.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "번호 목록",
+      "normalized": "번호 목록",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Korean IME and physical selection/caret/keyboard acceptance remain; old generic Windows-build/control blockers are stale after successful whole Windows CI. No concrete missing behavior for this named baseline was found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C10",
+      "implemented": "Actual Windows38008067402 Enter selected-body completion, boundary/version/lock and empty first/middle/last UndoRedo PASS.",
+      "remaining": "Relevant actual Windows checks PASS; physical IME/keyboard acceptance remains.",
+      "category": "physical-user",
+      "minimum_user_action": "Physical synthetic input/viewer acceptance only; no implementation decision pending.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.Checklist.cs",
+        "tests/MemoApp.WindowsChecks/ChecklistChecks.cs"
+      ],
+      "name": "체크박스 목록",
+      "normalized": "체크박스 목록",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C11",
+      "implemented": "Canonical rectangular tables up to 32x16; InsertTable method, toolbar 2x2 insertion and native cell editing are tested.",
+      "remaining": "Physical table typing/navigation acceptance remains. UI inserts only 2x2 at document end; configurable dimensions/insert-at-caret/row-column management are feasible improvements, but original C11 only says table insertion, so they are not grounds to claim the baseline absent. No merged/nested table support claimed.",
+      "category": "physical-user",
+      "minimum_user_action": "Later type synthetic table cells in Windows; no permission or data upload needed.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs"
+      ],
+      "name": "표 삽입",
+      "normalized": "표 삽입",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical table typing/navigation acceptance remains. UI inserts only 2x2 at document end; configurable dimensions/insert-at-caret/row-column management are feasible improvements, but original C11 only says table insertion, so they are not grounds to claim the baseline absent. No merged/nested table support claimed."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C12",
+      "implemented": "합성 링크 metadata 유지 외에 dirty working tree에 UserLinkTarget 및 StructuredNoteEditor.Links의 명시 확인·source/session authority 재검사 경로와 회귀가 추가되는 중이다.",
+      "remaining": "해당 연결의 actual WPF 합성 검사 PASS, C10 보완 뒤 전체 gate와 물리 사용자 수용은 별도로 남는다.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs",
+        "docs/SOURCE_PROMPT.txt",
+        "docs/plans/2026-10-07-structured-editor.md",
+        "src/MemoApp.Core/Transfer/UserLinkTarget.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.Links.cs",
+        "tests/MemoApp.ContractChecks/UserLinkChecks.cs",
+        "tests/MemoApp.WindowsChecks/RichLinkChecks.cs"
+      ],
+      "name": "링크 삽입·클릭",
+      "normalized": "링크 삽입·클릭",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Windows37998752768에서 해당 새 group PASS. 전체 gate는 C10 회귀 FAIL이므로 보완 source의 전체 Windows gate가 필요하다."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C13",
+      "implemented": "Plain/Markdown TextBox Undo/Redo and rich native Undo/Redo; shared-view/source-restore invalidation and lock clearing tested.",
+      "remaining": "Physical keyboard and Korean composition acceptance remain. Ledger generic statements about missing WPF automation and temporary sticky state are obsolete; real Undo/Redo and clear regressions already exist.",
+      "category": "physical-user",
+      "minimum_user_action": "Later synthetic Ctrl+Z/Ctrl+Y and lock test with Korean IME.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs"
+      ],
+      "name": "실행취소·다시실행",
+      "normalized": "실행취소·다시실행",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical keyboard and Korean composition acceptance remain. Ledger generic statements about missing WPF automation and temporary sticky state are obsolete; real Undo/Redo and clear regressions already exist."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C14",
+      "implemented": "Full plain mode, normal text editing and explicit mode-conversion warning/original revision preservation implemented; not merely formatting-free paste.",
+      "remaining": "Physical IME/user acceptance remains. Android preservation is a later Q dependency, not evidence that Windows plain mode is unimplemented. Old GUI-unverified ledger language is stale after actual WPF gates.",
+      "category": "physical-user",
+      "minimum_user_action": "Later synthetic plain/rich/Markdown conversion and history restoration check.",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Editing/NoteDraft.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/RichDocumentChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "서식 없는 단순 텍스트만 사용",
+      "normalized": "서식 없는 단순 텍스트만 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical IME/user acceptance remains. Android preservation is a later Q dependency, not evidence that Windows plain mode is unimplemented. Old GUI-unverified ledger language is stale after actual WPF gates."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "C15",
+      "implemented": "기존 exact raw Markdown/암호 이력/안전 preview 외에 dirty SafeMarkdown·MarkdownNotePreview에 순서목록 start/delimiter/index 기반 번호 표시와 Core 회귀가 추가되는 중이다.",
+      "remaining": "해당 연결의 actual WPF 합성 검사 PASS, C10 보완 뒤 전체 gate와 물리 사용자 수용은 별도로 남는다.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Core/Documents/SafeMarkdown.cs",
+        "src/MemoApp.Windows/MarkdownNotePreview.cs",
+        "tests/MemoApp.ContractChecks/MarkdownChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "docs/plans/2026-10-07-safe-markdown.md"
+      ],
+      "name": "Markdown 지원",
+      "normalized": "Markdown 지원",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Windows37998752768에서 해당 새 group PASS. 전체 gate는 C10 회귀 FAIL이므로 보완 source의 전체 Windows gate가 필요하다."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D01",
+      "implemented": "폴더 만들기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "한글 폴더 생성·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "한글 폴더 생성·재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "폴더 만들기",
+      "normalized": "폴더 만들기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "한글 폴더 생성·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D02",
+      "implemented": "하위 폴더 만들기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "하위 폴더 생성·상하위 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "하위 폴더 생성·상하위 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "하위 폴더 만들기",
+      "normalized": "하위 폴더 만들기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "하위 폴더 생성·상하위 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D03",
+      "implemented": "메모를 폴더 간 이동의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "폴더 간 이동과 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "폴더 간 이동과 재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모를 폴더 간 이동",
+      "normalized": "메모를 폴더 간 이동",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "폴더 간 이동과 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D04",
+      "implemented": "태그 사용의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "한글/Unicode 태그 추가·검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "한글/Unicode 태그 추가·검색 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "태그 사용",
+      "normalized": "태그 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "한글/Unicode 태그 추가·검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D05",
+      "implemented": "메모별 색상 분류의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "메모 색 분류·검색/목록 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "메모 색 분류·검색/목록 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모별 색상 분류",
+      "normalized": "메모별 색상 분류",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "메모 색 분류·검색/목록 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D06",
+      "implemented": "중요 메모 표시의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "중요 표시·검색/재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "중요 표시·검색/재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "중요 메모 표시",
+      "normalized": "중요 메모 표시",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "중요 표시·검색/재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D07",
+      "implemented": "즐겨찾기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "즐겨찾기 필터·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "즐겨찾기 필터·재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "즐겨찾기",
+      "normalized": "즐겨찾기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "즐겨찾기 필터·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D08",
+      "implemented": "메모 고정의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "목록 고정 그룹 정렬·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "목록 고정 그룹 정렬·재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 고정",
+      "normalized": "메모 고정",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "목록 고정 그룹 정렬·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D09",
+      "implemented": "보관함의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "보관함 이동·목록/검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "보관함 이동·목록/검색 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "보관함",
+      "normalized": "보관함",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "보관함 이동·목록/검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D10",
+      "implemented": "휴지통의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "휴지통 삭제/복원·원문 보존의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "휴지통 삭제/복원·원문 보존 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "휴지통",
+      "normalized": "휴지통",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "휴지통 삭제/복원·원문 보존의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D11",
+      "implemented": "휴지통 자동 비우기의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음; 실제 stable save/backup/stale/lock/flush/recovery 검증은37995312568/37995989631",
+      "remaining": "설정 기본off/취소/잠금 해제; 사용자 원본 자동삭제 시험 불필요의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "설정 기본off/취소/잠금 해제; 사용자 원본 자동삭제 시험 불필요 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "휴지통 자동 비우기",
+      "normalized": "휴지통 자동 비우기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "설정 기본off/취소/잠금 해제; 사용자 원본 자동삭제 시험 불필요의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D12",
+      "implemented": "여러 메모 일괄 이동·삭제의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "여러 합성 메모 선택·이동/삭제 확인의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "여러 합성 메모 선택·이동/삭제 확인 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "여러 메모 일괄 이동·삭제",
+      "normalized": "여러 메모 일괄 이동·삭제",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "여러 합성 메모 선택·이동/삭제 확인의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D13",
+      "implemented": "이름순 정렬의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "한글·빈 제목의 이름순 정렬 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "한글·빈 제목의 이름순 정렬 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "이름순 정렬",
+      "normalized": "이름순 정렬",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "한글·빈 제목의 이름순 정렬 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D14",
+      "implemented": "최근 수정순 정렬의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 편집 후 수정순 정렬의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 편집 후 수정순 정렬 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "최근 수정순 정렬",
+      "normalized": "최근 수정순 정렬",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 편집 후 수정순 정렬의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D15",
+      "implemented": "작성일순 정렬의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "작성순 정렬 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "작성순 정렬 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "작성일순 정렬",
+      "normalized": "작성일순 정렬",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "작성순 정렬 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "D16",
+      "implemented": "사용자 지정 순서로 직접 배열의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "사용자 순서·목록고정 그룹의 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "사용자 순서·목록고정 그룹의 재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "tests/MemoApp.ContractChecks/OrganizationChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "사용자 지정 순서로 직접 배열",
+      "normalized": "사용자 지정 순서로 직접 배열",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "사용자 순서·목록고정 그룹의 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E01",
+      "implemented": "전체 메모 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "전체 검색 결과와 잠금 비노출의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "전체 검색 결과와 잠금 비노출 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "전체 메모 검색",
+      "normalized": "전체 메모 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "전체 검색 결과와 잠금 비노출의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E02",
+      "implemented": "제목 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "제목 검색·본문 제외의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "제목 검색·본문 제외 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "제목 검색",
+      "normalized": "제목 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "제목 검색·본문 제외의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E03",
+      "implemented": "본문 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "본문 검색·제목 제외의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "본문 검색·제목 제외 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "본문 검색",
+      "normalized": "본문 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "본문 검색·제목 제외의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E04",
+      "implemented": "폴더별 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "상하위 폴더 검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "상하위 폴더 검색 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "폴더별 검색",
+      "normalized": "폴더별 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "상하위 폴더 검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E05",
+      "implemented": "태그별 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "태그 검색 Unicode 표기의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "태그 검색 Unicode 표기 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "태그별 검색",
+      "normalized": "태그별 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "태그 검색 Unicode 표기의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E06",
+      "implemented": "기간 지정 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "사용자 시간대 기간 경계 검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "사용자 시간대 기간 경계 검색 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "기간 지정 검색",
+      "normalized": "기간 지정 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "사용자 시간대 기간 경계 검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E07",
+      "implemented": "중요 메모만 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "중요 메모 검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "중요 메모 검색 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "중요 메모만 검색",
+      "normalized": "중요 메모만 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "중요 메모 검색의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E08",
+      "implemented": "검색 결과에서 해당 문장 강조의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "제목/본문/첨부 이름 첫 일치 문맥의 실제 강조 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "제목/본문/첨부 이름 첫 일치 문맥의 실제 강조 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "검색 결과에서 해당 문장 강조",
+      "normalized": "검색 결과에서 해당 문장 강조",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "제목/본문/첨부 이름 첫 일치 문맥의 실제 강조 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E09",
+      "implemented": "여러 조건 조합 검색의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "폴더·태그·기간·중요 조건 조합의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "폴더·태그·기간·중요 조건 조합 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "여러 조건 조합 검색",
+      "normalized": "여러 조건 조합 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "폴더·태그·기간·중요 조건 조합의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "E10",
+      "implemented": "자주 쓰는 검색조건 저장의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "저장 조건의 정확 적용/불가 조건 보존·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "저장 조건의 정확 적용/불가 조건 보존·재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "src/MemoApp.Windows/MainWindow.SearchPreview.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "자주 쓰는 검색조건 저장",
+      "normalized": "자주 쓰는 검색조건 저장",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "저장 조건의 정확 적용/불가 조건 보존·재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H01",
+      "implemented": "Canonical strictdocv2/schema10 PNG refs/read-only ordered viewer/manual display/remove; actualWindows38009222772 document/publication/product PASS, including same-version immediateepochpixelclear.",
+      "remaining": "Actualcf7 native placeholder/composition/UndoRedo prerequisite passed. Approved inferred editable-v2 surrounding text Core/editor/host implementation and independent source/native review remain; published product v2 stays readonly. PNG Word embedding passed. General formats/resizing/editor image paste-drop are optional extensions; physical IME/user acceptance remain unconfirmed.",
+      "category": "independent-code",
+      "minimum_user_action": "None for the current bounded implementation.",
+      "evidence": [
+        "src/MemoApp.Core/Documents/StyledDocument.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs",
+        "docs/PRODUCT_SPEC.md",
+        "docs/H01_V2_EDITOR_DELTA_PLAN.md",
+        "tests/MemoApp.WindowsChecks/RichImageEditorPrerequisiteChecks.cs",
+        "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
+        "src/MemoApp.Windows/MainWindow.WordImageExport.cs",
+        "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs"
+      ],
+      "name": "메모에 이미지 붙이기",
+      "normalized": "메모에 이미지 붙이기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "After native prerequisite proof, implement the approved closed v2 text transaction, exact-reference placeholders and Main/Sticky integration; preserve original source/history/image authority and readonly refusal."
+        ],
+        "inspection": [
+          "Retain actualcf7 exact-placeholder/events/Unicode/UndoRedo prerequisite evidence separately from product editor native checks and physical OS IME acceptance. Validate approved Core/editor/host implementation before final artifacts."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H02",
+      "implemented": "ActualWindows38011908810 clipboardDIB fullgroupPASS including disposal-before-reopen; supported24/32 BI_RGB boundaries remain bounded.",
+      "remaining": "Raw PNG and bounded CF_DIB24/32 BI_RGB native baseline passed. Clipboard/source-app and OS conversion limitations and user acceptance remain. DIBV5, editor inline paste, general formats and increased limits are optional extensions.",
+      "category": "independent-test",
+      "minimum_user_action": "None for the current bounded implementation.",
+      "evidence": [
+        "src/MemoApp.Windows/AttachmentPanel.Clipboard.cs",
+        "src/MemoApp.Core/Transfer/ClipboardPngSource.cs",
+        "src/MemoApp.Windows/StructuredNoteEditor.cs",
+        "tests/MemoApp.WindowsChecks/ClipboardPngChecks.cs",
+        "tests/MemoApp.ContractChecks/ClipboardPngChecks.cs",
+        "src/MemoApp.Windows/NativeClipboardDibCapture.cs",
+        "src/MemoApp.Windows/AttachmentPanel.DibClipboard.cs",
+        "src/MemoApp.Core/Transfer/DibToPng.cs",
+        "tests/MemoApp.WindowsChecks/DibClipboardChecks.cs"
+      ],
+      "name": "Ctrl+V로 이미지 붙이기",
+      "normalized": "Ctrl+V로 이미지 붙이기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Retain current-source native clipboard, original source and decode/cleanup regressions; do not claim every image format."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H03",
+      "implemented": "Actual routed drag/drop copies one local PNG/JPEG/GIF/BMP/WebP/TIFF file to encrypted opaque attachment; no original move or automatic decode.",
+      "remaining": "Physical Explorer drag/drop acceptance remains. Multiple files and inline insertion absent, but original H03 does not explicitly demand batch drop; common local image dropping baseline is present. Preview/display limitation belongs to H08/H01 rather than claiming drop unimplemented.",
+      "category": "physical-user",
+      "minimum_user_action": "Later drag a synthetic image from Explorer into Main/Sticky attachment panel.",
+      "evidence": [
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "tests/MemoApp.WindowsChecks/ImageFileDropChecks.cs",
+        "src/MemoApp.Core/Transfer/AttachmentSource.cs"
+      ],
+      "name": "이미지 드래그앤드롭",
+      "normalized": "이미지 드래그앤드롭",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical Explorer drag/drop acceptance remains. Multiple files and inline insertion absent, but original H03 does not explicitly demand batch drop; common local image dropping baseline is present. Preview/display limitation belongs to H08/H01 rather than claiming drop unimplemented."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H04",
+      "implemented": "Opaque PDF attach with encrypted owned bytes/name/MIME/hash, immutable refs/history/clone/backups and actual Windows picker/source/lock/save tests.",
+      "remaining": "Physical filepicker/user acceptance remains. Parsing or editing document contents is not required by these IDs; normal encrypted byte-preserving attachment baseline is implemented. Fixed size/count limits are disclosed, not missing format adapters.",
+      "category": "physical-user",
+      "minimum_user_action": "Later attach a synthetic file and compare bytes after reopen; no personal document upload.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/StoredAttachmentObject.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMutationChecks.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentUiChecks.cs"
+      ],
+      "name": "PDF 첨부",
+      "normalized": "PDF 첨부",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical filepicker/user acceptance remains. Parsing or editing document contents is not required by these IDs; normal encrypted byte-preserving attachment baseline is implemented. Fixed size/count limits are disclosed, not missing format adapters."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H05",
+      "implemented": "Opaque HWP/Word/Excel/other regular file attach with encrypted owned bytes/name/MIME/hash, immutable refs/history/clone/backups and actual Windows picker/source/lock/save tests.",
+      "remaining": "Physical filepicker/user acceptance remains. Parsing or editing document contents is not required by these IDs; normal encrypted byte-preserving attachment baseline is implemented. Fixed size/count limits are disclosed, not missing format adapters.",
+      "category": "physical-user",
+      "minimum_user_action": "Later attach a synthetic file and compare bytes after reopen; no personal document upload.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/StoredAttachmentObject.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/AttachmentPanel.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMutationChecks.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentUiChecks.cs"
+      ],
+      "name": "한글·Word·Excel 등 파일 첨부",
+      "normalized": "한글·Word·Excel 등 파일 첨부",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical filepicker/user acceptance remains. Parsing or editing document contents is not required by these IDs; normal encrypted byte-preserving attachment baseline is implemented. Fixed size/count limits are disclosed, not missing format adapters."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H06",
+      "implemented": "Explicit open button/double-click, plaintext-copy target/risk confirmation then shell launch; no-overwrite/vault-refusal/source-lock tests with injected launcher.",
+      "remaining": "Actual associated Windows PDF/HWP/Office application opening/physical acceptance remains. Launcher initiation is tested but external real application rendering is not. No missing autonomous core open flow found.",
+      "category": "physical-user",
+      "minimum_user_action": "Later open a synthetic attachment with an already installed associated app and check risk notice.",
+      "evidence": [
+        "src/MemoApp.Windows/AttachmentPanel.Open.cs",
+        "src/MemoApp.Core/Transfer/AttachmentFileTransfer.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentOpenChecks.cs"
+      ],
+      "name": "첨부파일 클릭해서 열기",
+      "normalized": "첨부파일 클릭해서 열기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual associated Windows PDF/HWP/Office application opening/physical acceptance remains. Launcher initiation is tested but external real application rendering is not. No missing autonomous core open flow found."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H07",
+      "implemented": "Device-owned encrypted external path metadata, no payload copy, explicit confirmed source-authorized shell open; migration/backups/source/native reentry tests.",
+      "remaining": "Physical associated-app and broken-path user acceptance remain. Original external file encryption and hostile replacement/race prevention are explicitly not claimed or implied by path-only linking. Core path/open failures are already handled; no need to ask for source data.",
+      "category": "physical-user",
+      "minimum_user_action": "Later link a synthetic file, open it, rename/delete it and verify clear failure without modifying source.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/StoredFilePathLink.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.FilePathLinks.cs",
+        "src/MemoApp.Windows/AttachmentPanel.FilePaths.cs",
+        "tests/MemoApp.ContractChecks/FilePathLinkChecks.cs",
+        "tests/MemoApp.WindowsChecks/FilePathLinkUiChecks.cs"
+      ],
+      "name": "파일 경로만 연결",
+      "normalized": "파일 경로만 연결",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical associated-app and broken-path user acceptance remain. Original external file encryption and hostile replacement/race prevention are explicitly not claimed or implied by path-only linking. Core path/open failures are already handled; no need to ask for source data."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H08",
+      "implemented": "RGB/RGBA/gray/gray-alpha8 boundedPNG metadata/pixels/sharedclipboard/encryptedreopen actualWindows38008067402 relevantPASS.",
+      "remaining": "Bounded supported PNG preview has actual native evidence. Corpus and user acceptance remain. JPEG, palette/interlace PNG, ICC/EXIF and animation are unsupported optional extensions; unrelated historical H01 failures are not the current preview blocker.",
+      "category": "independent-test",
+      "minimum_user_action": "None for the current bounded implementation.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/PngPreviewProfile.cs",
+        "src/MemoApp.Core/Transfer/PngPixelDecoder.cs",
+        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs",
+        "src/MemoApp.Windows/ImagePreviewBackend.cs",
+        "tests/MemoApp.WindowsChecks/ImagePreviewChecks.cs",
+        "tests/MemoApp.WindowsChecks/ImagePreviewRaceChecks.cs",
+        "tests/MemoApp.ContractChecks/PngMetadataChecks.cs",
+        "tests/MemoApp.WindowsChecks/PngMetadataChecks.cs"
+      ],
+      "name": "이미지 미리보기",
+      "normalized": "이미지 미리보기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Retain current-source native metadata, shared admission, display invalidation and cleanup regressions; validate supported-format corpus and user acceptance."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "H09",
+      "implemented": "Source-linked attachment OCR input/grants/staged fixedruntime/schema11 per-note search metadata and explicit Windows search store action; actual1a86502 Windows staged runtime/linked OCR UI/isolated cleanup fault PASS, fullCore PASS; originalnote/body/source preserved. Actual c086 native linked runtime/UI/search groups passed; whole Windows gate still failed separately at PDF.",
+      "remaining": "Linked OCR/search native baseline passed. Current-source regression, final package/install and synthetic corpus/user usefulness acceptance remain. Unrelated PDF failure is not an H09 code deficit.",
+      "category": "independent-test",
+      "minimum_user_action": "None. Independently review new stored OCR/reference structure before encrypted persistence; do not request real OCR images.",
+      "evidence": [
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "src/MemoApp.Core/Storage/AttachmentDescription.cs",
+        "src/MemoApp.Core/Storage/StoredAttachmentObject.cs",
+        "src/MemoApp.Windows/AttachmentPanel.Ocr.cs",
+        "tests/MemoApp.WindowsChecks/OcrProductChecks.cs",
+        "docs/SOURCE_PROMPT.txt",
+        "src/MemoApp.Core/Transfer/AttachmentOcrInput.cs",
+        "src/MemoApp.Core/Transfer/OwnedOcrDerivation.cs",
+        "tests/MemoApp.ContractChecks/AttachmentOcrInputChecks.cs",
+        "tests/MemoApp.WindowsChecks/LinkedOcrRuntimeChecks.cs",
+        "src/MemoApp.Core/Storage/StoredAttachmentOcrResult.cs",
+        "src/MemoApp.Core/Storage/AttachmentOcrValidation.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.Ocr.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.Ocr.cs",
+        "src/MemoApp.Core/Transfer/LinkedOcrStarter.cs",
+        "tests/MemoApp.ContractChecks/Schema11OcrChecks.cs",
+        "tests/MemoApp.ContractChecks/AttachmentOcrGrantChecks.cs",
+        "tests/MemoApp.ContractChecks/LinkedOcrStarterChecks.cs",
+        "tests/MemoApp.ContractChecks/OcrCleanupFaultChecks.cs",
+        "src/MemoApp.Windows/InstalledOcrBackend.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentLinkedOcrUiChecks.cs"
+      ],
+      "name": "첨부파일 검색",
+      "normalized": "첨부파일 검색",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Record current-source native group results and package/install separately; retain linked authority, cleanup and source-preservation regressions."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L01",
+      "implemented": "Click-only HKCU Run registration; exact owned command, foreign-value preservation, locked --tray-start and visible fallback.",
+      "remaining": "Actual Windows login/startup execution and user acceptance; code is present, ledger progress is not missing implementation.",
+      "category": "physical-user",
+      "minimum_user_action": "On own Windows account explicitly enable startup, sign out/in, verify locked start and disable again if desired.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.Startup.cs",
+        "src/MemoApp.Windows/WindowsStartupStore.cs",
+        "tests/MemoApp.WindowsChecks/StartupRegistrationChecks.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
+      ],
+      "name": "Windows 시작 시 자동 실행",
+      "normalized": "Windows 시작 시 자동 실행",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual Windows login/startup execution and user acceptance; code is present, ledger progress is not missing implementation."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L02",
+      "implemented": "Native Shell_NotifyIcon, session opt-in, generic tooltip, loss fallback and revoked menu DTOs.",
+      "remaining": "Physical tray/Explorer restart acceptance. Durable remembered tray choice is absent but not explicitly required by SOURCE_PROMPT L02; optional improvement, not a proven blocker.",
+      "category": "physical-user",
+      "minimum_user_action": "Enable tray and verify icon/menu and Explorer restart recovery on own desktop.",
+      "evidence": [
+        "src/MemoApp.Windows/NativeTrayIcon.cs",
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
+      "name": "시스템 트레이 상주",
+      "normalized": "시스템 트레이 상주",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical tray/Explorer restart acceptance. Durable remembered tray choice is absent but not explicitly required by SOURCE_PROMPT L02; optional improvement, not a proven blocker."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L03",
+      "implemented": "Close hides only with registered tray icon; queued hide rechecks authority, full exit/session ending bypass hide.",
+      "remaining": "Physical hide/reopen and OS shutdown acceptance; session-only choice is explicit, no automatic persistence currently.",
+      "category": "physical-user",
+      "minimum_user_action": "Enable tray, close management window, reopen from icon and confirm full exit.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
+      "name": "창을 닫아도 트레이에서 계속 실행",
+      "normalized": "창을 닫아도 트레이에서 계속 실행",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical hide/reopen and OS shutdown acceptance; session-only choice is explicit, no automatic persistence currently."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L04",
+      "implemented": "Explicit full-exit menu invokes save/backup/lock pipeline, then queued final Close; locked/preLoaded/repeated close tested.",
+      "remaining": "User acceptance only for the implemented exit flow; durable exit backup setting belongs O02.",
+      "category": "physical-user",
+      "minimum_user_action": "Use full exit with a synthetic dirty note and reopen to confirm saved state.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
+      ],
+      "name": "완전히 종료하는 메뉴",
+      "normalized": "완전히 종료하는 메뉴",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "User acceptance only for the implemented exit flow; durable exit backup setting belongs O02."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L05",
+      "implemented": "Unlocked tray new-note command reveals main and rechecks authority before creating note.",
+      "remaining": "Physical tray click acceptance only.",
+      "category": "physical-user",
+      "minimum_user_action": "While unlocked create a synthetic note from the tray menu.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs"
+      ],
+      "name": "트레이 우클릭으로 새 메모",
+      "normalized": "트레이 우클릭으로 새 메모",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical tray click acceptance only."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L06",
+      "implemented": "Bounded current encrypted-profile recent IDs, unlocked title DTO menu, exact source/frame guards and sticky opening.",
+      "remaining": "Physical menu acceptance only; recent persistence is already implemented, stale generic ledger must not imply otherwise.",
+      "category": "physical-user",
+      "minimum_user_action": "Open a recent synthetic note via tray, lock and verify titles disappear.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.Tray.cs",
+        "src/MemoApp.Windows/MainWindow.SearchState.cs",
+        "tests/MemoApp.WindowsChecks/TrayChecks.cs",
+        "tests/MemoApp.WindowsChecks/DeviceSearchChecks.cs"
+      ],
+      "name": "트레이에서 최근 메모 바로 열기",
+      "normalized": "트레이에서 최근 메모 바로 열기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical menu acceptance only; recent persistence is already implemented, stale generic ledger must not imply otherwise."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L07",
+      "implemented": "Strict explicit --portable chooses local Data beside executable; self-contained actual installed/portable child runs tested.",
+      "remaining": "Removable-device/ACL/physical trust-dialog acceptance, not missing portable routing.",
+      "category": "physical-user",
+      "minimum_user_action": "Extract to an owned writable USB folder and run Start-Portable.cmd with synthetic data.",
+      "evidence": [
+        "src/MemoApp.Core/Lifecycle/StartupPaths.cs",
+        "src/MemoApp.Core/Lifecycle/StartupOptions.cs",
+        "src/MemoApp.Windows/Start-Portable.cmd",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
+      ],
+      "name": "포터블 실행",
+      "normalized": "포터블 실행",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Removable-device/ACL/physical trust-dialog acceptance, not missing portable routing."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "L08",
+      "implemented": "Explicit per-user unsigned installer, bounded allowlisted hash manifest, stage-and-move, Unicode shortcut, installed production EXE smoke; no overwrite or automatic deletion.",
+      "remaining": "Own-account installation/trust dialog/ACL acceptance and production publisher signing; MSI is not required by the feature name.",
+      "category": "physical-user",
+      "minimum_user_action": "Run Install-User.cmd on own PC, inspect destination/shortcut and use synthetic data.",
+      "evidence": [
+        "src/MemoApp.Windows/TrialInstaller.cs",
+        "src/MemoApp.Windows/NativeShellLink.cs",
+        "tests/MemoApp.WindowsChecks/TrialInstallerChecks.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs",
+        "docs/plans/2026-10-09-trial-install.md"
+      ],
+      "name": "일반 Windows 설치형",
+      "normalized": "일반 Windows 설치형",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Own-account installation/trust dialog/ACL acceptance and production publisher signing; MSI is not required by the feature name."
+        ],
+        "decision": [
+          "실제 배포자 서명 identity·키/인증서·배포 경로 선택은 미확정이며 공개 배포·유료 등록은 승인 범위가 아니다."
+        ],
+        "access": []
+      }
+    },
+    {
+      "id": "L09",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "배포자 인증 서명·변조/rollback 거절·원자 적용/실패 복구를 갖춘 업데이트가 미구현. 수동 기본과 자동 opt-in 설정을 함께 보존한다. unsigned trial/hash manifest는 publisher 인증이 아니다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "verifier/fixture 개발에는 없음. 실제 배포 전에 publisher identity·키 소유/서비스를 구체적으로 선택·승인해야 한다.",
+      "name": "자동 업데이트",
+      "normalized": "자동 업데이트",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "실제 배포키 선택 전에 verifier 인터페이스, bounded manifest 검증, rollback/원자 적용·실패 복구 상태를 독립 구현한다. 기본 OFF 자동 확인/적용 consent 정책을 보존한다."
+        ],
+        "inspection": [
+          "개발용 합성 서명/키 fixture로 잘못된 출처·서명·변조·rollback·전원/적용 실패 거절을 검사한다. 개발키를 실제 publisher 신뢰로 표시하지 않는다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "실제 publisher identity·키 소유/인증서·신뢰 배포 경로는 제품 배포 전 결정한다. 유료 등록·공개 배포는 별도 승인 대상이다."
+        ],
+        "access": [
+          "결정된 실제 signing identity/배포 서비스 접근은 현재 확보되지 않았다."
+        ]
+      }
+    },
+    {
+      "id": "L10",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "배포자 인증 서명·변조/rollback 거절·원자 적용/실패 복구를 갖춘 업데이트가 미구현. 수동 기본과 자동 opt-in 설정을 함께 보존한다. unsigned trial/hash manifest는 publisher 인증이 아니다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "verifier/fixture 개발에는 없음. 실제 배포 전에 publisher identity·키 소유/서비스를 구체적으로 선택·승인해야 한다.",
+      "name": "수동 업데이트",
+      "normalized": "수동 업데이트",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "실제 배포키 선택 전에 verifier 인터페이스, bounded manifest 검증, rollback/원자 적용·실패 복구 상태를 독립 구현한다. 수동 기본 업데이트 선택/확인 경로를 구현한다."
+        ],
+        "inspection": [
+          "개발용 합성 서명/키 fixture로 잘못된 출처·서명·변조·rollback·전원/적용 실패 거절을 검사한다. 개발키를 실제 publisher 신뢰로 표시하지 않는다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "실제 publisher identity·키 소유/인증서·신뢰 배포 경로는 제품 배포 전 결정한다. 유료 등록·공개 배포는 별도 승인 대상이다."
+        ],
+        "access": [
+          "결정된 실제 signing identity/배포 서비스 접근은 현재 확보되지 않았다."
+        ]
+      }
+    },
+    {
+      "id": "M01",
+      "implemented": "Accepted content revisions/history retained through capture, complete content events and encrypted restart; schema8 purge deliberately retains causal witnesses and pre-purge encrypted backup.",
+      "remaining": "Ordinary history usability acceptance; stale ledger saying only schema2/Core is inaccurate.",
+      "category": "physical-user",
+      "minimum_user_action": "Edit/save a synthetic note several times and inspect history after restart.",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/HistoryWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs",
+        "tests/MemoApp.ContractChecks/TrashEncryptionChecks.cs"
+      ],
+      "name": "수정 이력 저장",
+      "normalized": "수정 이력 저장",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Ordinary history usability acceptance; stale ledger saying only schema2/Core is inaccurate."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "M02",
+      "implemented": "Actual HistoryWindow selects and displays prior revision source; rich/Markdown source and conceal boundaries covered.",
+      "remaining": "Physical history selection/display acceptance.",
+      "category": "physical-user",
+      "minimum_user_action": "Select old synthetic plain/Markdown/rich versions and compare displayed source.",
+      "evidence": [
+        "src/MemoApp.Windows/HistoryWindow.xaml.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "과거 버전 보기",
+      "normalized": "과거 버전 보기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical history selection/display acceptance."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "M03",
+      "implemented": "RestoreRevision creates a new revision with preserved original history/metadata/attachments; explicit history restore UI.",
+      "remaining": "User acceptance of restore semantics; not missing restore code.",
+      "category": "physical-user",
+      "minimum_user_action": "Restore an older synthetic version, save/reopen and confirm later history remains available.",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/HistoryWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/RichStorageChecks.cs",
+        "tests/MemoApp.ContractChecks/AttachmentMutationChecks.cs"
+      ],
+      "name": "과거 버전으로 되돌리기",
+      "normalized": "과거 버전으로 되돌리기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "User acceptance of restore semantics; not missing restore code."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "M04",
+      "implemented": "Trash restore for retained deleted drafts and batch restore; purged originals remain in authenticated backup and selected recovery makes fresh copies.",
+      "remaining": "User acceptance only; purge is not undoable without retained backup and is disclosed.",
+      "category": "physical-user",
+      "minimum_user_action": "Trash/restore a synthetic note, and separately preview a pre-purge backup.",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/MainWindow.SelectedBackup.cs",
+        "tests/MemoApp.ContractChecks/TrashEncryptionChecks.cs"
+      ],
+      "name": "삭제한 메모 복원",
+      "normalized": "삭제한 메모 복원",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "User acceptance only; purge is not undoable without retained backup and is disclosed."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "M05",
+      "implemented": "Dated immutable revision selection and bounded Unicode/newline-aware comparison, fallback and lock clearing.",
+      "remaining": "Physical date/diff usability acceptance; automatic coverage already exists.",
+      "category": "physical-user",
+      "minimum_user_action": "Compare two dated synthetic revisions including Korean and multiline changes.",
+      "evidence": [
+        "src/MemoApp.Windows/HistoryWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/HistoryDiffChecks.cs",
+        "docs/FEATURES.json"
+      ],
+      "name": "변경 이력 날짜별 비교",
+      "normalized": "변경 이력 날짜별 비교",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical date/diff usability acceptance; automatic coverage already exists."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "M06",
+      "implemented": "정규화로 대체됨: M01~M05 유지",
+      "remaining": "독립 미구현 항목이 아니다. 원선택 ID와 정규화 기록을 유지한다.",
+      "category": "normalized",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": null,
+      "name": "변경 이력이 필요 없음",
+      "normalized": "정규화로 대체됨: M01~M05 유지",
+      "ledger_status": "정규화로 대체됨",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N01",
+      "implemented": "Explicit warning/target confirmation, bounded UTF8 title/body export, verified rich plain projection, original invariant/source/lock/no-overwrite safeguards.",
+      "remaining": "Physical user/editor opening acceptance remains. TXT naturally cannot preserve style/attachments, so disclosed projection is adequate for named TXT export; opaque unknown rich documents are refused rather than silently flattened. Generic old Windows/filepicker blockers are stale for automated paths.",
+      "category": "physical-user",
+      "minimum_user_action": "Later export synthetic Unicode text and reopen it in a local text editor.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/TextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/TextTransferChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "TXT 내보내기",
+      "normalized": "TXT 내보내기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical user/editor opening acceptance remains. TXT naturally cannot preserve style/attachments, so disclosed projection is adequate for named TXT export; opaque unknown rich documents are refused rather than silently flattened. Generic old Windows/filepicker blockers are stale for automated paths."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N02",
+      "implemented": "TextPDF actualauthorityPASS; displayPDF boundedraster/nativeglyph audits implemented. Actualf1/a162 baseline fix passes firstHangul/CJK/combining/Jamo vectors; unchangedemoji pixeloracleFAIL despite identical glyph/emsize/advance/DPI. Reference localglyphguideline vsbakedfractionalglobaldraworigin difference diagnosed; localdraw-frame correction pendingactualverification.",
+      "remaining": "Actualcf7 native emoji failed unchanged oracle; live-versus-replayed controls and primary WPF source isolate missing native TextRenderingMode propagation on DrawingVisual. Minimal private native-Grayscale visual fix is staged/reviewed/crossbuild PASS; sameoracle native gate and later wrap/42–43page/clipping pending. Rich/table/Markdown/image verticals and viewer/user acceptance remain distinct.",
+      "category": "independent-code",
+      "minimum_user_action": "None for the current bounded implementation.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/PdfTextTransfer.cs",
+        "src/MemoApp.Core/Transfer/PdfExportFont.cs",
+        "src/MemoApp.Windows/MainWindow.PdfExport.cs",
+        "tests/MemoApp.ContractChecks/PdfTextExportChecks.cs",
+        "tests/MemoApp.WindowsChecks/PdfExportChecks.cs",
+        "docs/plans/2026-10-09-pdf-text-export.md"
+      ],
+      "name": "PDF 내보내기",
+      "normalized": "PDF 내보내기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "New display compositing/nativepixel regression pending. Rich/table/Markdown/image rendering and user viewer acceptance remain."
+        ],
+        "inspection": [
+          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct.",
+          "Compare unchanged initial TextBlock oracle against same-live-visual postinspection/native-host controls; preserve reference/threshold and distinguish raster cause from alpha/font properties."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N03",
+      "implemented": "Multi-selected XLSX title/body text exports with escaped literal strings, long body split across three columns, source-mode metadata, OpenXML SDK schema validation and actual WPF safeguards.",
+      "remaining": "Physical Excel/LibreOffice rendering acceptance remains. Formatting and attachment export absent, but spreadsheet title/body mapping is a reasonable baseline for original generic Excel export; original does not specify Excel document-format roundtrip. Do not label it format-preserving; optional rich-preserving exports can be developed without new user permission.",
+      "category": "physical-user",
+      "minimum_user_action": "Later inspect synthetic XLSX text/line breaks/Unicode in already installed spreadsheet app; no paid Office purchase required.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
+        "tests/MemoApp.ContractChecks/OfficeTextExportChecks.cs",
+        "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs",
+        "docs/plans/2026-10-09-office-text-export.md"
+      ],
+      "name": "Excel 내보내기",
+      "normalized": "Excel 내보내기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical Excel/LibreOffice rendering acceptance remains. Formatting and attachment export absent, but spreadsheet title/body mapping is a reasonable baseline for original generic Excel export; original does not specify Excel document-format roundtrip. Do not label it format-preserving; optional rich-preserving exports can be developed without new user permission."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N04",
+      "implemented": "Existing rich styles/list/checklist/table/inertURL plus authenticated canonicalv2 exact inlinePNG DOCX embedding. Closed sourceowner cap1/64Mpixel bound/samelease PNG authentication, fixeddata-only sequential decoder+boundedZIP worker, actualsettlement and monotonic UI/filewriter authority. FocusedCore/crossbuild/independentreview PASS; independentOpenXML3.4.1 and installedLibreOfficeDev actualsyntheticrender PASS.",
+      "remaining": "Actual c086 Windows38019390348 office-plaintext-export PASS; wholeWindows remainsFAIL1 unrelated PDFemoji, so package/install/newartifact absent. ActualMicrosoftWord/useracceptance unverified. Markdown disclosed source-literal projection; renderedMarkdown optional inferred enhancement, not explicit originalrequirement. Generalattachments/OCR/history excluded; encryptedwholevault preserves originals.",
+      "category": "independent-test",
+      "minimum_user_action": "None before nativegate. Synthetic existingLibreOffice compatible-viewer render performed; actualMicrosoftWord acceptance later if used.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
+        "tests/MemoApp.ContractChecks/OfficeTextExportChecks.cs",
+        "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs",
+        "docs/PRODUCT_SPEC.md",
+        "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
+        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs",
+        "src/MemoApp.Core/Transfer/OwnedWordImageContext.cs",
+        "src/MemoApp.Core/Transfer/WordImageDrawing.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.WordExport.cs",
+        "src/MemoApp.Windows/MainWindow.WordImageExport.cs",
+        "tests/MemoApp.ContractChecks/WordImageContextChecks.cs",
+        "tests/MemoApp.ContractChecks/WordImageExportChecks.cs",
+        "docs/N04_INLINE_IMAGE_EXPORT_PLAN.md"
+      ],
+      "name": "Word 내보내기",
+      "normalized": "Word 내보내기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Verify package/install after resolvingPDFgate; compatibleviewer/schema evidence separate from actualMicrosoftWord/useracceptance."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N05",
+      "implemented": "Batch selected TXT individual files plus multi-selected XLSX/DOCX and PDF commands. Atomic preflight/destination conflicts/source invalidation/partial failure ownership/lock tests.",
+      "remaining": "Physical output/viewer acceptance remains. It is inaccurate to call N05 TXT-only: Office/PDF capture take note collections. Content-fidelity restrictions remain under N02/N04 and image work; original batch behavior is present. A single original-preserving transfer already exists separately as N10.",
+      "category": "physical-user",
+      "minimum_user_action": "Later multi-select synthetic notes and verify output count/order/content; no action needed to continue implementation.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/BatchTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.BatchText.cs",
+        "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
+        "src/MemoApp.Core/Transfer/PdfTextTransfer.cs",
+        "tests/MemoApp.WindowsChecks/BatchTextExportChecks.cs"
+      ],
+      "name": "여러 메모 일괄 내보내기",
+      "normalized": "여러 메모 일괄 내보내기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical output/viewer acceptance remains. It is inaccurate to call N05 TXT-only: Office/PDF capture take note collections. Content-fidelity restrictions remain under N02/N04 and image work; original batch behavior is present. A single original-preserving transfer already exists separately as N10."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N06",
+      "implemented": "Bounded local regular-file TXT import with strict UTF8/BOM UTF16, newline handling/source hash/title, entire-candidate preflight and encrypted save/restart/source/modal guards.",
+      "remaining": "Physical filepicker/Korean user acceptance remains. Legacy encodings not accepted, but no universal encoding requirement in original; strict refusal avoids silent corruption. Existing stale generic Windows automation blockers are not current code blocks.",
+      "category": "physical-user",
+      "minimum_user_action": "Later import a synthetic supported-encoding TXT and check Korean content/restart.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/TextTransfer.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.cs",
+        "tests/MemoApp.ContractChecks/TextTransferChecks.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "TXT 가져오기",
+      "normalized": "TXT 가져오기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical filepicker/Korean user acceptance remains. Legacy encodings not accepted, but no universal encoding requirement in original; strict refusal avoids silent corruption. Existing stale generic Windows automation blockers are not current code blocks."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N07",
+      "implemented": "Bounded first-sheet title/body XLSX import extended in dirty code to exact lexical numeric scalars and TRUE/FALSE; no float conversion, date serial remains numeric. Actual ZIP reader+atomic import Linux GREEN; actual WPF/encrypted restart test added pending Windows. Follow-up explicit sheet/column mapping and source SHA binding Core fullGREEN, actual modal revoke/worker ownership/encrypted snapshot tests pending newWindows.",
+      "remaining": "Explicit sheet/title/body column/first-row skip and known-template choice, SHA-bound source, whole-candidate rejection and independent encrypted-copy reopen actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Date remains raw serial; formulas/.xls unsupported; physical Excel acceptance unverified.",
+      "category": "physical-user",
+      "minimum_user_action": "None. Synthetic/public XLSX fixtures and ordinary schema choices are sufficient; no personal workbook needed.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/ExcelTextTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.ExcelImport.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.ImportTexts.cs",
+        "tests/MemoApp.ContractChecks/ExcelImportChecks.cs",
+        "tests/MemoApp.WindowsChecks/ExcelImportChecks.cs",
+        "src/MemoApp.Core/Transfer/SpreadsheetScalarText.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarChecks.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetScalarImportChecks.cs",
+        "src/MemoApp.Core/Transfer/WorkbookImportSelection.cs",
+        "src/MemoApp.Windows/ExcelImportSelectionDialog.cs",
+        "tests/MemoApp.ContractChecks/SpreadsheetMappingChecks.cs",
+        "tests/MemoApp.WindowsChecks/ExcelMappingChecks.cs"
+      ],
+      "name": "Excel 가져오기",
+      "normalized": "Excel 가져오기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Explicit sheet/title/body column/first-row skip and known-template choice, SHA-bound source, whole-candidate rejection and independent encrypted-copy reopen actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Date remains raw serial; formulas/.xls unsupported; physical Excel acceptance unverified."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "N08",
+      "implemented": "Single strict UTF8 .md raw-file adapter, labeled Obsidian raw Markdown; preserves exact CRLF/CR/LF/extensions/HTML, no interpretation/fetch, whole-candidate save/source/lock tests.",
+      "remaining": "Known producer/version fixture evidence still missing. Official Obsidian data-storage/import Markdown docs confirm local .md format and official obsidian-help README confirms locales are vaults, but neither proves a file was saved by a specific version. Official Desktop1.13.7 Public release(2026-08-12) confirmed independently; no actual fixture bytes/hash/producer-version obtained. Sandbox web restricted URL and shell official GitHub API Tunnel403 were stopped. Whole vault/plugins/attachments are not required universally.",
+      "category": "independent-test",
+      "minimum_user_action": "None for researching public confirmed format evidence; never request personal vault. User desktop acceptance later optional.",
+      "evidence": [
+        "src/MemoApp.Core/Transfer/MarkdownFileTransfer.cs",
+        "src/MemoApp.Windows/MainWindow.MarkdownImport.cs",
+        "tests/MemoApp.ContractChecks/MarkdownFileTransferChecks.cs",
+        "tests/MemoApp.WindowsChecks/MarkdownImportChecks.cs",
+        "docs/SOURCE_PROMPT.txt"
+      ],
+      "name": "다른 메모 프로그램 자료 가져오기",
+      "normalized": "다른 메모 프로그램 자료 가져오기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "정식 접근 가능한 공식/전적으로 합성된 실제 Obsidian 저장 파일 하나의 생성 버전·SHA256·raw mapping 근거를 확보해 기존 어댑터로 검사한다. 제공되지 않은 파일을 직접 생성해 실제 앱 출력으로 표시하지 않는다."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": [
+          "공식 public corpus 조회 restricted URL/Tunnel403중단. 우회없이 정식 접근 가능한 fixture 또는 버전이 확인된 앱의 합성 저장 증거가 필요하다."
+        ]
+      },
+      "format_references": [
+        "https://obsidian.md/help/data-storage",
+        "https://obsidian.md/help/import/markdown",
+        "https://github.com/obsidianmd/obsidian-help",
+        "https://obsidian.md/changelog/2026-08-12-desktop-v1.13.7/"
+      ]
+    },
+    {
+      "id": "N09",
+      "implemented": "공식 구버전 RTF/STF 본문 및 2015 형식 변경 안내의 부분 문서 근거만 있음. 특정 버전 S메모 호환 adapter는 미구현.",
+      "remaining": "공식 구버전 안내는 syncmemo_data의 RTF/STF 개별본문을 설명하지만 STF는 서식일 수 있고 2015 PC4.0 공지는 형식변경을 명시한다. 특정 버전의 인코딩·제목/폴더/시각/서식/첨부 매핑 및 완전합성 versioned fixture가 없어 S메모 호환 어댑터를 검증할 수 없다. 실제 사용자자료/실행파일은 요구하거나 실행하지 않는다.",
+      "category": "blocked-format",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "실제 개인 S메모 자료·실행파일은 제공할 필요 없음. 검증된 공개 version schema와 완전합성 fixture 확보가 필요하다.",
+      "name": "S메모 자료 가져오기",
+      "normalized": "S메모 자료 가져오기",
+      "ledger_status": "차단됨",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "공개 형식/합성 fixture를 확보하면 해당 버전만 지원하는 bounded adapter를 작성한다. 일반 untrusted importer scaffolding은 독립 작업 가능하지만 S메모 호환 구현은 아니다."
+        ],
+        "inspection": [
+          "특정 S메모 버전/형식의 공개 schema와 제목·폴더·시각·서식·첨부 매핑을 확인하고 완전합성 versioned fixture를 확보해 검증해야 한다. 임의 RTF를 S메모 version fixture로 부르지 않는다."
+        ],
+        "physical_user": [],
+        "decision": [],
+        "access": [
+          "검증된 S메모 versioned schema·metadata map·완전합성 fixture 부재. 개인 DB/백업/실행파일 업로드 또는 실행을 요구하지 않는다."
+        ]
+      }
+    },
+    {
+      "id": "N10",
+      "implemented": "전체 자료를 한 파일로 이전의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 두 PC/USB 암호 사본 이전·별도 비밀로 복구의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 두 PC/USB 암호 사본 이전·별도 비밀로 복구 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
+        "tests/MemoApp.WindowsChecks/WholeTransferChecks.cs"
+      ],
+      "name": "전체 자료를 한 파일로 이전",
+      "normalized": "전체 자료를 한 파일로 이전",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 두 PC/USB 암호 사본 이전·별도 비밀로 복구의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O01",
+      "implemented": "Opt-in after-successful-save encrypted automatic backup, latest committed detached bytes and bounded owned capacity. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
+      "remaining": "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy.",
+      "category": "physical-user",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupChecks.cs",
+        "docs/FEATURES.json"
+      ],
+      "name": "자동 백업",
+      "normalized": "자동 백업",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O02",
+      "implemented": "Opt-in final dirty-state exit backup after immediate lock/key release; settles previous backup without self-deadlock. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
+      "remaining": "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy.",
+      "category": "physical-user",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "tests/MemoApp.ContractChecks/PreparedBackupChecks.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupChecks.cs"
+      ],
+      "name": "종료 시 백업",
+      "normalized": "종료 시 백업",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O03",
+      "implemented": "UTC-day automatic backup while running/unlocked, failed-day attempt throttle and latest-save gate. 후속 dirty schema9 encrypted opt-in DTO/default-off/exact prechange8/loaded-prepared-hidden downgrade guards Linux target GREEN. Windows save-before-enable/root binding/setting revision/normal-current-only restore 구현 진행 중. Windows 정책 연결·standalone token·명시복구 allprofile 제거 구현 완료(실제 gate pending), 사전/후속독립 reviewImportant수정.",
+      "remaining": "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy.",
+      "category": "physical-user",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupChecks.cs"
+      ],
+      "name": "하루 한 번 백업",
+      "normalized": "하루 한 번 백업",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Persistent schema9 policy root/persistence/restart/OFF/failed reservation actual Windows38004389975 relevant groups PASS. Whole gate failed unrelated selected checklist fixture. Actual user-PC backup lifecycle acceptance unverified; optional old-backup automatic rotation remains separate policy."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O04",
+      "implemented": "User capacity1..100; checks owned filename set again immediately before CreateNew; full directory refuses new backup and retains all old copies. Schema9 encrypted policy persists Capacity and restores it after reopening.",
+      "remaining": "Capacity 1–100 with full-stop retention and encrypted policy persistence is implemented. User acceptance remains unconfirmed. Automatic rolling deletion is an optional unsupported destructive policy.",
+      "category": "physical-user",
+      "minimum_user_action": "Only if rolling retention is desired: explicitly authorize which owned backup files may be deleted after a new verified copy; otherwise retain current full-stop policy.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
+        "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
+        "tests/MemoApp.ContractChecks/AutomaticBackupPolicyChecks.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupChecks.cs",
+        "src/MemoApp.Core/Storage/StoredAutomaticBackupPolicy.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupPersistenceChecks.cs"
+      ],
+      "name": "백업 보관 개수 설정",
+      "normalized": "백업 보관 개수 설정",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Retain capacity-race and persistent-policy restart regressions."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O05",
+      "implemented": "기존 암호 수동 백업 외에 dirty MainWindow.ManualBackup.cs에 picker 전 epoch/source를 포착하는 ChooseManualBackupAsync와 회귀가 추가되는 중이다.",
+      "remaining": "해당 연결의 actual WPF 합성 검사 PASS, C10 보완 뒤 전체 gate와 물리 사용자 수용은 별도로 남는다.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "tests/MemoApp.ContractChecks/BackupChecks.cs",
+        "tests/MemoApp.WindowsChecks/WholeTransferChecks.cs",
+        "src/MemoApp.Windows/MainWindow.ManualBackup.cs",
+        "tests/MemoApp.WindowsChecks/ManualBackupChecks.cs"
+      ],
+      "name": "수동 백업",
+      "normalized": "수동 백업",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Windows37998752768에서 해당 새 group PASS. 전체 gate는 C10 회귀 FAIL이므로 보완 source의 전체 Windows gate가 필요하다."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O06",
+      "implemented": "Same-ID live immutable branchunion/current preservation plus explicit selected maximal-tip keep-current two-parent resolution; genuine owner/display/confirmation/single-use authority, current cipher/currentroot key validation, prechange encrypted copy and truthful AppliedDirty/settlement. Model/owner/fullCore PASS; WPF source/postreview/crossbuild0w0e, nextactualWindows pending. Actualf1 Windows38016986323 backup-branch-resolution PASS including stopped faulted writer and existing explicitencryptedrecovery helper; originalhistory/head retained. Actual c086 native backup merge and branch-resolution groups passed.",
+      "remaining": "Bounded same-root live-branch merge and keep-current causal resolution passed native checks. Whole-copy recovery-secret migration to another independent directory/device is implemented and tested. Current-source regression/package/install/user acceptance and remaining overwrite/merge/key-epoch/deletion-lineage recovery semantics beyond that whole-copy path remain distinct work.",
+      "category": "independent-code",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "tests/MemoApp.ContractChecks/BackupChecks.cs",
+        "tests/MemoApp.ContractChecks/WholeMigrationChecks.cs",
+        "docs/PRODUCT_SPEC.md",
+        "src/MemoApp.Core/Editing/EditingWorkspace.MergeBackup.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.BackupMerge.cs",
+        "src/MemoApp.Core/History/RevisionBranchAnalysis.cs",
+        "tests/MemoApp.ContractChecks/BackupMergeChecks.cs",
+        "tests/MemoApp.ContractChecks/BackupMergeLifecycleChecks.cs",
+        "src/MemoApp.Windows/MainWindow.BackupMerge.cs",
+        "src/MemoApp.Windows/BackupMergeWindow.cs",
+        "tests/MemoApp.WindowsChecks/BackupMergeUiChecks.cs",
+        "docs/O06_CAUSAL_RESOLUTION_PLAN.md",
+        "src/MemoApp.Core/Editing/EditingWorkspace.BranchResolution.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.BranchResolution.cs",
+        "src/MemoApp.Windows/MainWindow.BranchResolution.cs",
+        "tests/MemoApp.ContractChecks/BranchResolutionChecks.cs",
+        "tests/MemoApp.ContractChecks/BranchResolutionLifecycleChecks.cs",
+        "tests/MemoApp.WindowsChecks/BranchResolutionUiChecks.cs"
+      ],
+      "name": "백업 파일 선택 후 복구",
+      "normalized": "백업 파일 선택 후 복구",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "Identify and implement remaining approved overwrite/merge/deletion-lineage recovery cases beyond existing same-root merge and whole-copy recovery-secret migration only after independent security PRE; do not invent arbitrary-root adoption or claim automatic synchronization."
+        ],
+        "inspection": [
+          "Retain native merge/resolution, prechange-copy, callback reentry and AppliedDirty regressions; distinguish group PASS from whole gate/package results."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O07",
+      "implemented": "Atomic recovery commit preserves preexisting current ciphertext as previous candidate; failure keeps current and candidates, selected restore preserves originals.",
+      "remaining": "Physical recovery acceptance; regression evidence must stay linked to real files rather than generic stale ledger.",
+      "category": "physical-user",
+      "minimum_user_action": "With synthetic data recover an older candidate and verify pre-recovery state remains an authenticated candidate.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.ContractChecks/VaultFailureChecks.cs",
+        "tests/MemoApp.ContractChecks/SelectedBackupFailureChecks.cs"
+      ],
+      "name": "복구 전 현재 상태 자동 보존",
+      "normalized": "복구 전 현재 상태 자동 보존",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical recovery acceptance; regression evidence must stay linked to real files rather than generic stale ledger."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O08",
+      "implemented": "Same-vault authenticated backup preview, bounded100 detached title/body256 DTOs, temporary root disposed and viewer source/native revocation.",
+      "remaining": "Physical picker/read-only preview acceptance. Full rich/image rendering is not required by the minimal plain preview contract and must not be mislabeled entirely missing.",
+      "category": "physical-user",
+      "minimum_user_action": "Preview a synthetic older backup, close/lock and confirm no stale content remains.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/EncryptedVault.BackupPreview.cs",
+        "src/MemoApp.Windows/BackupPreviewWindow.cs",
+        "tests/MemoApp.ContractChecks/BackupPreviewChecks.cs",
+        "tests/MemoApp.WindowsChecks/BackupPreviewChecks.cs"
+      ],
+      "name": "백업 미리보기",
+      "normalized": "백업 미리보기",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical picker/read-only preview acceptance. Full rich/image rendering is not required by the minimal plain preview contract and must not be mislabeled entirely missing."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "O09",
+      "implemented": "Explicit selected notes restored as fresh IDs; exact source hash re-read, current-root full object authentication, conflict preflight and originals/history preserved.",
+      "remaining": "Physical selection/default-No/apply acceptance only; same-ID overwrite/merge belongs O06 rather than silently treating fresh-copy restoration as all merge modes.",
+      "category": "physical-user",
+      "minimum_user_action": "Select one synthetic backup note, restore as fresh copy, verify current originals are unchanged.",
+      "evidence": [
+        "src/MemoApp.Core/Editing/EditingWorkspace.ImportBackup.cs",
+        "src/MemoApp.Windows/MainWindow.SelectedBackup.cs",
+        "tests/MemoApp.ContractChecks/SelectedBackupChecks.cs",
+        "tests/MemoApp.WindowsChecks/SelectedBackupChecks.cs"
+      ],
+      "name": "특정 메모 선택 복구",
+      "normalized": "특정 메모 선택 복구",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical selection/default-No/apply acceptance only; same-ID overwrite/merge belongs O06 rather than silently treating fresh-copy restoration as all merge modes."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "P01",
+      "implemented": "Offline device-only notes/vault, per-user local paths, memory-only search, no runtime sync/account service needed. Follow-up installed app original launch2 snapshots ownPID TCP/UDP4/6 with positive synthetic listener self-check added; nativeWindows runtime pending. Observation is sampled evidence only, not full traffic blocking/absence proof. Actual515c008 native bounded observer passed: positive TCP/UDP v4/v6 and crossprocess PID+creation, six host phases sampled, two actual fixed Tesseract child identities/five aggregate active samples; sampled rows zero. This is scoped observation, not complete offline/firewall assurance or installed unlocked EXE evidence.",
+      "remaining": "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Core/Storage/VaultSnapshot.cs",
+        "src/MemoApp.Core/Lifecycle/StartupPaths.cs",
+        "src/MemoApp.Core/Search/NoteSearch.cs",
+        "docs/PRODUCT_SPEC.md",
+        "tests/MemoApp.WindowsChecks/InstalledNetworkObservation.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
+      ],
+      "name": "한 PC에서만 사용",
+      "normalized": "한 PC에서만 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID.",
+          "기존 설치 launch만 사용한 new native owningPID socket snapshot/self-positive 검사를 실제 Windows에서 확인한다.",
+          "Preserve fresh native observer active-coverage and actual-reader-drain regressions; aggregate samples are not continuous per-engine coverage."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "P02",
+      "implemented": "Whole authenticated encrypted file export/import across independent roots, separate nonsecret UI device profile and original payload/root preservation.",
+      "remaining": "Actual second-PC execution/account wrap/acceptance; DPAPI wrap is separately missing code, not a prerequisite for current recovery-secret transfer.",
+      "category": "physical-user",
+      "minimum_user_action": "Transfer a synthetic .vault to a second owned PC and unlock using separately held recovery secret.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "src/MemoApp.Core/Lifecycle/LocalUiIdentity.cs",
+        "tests/MemoApp.ContractChecks/WholeMigrationChecks.cs",
+        "tests/MemoApp.WindowsChecks/WholeTransferChecks.cs"
+      ],
+      "name": "집 PC와 다른 PC에서 사용",
+      "normalized": "집 PC와 다른 PC에서 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual second-PC execution/account wrap/acceptance; DPAPI wrap is separately missing code, not a prerequisite for current recovery-secret transfer."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "P03",
+      "implemented": "Explicit whole encrypted transfer to local destination, CreateNew refusal, unchanged source; physical USB uses existing normal local path boundary.",
+      "remaining": "Physical USB copy/removal/error handling acceptance; this is not missing all transfer implementation.",
+      "category": "physical-user",
+      "minimum_user_action": "Use a synthetic transfer file on owned USB; inspect copy/recovery and a safe removed-device failure.",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "src/MemoApp.Core/Storage/PreparedEncryptedCopy.cs",
+        "tests/MemoApp.ContractChecks/WholeMigrationChecks.cs",
+        "tests/MemoApp.WindowsChecks/WholeTransferChecks.cs"
+      ],
+      "name": "USB로 데이터 직접 이동",
+      "normalized": "USB로 데이터 직접 이동",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical USB copy/removal/error handling acceptance; this is not missing all transfer implementation."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "P04",
+      "implemented": "One self-contained encrypted container retains notes/history/folders/tags/UI/tombstones/attachments/root; fresh-root authentication and subsequent save/restart covered.",
+      "remaining": "Physical other-device acceptance only for implemented recovery-secret path; metadata-only object references are not mistaken for a complete file because objects are included.",
+      "category": "physical-user",
+      "minimum_user_action": "Copy one synthetic encrypted file and separately convey recovery secret; reopen/save on second device.",
+      "evidence": [
+        "src/MemoApp.Core/Storage/AttachmentEnvelope.cs",
+        "src/MemoApp.Windows/MainWindow.WholeTransfer.cs",
+        "tests/MemoApp.ContractChecks/WholeMigrationChecks.cs",
+        "tests/MemoApp.ContractChecks/TrashEncryptionChecks.cs"
+      ],
+      "name": "파일 하나를 복사해 다른 PC에서 계속 사용",
+      "normalized": "파일 하나를 복사해 다른 PC에서 계속 사용",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical other-device acceptance only for implemented recovery-secret path; metadata-only object references are not mistaken for a complete file because objects are included."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "P05",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "변경 단위 E2EE 자동 동기화·기기별 범위·동시/오프라인/삭제 충돌·중복/재시도·기기 등록/해제/키 교체/복구 상호운용이 미구현. 전체 DB 파일 overwrite는 구현으로 인정하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "offline conflict protocol/fixture 개발에는 없음. 실제 연동 전에 provider/기기 등록·복구 정책 결정과 접근이 필요하다.",
+      "name": "여러 PC 자동 동기화",
+      "normalized": "여러 PC 자동 동기화",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "provider나 실제 기기 등록 전에 네트워크 없는 합성 revision/tombstone conflict protocol, 중복/재시도 상태, 기기 전용 제외 및 device UI 분리 계약을 독립 구현한다. 자체 암호 프로토콜 대신 검증된 구성과 별도 보안 검토가 선행한다."
+        ],
+        "inspection": [
+          "오프라인 동시 수정·삭제/재접속·오래된 백업의 삭제 부활 방지·충돌본/복구 경로·device-only 제외 합성 vectors를 검사한다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "실제 provider/신뢰·최소 서버 metadata/등록 및 복구 정책 결정은 별도다. 유료 계정·서비스를 임의 추가하지 않는다."
+        ],
+        "access": [
+          "실제 provider와 여러 기기 접근은 미확보. 이 접근은 네트워크 없는 계약 검사와 구분한다."
+        ]
+      }
+    },
+    {
+      "id": "P06",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "변경 단위 E2EE 자동 동기화·기기별 범위·동시/오프라인/삭제 충돌·중복/재시도·기기 등록/해제/키 교체/복구 상호운용이 미구현. 전체 DB 파일 overwrite는 구현으로 인정하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "offline conflict protocol/fixture 개발에는 없음. 실제 연동 전에 provider/기기 등록·복구 정책 결정과 접근이 필요하다.",
+      "name": "PC별 서로 다른 메모 일부 유지",
+      "normalized": "PC별 서로 다른 메모 일부 유지",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "provider나 실제 기기 등록 전에 네트워크 없는 합성 revision/tombstone conflict protocol, 중복/재시도 상태, 기기 전용 제외 및 device UI 분리 계약을 독립 구현한다. 자체 암호 프로토콜 대신 검증된 구성과 별도 보안 검토가 선행한다."
+        ],
+        "inspection": [
+          "오프라인 동시 수정·삭제/재접속·오래된 백업의 삭제 부활 방지·충돌본/복구 경로·device-only 제외 합성 vectors를 검사한다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "실제 provider/신뢰·최소 서버 metadata/등록 및 복구 정책 결정은 별도다. 유료 계정·서비스를 임의 추가하지 않는다."
+        ],
+        "access": [
+          "실제 provider와 여러 기기 접근은 미확보. 이 접근은 네트워크 없는 계약 검사와 구분한다."
+        ]
+      }
+    },
+    {
+      "id": "Q03",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "Android 편집/저장 시 Windows 표·서식·이미지·미지원 노드를 보존하는 편집 UI와 암호 저장이 미구현. SDK 사용 약관 승인 질문은 이미 pending이며 답변 전 SDK 설치/약관 수락을 진행하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "기존 Android SDK 약관 승인 질문의 응답이 pending. 반복 질문 없이 SDK 의존 작업만 대기; 현재 합성 계약 작업에는 새 사용자 조치 없음.",
+      "name": "휴대폰에서 메모 작성·수정",
+      "normalized": "휴대폰에서 메모 작성·수정",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "SDK 설치와 분리해 Android 편집/저장 시 Windows 표·서식·이미지·미지원 노드를 보존하는 편집 UI와 암호 저장의 공유 JSON/암호/상태 계약과 합성 fixture를 설계·구현할 수 있다. 계약만으로 실제 Android 기능을 구현했다고 표시하지 않는다."
+        ],
+        "inspection": [
+          "교차 플랫폼 unknown-node/암호 payload/잠금·실패 합성 vectors를 준비한다. SDK 승인 후 APK build·에뮬레이터·실기기 검사를 각각 기록한다."
+        ],
+        "physical_user": [
+          "실제 Android 기기 입력·잠금·권한 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "Android SDK 사용약관 승인 질문이 이미 pending. 답변을 반복 요청하지 않고 SDK 설치/수락 의존 작업만 대기한다."
+        ],
+        "access": [
+          "Android SDK/adb/에뮬레이터·실기기 현재 미확보; SDK 사용 승인과 toolchain 확보를 분리한다."
+        ]
+      }
+    },
+    {
+      "id": "Q04",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "실제 Android 앱·Kotlin/AGP/Compose/API 호환 버전 고정·APK build이 미구현. SDK 사용 약관 승인 질문은 이미 pending이며 답변 전 SDK 설치/약관 수락을 진행하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "기존 Android SDK 약관 승인 질문의 응답이 pending. 반복 질문 없이 SDK 의존 작업만 대기; 현재 합성 계약 작업에는 새 사용자 조치 없음.",
+      "name": "Android 앱",
+      "normalized": "Android 앱",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "SDK 설치와 분리해 실제 Android 앱·Kotlin/AGP/Compose/API 호환 버전 고정·APK build의 공유 JSON/암호/상태 계약과 합성 fixture를 설계·구현할 수 있다. 계약만으로 실제 Android 기능을 구현했다고 표시하지 않는다."
+        ],
+        "inspection": [
+          "교차 플랫폼 unknown-node/암호 payload/잠금·실패 합성 vectors를 준비한다. SDK 승인 후 APK build·에뮬레이터·실기기 검사를 각각 기록한다."
+        ],
+        "physical_user": [
+          "실제 Android 기기 입력·잠금·권한 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "Android SDK 사용약관 승인 질문이 이미 pending. 답변을 반복 요청하지 않고 SDK 설치/수락 의존 작업만 대기한다."
+        ],
+        "access": [
+          "Android SDK/adb/에뮬레이터·실기기 현재 미확보; SDK 사용 승인과 toolchain 확보를 분리한다."
+        ]
+      }
+    },
+    {
+      "id": "Q06",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "변경 단위 E2EE 자동 동기화·기기별 범위·동시/오프라인/삭제 충돌·중복/재시도·기기 등록/해제/키 교체/복구 상호운용이 미구현. 전체 DB 파일 overwrite는 구현으로 인정하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "기존 Android SDK 약관 승인 질문의 응답이 pending. 반복 질문 없이 SDK 의존 작업만 대기; 현재 합성 계약 작업에는 새 사용자 조치 없음.",
+      "name": "PC·휴대폰 자동 동기화",
+      "normalized": "PC·휴대폰 자동 동기화",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "provider나 실제 기기 등록 전에 네트워크 없는 합성 revision/tombstone conflict protocol, 중복/재시도 상태, 기기 전용 제외 및 device UI 분리 계약을 독립 구현한다. 자체 암호 프로토콜 대신 검증된 구성과 별도 보안 검토가 선행한다."
+        ],
+        "inspection": [
+          "오프라인 동시 수정·삭제/재접속·오래된 백업의 삭제 부활 방지·충돌본/복구 경로·device-only 제외 합성 vectors를 검사한다."
+        ],
+        "physical_user": [
+          "실제 PC/Android 양쪽 동기화·잠금·충돌 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "실제 provider/신뢰·최소 서버 metadata/등록 및 복구 정책 결정은 별도다. 유료 계정·서비스를 임의 추가하지 않는다.",
+          "Android SDK 사용약관 승인 질문이 이미 pending. 답변을 반복 요청하지 않고 SDK 설치/수락 의존 작업만 대기한다."
+        ],
+        "access": [
+          "실제 provider와 여러 기기 접근은 미확보. 이 접근은 네트워크 없는 계약 검사와 구분한다.",
+          "Android SDK/adb/에뮬레이터·실기기 현재 미확보; SDK 사용 승인과 toolchain 확보를 분리한다."
+        ]
+      }
+    },
+    {
+      "id": "Q07",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "명시 사진 촬영/취소·권한 및 사진/EXIF의 암호 저장이 미구현. SDK 사용 약관 승인 질문은 이미 pending이며 답변 전 SDK 설치/약관 수락을 진행하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "기존 Android SDK 약관 승인 질문의 응답이 pending. 반복 질문 없이 SDK 의존 작업만 대기; 현재 합성 계약 작업에는 새 사용자 조치 없음.",
+      "name": "휴대폰 사진 촬영 후 메모 추가",
+      "normalized": "휴대폰 사진 촬영 후 메모 추가",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "SDK 설치와 분리해 명시 사진 촬영/취소·권한 및 사진/EXIF의 암호 저장의 공유 JSON/암호/상태 계약과 합성 fixture를 설계·구현할 수 있다. 계약만으로 실제 Android 기능을 구현했다고 표시하지 않는다."
+        ],
+        "inspection": [
+          "교차 플랫폼 unknown-node/암호 payload/잠금·실패 합성 vectors를 준비한다. SDK 승인 후 APK build·에뮬레이터·실기기 검사를 각각 기록한다."
+        ],
+        "physical_user": [
+          "실제 Android 기기 입력·잠금·권한 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "Android SDK 사용약관 승인 질문이 이미 pending. 답변을 반복 요청하지 않고 SDK 설치/수락 의존 작업만 대기한다."
+        ],
+        "access": [
+          "Android SDK/adb/에뮬레이터·실기기 현재 미확보; SDK 사용 승인과 toolchain 확보를 분리한다."
+        ]
+      }
+    },
+    {
+      "id": "Q08",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "잠금화면 제목/본문 비노출 운영 실패·충돌 알림이 미구현. SDK 사용 약관 승인 질문은 이미 pending이며 답변 전 SDK 설치/약관 수락을 진행하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": "기존 Android SDK 약관 승인 질문의 응답이 pending. 반복 질문 없이 SDK 의존 작업만 대기; 현재 합성 계약 작업에는 새 사용자 조치 없음.",
+      "name": "휴대폰 알림",
+      "normalized": "휴대폰 알림",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "SDK 설치와 분리해 잠금화면 제목/본문 비노출 운영 실패·충돌 알림의 공유 JSON/암호/상태 계약과 합성 fixture를 설계·구현할 수 있다. 계약만으로 실제 Android 기능을 구현했다고 표시하지 않는다."
+        ],
+        "inspection": [
+          "교차 플랫폼 unknown-node/암호 payload/잠금·실패 합성 vectors를 준비한다. SDK 승인 후 APK build·에뮬레이터·실기기 검사를 각각 기록한다."
+        ],
+        "physical_user": [
+          "실제 Android 기기 입력·잠금·권한 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [
+          "Android SDK 사용약관 승인 질문이 이미 pending. 답변을 반복 요청하지 않고 SDK 설치/수락 의존 작업만 대기한다."
+        ],
+        "access": [
+          "Android SDK/adb/에뮬레이터·실기기 현재 미확보; SDK 사용 승인과 toolchain 확보를 분리한다."
+        ]
+      }
+    },
+    {
+      "id": "R01",
+      "implemented": "바탕화면 달력의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 달력 날짜 탐색·기기별 창 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 달력 날짜 탐색·기기별 창 복원 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DateWidgetWindow.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "바탕화면 달력",
+      "normalized": "바탕화면 달력",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 달력 날짜 탐색·기기별 창 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "R02",
+      "implemented": "바탕화면 시계의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "실제 시계 표시·기기별 창 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "실제 시계 표시·기기별 창 복원 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/DateWidgetWindow.cs",
+        "src/MemoApp.Windows/DesktopWindowController.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "바탕화면 시계",
+      "normalized": "바탕화면 시계",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "실제 시계 표시·기기별 창 복원의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "S01",
+      "implemented": "왼쪽 폴더·오른쪽 메모 구조의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "왼쪽 폴더/오른쪽 목록 키보드 사용성의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "왼쪽 폴더/오른쪽 목록 키보드 사용성 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "왼쪽 폴더·오른쪽 메모 구조",
+      "normalized": "왼쪽 폴더·오른쪽 메모 구조",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "왼쪽 폴더/오른쪽 목록 키보드 사용성의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "S02",
+      "implemented": "메모 카드 형태의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "메모 카드의 실제 글꼴/줄바꿈 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "메모 카드의 실제 글꼴/줄바꿈 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 카드 형태",
+      "normalized": "메모 카드 형태",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "메모 카드의 실제 글꼴/줄바꿈 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "S04",
+      "implemented": "다크모드의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "사용 모니터의 다크모드 대비와 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "사용 모니터의 다크모드 대비와 재실행 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "다크모드",
+      "normalized": "다크모드",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "사용 모니터의 다크모드 대비와 재실행의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "S05",
+      "implemented": "글자 크기 전체 조절의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "IME/글꼴 혼합 문서 전역 크기 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "IME/글꼴 혼합 문서 전역 크기 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "글자 크기 전체 조절",
+      "normalized": "글자 크기 전체 조절",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "IME/글꼴 혼합 문서 전역 크기 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "S06",
+      "implemented": "화면 배율 조절의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "물리 OS DPI와 앱 배율 독립 동작의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "물리 OS DPI와 앱 배율 독립 동작 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/StickyNoteWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "화면 배율 조절",
+      "normalized": "화면 배율 조절",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "물리 OS DPI와 앱 배율 독립 동작의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "T08",
+      "implemented": "드래그앤드롭으로 메모 순서 변경의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "물리 drag·filter 밖 순서/고정 그룹 유지의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "물리 drag·filter 밖 순서/고정 그룹 유지 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "드래그앤드롭으로 메모 순서 변경",
+      "normalized": "드래그앤드롭으로 메모 순서 변경",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "물리 drag·filter 밖 순서/고정 그룹 유지의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "T09",
+      "implemented": "메모 글자 수의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음; StringInfo.LengthInTextElements 사용(UTF16 단위 단순 count 아님)",
+      "remaining": "한글·결합문자·emoji grapheme 글자 수 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "한글·결합문자·emoji grapheme 글자 수 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "메모 글자 수",
+      "normalized": "메모 글자 수",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "한글·결합문자·emoji grapheme 글자 수 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "T10",
+      "implemented": "전체 메모 개수의 Core/UI 연결과 Windows 합성 자동 검사 근거가 있음",
+      "remaining": "활성/보관/휴지통/검색 개수 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다.",
+      "category": "physical-user",
+      "minimum_user_action": "활성/보관/휴지통/검색 개수 표시 (합성 자료만)",
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs"
+      ],
+      "name": "전체 메모 개수",
+      "normalized": "전체 메모 개수",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "활성/보관/휴지통/검색 개수 표시의 물리 사용자 수용 미확인. 기존 Windows 제어를 일괄 미검증으로 표시하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "T12",
+      "implemented": "Fixed source-built Tesseract5.5.3/Leptonica1.87.0 kor+eng native OCR, explicit hash-validated public model installation/selection default off, app-wide input/admission/settlement, read-only result then new encrypted plain note/body search/restart. Actual Korean/English synthetic Windows OCR/product/install gates passed in latest whole CI. Actual c086 linked OCR runtime/UI and schema11 authority/search groups passed. Actual515c008 native bounded observer passed: positive TCP/UDP v4/v6 and crossprocess PID+creation, six host phases sampled, two actual fixed Tesseract child identities/five aggregate active samples; sampled rows zero. This is scoped observation, not complete offline/firewall assurance or installed unlocked EXE evidence.",
+      "remaining": "Fixed native OCR, linked authority/native-setter/lock and bounded network observer have actual evidence. Generic pending-result seven-case native rerun is pending after narrow dirty-Capture provisional-ID fixture correction; accuracy corpus/CPU-RAM and user acceptance remain. Unsupported image formats are optional extensions.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "evidence": [
+        "src/MemoApp.Windows/InstalledOcrBackend.cs",
+        "src/MemoApp.Windows/AttachmentPanel.Ocr.cs",
+        "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs",
+        "src/MemoApp.Core/Transfer/PngPreviewProfile.cs",
+        "src/MemoApp.Core/Transfer/LocalOcrProcess.cs",
+        "tests/MemoApp.WindowsChecks/OcrProductChecks.cs",
+        "tests/MemoApp.ContractChecks/LocalOcrChecks.cs",
+        "docs/plans/2026-10-09-local-ocr-windows-integration.md",
+        "tools/build_native_ocr.py",
+        "tests/MemoApp.WindowsChecks/AttachmentLinkedOcrUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/LinkedOcrRuntimeChecks.cs",
+        "tests/MemoApp.WindowsChecks/NetworkObservationChecks.cs",
+        "docs/P01_T12_NETWORK_OBSERVATION_DELTA_PLAN.md"
+      ],
+      "name": "OCR로 이미지 글자 추출",
+      "normalized": "OCR로 이미지 글자 추출",
+      "ledger_status": "진행 중",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Verify fresh observer positive checks and actual engine active coverage/cleanup; distinguish installed locked EXE from unlocked WPF test host. Expand generic pending-result races and synthetic corpus/resource measurements.",
+          "Preserve fresh native observer active-coverage and actual-reader-drain regressions; aggregate samples are not continuous per-engine coverage."
+        ],
+        "physical_user": [
+          "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "T13",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "한글 로컬 음성 인식·명시 녹음·텍스트 미리보기/적용의 실제 엔진/모델 설치·추론이 미구현/미검증. 후보 조사와 mock은 기능 완료가 아니다. 공식 모델/release 경로 접근 403은 재시도나 우회하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": null,
+      "name": "음성으로 메모 작성",
+      "normalized": "음성으로 메모 작성",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "모델 설치 없이 명시 입력/취소·한도·source/session epoch·잠금 폐기·result preview/적용·실패 안내의 bounded adapter 계약 및 합성 fake runner를 독립 구현한다. 외부 AI/cloud fallback 전송을 추가하지 않는다."
+        ],
+        "inspection": [
+          "공식 엔진/모델을 실제 확보한 뒤 모델 버전/해시/라이선스/용량·CPU/RAM·한글 품질·통신 차단·취소/잠금 경계 추론을 별도 검증한다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [],
+        "access": [
+          "부모 전달 실제 접근 기록: 공식 Hugging Face model API 및 GitHub latest release route에서 Tunnel connection failed:403 Forbidden. 공식 접근 복구 전 해당 download/runtime 실행은 차단된다. 우회하지 않는다."
+        ]
+      }
+    },
+    {
+      "id": "T14",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "한글 로컬 AI 요약의 실제 엔진/모델 설치·추론이 미구현/미검증. 후보 조사와 mock은 기능 완료가 아니다. 공식 모델/release 경로 접근 403은 재시도나 우회하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": null,
+      "name": "AI 요약",
+      "normalized": "AI 요약",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "모델 설치 없이 명시 입력/취소·한도·source/session epoch·잠금 폐기·result preview/적용·실패 안내의 bounded adapter 계약 및 합성 fake runner를 독립 구현한다. 외부 AI/cloud fallback 전송을 추가하지 않는다."
+        ],
+        "inspection": [
+          "공식 엔진/모델을 실제 확보한 뒤 모델 버전/해시/라이선스/용량·CPU/RAM·한글 품질·통신 차단·취소/잠금 경계 추론을 별도 검증한다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [],
+        "access": [
+          "부모 전달 실제 접근 기록: 공식 Hugging Face model API 및 GitHub latest release route에서 Tunnel connection failed:403 Forbidden. 공식 접근 복구 전 해당 download/runtime 실행은 차단된다. 우회하지 않는다."
+        ]
+      }
+    },
+    {
+      "id": "T15",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "로컬 문장 다듬기·미리보기/명시 적용·원본 이력의 실제 엔진/모델 설치·추론이 미구현/미검증. 후보 조사와 mock은 기능 완료가 아니다. 공식 모델/release 경로 접근 403은 재시도나 우회하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": null,
+      "name": "AI 문장 다듬기",
+      "normalized": "AI 문장 다듬기",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "모델 설치 없이 명시 입력/취소·한도·source/session epoch·잠금 폐기·result preview/적용·실패 안내의 bounded adapter 계약 및 합성 fake runner를 독립 구현한다. 외부 AI/cloud fallback 전송을 추가하지 않는다."
+        ],
+        "inspection": [
+          "공식 엔진/모델을 실제 확보한 뒤 모델 버전/해시/라이선스/용량·CPU/RAM·한글 품질·통신 차단·취소/잠금 경계 추론을 별도 검증한다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [],
+        "access": [
+          "부모 전달 실제 접근 기록: 공식 Hugging Face model API 및 GitHub latest release route에서 Tunnel connection failed:403 Forbidden. 공식 접근 복구 전 해당 download/runtime 실행은 차단된다. 우회하지 않는다."
+        ]
+      }
+    },
+    {
+      "id": "T16",
+      "implemented": "원문 요구 및 공통 문서/저장 계약을 보존했으나 이 ID의 실행 가능한 제품 기능은 구현되지 않았다.",
+      "remaining": "사용자가 허용한 해제 메모만 로컬 검색·근거 메모 표시·자료 내 지시 불실행의 실제 엔진/모델 설치·추론이 미구현/미검증. 후보 조사와 mock은 기능 완료가 아니다. 공식 모델/release 경로 접근 403은 재시도나 우회하지 않는다.",
+      "category": "independent-code",
+      "evidence": [
+        "docs/SOURCE_PROMPT.txt",
+        "docs/PRODUCT_SPEC.md",
+        "docs/FEATURES.json",
+        "docs/NEXT_SCOPE.md"
+      ],
+      "minimum_user_action": null,
+      "name": "AI에게 내 메모 내용 질문",
+      "normalized": "AI에게 내 메모 내용 질문",
+      "ledger_status": "미착수",
+      "user_acceptance": "미확인",
+      "additional_actions": {
+        "code": [
+          "모델 설치 없이 명시 입력/취소·한도·source/session epoch·잠금 폐기·result preview/적용·실패 안내의 bounded adapter 계약 및 합성 fake runner를 독립 구현한다. 로컬 허용 메모 retrieval/근거·자료 내 명령 비실행 검사를 포함한다."
+        ],
+        "inspection": [
+          "공식 엔진/모델을 실제 확보한 뒤 모델 버전/해시/라이선스/용량·CPU/RAM·한글 품질·통신 차단·취소/잠금 경계 추론을 별도 검증한다."
+        ],
+        "physical_user": [
+          "실제 Windows/여러 기기 또는 로컬 엔진 합성 자료 사용자 수용은 구현/자동 검사 뒤 별도이며 현재 미확인이다."
+        ],
+        "decision": [],
+        "access": [
+          "부모 전달 실제 접근 기록: 공식 Hugging Face model API 및 GitHub latest release route에서 Tunnel connection failed:403 Forbidden. 공식 접근 복구 전 해당 download/runtime 실행은 차단된다. 우회하지 않는다."
+        ]
+      }
+    }
+  ],
+  "audit_contracts": [
+    {
+      "id": "SEC-storage",
+      "implemented": "AEAD encrypted snapshot metadata/history/trash/device state and attachment objects; OCR result applied as encrypted plain note; no persistent search cache.",
+      "remaining": "Source-path/temporary/log audit and runtime communications observation can be expanded independently; future AI/speech derivatives are absent, not falsely encrypted implementation.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Core/Storage/AttachmentEnvelope.cs",
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "tests/MemoApp.ContractChecks/VaultChecks.cs",
+        "tests/MemoApp.WindowsChecks/OcrProductChecks.cs",
+        "tools/check_commit_safety.py"
+      ],
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Source-path/temporary/log audit and runtime communications observation can be expanded independently; future AI/speech derivatives are absent, not falsely encrypted implementation."
+        ],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-crypto",
+      "implemented": "Platform AesGcm, CSPRNG, authenticated envelope/root/object boundaries, fresh DEKs, wrap budget and failure accounting.",
+      "remaining": "User-facing key rotation/budget exhaustion recovery is absent; formal rollback prevention is not claimed. Safe rotation design and synthetic fixtures are independent work.",
+      "category": "independent-code",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Core/Storage/VaultEnvelope.cs",
+        "src/MemoApp.Core/Storage/AttachmentEnvelope.cs",
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "tests/MemoApp.ContractChecks/VaultFailureChecks.cs",
+        "docs/PRODUCT_SPEC.md"
+      ],
+      "additional_actions": {
+        "code": [
+          "User-facing key rotation/budget exhaustion recovery is absent; formal rollback prevention is not claimed. Safe rotation design and synthetic fixtures are independent work."
+        ],
+        "inspection": [],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-unlock",
+      "implemented": "Only manually entered random43-character recovery secret unlock; real key release, no password/Hello masquerade.",
+      "remaining": "DPAPI account wrap and Hello key-access integration are missing code. Argon2id/password protection is absent and explicitly conditional if offered; library/parameters not chosen. Neither can be called implemented merely because PasswordBox exists. Independent API/review/synthetic development can proceed; physical Hello acceptance later.",
+      "category": "independent-code",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Windows/MainWindow.xaml",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "docs/PRODUCT_SPEC.md"
+      ],
+      "additional_actions": {
+        "code": [
+          "DPAPI account wrap and Hello key-access integration are missing code. Argon2id/password protection is absent and explicitly conditional if offered; library/parameters not chosen. Neither can be called implemented merely because PasswordBox exists. Independent API/review/synthetic development can proceed; physical Hello acceptance later."
+        ],
+        "inspection": [],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-recovery",
+      "implemented": "Independent recovery secret, authenticated other-root restore, wrong-secret/corruption refusal, recovery not tied to DPAPI account.",
+      "remaining": "New-account device wrap is missing alongside SEC-unlock; existing secret transfer has automatic evidence and physical second-PC acceptance only.",
+      "category": "independent-code",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Core/Storage/EncryptedVault.cs",
+        "tests/MemoApp.ContractChecks/VaultChecks.cs",
+        "tests/MemoApp.ContractChecks/WholeMigrationChecks.cs"
+      ],
+      "additional_actions": {
+        "code": [
+          "New-account device wrap is missing alongside SEC-unlock; existing secret transfer has automatic evidence and physical second-PC acceptance only."
+        ],
+        "inspection": [],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-lock",
+      "implemented": "App lock,5-minute idle lock, OS SessionLock hook, immediate key release and clearing of preview/search/tray/clipboard-derived/OCR viewer authority.",
+      "remaining": "Actual OS session-lock/IME/other-account physical checks; hidden recovery intentionally retains keys only in explicitly disclosed pre-encryption failure state, with genuine resume tests.",
+      "category": "physical-user",
+      "minimum_user_action": "Use Win+L with synthetic unlocked viewers and confirm all previews clear on return.",
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Core/Editing/SaveCoordinator.cs",
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Windows/AttachmentPanel.Ocr.cs",
+        "tests/MemoApp.WindowsChecks/Program.cs",
+        "tests/MemoApp.ContractChecks/TrashEncryptionChecks.cs"
+      ],
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Actual OS session-lock/IME/other-account physical checks; hidden recovery intentionally retains keys only in explicitly disclosed pre-encryption failure state, with genuine resume tests."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-external",
+      "implemented": "Explicit default-No warnings, outside-vault fresh plaintext exports, external file/open consent, borrowed clipboard preservation, no external cache erasure claim.",
+      "remaining": "Physical external app/USB/clipboard acceptance; ordinary pathname swap limitation is disclosed rather than guaranteed prevented.",
+      "category": "physical-user",
+      "minimum_user_action": "Review and exercise one synthetic external-open/export warning; inspect retained file after lock.",
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Windows/AttachmentPanel.Open.cs",
+        "src/MemoApp.Windows/AttachmentPanel.FilePaths.cs",
+        "src/MemoApp.Windows/MainWindow.PdfExport.cs",
+        "tests/MemoApp.WindowsChecks/AttachmentOpenChecks.cs"
+      ],
+      "additional_actions": {
+        "code": [],
+        "inspection": [],
+        "physical_user": [
+          "Physical external app/USB/clipboard acceptance; ordinary pathname swap limitation is disclosed rather than guaranteed prevented."
+        ],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-inputs",
+      "implemented": "Strict bounded PNG/XMLZIP/Markdown/file/backup adapters, no auto script/macro/remote images, pinned public font/model/native engine provenance and licenses.",
+      "remaining": "Fuzz/property-based parser tests and broader OCR accuracy inputs are safely independent; do not label all imports blocked by Android/sync.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Core/Transfer/ExcelTextTransfer.cs",
+        "src/MemoApp.Core/Transfer/PngPixelDecoder.cs",
+        "src/MemoApp.Core/Transfer/WindowsOcrBundle.cs",
+        "tests/MemoApp.ContractChecks/ExcelImportFailureChecks.cs",
+        "tools/build_native_ocr.py"
+      ],
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Fuzz/property-based parser tests and broader OCR accuracy inputs are safely independent; do not label all imports blocked by Android/sync."
+        ],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-update",
+      "implemented": "Unsigned trial installer performs integrity/hash/path checks and explicitly does not claim publisher authentication; no automatic updater.",
+      "remaining": "Signed publisher/rollback-aware updater remains actual missing implementation. Signing key ownership/certificate/production service access is separate decision/access work; pure verifier and failure fixtures can proceed independently.",
+      "category": "decision",
+      "minimum_user_action": "Choose/authorize production signing identity only when a concrete signed distribution path is ready; no paid enrollment is authorized.",
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Windows/TrialInstaller.cs",
+        "docs/plans/2026-10-09-trial-install.md",
+        "docs/PRODUCT_SPEC.md"
+      ],
+      "additional_actions": {
+        "code": [
+          "실제 publisher 키 선택 전 순수 verifier와 개발용 합성 실패 fixture를 구현할 수 있다."
+        ],
+        "inspection": [],
+        "physical_user": [],
+        "decision": [
+          "Signed publisher/rollback-aware updater remains actual missing implementation. Signing key ownership/certificate/production service access is separate decision/access work; pure verifier and failure fixtures can proceed independently."
+        ],
+        "access": [
+          "실제 signing identity/서비스 접근은 별도다."
+        ]
+      }
+    },
+    {
+      "id": "SEC-network",
+      "implemented": "No runtime sync/cloud OCR fallback; native OCR uses local verified engine/models and minimal environment; dependency downloads occur only during build.",
+      "remaining": "Runtime connection observation is a concrete independent test gap; source inspection alone is not complete evidence of all native runtime network behavior.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "src/MemoApp.Core/Transfer/WindowsOcrBundle.cs",
+        "src/MemoApp.Core/Transfer/LocalOcrProcess.cs",
+        ".github/workflows/preparation.yml",
+        "docs/plans/2026-10-09-local-ocr-boundary.md"
+      ],
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Runtime connection observation is a concrete independent test gap; source inspection alone is not complete evidence of all native runtime network behavior."
+        ],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    },
+    {
+      "id": "SEC-logs",
+      "implemented": "Synthetic-only fixtures, commit/package allowlists, no private OCR stderr/content logging, source-pinned artifact authorization gates.",
+      "remaining": "Negative leak regression expansion for future new paths is independent; current generic ledger descriptions are stale, not evidence all safeguards are absent.",
+      "category": "independent-test",
+      "minimum_user_action": null,
+      "audit_only": true,
+      "original_selected_id": false,
+      "evidence": [
+        "tools/check_commit_safety.py",
+        "tools/package_trial.py",
+        "src/MemoApp.Core/Transfer/LocalOcrProcess.cs",
+        "tests/MemoApp.WindowsChecks/InstalledPackageChecks.cs"
+      ],
+      "additional_actions": {
+        "code": [],
+        "inspection": [
+          "Negative leak regression expansion for future new paths is independent; current generic ledger descriptions are stale, not evidence all safeguards are absent."
+        ],
+        "physical_user": [],
+        "decision": [],
+        "access": []
+      }
+    }
+  ]
+}
