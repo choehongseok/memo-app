@@ -171,6 +171,7 @@ internal static class PdfVisualRenderer
 
     private static Rect AuditLine(TextLine line,string text,int start,int end)
     {
+        if(!Finite(line.Baseline))throw Refused();
         var coverage=new bool[end-start];Rect ink=Rect.Empty;
         foreach(var indexed in line.GetIndexedGlyphRuns())
         {
@@ -194,7 +195,9 @@ internal static class PdfVisualRenderer
                     if(clusters[i]>=glyph.GlyphIndices.Count||(i>0&&clusters[i]<clusters[i-1])||(char.IsLowSurrogate(glyph.Characters[i])&&(i==0||clusters[i]!=clusters[i-1])))throw new InvalidDataException("Native PDF cluster split or invalid mapping");
                 }
             }
-            Rect bounds=glyph.ComputeInkBoundingBox();if(!bounds.IsEmpty){bounds.Offset(glyph.BaselineOrigin.X,glyph.BaselineOrigin.Y);if(!Finite(bounds.Left)||!Finite(bounds.Top)||!Finite(bounds.Right)||!Finite(bounds.Bottom))throw Refused();ink.Union(bounds);}
+            // Indexed glyph runs use the line's baseline coordinate system; TextLine.Draw takes a line-top origin.
+            // Audit/page geometry must use that same line-top system or negative ascent shifts and inflates every line.
+            Rect bounds=glyph.ComputeInkBoundingBox();if(!bounds.IsEmpty){bounds.Offset(glyph.BaselineOrigin.X,glyph.BaselineOrigin.Y+line.Baseline);if(!Finite(bounds.Left)||!Finite(bounds.Top)||!Finite(bounds.Right)||!Finite(bounds.Bottom))throw Refused();ink.Union(bounds);}
         }
         for(int i=0;i<coverage.Length;i++)if(!coverage[i]&&text[start+i] is not (' ' or '\n'))throw new InvalidDataException("Native PDF formatter omitted original visible text");
         return ink;

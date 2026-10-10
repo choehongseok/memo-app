@@ -92,7 +92,26 @@ internal static partial class Program
    try{files.Fail=true;Require(!await Apply(dirty,()=>true)&&active.IsDirty&&Control<TextBlock>(main,"Notice").Text.Contains("전체 변경을 유지")&&active.Workspace.PendingBackupBranchTips(note).Length==0&&committed.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"current.vault"))),"Actual save failure reports AppliedDirty, retains whole causal candidate and exact committed ciphertext");}
    finally{files.Fail=false;CryptographicOperations.ZeroMemory(committed);}
    var retained=active.Workspace.Capture();Guid retainedHead=retained.Notes.Single(n=>n.NoteId==note.Id).RevisionId;int retainedHistory=retained.History.Length;
-   Require(await active.SaveAsync()&&active.Workspace.Capture().Notes.Single(n=>n.NoteId==note.Id).RevisionId==retainedHead&&active.Workspace.Capture().History.Length==retainedHistory,"Explicit normal save retries the retained candidate without a second causal revision or duplicated predecessor");await active.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
+   byte[] retainedBytes=SnapshotSerialization.Bytes(retained);
+   try{Require(!await active.SaveAsync()&&active.IsDirty&&active.Status.Contains("자동 쓰기 중단",StringComparison.Ordinal)&&retainedBytes.SequenceEqual(SnapshotSerialization.Bytes(active.Workspace.Capture())),"Faulted writer refuses ordinary retry while retaining the exact complete causal candidate and truthful dirty/write-stop status");}
+   finally{CryptographicOperations.ZeroMemory(retainedBytes);}
+   Require(!await active.LockAsync()&&active.KeysReleased&&!active.IsBusy&&active.PendingKind=="ciphertext","Failed causal save locks with released keys and an actually settled encrypted pending candidate");
+   string pendingName=$"pending-{Guid.NewGuid():N}.vault";active.ExportPendingCiphertext(Path.Combine(root,pendingName));
+   // The synthetic test explicitly chose and exported recovery before discarding the old settled writer.
+   Require(!active.IsBusy,"Old faulted recovery writer actually settled before disposal");active.Dispose();SetField(main,"session",null!);Require(Field<SaveCoordinator?>(main,"session") is null&&EncryptedVault.InspectCandidates(root,secret).Any(x=>x.Name==pendingName),"Released writer permits authenticated pending candidate inspection");
+   byte[] beforeRecovery=File.ReadAllBytes(Path.Combine(root,"current.vault"));EncryptedVault? recoveredVault=null;
+   try
+   {
+    recoveredVault=await main.SaveRecoveredVaultAsync(EncryptedVault.Open(root,secret,pendingName),secret);
+    using(var authenticated=recoveredVault.CaptureCommittedCopy()){}
+    Require(!beforeRecovery.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"current.vault")))&&recoveredVault.Loaded.Notes.Single(n=>n.NoteId==a.NoteId).RevisionId==retainedHead&&recoveredVault.Loaded.History.Length==retainedHistory,"Actual product recovery helper commits named candidate and authenticates changed current ciphertext with exact causal head/history");
+    Invoke(main,"StartSession",recoveredVault);recoveredVault=null;
+   }
+   finally{recoveredVault?.Dispose();CryptographicOperations.ZeroMemory(beforeRecovery);}
+   active=Field<SaveCoordinator>(main,"session");Field<DispatcherTimer>(main,"timer").Stop();note=active.Workspace.Notes.Single(n=>n.Id==a.NoteId);another=active.Workspace.Notes.Single(n=>n.Id==other.NoteId);
+   Require(active.Workspace.Capture().Notes.Single(n=>n.NoteId==note.Id).RevisionId==retainedHead&&active.Workspace.Capture().History.Length==retainedHistory&&active.Workspace.PendingBackupBranchTips(note).Length==0,"Actual explicit candidate reopen retains the causal head/predecessors without repeating acknowledgment");
+   Require(!active.IsDirty&&active.Workspace.Capture().Notes.Single(n=>n.NoteId==note.Id).RevisionId==retainedHead&&active.Workspace.Capture().History.Length==retainedHistory,"Product recovery opens durably committed retained candidate without a second causal revision or duplicated predecessor");await active.LockAsync();Invoke(main,"ReleaseSettledSession");
+   Invoke(main,"StartSession",EncryptedVault.Open(root,secret));active=Field<SaveCoordinator>(main,"session");Field<DispatcherTimer>(main,"timer").Stop();Require(active.Workspace.Capture().Notes.Single(n=>n.NoteId==a.NoteId).RevisionId==retainedHead&&active.Workspace.Capture().History.Length==retainedHistory,"Actual current-cipher reopen retains recovered causal head and exact predecessor count");await active.LockAsync();Invoke(main,"ReleaseSettledSession");SetField(main,"confirmedExit",true);main.Close();main=null;
   }
   finally
   {
