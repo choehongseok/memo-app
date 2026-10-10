@@ -1,5 +1,5 @@
 <Window x:Class="MemoApp.Windows.StickyNoteWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
- xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="포스트잇 — 합성 자료용 시험판" Width="360" Height="400" Background="#FFF7BA">
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:MemoApp.Windows" Title="포스트잇 — 합성 자료용 시험판" Width="360" Height="400" Background="#FFF7BA">
  <DockPanel Margin="12"><DockPanel.LayoutTransform><ScaleTransform x:Name="ContentScale"/></DockPanel.LayoutTransform>
   <StackPanel DockPanel.Dock="Top">
    <TextBlock Text="합성 자료만 입력 · 저장 상태는 관리창에서 확인" Foreground="DarkRed" TextWrapping="Wrap" Margin="0,0,0,8"/>
@@ -9,7 +9,7 @@
   </StackPanel>
   <Grid x:Name="BodyPanel"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
   <TextBox x:Name="BodyEditor" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
-  <ContentControl x:Name="StructuredHost" Grid.RowSpan="2" Visibility="Collapsed"/><ContentControl x:Name="MarkdownHost" Grid.Row="1" MaxHeight="180" MinHeight="60" Margin="0,6,0,0" Visibility="Collapsed"/>
+  <local:RichImageNativeContentControl x:Name="StructuredHost" Grid.RowSpan="2" Visibility="Collapsed"/><ContentControl x:Name="MarkdownHost" Grid.Row="1" MaxHeight="180" MinHeight="60" Margin="0,6,0,0" Visibility="Collapsed"/>
   </Grid>
  </DockPanel>
 </Window>

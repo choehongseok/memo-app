@@ -35,7 +35,9 @@ public partial class StickyNoteWindow
     private void ClearInlineImageView()
     {
         using var phase=RichImageTextPhase.Enter(Dispatcher);CancelRichImageRefresh();richImageGeneration++;var owner=richImageHost;var previous=inlineImageView;richImageHost=null;inlineImageView=null;if(owner is not null)structuredEditor=null;
-        foreach(Action cleanup in new Action[]{()=>owner?.Dispose(),()=>previous?.Dispose(),()=>{if(owner is not null&&ReferenceEquals(StructuredHost.Content,owner)||previous is not null&&ReferenceEquals(StructuredHost.Content,previous))StructuredHost.Content=null;},()=>{if(owner is not null||previous is not null)StructuredHost.Visibility=Visibility.Collapsed;}})try{cleanup();}catch{}
+        foreach(Action cleanup in new Action[]{()=>owner?.Dispose(),()=>previous?.Dispose()})try{cleanup();}catch{}
+        var retired=(object?)owner??previous;if(retired is not null)RichImageTextPhase.RetireMount(Dispatcher,StructuredHost,retired);
+
     }
     private void ConfigureInlineImageView()
     {
@@ -51,10 +53,10 @@ public partial class StickyNoteWindow
         try
         {
             created=new();richImageHost=created;StructuredHost.Content=created;
-            if(!Valid()){ClearInlineImageView();return;}
+            if(!Valid()){ClearInlineImageView();RequestRichImageRefresh();return;}
             created.Initialize(active,draft,Valid,message=>{if(Valid())notice?.Invoke(message);},RequestRichImageRefresh);
-            if(!Valid()||created.IsDisposed){ClearInlineImageView();return;}structuredEditor=created.Editor;inlineImageView=created.ImageView;
-            StructuredHost.Visibility=Visibility.Visible;if(!Valid())ClearInlineImageView();else bootstrapping=false;
+            if(!Valid()||created.IsDisposed){ClearInlineImageView();RequestRichImageRefresh();return;}structuredEditor=created.Editor;inlineImageView=created.ImageView;
+            StructuredHost.Visibility=Visibility.Visible;if(!Valid()){ClearInlineImageView();RequestRichImageRefresh();}else bootstrapping=false;
         }
         catch{created?.Dispose();if(ReferenceEquals(richImageHost,created))ClearInlineImageView();}
     }

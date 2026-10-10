@@ -7,6 +7,8 @@ using MemoApp.Core.Editing;
 namespace MemoApp.Windows;
 public partial class StickyNoteWindow : Window
 {
+    protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args){using var phase=RichImageTextPhase.EnterNative(Dispatcher);base.OnPropertyChanged(args);}
+
     private readonly NoteDraft draft;
     private double expandedHeight = 400;
     public DesktopWindowController? Placement {get;private set;}

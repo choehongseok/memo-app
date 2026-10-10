@@ -2491,7 +2491,12 @@
         "src/MemoApp.Core/Documents/RichDocumentImageEdit.cs",
         "src/MemoApp.Core/Editing/SaveCoordinator.InlineImages.cs",
         "src/MemoApp.Windows/RichImageDocumentView.cs",
-        "src/MemoApp.Windows/AttachmentPanel.InlineImages.cs"
+        "src/MemoApp.Windows/AttachmentPanel.InlineImages.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.RichImageTextEditing.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.RichImageTextEditing.cs",
+        "src/MemoApp.Windows/RichImageTextHost.cs",
+        "tests/MemoApp.WindowsChecks/RichImageTextEditorChecks.cs",
+        "tests/MemoApp.WindowsChecks/RichImageTextHostChecks.cs"
       ],
       "planned_module": "Attachments",
       "test_evidence": [
@@ -2515,9 +2520,23 @@
           "environment": "GitHub Windows Server2022 / fixedSDK10.0.401/runtime10.0.12",
           "command": "Windows38008067402/job114081385426 fullCore+actualWPF",
           "result": "PASS selected-body Enter completion, gray PNG shared display, rich-image-publication+product; entire gateFAIL only rich-image-document immediate same-source AcceptPrepared pixel-clear assertion; package/install/uploadSKIPPED. Next source synchronously subscribes workspace invalidation, newWindowspending."
+        },
+        {
+          "kind": "windows-installed-trial-partial",
+          "commit": "35e01a00c4f1a285f8eba905631ad7eccadb10d4",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
+          "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
+        },
+        {
+          "kind": "windows-native-editor-and-host-partial",
+          "commit": "6413559e1eba0090b8cb7e8af16f662d0b057780",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38028305456",
+          "result": "Core and standalone rich-image-text-editor PASS; Main/Sticky host cases through setter-conceal PASS, including witnessed native Enter + stale action rejection. Whole gate FAIL at child-content-awayback native visual traversal; later host cases not reached; package/install/upload SKIPPED. Structural unwind and fresh bootstrap repair pending."
         }
       ],
-      "blocking_reason": "strictdocv2/schema10 인증PNG 블록·read-only순서·명시표시/제거 Core/full 및 Windowspublication/product PASS. 전체Windows2163093 FAIL immediateAcceptPrepared pixel-clear; workspace invalidation subscriptionfix/newWindows대기. editableinline/editorimagepaste/drop/일반형식/Wordembedding/사용자수용 미완료."
+      "blocking_reason": "strictdocv2/schema10 인증 PNG 삽입·명시 표시/제거·암호 재실행은 final35 전체 Windows/설치 gate PASS. 후속 closed rich-v2 주변 텍스트 편집 Core/독립 native editor PASS; Main/Sticky host run160은 child-content-awayback 실제 WPF 순회 오류로 FAIL하여 native 구조 제거 지연 및 bootstrap 재시도 수정 중. 일반 이미지형식/editor paste/drop/전체 사용자 수용 미완료."
     },
     {
       "id": "H02",
@@ -2762,9 +2781,16 @@
           "environment": "GitHub Windows Server2022 / fixedSDK10.0.401/runtime10.0.12",
           "command": "Windows38008067402/job114081385426 fullCore+actualWPF",
           "result": "PASS selected-body Enter completion, gray PNG shared display, rich-image-publication+product; entire gateFAIL only rich-image-document immediate same-source AcceptPrepared pixel-clear assertion; package/install/uploadSKIPPED. Next source synchronously subscribes workspace invalidation, newWindowspending."
+        },
+        {
+          "kind": "windows-installed-trial-partial",
+          "commit": "35e01a00c4f1a285f8eba905631ad7eccadb10d4",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
+          "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
         }
       ],
-      "blocking_reason": "RGB/RGBA/gray/gray-alpha8 boundedPNG sharedclipboard/암호재열기/exactBGRA·alpha·96DPI actualWindows38008067402 PASS relevantgroup; entiregateFAIL separateH01epoch. JPEG/palette/interlace/ICC/EXIF/APNG 등과 실제사용자수용 미완료."
+      "blocking_reason": "RGB/RGBA/gray/gray-alpha8 boundedPNG 공유 표시·암호 재실행·exactBGRA/alpha/96DPI는 final35 전체 Windows/설치 gate PASS. JPEG/palette/interlace/ICC/EXIF/APNG 등과 실제 사용자 수용 미완료. 후속 rich-v2 host는 별도 run160 native 오류 수정 중."
     },
     {
       "id": "H09",
@@ -2808,6 +2834,20 @@
           "command": "dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build",
           "result": "PASS",
           "limitations": "실제Main+Sticky opaque 파일선택/분리/공유·cancel/repeated/source변경/선택/multi→single/modal잠금/nativeclear예외·재진입/원본byte/hash/encryptedrestart의부분자동검사. 파일/이미지파싱·외부열기/export·물리IME/OSSessionLock/ACL/사용자수용·전체134완료아님. 이미지구조preflight는별도내부단계."
+        },
+        {
+          "kind": "windows-installed-trial-partial",
+          "commit": "35e01a00c4f1a285f8eba905631ad7eccadb10d4",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
+          "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
+        },
+        {
+          "kind": "windows-synthetic-ocr-corpus-partial",
+          "commit": "5d0fe3ad1172f7c519cb9508d75ecceec5e2bda0",
+          "environment": "GitHub Windows Server2022 / fixed linked Tesseract native runtime",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38027695906",
+          "result": "One synthetic image in four fixed original/gray/nearest-2x/low-contrast conditions PASS; normalized scalar errors0/30, raw errors6/42. Exact original oracle retained; variants diagnostic only, authentic read lease but no issued apply grant. Not broad Korean quality, CPU/RSS or full ID acceptance."
         }
       ],
       "blocking_reason": null
@@ -3379,13 +3419,23 @@
       "implementation_locations": [
         "src/MemoApp.Core/Transfer/PdfTextTransfer.cs",
         "src/MemoApp.Core/Transfer/PdfExportFont.cs",
-        "src/MemoApp.Windows/MainWindow.PdfExport.cs"
+        "src/MemoApp.Windows/MainWindow.PdfExport.cs",
+        "src/MemoApp.Core/Transfer/PdfRasterDocumentBuilder.cs",
+        "src/MemoApp.Windows/PdfVisualRenderer.cs",
+        "src/MemoApp.Windows/MainWindow.VisualPdfExport.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
-        "01836a226740a4b3fb8998853ae84398d058bdd1 Windows37980813931 전체 SUCCESS: actual pdf-plaintext-export WPF/sourceepoch/modal/native setter/lock/cancel/nooverwrite/source invariance; fullCore embedded font/unsupported text/page bounds/owned zero; Python37 and actual409-file installed EXE/full OFL hash. Independent Linux Poppler Unicode extraction/3-page A4/first-page actual rendering PASS, physical Windows PDF reader separately pending."
+        "01836a226740a4b3fb8998853ae84398d058bdd1 Windows37980813931 전체 SUCCESS: actual pdf-plaintext-export WPF/sourceepoch/modal/native setter/lock/cancel/nooverwrite/source invariance; fullCore embedded font/unsupported text/page bounds/owned zero; Python37 and actual409-file installed EXE/full OFL hash. Independent Linux Poppler Unicode extraction/3-page A4/first-page actual rendering PASS, physical Windows PDF reader separately pending.",
+        {
+          "kind": "windows-installed-trial-partial",
+          "commit": "35e01a00c4f1a285f8eba905631ad7eccadb10d4",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
+          "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
+        }
       ],
-      "blocking_reason": "검증된 제목/본문의 평문 projection만. 원본 서식/첨부/전체 Unicode shaping/PDF-A·UA는 주장하지 않으며 실제 Windows PDF reader·사용자 수용 미확인."
+      "blocking_reason": "평문 projection 및 bounded plain Unicode 표시 PDF는 final35 전체 Windows/설치 gate PASS. Rich-v1 paragraph/run 확장 계획은 H01 host gate 이후 조건부 PRE이며 미활성. Rich/list/table/Markdown/image fidelity 및 실제 Windows PDF reader·사용자 수용은 미완료."
     },
     {
       "id": "N03",
@@ -3439,9 +3489,16 @@
         "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe.",
         "후속 dirty: canonical rich Word run styles/fonts/color/list/checklist/table/inert URL route Linux target GREEN; aggregate XML/package16MiB and retired plaintext zeroing RED→GREEN. independent OpenXML SDK3.4.1 actual rich package schema/relationship errors0. 실제 새 WPF gate 및 Word viewer 수용 대기.",
         "5db5d8a Windows38002826135 office-plaintext-export group PASS includes actual canonical rich Word run/list/table/checkstate/inertURL and source preservation. Fullgate fails separategroups; Word viewer acceptance remains unverified.",
-        "2026-10-10 staged N04: immutable301 Core missingAPI actualRED→closedcontext/writer actualfocusedPASS; Core+Contract/WindowsChecks crossbuild0warning0error; independentpausedsource three-unit reviewclear. Synthetic mixedDOCX3087B SHA2566efaf4f01f0473cd1697fc0a1c233af4b88e5d6e9e21d2a95a7b66de48d07a4d independent existingOpenXMLSDK3.4.1 errors0; installedLibreOfficeDev26.8 actualA4PDF render1page/6image placements+alpha masks/texttable/inertURL. Fontconfigcache warnings occurred; exactMicrosoftWord/useracceptance notclaimed. FullCore actualexit0; finalWindowsChecks crossbuild0w0e; newnativegate pending."
+        "2026-10-10 staged N04: immutable301 Core missingAPI actualRED→closedcontext/writer actualfocusedPASS; Core+Contract/WindowsChecks crossbuild0warning0error; independentpausedsource three-unit reviewclear. Synthetic mixedDOCX3087B SHA2566efaf4f01f0473cd1697fc0a1c233af4b88e5d6e9e21d2a95a7b66de48d07a4d independent existingOpenXMLSDK3.4.1 errors0; installedLibreOfficeDev26.8 actualA4PDF render1page/6image placements+alpha masks/texttable/inertURL. Fontconfigcache warnings occurred; exactMicrosoftWord/useracceptance notclaimed. FullCore actualexit0; finalWindowsChecks crossbuild0w0e; newnativegate pending.",
+        {
+          "kind": "windows-installed-trial-partial",
+          "commit": "35e01a00c4f1a285f8eba905631ad7eccadb10d4",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
+          "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
+        }
       ],
-      "blocking_reason": "인증된 canonical v2 inline PNG 원본 DOCX embedding 구현/집중Core PASS 및 독립OpenXML3.4.1/LibreOfficeDev 실제 합성render 확인. 새 실제Windows Word route/lock gate·실제Microsoft Word 수용·rendered Markdown은 남는다. 전체ID 완료/사용자수용은 미확인."
+      "blocking_reason": "canonical rich-v1 및 인증 v2 inline PNG DOCX embedding은 final35 전체 Windows/설치 gate PASS. 독립 OpenXML3.4.1 및 LibreOfficeDev 합성 render 근거는 보존. Rendered Markdown·실제 Microsoft Word·전체 ID 사용자 수용은 미완료."
     },
     {
       "id": "N05",
@@ -3834,9 +3891,16 @@
           "environment": "Linux cloud x86_64 / SDK 10.0.401",
           "command": "dotnet run --project tests/MemoApp.ContractChecks -c Release",
           "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
+        },
+        {
+          "kind": "windows-installed-trial-partial",
+          "commit": "35e01a00c4f1a285f8eba905631ad7eccadb10d4",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38023414844",
+          "result": "Entire 79-group native/Core/build/publish/actual installed EXE gate SUCCESS; artifact11659571081. Component and synthetic installation evidence only; not complete ID or physical user acceptance. Later rich-v2 editor/host/corpus source is not in this artifact."
         }
       ],
-      "blocking_reason": "동일 ID live 분기 보존 및 명시적 keep-current 두 부모 확인 Core/암호 저장 수명/전체 회귀는 통과했다. 화면 source와 교차 빌드/독립 검토 완료, 새 실제 Windows 검사는 대기다. 삭제/폐기 identity 부활·외부 root 도입·네트워크 동기화·전체 ID 실사용 수용은 별도 남은 범위다."
+      "blocking_reason": "동일 ID live 분기 보존·명시적 keep-current 두 부모 및 encrypted merge/recovery Core/native는 final35 전체 Windows/설치 gate PASS. 삭제 identity 부활·외부 root 도입·네트워크 동기화·전체 ID 사용자 수용은 미완료."
     },
     {
       "id": "O07",

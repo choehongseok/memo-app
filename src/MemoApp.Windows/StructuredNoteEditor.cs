@@ -16,6 +16,9 @@ namespace MemoApp.Windows;
 // Only our bounded canonical model is loaded. Never parse user XAML/RTF or URI resources.
 public sealed partial class StructuredNoteEditor:UserControl,IDisposable
 {
+    protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args){using var phase=RichImageTextPhase.EnterNative(Dispatcher);base.OnPropertyChanged(args);}
+    protected override void OnVisualParentChanged(DependencyObject oldParent){using var phase=RichImageTextPhase.EnterNative(Dispatcher);base.OnVisualParentChanged(oldParent);}
+
     private EditingWorkspace? workspace;
     private NoteDraft? note;
     private Func<bool>? current;
@@ -39,6 +42,9 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     private static readonly HashSet<string> SafeFonts=Fonts.SystemFontFamilies.Select(f=>f.Source).Where(SafeFontName).ToHashSet(StringComparer.OrdinalIgnoreCase);
     private sealed class NativeRichTextBox:RichTextBox
     {
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args){using var phase=RichImageTextPhase.EnterNative(Dispatcher);base.OnPropertyChanged(args);}
+        protected override void OnVisualParentChanged(DependencyObject oldParent){using var phase=RichImageTextPhase.EnterNative(Dispatcher);base.OnVisualParentChanged(oldParent);}
+
         internal int EventDepth{get;private set;}
         internal Action? EventFinished;
         internal Action? MutationStarting;

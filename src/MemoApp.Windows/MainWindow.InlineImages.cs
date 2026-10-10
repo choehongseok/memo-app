@@ -44,7 +44,9 @@ public partial class MainWindow
     {
         using var phase=RichImageTextPhase.Enter(Dispatcher);CancelRichImageRefresh();richImageGeneration++;var owner=richImageHost;var previous=inlineImageView;richImageHost=null;inlineImageView=null;inlineImageNote=null;
         if(owner is not null){structuredEditor=null;structuredNote=null;}
-        foreach(Action cleanup in new Action[]{()=>owner?.Dispose(),()=>previous?.Dispose(),()=>{if(owner is not null&&ReferenceEquals(StructuredHost.Content,owner)||previous is not null&&ReferenceEquals(StructuredHost.Content,previous))StructuredHost.Content=null;},()=>{if(owner is not null||previous is not null)StructuredHost.Visibility=Visibility.Collapsed;}})try{cleanup();}catch{}
+        foreach(Action cleanup in new Action[]{()=>owner?.Dispose(),()=>previous?.Dispose()})try{cleanup();}catch{}
+        var retired=(object?)owner??previous;if(retired is not null)RichImageTextPhase.RetireMount(Dispatcher,StructuredHost,retired);
+
     }
     private void ConfigureInlineImageView(SaveCoordinator active,NoteDraft selected)
     {
@@ -58,11 +60,11 @@ public partial class MainWindow
         try
         {
             created=new();richImageHost=created;inlineImageNote=selected;StructuredHost.Content=created;
-            if(!Pure()){ClearInlineImageView();return;}
+            if(!Pure()){ClearInlineImageView();RequestRichImageRefresh();return;}
             created.Initialize(active,selected,Pure,message=>{if(Pure())Notice.Text=message;},RequestRichImageRefresh);
-            if(!Pure()||created.IsDisposed){ClearInlineImageView();return;}
+            if(!Pure()||created.IsDisposed){ClearInlineImageView();RequestRichImageRefresh();return;}
             structuredEditor=created.Editor;structuredNote=selected;inlineImageView=created.ImageView;
-            StructuredHost.Visibility=Visibility.Visible;if(!Pure()){ClearInlineImageView();return;}created.Editor.ApplyPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);if(!Pure())ClearInlineImageView();else bootstrapping=false;
+            StructuredHost.Visibility=Visibility.Visible;if(!Pure()){ClearInlineImageView();RequestRichImageRefresh();return;}created.Editor.ApplyPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);if(!Pure()){ClearInlineImageView();RequestRichImageRefresh();}else bootstrapping=false;
         }
         catch{created?.Dispose();if(ReferenceEquals(richImageHost,created))ClearInlineImageView();}
     }

@@ -19,7 +19,7 @@ internal static partial class Program
     // Native integration contract for the actual Main and Sticky composite hosts.
     private static async Task RichImageTextHostRun()
     {
-        foreach(string scenario in new[]{"main-table","sticky-table","move","cross-host","nested-document","nested-sticky-document","nested-workspace","nested-foreign-before","nested-foreign-after","selection-awayback","selection-loading","fold","hide","epoch","metadata","readonly-fallback","old-buttons","pending-display","setter","setter-source","setter-conceal","child-content-awayback","child-editor-awayback","main-context-awayback","sticky-context-awayback","lock"})
+        foreach(string scenario in new[]{"main-table","sticky-table","move","cross-host","nested-document","nested-sticky-document","nested-workspace","nested-foreign-before","nested-foreign-after","selection-awayback","selection-loading","fold","hide","epoch","metadata","readonly-fallback","old-buttons","pending-display","setter","setter-source","setter-conceal","child-content-awayback","child-editor-awayback","main-context-awayback","sticky-context-awayback","generic-native-refresh","lock"})
             {Console.WriteLine("H01 host native CASE "+scenario);await RichImageTextHostCase(scenario);}
     }
     private sealed record RichHostWitness(object Owner,StructuredNoteEditor Editor,RichImageDocumentView Images,FlowDocument Graph,object[] Actions);
@@ -33,8 +33,13 @@ internal static partial class Program
     }
     private static void RichHostRetired(RichHostWitness witness,Image[] images)
     {
-        Require(witness.Actions.All(action=>Field<object?>(action,"Note") is null&&Field<object?>(action,"Document") is null&&Field<string?>(action,"Alt") is null&&Field<RoutedEventHandler?>(action,"DisplayHandler") is null&&Field<RoutedEventHandler?>(action,"RemoveHandler") is null&&Field<StackPanel>(action,"Panel").Children.Count==0&&Field<Image>(action,"Image").Source is null),"Retired rendered-action snapshots drop exact note/document/alt references even when native buttons are retained");
+        Require(witness.Actions.All(action=>Field<object?>(action,"Note") is null&&Field<object?>(action,"Document") is null&&Field<string?>(action,"Alt") is null&&Field<RoutedEventHandler?>(action,"DisplayHandler") is null&&Field<RoutedEventHandler?>(action,"RemoveHandler") is null&&Field<StackPanel>(action,"Panel").Children.OfType<TextBlock>().All(text=>text.Text.Length==0)&&Field<Image>(action,"Image").Source is null),"Retired rendered-action snapshots drop exact note/document/alt references even when native buttons are retained");
         Require(RichHostProperty<bool>(witness.Owner,"IsDisposed")&&witness.Editor.IsDisposed&&witness.Images.IsDisposed&&witness.Graph.Blocks.Count==0&&new TextRange(witness.Graph.ContentStart,witness.Graph.ContentEnd).Text.Length==0&&!witness.Editor.RichInput.IsUndoEnabled&&!witness.Editor.RichInput.CanUndo&&images.All(image=>image.Source is null),"Retired composite clears every child, exact owned text graph/Undo and retained pixel references");
+    }
+    private static bool RichNativeWalkBusy()=>(bool)typeof(MainWindow).Assembly.GetType("MemoApp.Windows.RichImageTextPhase")!.GetMethod("NativeWalkBusy",BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,[Dispatcher.CurrentDispatcher])!;
+    private static void RichHostStructureRetired(RichHostWitness witness)
+    {
+        Require(Field<DockPanel>(witness.Owner,"root").Children.Count==0&&witness.Images.BlocksHost.Children.Count==0&&witness.Actions.All(action=>Field<StackPanel>(action,"Panel").Children.Count==0),"After actual native unwind/Idle all exact retired panel structures are detached");
     }
     private static void PumpRichHostNotifications()
     {
@@ -53,7 +58,7 @@ internal static partial class Program
     private static async Task RichImageTextHostCase(string scenario)
     {
         string root=Path.Combine(Path.GetTempPath(),"memo-v2-host-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();byte[]? cipher=null;
-        MainWindow? main=null;SaveCoordinator? session=null;PausedImageBackend? paused=null;var pending=new List<Task<bool>>();var detach=new List<Action>();Exception? primary=null;
+        MainWindow? main=null;Window? extraWindow=null;RichImageDocumentView? extraView=null;SaveCoordinator? session=null;PausedImageBackend? paused=null;var pending=new List<Task<bool>>();var detach=new List<Action>();Exception? primary=null;
         try
         {
             main=new MainWindow(root);main.Show();Invoke(main,"StartSession",EncryptedVault.Create(root,secret,secret));session=Field<SaveCoordinator>(main,"session");Field<DispatcherTimer>(main,"timer").Stop();
@@ -155,26 +160,50 @@ internal static partial class Program
                 {
                     bool isSticky=scenario=="sticky-context-awayback";var retired=isSticky?stickyHost:mainHost;var pixel=isSticky?stickyPixels:mainPixels;
                     var oldCurrent=Field<Func<bool>>(retired.Editor,"current");Require(await retired.Images.DisplayImageAsync(block)&&pixel.Source is not null,"DataContext fixture publishes pixels only through actual explicit native display");
-                    FrameworkElement contextHost=isSticky?sticky:Control<FrameworkElement>(main,"Editor");contextHost.DataContext=other;
-                    Require(!oldCurrent(),"Actual DataContext change synchronously revokes original callback before any return");RichHostRetired(retired,[pixel]);await Idle();
-                    Require(Control<ContentControl>(isSticky?(Window)sticky:main,"StructuredHost").Content is null,"Mismatched DataContext cannot create fresh editing projection");
+                    FrameworkElement contextHost=isSticky?sticky:Control<FrameworkElement>(main,"Editor");var mount=Control<ContentControl>(isSticky?(Window)sticky:main,"StructuredHost");var oldRoot=Field<DockPanel>(retired.Owner,"root");var replacement=new TextBlock{Text="synthetic retained replacement"};bool walked=false;
+                    DependencyPropertyChangedEventHandler walking=(_,e)=>
+                    {
+                        if(walked||!ReferenceEquals(e.NewValue,other))return;walked=true;Require(RichNativeWalkBusy()&&!oldCurrent(),"Actual inherited DataContext callback is inside fixed native walk after immediate irreversible authority retirement");RichHostRetired(retired,[pixel]);int count=oldRoot.Children.Count;Require(count==2,"Immediate redaction preserves visual child count until native enumeration unwinds");
+                        PumpRichHostNotifications();Require(RichNativeWalkBusy()&&oldRoot.Children.Count==count&&ReferenceEquals(mount.Content,retired.Owner),"Nested dispatcher pump inside real DataContext walk cannot structurally detach or create a fresh owner");mount.Content=replacement;
+                    };
+                    contextHost.DataContextChanged+=walking;detach.Add(()=>contextHost.DataContextChanged-=walking);contextHost.DataContext=other;
+                    Require(walked&&!oldCurrent(),"Actual DataContext change synchronously revokes original callback before any return");RichHostRetired(retired,[pixel]);await Idle();RichHostStructureRetired(retired);
+                    Require(ReferenceEquals(mount.Content,replacement),"Deferred exact-old-mount cleanup preserves borrowed replacement while mismatched context prevents fresh editing projection");
                     contextHost.DataContext=note;Require(!oldCurrent(),"DataContext away-back cannot renew original composite authority");await Idle();var fresh=RichHost(isSticky?(Window)sticky:main);
                     Require(!ReferenceEquals(fresh.Owner,retired.Owner)&&!fresh.Editor.RichInput.IsReadOnly&&note.Document.SourceJson==original&&note.EditVersion==originalVersion&&note.ContentVersion==originalContentVersion&&session.AttachmentPreviewEpoch==originalEpoch&&pixel.Source is null,"Returning exact DataContext creates fresh checked editor without source/version/epoch mutation or pixel resurrection");
                 }
                 else if(scenario is "child-content-awayback" or "child-editor-awayback")
                 {
-                    var owner=(UserControl)mainHost.Owner;var graphRoot=Field<DockPanel>(owner,"root");var oldCurrent=Field<Func<bool>>(mainHost.Editor,"current");
+                    var owner=(UserControl)mainHost.Owner;var graphRoot=Field<DockPanel>(owner,"root");var oldCurrent=Field<Func<bool>>(mainHost.Editor,"current");bool walked=false;
+                    DependencyPropertyChangedEventHandler walking=(_,e)=>
+                    {
+                        if(walked||e.NewValue is not false)return;walked=true;Require(RichNativeWalkBusy(),"Actual child visibility callback retains native-walk barrier through WPF enumeration");RichHostRetired(mainHost,[mainPixels]);int count=graphRoot.Children.Count;
+                        PumpRichHostNotifications();Require(RichNativeWalkBusy()&&graphRoot.Children.Count==count&&ReferenceEquals(Control<ContentControl>(main,"StructuredHost").Content,owner),"Nested real visibility walk cannot detach cached panel children or capture a fresh editor before true unwind");
+                    };
+                    mainHost.Editor.IsVisibleChanged+=walking;detach.Add(()=>mainHost.Editor.IsVisibleChanged-=walking);
                     if(scenario=="child-content-awayback"){owner.Content=new TextBlock{Text="synthetic replacement"};owner.Content=graphRoot;}
                     else{graphRoot.Children.Remove(mainHost.Editor);if(!graphRoot.Children.Contains(mainHost.Editor))graphRoot.Children.Add(mainHost.Editor);}
-                    Require(!oldCurrent(),"Retired exact host callback cannot regain authority after native away-back");RichHostRetired(mainHost,[mainPixels]);Require(note.Document.SourceJson==original&&note.EditVersion==originalVersion,"Native composite Content/child away-back cannot renew original editing authority");await Idle();
+                    Require(walked&&!oldCurrent(),"Retired exact host callback cannot regain authority after native away-back");RichHostRetired(mainHost,[mainPixels]);Require(note.Document.SourceJson==original&&note.EditVersion==originalVersion,"Native composite Content/child away-back cannot renew original editing authority");await Idle();RichHostStructureRetired(mainHost);Require(!ReferenceEquals(RichHost(main).Owner,mainHost.Owner)&&!RichHost(main).Editor.RichInput.IsReadOnly,"Real native unwind permits only a fresh checked owner");
                 }
                 else if(scenario.StartsWith("setter",StringComparison.Ordinal))
                 {
-                    bool fired=false;object? interrupted=null;var host=Control<ContentControl>(main,"StructuredHost");var descriptor=DependencyPropertyDescriptor.FromProperty(ContentControl.ContentProperty,typeof(ContentControl));EventHandler listener=(_,_)=>{if(!fired&&host.Content?.GetType().Name=="RichImageTextHost"){fired=true;interrupted=host.Content;Require(RichHostProperty<StructuredNoteEditor?>(interrupted!,"Editor") is null&&RichHostProperty<RichImageDocumentView?>(interrupted!,"ImageView") is null,"Exact empty composite is mounted before any child/context capture");if(scenario=="setter-source")note.Title="native bootstrap source reentry";else if(scenario=="setter-conceal")main.Hide();else{list.SelectedItem=other;list.SelectedItem=note;}}};descriptor.AddValueChanged(host,listener);detach.Add(()=>descriptor.RemoveValueChanged(host,listener));note.Title="setter source refresh";await Idle();Require(fired&&interrupted is not null,"Fresh composite publication reaches actual native Content setter observer");Require(RichHostProperty<bool>(interrupted!,"IsDisposed")&&RichHostProperty<StructuredNoteEditor?>(interrupted!,"Editor") is null&&RichHostProperty<RichImageDocumentView?>(interrupted!,"ImageView") is null,"Interrupted bootstrap cannot capture or mount any child after native selection reentry");Require(note.Document.SourceJson==original,"Native publish reentry cannot restore interrupted owner or apply unrelated text");
+                    bool fired=false;object? interrupted=null;var host=Control<ContentControl>(main,"StructuredHost");var descriptor=DependencyPropertyDescriptor.FromProperty(ContentControl.ContentProperty,typeof(ContentControl));EventHandler listener=(_,_)=>{if(!fired&&host.Content?.GetType().Name=="RichImageTextHost"){fired=true;interrupted=host.Content;Require(RichHostProperty<StructuredNoteEditor?>(interrupted!,"Editor") is null&&RichHostProperty<RichImageDocumentView?>(interrupted!,"ImageView") is null,"Exact empty composite is mounted before any child/context capture");if(scenario=="setter-source")note.Title="native bootstrap source reentry";else if(scenario=="setter-conceal")main.Hide();else{list.SelectedItem=other;list.SelectedItem=note;}}};descriptor.AddValueChanged(host,listener);detach.Add(()=>descriptor.RemoveValueChanged(host,listener));note.Title="setter source refresh";await Idle();Require(fired&&interrupted is not null,"Fresh composite publication reaches actual native Content setter observer");Require(RichHostProperty<bool>(interrupted!,"IsDisposed")&&RichHostProperty<StructuredNoteEditor?>(interrupted!,"Editor") is null&&RichHostProperty<RichImageDocumentView?>(interrupted!,"ImageView") is null,"Interrupted bootstrap cannot capture or mount any child after native selection reentry");Require(note.Document.SourceJson==original,"Native publish reentry cannot restore interrupted owner or apply unrelated text");if(scenario=="setter-conceal")Require(host.Content is null,"Concealed interrupted bootstrap remains empty");else Require(!ReferenceEquals(RichHost(main).Owner,interrupted)&&!RichHost(main).Editor.RichInput.IsReadOnly,"After failed bootstrap cleanup actual Idle creates a fresh writable owner for the current valid association");
+                }
+                else if(scenario=="generic-native-refresh")
+                {
+                    extraView=new RichImageDocumentView(session,note,()=>true,_=>{});var boundary=new RichImageNativeDockPanel();boundary.Children.Add(extraView);extraWindow=new Window{Content=boundary,Width=600,Height=500};extraWindow.Show();await Idle();
+                    var previousText=Field<List<TextBlock>>(extraView,"ownedText").ToArray();int previousCount=extraView.BlocksHost.Children.Count;bool walked=false;
+                    DependencyPropertyChangedEventHandler walking=(_,_)=>
+                    {
+                        walked=true;Require(RichNativeWalkBusy(),"Generic projection refresh fixture uses a real inherited native property walk");var table=mainHost.Editor.RichInput.Document.Blocks.OfType<Table>().Single();var cell=(Paragraph)table.RowGroups[0].Rows[0].Cells[0].Blocks.FirstBlock;mainHost.Editor.RichInput.Selection.Select(cell.ContentStart,cell.ContentEnd);mainHost.Editor.RichInput.Selection.Text="generic replacement";Require(note.EditVersion==originalVersion+1&&note.Text.Contains("generic replacement",StringComparison.Ordinal)&&ReferenceEquals(RichHost(main).Editor,mainHost.Editor)&&!mainHost.Editor.IsDisposed,"First actual closed editor mutation settles its own receipt while outer native walk remains active");var work=Field<object?>(extraView,"nativeRefreshWork");Require(work is not null&&previousText.All(text=>text.Text.Length==0),"Native-walk refresh redacts all exact prior full-view text before deferred structural rebuild");
+                        mainHost.Editor.RichInput.Selection.Select(cell.ContentStart,cell.ContentEnd);mainHost.Editor.RichInput.Selection.Text="generic replacement final";Require(note.EditVersion==originalVersion+2&&note.Text.Contains("generic replacement final",StringComparison.Ordinal)&&ReferenceEquals(RichHost(main).Editor,mainHost.Editor),"Second real closed editor receipt retains exact continuation without fresh capture inside native walk");Require(ReferenceEquals(work,Field<object?>(extraView,"nativeRefreshWork")),"Repeated native-walk refresh coalesces into one weak work record");PumpRichHostNotifications();Require(RichNativeWalkBusy()&&extraView.BlocksHost.Children.Count==previousCount&&previousText.All(text=>text.Text.Length==0),"Nested pump cannot alter full-view panel children before actual native unwind");
+                    };
+                    boundary.DataContextChanged+=walking;detach.Add(()=>boundary.DataContextChanged-=walking);boundary.DataContext=new object();Require(walked,"Generic refresh traversed actual native callback");await Idle();
+                    Require(extraView.BlocksHost.Children.Count==previousCount&&Field<List<TextBlock>>(extraView,"ownedText").Any(text=>text.Text.Contains("generic replacement final",StringComparison.Ordinal))&&extraView.ImageForBlock(block).Source is null&&ImageRawNodes(note.Document!).SequenceEqual(rawImages),"After native unwind generic full viewer rebuilds final exact current source without implicit decode or image-node loss");
                 }
                 else
                 {
-                    Require(await session.LockAsync()&&session.KeysReleased&&!session.IsBusy,"Actual host session lock reaches true settlement");RichHostRetired(mainHost,[mainPixels]);RichHostRetired(stickyHost,[stickyPixels]);Require(Control<ContentControl>(main,"StructuredHost").Content is null&&Control<ContentControl>(sticky,"StructuredHost").Content is null,"Lock clears actual Main/Sticky composite attachment");
+                    Require(await session.LockAsync()&&session.KeysReleased&&!session.IsBusy,"Actual host session lock reaches true settlement");RichHostRetired(mainHost,[mainPixels]);RichHostRetired(stickyHost,[stickyPixels]);await Idle();RichHostStructureRetired(mainHost);RichHostStructureRetired(stickyHost);Require(Control<ContentControl>(main,"StructuredHost").Content is null&&Control<ContentControl>(sticky,"StructuredHost").Content is null,"Lock clears actual Main/Sticky composite attachment");
                 }
             }
             Require(cipher.SequenceEqual(File.ReadAllBytes(Path.Combine(root,"current.vault"))),"Projection/typing/refresh/refusal makes no implicit plaintext/image save or ciphertext rewrite");
@@ -184,6 +213,7 @@ internal static partial class Program
         {
             var failures=new List<Exception>();try{paused?.Release.Set();}catch(Exception error){failures.Add(error);}foreach(var task in pending)try{await task;}catch(Exception error){failures.Add(error);}
             foreach(var action in detach)try{action();}catch(Exception error){failures.Add(error);}
+            try{extraView?.Dispose();}catch(Exception error){failures.Add(error);}try{extraWindow?.Close();}catch(Exception error){failures.Add(error);}
             bool cleaned=session is null;
             try
             {

@@ -17,6 +17,8 @@ using Microsoft.Win32;
 namespace MemoApp.Windows;
 public partial class MainWindow : Window
 {
+    protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs args){using var phase=RichImageTextPhase.EnterNative(Dispatcher);base.OnPropertyChanged(args);}
+
     private readonly string root;
     private readonly Guid uiDeviceId;
     private readonly Dictionary<string,DateWidgetWindow> widgets=[];
