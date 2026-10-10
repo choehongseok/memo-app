@@ -112,6 +112,22 @@ internal static partial class Program
         internal override uint GetSequence(){SequenceReads++;if(SequenceReads==ChangeAtSequenceRead)Native.Sequence++;return Native.Sequence;}
         internal override MemoApp.Core.Transfer.ClipboardPngSource Convert(ReadOnlyMemory<byte> input,CancellationToken token){Started.Set();Release.Wait();var result=base.Convert(input,token);if(ChangeAfterWorker)Native.Sequence++;return result;}
     }
+    private sealed class ActualDibTraceBackend:DibClipboardBackend
+    {
+        private readonly List<uint> sequences=[];private string stage="not-started";private bool refused;
+        internal string Summary=>"stage="+stage+" authorityRefused="+refused+" sequences="+string.Join(",",sequences);
+        internal override uint GetSequence(){uint value=base.GetSequence();if(sequences.Count<32)sequences.Add(value);return value;}
+        internal override NativeDibCapture Capture(Func<bool> allowed,CancellationToken token)
+        {
+            stage="native-capture";
+            try{var result=base.Capture(()=>{bool value=allowed();if(!value)refused=true;return value;},token);stage="captured";return result;}
+            catch(Exception error){stage="native-"+error.GetType().Name;throw;}
+        }
+        internal override MemoApp.Core.Transfer.ClipboardPngSource Convert(ReadOnlyMemory<byte> input,CancellationToken token)
+        {
+            stage="converting";try{var result=base.Convert(input,token);stage="converted";return result;}catch(Exception error){stage="convert-"+error.GetType().Name;throw;}
+        }
+    }
     private static async Task DibClipboardRun()
     {
         DibNativeCaptureRun();string root=Path.Combine(Path.GetTempPath(),"memo-wpf-dib-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(root);byte[] secret=MemoApp.Core.Storage.EncryptedVault.GenerateRecoverySecret();byte[]? png=null;
@@ -142,10 +158,12 @@ internal static partial class Program
                 var rawBackend=new DelayedDibBackend();rawBackend.Native.Sequence=0;rawBackend.Release.Set();Require(await sequencePanel.ImportClipboardImageAsync(()=>new System.Windows.DataObject("PNG",PreviewPng,false),rawBackend)&&sequenceNote.AttachmentIds.Length==1&&rawBackend.Captures==0&&!rawBackend.Started.IsSet,"Raw PNG path remains accepted when native sequence is zero");
             }
             string displayRoot=Path.Combine(root,"generated-display-lock-vault");Directory.CreateDirectory(displayRoot);
-            using(var fixture=new SyntheticNativeDib())
             using(var displayActive=new MemoApp.Core.Editing.SaveCoordinator(MemoApp.Core.Storage.EncryptedVault.Create(displayRoot,secret,secret),TimeProvider.System))
             {
-                var displayNote=displayActive.Workspace.CreateNote();Require(await displayActive.SaveAsync(),"Generated display lock baseline");using var displayPanel=new AttachmentPanel(displayActive,displayNote,()=>true,_=>{});Require(await displayPanel.ImportClipboardImageAsync(System.Windows.Clipboard.GetDataObject),"Native DIB display-lock capture");displayPanel.FilesList.SelectedIndex=0;Require(await displayPanel.PreviewSelectedAsync()&&displayPanel.PreviewImage.Source is not null,"Generated DIB PNG actually displayed before lock");await displayActive.LockAsync();Require(displayPanel.PreviewImage.Source is null&&displayActive.KeysReleased,"Lock clears actual generated DIB PNG display and releases keys");fixture.Preserved();
+                var displayNote=displayActive.Workspace.CreateNote();Require(await displayActive.SaveAsync(),"Generated display lock baseline");string displayStatus="";using var displayPanel=new AttachmentPanel(displayActive,displayNote,()=>true,message=>displayStatus=message);
+                // Establish the exact synthetic OS clipboard only after unrelated encrypted baseline work settles.
+                using var fixture=new SyntheticNativeDib();var trace=new ActualDibTraceBackend();bool imported=await displayPanel.ImportClipboardImageAsync(System.Windows.Clipboard.GetDataObject,trace);
+                Require(imported,"Native DIB display-lock capture; "+trace.Summary+" fixtureSequence="+fixture.Sequence+" currentSequence="+NativeClipboardDib.Instance.GetSequence()+" epoch="+displayActive.AttachmentPreviewEpoch+" disposed="+displayPanel.IsDisposed+" activeBusy="+displayActive.IsBusy+" activeDirty="+displayActive.IsDirty+" attachmentCount="+displayNote.AttachmentIds.Length+" status="+displayStatus);displayPanel.FilesList.SelectedIndex=0;Require(await displayPanel.PreviewSelectedAsync()&&displayPanel.PreviewImage.Source is not null,"Generated DIB PNG actually displayed before lock");await displayActive.LockAsync();Require(displayPanel.PreviewImage.Source is null&&displayActive.KeysReleased,"Lock clears actual generated DIB PNG display and releases keys");fixture.Preserved();
             }
             panel.FilesList.SelectedIndex=-1;
             var backend=new DelayedDibBackend();Task<bool> pending=panel.ImportClipboardImageAsync(()=>null,backend);while(!backend.Started.IsSet)await Task.Delay(5);Require(!await panel.ImportClipboardImageAsync(()=>throw new Exception("No concurrent clipboard query")),"DIB conversion holds global image admission");backend.ChangeAfterWorker=true;backend.Release.Set();Require(!await pending&&note.AttachmentIds.Length==1&&backend.Owned.All(b=>b.All(v=>v==0)),"Worker sequence change refuses application and clears owned DIB");

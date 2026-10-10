@@ -39,6 +39,7 @@ public sealed partial class SaveCoordinator : IDisposable
     {
         AttachmentPreviewEpoch++;
         RevokeOcrGrants();
+        ObserveBranchResolutionRevocation(source);
         ObserveMergeRevocation(source);
         attachmentReads.Revoke(source?.AttachmentReadIdentity);
     }
@@ -79,9 +80,13 @@ public sealed partial class SaveCoordinator : IDisposable
     }
     public NoteDraft[] ImportSelectedEncryptedBackup(byte[] cipher,Guid[] selected,long expectedPreviewEpoch)
     {
+        if(mergeBusy||IsBusy)throw new InvalidOperationException("Recovery operation occupied");
+        RevokeBranchResolutionPreview();
         void Current(){if(disposed||IsLocked||vault.IsFaulted||AttachmentPreviewEpoch!=expectedPreviewEpoch)throw new InvalidOperationException("Selected backup authority ended");}
         Current();var backup=vault.AuthenticateBackupSnapshot(cipher);Current();
-        return Workspace.ImportBackupNotes(backup,selected,candidate=>{Current();vault.ValidateImportedCandidate(candidate);Current();});
+        mergeBusy=true;
+        try{return Workspace.ImportBackupNotes(backup,selected,candidate=>{Current();vault.ValidateImportedCandidate(candidate);Current();});}
+        finally{mergeBusy=false;}
     }
     public EncryptedBackupPreview PreviewEncryptedBackup(byte[] cipher)
     {
@@ -249,7 +254,8 @@ public sealed partial class SaveCoordinator : IDisposable
     }
     public Task<bool> BackupAsync(string path, IAtomicVaultFiles? backupFiles = null)
     {
-        if (disposed || IsLocked || vault.IsFaulted || !backupTask.IsCompleted) return Task.FromResult(false);
+        if (disposed || IsLocked || vault.IsFaulted || mergeBusy || !backupTask.IsCompleted) return Task.FromResult(false);
+        RevokeBranchResolutionPreview();
         backupTask = BackupCoreAsync(path, backupFiles, sessionEpoch);
         return backupTask;
     }
@@ -265,6 +271,7 @@ public sealed partial class SaveCoordinator : IDisposable
     public Task<bool> LockWithBackupAsync(string path,IAtomicVaultFiles? files=null)
     {
         if(disposed||IsLocked)return Task.FromResult(false);
+        RevokeBranchResolutionPreview();
         // Lock synchronously conceals/releases keys and snapshots the old backup task before this assignment.
         var locking=LockAsync();backupTask=LockedBackupCoreAsync(locking,path,files,sessionEpoch);return backupTask;
     }
@@ -282,7 +289,7 @@ public sealed partial class SaveCoordinator : IDisposable
     }
     public void Dispose()
     {
-        if (IsBusy) throw new InvalidOperationException("Await writes before disposing the writer");
+        if (IsBusy||mergeBusy) throw new InvalidOperationException("Await recovery and writes before disposing the writer");
         disposed = true; IsLocked = true; sessionEpoch++;
         RevokeAttachmentReads(null);
         try { Workspace.Clear(); }

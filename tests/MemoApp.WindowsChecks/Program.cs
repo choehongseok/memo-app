@@ -47,6 +47,7 @@ internal static partial class Program
                 groups=groups.Append(("selected-backup-copy",(Func<Task>)SelectedBackupRun)).ToArray();
                 groups=groups.Append(("encrypted-backup-preview",(Func<Task>)BackupPreviewRun)).ToArray();
                 groups=groups.Append(("backup-same-id-merge",(Func<Task>)BackupMergeUiRun)).ToArray();
+                groups=groups.Append(("backup-branch-resolution",(Func<Task>)BranchResolutionUiRun)).ToArray();
                 groups=groups.Append(("clipboard-png-input",(Func<Task>)ClipboardPngRun)).ToArray();
                 groups=groups.Append(("png-scalar-metadata",(Func<Task>)PngMetadataRun)).ToArray();
                 groups=groups.Append(("png-gray-shared-display",(Func<Task>)PngGrayRun)).ToArray();
@@ -76,6 +77,7 @@ internal static partial class Program
                 groups=groups.Append(("rich-image-product",(Func<Task>)RichImageProductRun)).ToArray();
                 if(arguments.Contains("--h01-image-only"))groups=groups.Where(group=>group.Name is "rich-image-document" or "rich-image-publication" or "rich-image-product").ToArray();
                 if(arguments.Contains("--backup-merge-only"))groups=groups.Where(group=>group.Name=="backup-same-id-merge").ToArray();
+                if(arguments.Contains("--branch-resolution-only"))groups=groups.Where(group=>group.Name=="backup-branch-resolution").ToArray();
                 if(arguments.Contains("--ocr-linked-only"))groups=groups.Where(group=>group.Name=="ocr-linked-runtime").ToArray();
                 if(arguments.Contains("--attachment-linked-ocr-only"))groups=groups.Where(group=>group.Name=="attachment-linked-ocr-ui").ToArray();
                 if(arguments.Contains("--pdf-visual-only"))groups=groups.Where(group=>group.Name=="pdf-visual-export").ToArray();

@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "c3b4f639095476c84721dc78a4f590834c703831",
-    "working_tree": "c3 Windows38011908810 entireFAIL2; postfix schema11/grant/stagedruntime fullCorePASS; linkedUI/compositing/fixture written and reviewed, nativegate pending",
+    "head": "1a8650205eb667354a2316723b01e45875d9bfd6",
+    "working_tree": "1a86502 actualWindows wholeFAIL3; subsequent keep-current causalresolution model/owner/fullCorePASS, WindowsChecks crossbuild0w0e, independentpostreviewclear; nextnative gate pending.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "2026-10-10 후속 작업 상태: 저장된 소스 c3b4f639095476c84721dc78a4f590834c703831 / tree3b71117b1de506201659419eb51fe1190e8a4a9e의 실제 Windows38011908810/job114093572015 전체FAIL. DIB 붙여넣기/재열기, 원본 연결 nativeOCR의 실제 원본·PPM·TextSHA·고정 엔진/모델·handle정리, H01세그룹 및 PDF텍스트권한 PASS. 실패는 O06UI 검사 준비의 빈 실제 선택목록과 N02 내부(59,72) alpha254(96DPI/모서리255). 목록을 실제로 채우고 선택을 확인하는 fixture수정 및 검증된 premultiplied white 합성 수정은 독립 소스 검토 통과, 새 native검사 대기. package/install/uploadSKIPPED.\n\n후속 schema11/H09 Core 작업은 통합build0warnings0errors(/tmp/memo-h09-consolidated-build.log), schema11·issuergrant·detachedstarter·고립cleanupfault 각각 실제exit0, 전체Core회귀exit0(/tmp/memo-h09-schema-grant-full-core.log), Python39검사PASS. 정확한 legacy1–10, 원래 메모/참조별 OCR metadata/search, hidden11 monotonic guard, cap4·원래note/session/epoch·실제operation identity, nativehost retirement, 성공한 실제settlement만 slot회수, 실패한 결과buffer정리 경계의 독립 review에 추가Critical/Important없음. 별도 고립cleanupfault 검사를 Windowsworkflow에 추가했으며 전체회귀와 분리한 실제process에서만 실행한다. 새로운 UI와 stagedruntime의 실제Windows 검사는 아직 대기다. 기존 artifact11647312201(d8bccaab)의 포함 기능과 이 후속 소스를 구분하며 중복 업로드하지 않았다. 119진행/13미착수/N09차단1/M06정규화1, 전체ID완료/사용자수용0을 유지한다. 아래에는 이전 단계의 증거를 보존한다.",
+    "current_change_verification": "Actual Windows38014327434/job114101150936: build/fullCore/isolatedOCRcleanupfault/stagedlinkedruntime/attachmentlinkedOCRUI PASS; wholeWPF FAIL backup-same-id-merge,clipboard-dib-input,pdf-visual-export. Package/install/uploadSKIPPED. Test-only selection/DIB setup corrections and unchanged PDF oracle diagnostics independently reviewed, not yet native verified. O06 keep-current causal resolution PREreview clear, implementation underway. Existing artifact11647312201 remains source d8bccaab, no newartifact/acceptance.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "Current c3 committed; subsequent schema11/linkedUI/compositing/fixture phase working, not yet published"
+    "supplemental_source": "Current1a86502 committed; subsequent O06 causalresolution plus actualnativefailure fixtures/diagnostics uncommitted working phase."
   },
   "summary": {
     "original_id_count": 134,
@@ -1991,8 +1991,8 @@
     },
     {
       "id": "H09",
-      "implemented": "Note-scoped encrypted OCR metadata/search schema11, genuine single-use originalissuer grants, preallocated detached runtime starter implemented; targeted/fullCorePASS and independent source reviewclear. Prior c3 actual native source/PPM/provenance primitivePASS with syntheticstamp. Explicit source-linked recognize/apply UI implemented and reviewed with actualbaselinePE missingAPI RED; 4projectcrossbuild0w0e.",
-      "remaining": "Genuine issued staged runtime +linkedUI save/reopen/search actualWindows proof pending. Generic filebodysearch/accuracycorpus remain; historical storedfacts are not runtime execution proof.",
+      "implemented": "Source-linked attachment OCR input/grants/staged fixedruntime/schema11 per-note search metadata and explicit Windows search store action; actual1a86502 Windows staged runtime/linked OCR UI/isolated cleanup fault PASS, fullCore PASS; originalnote/body/source preserved.",
+      "remaining": "WholeWindows gate stillFAIL3 in existingbackup/DIB/PDF groups; final package/install not produced for thissource. Physical user OCR/corpus/models/recognition usefulness acceptance remains unconfirmed.",
       "category": "independent-code",
       "minimum_user_action": "None. Independently review new stored OCR/reference structure before encrypted persistence; do not request real OCR images.",
       "evidence": [
@@ -2024,7 +2024,7 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Genuine issued staged runtime +linkedUI save/reopen/search actualWindows proof pending. Generic filebodysearch/accuracycorpus remain; historical storedfacts are not runtime execution proof."
+          "WholeWindows gate stillFAIL3 in existingbackup/DIB/PDF groups; final package/install not produced for thissource. Physical user OCR/corpus/models/recognition usefulness acceptance remains unconfirmed."
         ],
         "inspection": [
           "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
@@ -2899,8 +2899,8 @@
     },
     {
       "id": "O06",
-      "implemented": "Same-ID live branchunion with unchangedcurrenthead, genuine displayed/confirmedowner tokens, dirtysave checkpoint/currentkey/premergeciphercopy; CorefullPASS. Windows comparison/durablebranch UI implemented and reviewed.",
-      "remaining": "Actualc3 UIfixtureemptyselector failure fixed by genuine nativepopulation/selectionassert; newnativewhole lifecycle pending. Two-parent causalresolution/deleted/discarded resurrection/root-key adoption/fullnetworksync remain outside firstunit.",
+      "implemented": "Same-ID live immutable branchunion/current preservation plus explicit selected maximal-tip keep-current two-parent resolution; genuine owner/display/confirmation/single-use authority, current cipher/currentroot key validation, prechange encrypted copy and truthful AppliedDirty/settlement. Model/owner/fullCore PASS; WPF source/postreview/crossbuild0w0e, nextactualWindows pending.",
+      "remaining": "ActualnewWindows resolutionUI/corrected nativebatch selection/DIBsetup/PDFdiagnostics pending. Deleted/discarded resurrection/root-key adoption/recovery lineage/network synchronization and actual user acceptance remain separate.",
       "category": "independent-code",
       "minimum_user_action": null,
       "evidence": [
@@ -2916,7 +2916,14 @@
         "tests/MemoApp.ContractChecks/BackupMergeLifecycleChecks.cs",
         "src/MemoApp.Windows/MainWindow.BackupMerge.cs",
         "src/MemoApp.Windows/BackupMergeWindow.cs",
-        "tests/MemoApp.WindowsChecks/BackupMergeUiChecks.cs"
+        "tests/MemoApp.WindowsChecks/BackupMergeUiChecks.cs",
+        "docs/O06_CAUSAL_RESOLUTION_PLAN.md",
+        "src/MemoApp.Core/Editing/EditingWorkspace.BranchResolution.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.BranchResolution.cs",
+        "src/MemoApp.Windows/MainWindow.BranchResolution.cs",
+        "tests/MemoApp.ContractChecks/BranchResolutionChecks.cs",
+        "tests/MemoApp.ContractChecks/BranchResolutionLifecycleChecks.cs",
+        "tests/MemoApp.WindowsChecks/BranchResolutionUiChecks.cs"
       ],
       "name": "백업 파일 선택 후 복구",
       "normalized": "백업 파일 선택 후 복구",
@@ -2924,7 +2931,7 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Actualc3 UIfixtureemptyselector failure fixed by genuine nativepopulation/selectionassert; newnativewhole lifecycle pending. Two-parent causalresolution/deleted/discarded resurrection/root-key adoption/fullnetworksync remain outside firstunit."
+          "ActualnewWindows resolutionUI/corrected nativebatch selection/DIBsetup/PDFdiagnostics pending. Deleted/discarded resurrection/root-key adoption/recovery lineage/network synchronization and actual user acceptance remain separate."
         ],
         "inspection": [
           "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."

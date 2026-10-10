@@ -120,7 +120,7 @@ public sealed partial class EditingWorkspace
     {
         note.OcrEditPreflight = PreflightOcrEdit;
         note.AttachmentReadInvalidating += () => InvalidateAttachmentReads(note);
-        note.PropertyChanged += (_, e) => { if (!closed && e.PropertyName == nameof(NoteDraft.EditVersion)) Changed?.Invoke(); };
+        note.PropertyChanged += (_, e) => { if (!closed && e.PropertyName == nameof(NoteDraft.EditVersion) && !ReferenceEquals(e,note.PreparedRevisionNotification)) Changed?.Invoke(); };
         notes.Register(note);
     }
     public NoteDraft CreateNote()

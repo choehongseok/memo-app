@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.TextFormatting;
 using System.Windows.Threading;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
@@ -36,7 +37,9 @@ internal static partial class Program
             byte[] rgb=VisualPdfFirstRgb(prepared.Bytes),reference=VisualPdfTextBlockReference(text);
             try
             {
-                Require(rgb.Length==794*1123*3&&VisualPdfReferenceMatches(rgb,reference),"Native TextFormatter/glyph-audited PDF pixels match independent TextBlock: "+Convert.ToHexString(Encoding.UTF8.GetBytes(text)));
+                bool matches=rgb.Length==794*1123*3&&VisualPdfReferenceMatches(rgb,reference);
+                if(!matches)Console.WriteLine(VisualPdfSyntheticDiagnostic(rgb,reference,text));
+                Require(matches,"Native TextFormatter/glyph-audited PDF pixels match independent TextBlock: "+Convert.ToHexString(Encoding.UTF8.GetBytes(text)));
                 string grammar=Encoding.Latin1.GetString(prepared.Bytes);Require(grammar.Contains("/Subtype /Image")&&grammar.Contains("/DeviceRGB")&&!grammar.Contains("/ToUnicode")&&!grammar.Contains("/Type /Font"),"Display PDF contains raster pages and no searchable text/font objects");
             }
             finally{CryptographicOperations.ZeroMemory(rgb);CryptographicOperations.ZeroMemory(reference);}
@@ -197,6 +200,34 @@ internal static partial class Program
     {
         long difference=0;int large=0,ink=0;for(int i=0;i<actual.Length;i+=3){if(expected[i]<250||expected[i+1]<250||expected[i+2]<250)ink++;int delta=Math.Max(Math.Abs(actual[i]-expected[i]),Math.Max(Math.Abs(actual[i+1]-expected[i+1]),Math.Abs(actual[i+2]-expected[i+2])));difference+=delta;if(delta>32)large++;}
         return large<=Math.Max(8,ink/20)&&difference<=Math.Max(64,ink*8);
+    }
+    // Called only by the fixed synthetic fixtures above; never by product/private-note export.
+    private static string VisualPdfSyntheticDiagnostic(byte[] actual,byte[] expected,string synthetic)
+    {
+        static (int Left,int Top,int Right,int Bottom,int Count) Bounds(byte[] pixels)
+        {
+            int left=794,top=1123,right=-1,bottom=-1,count=0;
+            for(int y=0;y<1123;y++)for(int x=0;x<794;x++){int i=(y*794+x)*3;if(pixels[i]>=250&&pixels[i+1]>=250&&pixels[i+2]>=250)continue;left=Math.Min(left,x);top=Math.Min(top,y);right=Math.Max(right,x);bottom=Math.Max(bottom,y);count++;}
+            return(left,top,right,bottom,count);
+        }
+        var a=Bounds(actual);var b=Bounds(expected);long sum=0;int large=0,first=-1,peak=0,peakAt=-1;
+        for(int i=0;i<actual.Length;i+=3){int delta=0;for(int c=0;c<3;c++)delta=Math.Max(delta,Math.Abs(actual[i+c]-expected[i+c]));sum+=delta;if(delta>32)large++;if(delta>0&&first<0)first=i/3;if(delta>peak){peak=delta;peakAt=i/3;}}
+        int left=Math.Max(0,Math.Min(a.Left,b.Left)-4),right=Math.Min(793,Math.Max(a.Right,b.Right)+4),top=Math.Max(0,Math.Min(a.Top,b.Top)-13),bottom=Math.Min(1122,Math.Max(a.Bottom,b.Bottom)+13);
+        long best=long.MaxValue;int bestX=0,bestY=0;
+        for(int dy=-12;dy<=12;dy++)for(int dx=-3;dx<=3;dx++)
+        {
+            long score=0;for(int y=top;y<=bottom;y++)for(int x=left;x<=right;x++)
+            {int i=(y*794+x)*3,rx=x-dx,ry=y-dy,delta=0;for(int c=0;c<3;c++){int reference=rx is >=0 and <794&&ry is >=0 and <1123?expected[(ry*794+rx)*3+c]:255;delta=Math.Max(delta,Math.Abs(actual[i+c]-reference));}score+=delta;}
+            if(score<best){best=score;bestX=dx;bestY=dy;}
+        }
+        var owner=typeof(PdfVisualRenderer);const BindingFlags flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
+        var run=Activator.CreateInstance(owner.GetNestedType("PlainRunProperties",BindingFlags.NonPublic)!,true)!;
+        var paragraph=(TextParagraphProperties)Activator.CreateInstance(owner.GetNestedType("PlainParagraphProperties",BindingFlags.NonPublic)!,flags,null,[run],null)!;
+        string layout=synthetic.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n').Replace("\t","    ",StringComparison.Ordinal);
+        var source=(TextSource)Activator.CreateInstance(owner.GetNestedType("PlainTextSource",BindingFlags.NonPublic)!,flags,null,[layout,run],null)!;
+        using var formatter=TextFormatter.Create(TextFormattingMode.Ideal);using var line=formatter.FormatLine(source,0,210*96.0/25.4-2*40*96.0/72,paragraph,null);
+        string faces=string.Join(",",line.GetIndexedGlyphRuns().Select(r=>Path.GetFileName(r.GlyphRun.GlyphTypeface.FontUri.LocalPath)).Distinct());
+        return $"SYNTHETIC PDF pixels actualBounds={a} referenceBounds={b} first=({first%794},{first/794}) peak={peak}@({peakAt%794},{peakAt/794}) sum={sum} large={large} bestTranslation=({bestX},{bestY}) translatedSum={best} lineHeight={line.Height:R} baseline={line.Baseline:R} extent={line.Extent:R} overhangLeading={line.OverhangLeading:R} overhangTrailing={line.OverhangTrailing:R} overhangAfter={line.OverhangAfter:R} width={line.WidthIncludingTrailingWhitespace:R} faces={faces}";
     }
     private static bool VisualPdfWhiteBorder(byte[] rgb)
     {

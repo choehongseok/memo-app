@@ -10,6 +10,9 @@ if (args.Contains("--schema11-ocr-only")) { await Schema11OcrChecks.Run(); retur
 if (args.Contains("--attachment-ocr-grant-only")) { await AttachmentOcrGrantChecks.Run(); return; }
 if (args.Contains("--attachment-ocr-input-only")) { await AttachmentOcrInputChecks.Run(); return; }
 if (args.Contains("--o06-merge-only")) { await BackupMergeChecks.Run(); return; }
+if (args.Contains("--branch-resolution-only")) { await BranchResolutionChecks.Run(); return; }
+if (args.Contains("--branch-resolution-owner-only")) { await BranchResolutionLifecycleChecks.Run(); return; }
+if (args.Contains("--branch-resolution-all-only")) { await BranchResolutionChecks.Run(); await BranchResolutionLifecycleChecks.Run(); return; }
 if (args.Contains("--ocr-process-only")) { await LocalOcrChecks.ProcessChecks(); return; }
 if (args.Contains("--trash-encryption-only")) { await TrashEncryptionChecks.Run(); return; }
 if (args.Contains("--user-link-only")) { UserLinkChecks.Run(); return; }
@@ -101,6 +104,8 @@ LocalOcrChecks.Input();
 await LocalOcrChecks.ProcessChecks();
 EditingChecks.Run();
 await BackupMergeChecks.Run();
+await BranchResolutionChecks.Run();
+await BranchResolutionLifecycleChecks.Run();
 await AttachmentOcrInputChecks.Run();
 await LinkedOcrStarterChecks.Run();
 await Schema11OcrChecks.Run();

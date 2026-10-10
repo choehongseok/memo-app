@@ -18,6 +18,8 @@ public sealed class NoteDraft : INotifyPropertyChanged
     internal Action<NoteDraft,string,string,NoteMetadata>? OcrEditPreflight;
     internal object AttachmentReadIdentity { get; } = new();
     public event PropertyChangedEventHandler? PropertyChanged;
+    // Only this exact prepared event skips the workspace dirty watcher; real reentrant edits create new args.
+    internal PropertyChangedEventArgs PreparedRevisionNotification { get; } = new(nameof(EditVersion));
     // Trusted internal revocation only. Never publish UI callbacks from this boundary.
     internal event Action? AttachmentReadInvalidating;
     private void InvalidateAttachmentReads()
@@ -74,6 +76,9 @@ public sealed class NoteDraft : INotifyPropertyChanged
         metadata = value; Advance();
         foreach (var property in new[] { nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color) }) Notify(property);
     }
+    // Prepared keep-current causal event: caller completed validation/invalidation before this swap.
+    internal void StagePreservedRevision(StoredNote source)
+    { title=source.Title;text=source.Text;metadata=source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds;ModifiedAt=source.ModifiedAt;EditVersion++; }
     internal void StageOcrMetadata(StoredNote source)
     { metadata=source.Metadata;ModifiedAt=source.ModifiedAt;EditVersion++; }
     internal void StageEvent(StoredNote source,bool replaceContent=false)
@@ -83,9 +88,12 @@ public sealed class NoteDraft : INotifyPropertyChanged
         if(replaceContent||text!=source.Text||mode!=source.Mode||document!=source.Document||!attachmentIds.SequenceEqual(source.AttachmentIds))ContentVersion++;
         title = source.Title; text = source.Text; metadata = source.Metadata;mode=source.Mode;document=source.Document;attachmentIds=source.AttachmentIds; ModifiedAt = source.ModifiedAt; EditVersion++;
     }
-    internal void PublishEvent()
+    internal void PublishEvent()=>PublishEventCore(false);
+    internal void PublishPreservedRevision()=>PublishEventCore(true);
+    private void PublishEventCore(bool prepared)
     {
-        foreach (var property in new[] { nameof(Title), nameof(Text),nameof(Mode),nameof(Document),nameof(AttachmentIds), nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color), nameof(ModifiedAt), nameof(EditVersion) }) Notify(property);
+        foreach (var property in new[] { nameof(Title), nameof(Text),nameof(Mode),nameof(Document),nameof(AttachmentIds), nameof(Metadata), nameof(FolderId), nameof(IsDeleted), nameof(Important), nameof(Favorite), nameof(Pinned), nameof(Archived), nameof(Color), nameof(ModifiedAt), nameof(EditVersion) })
+        {if(prepared&&property==nameof(EditVersion))PropertyChanged?.Invoke(this,PreparedRevisionNotification);else Notify(property);}
     }
     private void Advance()
     {

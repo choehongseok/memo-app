@@ -14,7 +14,7 @@ public partial class MainWindow
     private readonly HashSet<BackupMergeWindow> backupMergeWindows=[];
     private readonly Dictionary<BackupMergeWindow,BackupMergeOperation> backupMergeOperations=[];
     private void ClearBackupMergeViews()
-    {foreach(var operation in backupMergeOperations.Values.ToArray())try{operation.Dispose();}catch{}foreach(var viewer in backupMergeWindows.ToArray())try{viewer.Dispose();}catch{}backupMergeOperations.Clear();backupMergeWindows.Clear();}
+    {ClearBranchResolutionViews();foreach(var operation in backupMergeOperations.Values.ToArray())try{operation.Dispose();}catch{}foreach(var viewer in backupMergeWindows.ToArray())try{viewer.Dispose();}catch{}backupMergeOperations.Clear();backupMergeWindows.Clear();}
     private async void BackupMerge_Click(object sender,RoutedEventArgs e)=>await ShowBackupMergeAsync(()=>
     {var picker=new OpenFileDialog{Filter="암호 메모 백업|*.vault",CheckFileExists=true,Multiselect=false};return picker.ShowDialog(this)==true?picker.FileName:null;});
     private async void PendingBackupBranches_Click(object sender,RoutedEventArgs e)=>await ShowPendingBackupBranchesAsync();
@@ -71,24 +71,7 @@ public partial class MainWindow
         catch{if(!windowClosed&&!concealing&&SameFileSession(operation.Session,operation.UiEpoch))try{Notice.Text="백업 이력 보존을 완료하지 못했습니다. 현재 자료를 유지했습니다. 선행 암호문 사본과 저장 상태를 확인하세요.";}catch{}return false;}
         finally{if(cipher is not null)CryptographicOperations.ZeroMemory(cipher);if(accepted||result is not null)operation.Dispose();backupMergeBusy=false;if(!windowClosed&&!concealing)try{UpdateSelectedActions();}catch{}}
     }
-    internal async Task<bool> ShowPendingBackupBranchesAsync()
-    {
-        Dispatcher.VerifyAccess();if(windowClosed||concealing||backupMergeBusy||CaptureBatch(false) is not{Notes.Length:1} request)return false;
-        BackupMergeOperation? operation=null;bool published=false;backupMergeBusy=true;
-        try
-        {
-            ClearBackupMergeViews();operation=new(this,request);UpdateSelectedActions();if(!operation.Current())return false;
-            operation.BeginCheckpoint();bool saved;
-            try{saved=!request.Session.IsDirty||await request.Session.SaveAsync();}finally{operation.EndCheckpoint();}
-            if(!saved||request.Session.IsDirty||!operation.Current())return false;operation.Settle(null,null);
-            var details=request.Session.Workspace.DescribePendingBackupBranches(request.Notes[0]);if(!operation.Current())return false;
-            var viewer=AttachBackupMergeWindow(operation,false);if(viewer is null||!viewer.Publish(details,1,0,false)||!operation.Current())return false;
-            published=true;return true;
-        }
-        catch(OperationCanceledException){return false;}
-        catch{if(operation?.Current()==true)try{Notice.Text="보존된 백업 분기 비교 실패 — 현재 수정의 암호 저장과 현재 메모 상태를 확인하세요.";}catch{}return false;}
-        finally{if(!published)operation?.Dispose();backupMergeBusy=false;if(!windowClosed&&!concealing)try{UpdateSelectedActions();}catch{}}
-    }
+    internal Task<bool> ShowPendingBackupBranchesAsync()=>ShowBranchResolutionComparisonAsync();
     private BackupMergeWindow? AttachBackupMergeWindow(BackupMergeOperation operation,bool mergePreview)
     {
         if(!operation.Current())return null;var viewer=new BackupMergeWindow(operation.Current,mergePreview);operation.Window=viewer;

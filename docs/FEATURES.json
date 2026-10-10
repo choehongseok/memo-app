@@ -3809,7 +3809,14 @@
       "implementation_locations": [
         "src/MemoApp.Core/Storage/EncryptedVault.cs",
         "src/MemoApp.Core/Editing/SaveCoordinator.cs",
-        "src/MemoApp.Windows/MainWindow.xaml.cs"
+        "src/MemoApp.Windows/MainWindow.xaml.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.MergeBackup.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.BackupMerge.cs",
+        "src/MemoApp.Core/Editing/EditingWorkspace.BranchResolution.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.BranchResolution.cs",
+        "src/MemoApp.Windows/MainWindow.BackupMerge.cs",
+        "src/MemoApp.Windows/MainWindow.BranchResolution.cs",
+        "src/MemoApp.Windows/BackupMergeWindow.cs"
       ],
       "planned_module": "Recovery",
       "test_evidence": [
@@ -3821,7 +3828,7 @@
           "result": "PASS (공통 계층, 실제 Windows/해당 ID 전체 검증 아님)"
         }
       ],
-      "blocking_reason": "첫 일반 텍스트 합성자료 흐름 구현/공통 동작 검사. Windows GUI/OS/다른 계정 미검증 및 전체 ID 수용 조건 미완료."
+      "blocking_reason": "동일 ID live 분기 보존 및 명시적 keep-current 두 부모 확인 Core/암호 저장 수명/전체 회귀는 통과했다. 화면 source와 교차 빌드/독립 검토 완료, 새 실제 Windows 검사는 대기다. 삭제/폐기 identity 부활·외부 root 도입·네트워크 동기화·전체 ID 실사용 수용은 별도 남은 범위다."
     },
     {
       "id": "O07",

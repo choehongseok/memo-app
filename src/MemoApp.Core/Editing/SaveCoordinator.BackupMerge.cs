@@ -90,7 +90,7 @@ public sealed partial class SaveCoordinator
         try
         {
             RequireMergeOpen();ArgumentNullException.ThrowIfNull(view);if(mergeBusy||IsBusy||!ReferenceEquals(view.Owner,this))throw new InvalidOperationException("Merge preview occupied or wrong view");
-            mergeBusy=true;admitted=true;if(mergePreview is { } old){old.Prepared=null;old.View.Displayed=null;mergePreview=null;}
+            mergeBusy=true;admitted=true;RevokeBranchResolutionPreview();if(mergePreview is { } old){old.Prepared=null;old.View.Displayed=null;mergePreview=null;}
             var workspace=Workspace;long epoch=sessionEpoch,startGeneration=generation,startPreview=AttachmentPreviewEpoch;
             var versions=workspace.Notes.Select(n=>(Note:n,Version:n.EditVersion)).ToArray();
             void CurrentRequest(long allowedPreview)
@@ -142,7 +142,7 @@ public sealed partial class SaveCoordinator
             token.Consumed=true;
             if(token.Hash!=Convert.ToHexStringLower(SHA256.HashData(owned)))throw new InvalidDataException("Confirmed merge source changed");
             _=vault.AuthenticateBackupSnapshot(owned);RequireMergePreview(token);
-            mergeBusy=true;var completion=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);backupTask=completion.Task;
+            RevokeBranchResolutionPreview();mergeBusy=true;var completion=new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);backupTask=completion.Task;
             return CompleteBackupMergeAsync(token,owned,recoveryFiles,completion);
         }
         catch{CryptographicOperations.ZeroMemory(owned);throw;}
