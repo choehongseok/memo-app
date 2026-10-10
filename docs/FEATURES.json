@@ -2534,9 +2534,16 @@
           "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38028305456",
           "result": "Core and standalone rich-image-text-editor PASS; Main/Sticky host cases through setter-conceal PASS, including witnessed native Enter + stale action rejection. Whole gate FAIL at child-content-awayback native visual traversal; later host cases not reached; package/install/upload SKIPPED. Structural unwind and fresh bootstrap repair pending."
+        },
+        {
+          "kind": "windows-native-unwind-partial",
+          "commit": "c9a828b4635554e5bab451372f719d9d3f3b5a00",
+          "environment": "GitHub Windows Server2022 / fixed SDK10.0.401/runtime10.0.12",
+          "command": "https://github.com/choehongseok/memo-app/actions/runs/38030056668",
+          "result": "Actual child-content/child-editor/MainDC/StickyDC native unwind and fresh bootstrap owner cases PASS. Generic full-view two closed native edit receipts/coalescing/immediate redaction/nested child-count preservation PASS; final count/TextDP/pixel/raw-node assertion FAIL without individual values. Final lock case not reached. Whole gate FAIL2 including unchanged old automatic-backup-persistence; install/upload skipped. Test-only split diagnostics next, product cause unestablished."
         }
       ],
-      "blocking_reason": "strictdocv2/schema10 인증 PNG 삽입·명시 표시/제거·암호 재실행은 final35 전체 Windows/설치 gate PASS. 후속 closed rich-v2 주변 텍스트 편집 Core/독립 native editor PASS; Main/Sticky host run160은 child-content-awayback 실제 WPF 순회 오류로 FAIL하여 native 구조 제거 지연 및 bootstrap 재시도 수정 중. 일반 이미지형식/editor paste/drop/전체 사용자 수용 미완료."
+      "blocking_reason": "strictdocv2/schema10 인증 PNG 삽입·표시/제거·암호 재실행은 final35 설치 gate PASS. 후속 closed rich-v2 주변 텍스트 Core/독립 native editor 및 host 구조 순회·컨텍스트 전환·bootstrap 재생성은 run161 해당 사례 PASS. 일반 전체 이미지 화면의 마지막 재구축 assertion은 어느 항목이 실패했는지 미확정이며 개별 진단을 추가한다. 마지막 host lock 사례 미도달·전체 gate/설치 미완료·사용자 수용 미확인."
     },
     {
       "id": "H02",
