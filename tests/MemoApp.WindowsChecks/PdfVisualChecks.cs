@@ -199,7 +199,11 @@ internal static partial class Program
                     rgb[j+channel]=(byte)Math.Round(straight*coverage+255*(1-coverage),MidpointRounding.AwayFromZero);
                 }
             }
-            if(text=="😀"&&actual is not null&&!VisualPdfReferenceMatches(actual,rgb))audit+=" referenceDrawingReplay="+VisualPdfReferenceDrawingReplay(reference,rgb);
+            if(text=="😀"&&actual is not null&&!VisualPdfReferenceMatches(actual,rgb))
+            {
+                audit+=" referenceDrawingReplay="+VisualPdfReferenceDrawingReplay(reference,rgb);
+                audit+=" liveControls="+VisualPdfLiveReferenceControls(page,reference,rgb);
+            }
             transferred=true;return rgb;
         }
         finally
@@ -297,6 +301,30 @@ internal static partial class Program
         return "directTransform={"+VisualPdfRasterReplayAudit(direct,expected)+"} childOffset={"+VisualPdfRasterReplayAudit(root,expected)+"}";
         }
         finally{try{root?.Children.Clear();}finally{offset?.Children.Clear();}}
+    }
+    // Keep the original pre-inspection reference as the oracle; these controls never replace it.
+    private static string VisualPdfLiveReferenceControls(Grid page,TextBlock reference,byte[] expected)
+    {
+        ContainerVisual? fresh=null;
+        try
+        {
+            Vector originalOffset=VisualTreeHelper.GetOffset(reference);
+            string originalFlags=VisualPdfVisualAudit(reference),pageFlags=VisualPdfVisualAudit(page);
+            string repeat=VisualPdfRasterReplayAudit(page,expected);
+            fresh=new ContainerVisual();TextOptions.SetTextFormattingMode(fresh,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(fresh,TextRenderingMode.Grayscale);
+            var white=new DrawingVisual();using(var context=white.RenderOpen())context.DrawRectangle(Brushes.White,null,new Rect(0,0,794,1123));fresh.Children.Add(white);
+            page.Children.Remove(reference);fresh.Children.Add(reference);
+            Vector freshOffset=VisualTreeHelper.GetOffset(reference);
+            // Reuse the same native visual and its already arranged offset. Do not redraw or relayout it.
+            return $"originalOffset=({originalOffset.X:R},{originalOffset.Y:R}) freshOffset=({freshOffset.X:R},{freshOffset.Y:R}) offsetPreserved={originalOffset==freshOffset} referenceFlags={{"+originalFlags+"} pageFlags={"+pageFlags+"} repeatOriginal={"+repeat+"} freshLiveHost={"+VisualPdfRasterReplayAudit(fresh,expected)+"} freshFlags={"+VisualPdfVisualAudit(reference)+"}";
+        }
+        finally{fresh?.Children.Clear();}
+    }
+    private static string VisualPdfVisualAudit(Visual visual)
+    {
+        string X=string.Join(",",VisualTreeHelper.GetXSnappingGuidelines(visual)?.Take(16).Select(VisualPdfNumber)??Array.Empty<string>());
+        string Y=string.Join(",",VisualTreeHelper.GetYSnappingGuidelines(visual)?.Take(16).Select(VisualPdfNumber)??Array.Empty<string>());
+        return $"snapX=[{X}] snapY=[{Y}] opacity={VisualTreeHelper.GetOpacity(visual):R} edge={VisualTreeHelper.GetEdgeMode(visual)} cache={VisualTreeHelper.GetCacheMode(visual)?.GetType().Name??"null"} effect={VisualTreeHelper.GetEffect(visual)?.GetType().Name??"null"} clip={VisualTreeHelper.GetClip(visual)?.Bounds.ToString()??"null"} formatting={TextOptions.GetTextFormattingMode(visual)} rendering={TextOptions.GetTextRenderingMode(visual)} hinting={TextOptions.GetTextHintingMode(visual)} clearType={RenderOptions.GetClearTypeHint(visual)}";
     }
     private static string VisualPdfRasterReplayAudit(Visual visual,byte[] expected)
     {

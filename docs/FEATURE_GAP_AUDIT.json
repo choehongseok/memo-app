@@ -3,7 +3,7 @@
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
     "head": "c0865cbb7ee50dca36b09f1b12917e501bf093c4",
-    "working_tree": "c086 committed; PDF drawing replay diagnostics and H01 native framework prerequisite test staged; productv2 remains readonly; network observer delta under test-only development.",
+    "working_tree": "Published source515c008/tree d4bdf917 actual Windows38021487234 wholeFAIL2 (PDF emoji and H01 composition-return fixture); network observation and Office nativePASS. Corrected H01 return semantics and generic OCR pending fixture staged; productv2 remains readonly.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,7 +19,7 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "Actualc086 Windows38019390348 WPFFAIL1 PDFemoji; officeWord group PASS afterclosed-hostcleanup fix. Build/fullCore/isolatedcleanup/backupresolution/merge/DIB/H09 PASS. Samepeak rawBGRAgray132 withsamealpha254 excludeswhitecomposition; boundedreplaydiagnostic nativepending. Package/install/uploadSKIPPED, no newartifact. H01framework prerequisite/native identity proof pending; no productv2editing enabled.",
+    "current_change_verification": "Actual515c008 run38021487234/job114123242815 build/fullCore/isolatedcleanup PASS, WPF FAIL2 PDFemoji/H01 prerequisite. Word and runtime-network-observation PASS. ActualPDF replay wholeRGB matches output; replaying referenceDrawing also yields actualratherthan initialTextBlock reference, unresolvednativevisual/timing. H01 actualstartEvent1 then incorrectsuccess-bool assertion fails; returnhandle correction staged/nativepending. Package/install/uploadSKIPPED, no newartifact.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
     "supplemental_source": "N04 authenticated inlinePNG Word source is committed and fullCore/schema/compatibleviewer verified; actual nativeOffice group failed closed-host cleanup, fix pending native evidence. Source-literal Markdown is a disclosed supported projection; optional renderedMarkdown is not an explicit original requirement."
   },
@@ -32,18 +32,16 @@
       "차단됨": 1
     },
     "in_progress_audit_category_counts": {
-      "decision": 1,
-      "independent-code": 7,
-      "independent-test": 6,
-      "physical-user": 105
+      "independent-code": 3,
+      "independent-test": 10,
+      "physical-user": 106
     },
     "all_category_counts": {
       "blocked-format": 1,
-      "decision": 1,
-      "independent-code": 20,
-      "independent-test": 6,
+      "independent-code": 16,
+      "independent-test": 10,
       "normalized": 1,
-      "physical-user": 105
+      "physical-user": 106
     },
     "full_feature_completion": 0,
     "user_acceptance_confirmed": 0,
@@ -70,7 +68,7 @@
   },
   "evidence_validation": {
     "method": "local pathlib.exists for every relative evidence path; JSON exact134 unique IDs compared to FEATURES and original source tokens",
-    "path_count": 176,
+    "path_count": 200,
     "missing_paths": [],
     "source_bytes": 27417,
     "source_sha256": "29655ee9235ebcc3e056551e1aeaf3af26781f1b43a93b78cd585e285c48957d",
@@ -1765,7 +1763,7 @@
     {
       "id": "H01",
       "implemented": "Canonical strictdocv2/schema10 PNG refs/read-only ordered viewer/manual display/remove; actualWindows38009222772 document/publication/product PASS, including same-version immediateepochpixelclear.",
-      "remaining": "Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain. OverallWindows38009222772 FAIL at separateDIB/PDF fixtures; newpackage notproduced.",
+      "remaining": "Authenticated inline PNG Word export passed actual c086. Editable v2 surrounding text remains unimplemented: approved inferred continuation awaits actual native placeholder identity/UndoRedo prerequisite, then closed Core/editor/host implementation and independent review. General formats, resizing and editor image paste/drop are optional extensions. User acceptance remains unconfirmed.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -1773,7 +1771,12 @@
         "src/MemoApp.Windows/StructuredNoteEditor.cs",
         "src/MemoApp.Windows/AttachmentPanel.cs",
         "src/MemoApp.Core/Transfer/AttachmentPngPreview.cs",
-        "docs/PRODUCT_SPEC.md"
+        "docs/PRODUCT_SPEC.md",
+        "docs/H01_V2_EDITOR_DELTA_PLAN.md",
+        "tests/MemoApp.WindowsChecks/RichImageEditorPrerequisiteChecks.cs",
+        "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
+        "src/MemoApp.Windows/MainWindow.WordImageExport.cs",
+        "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs"
       ],
       "name": "메모에 이미지 붙이기",
       "normalized": "메모에 이미지 붙이기",
@@ -1781,10 +1784,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "Editable images/editorpaste-drop/generalformats/Wordembedding and useracceptance remain. OverallWindows38009222772 FAIL at separateDIB/PDF fixtures; newpackage notproduced."
+          "After native prerequisite proof, implement the approved closed v2 text transaction, exact-reference placeholders and Main/Sticky integration; preserve original source/history/image authority and readonly refusal."
         ],
         "inspection": [
-          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
+          "Verify actual native prerequisite; synthetic composition is not physical OS IME acceptance. Keep component PASS, whole gate and package evidence separate."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1796,26 +1799,28 @@
     {
       "id": "H02",
       "implemented": "ActualWindows38011908810 clipboardDIB fullgroupPASS including disposal-before-reopen; supported24/32 BI_RGB boundaries remain bounded.",
-      "remaining": "DIBV5/generalformats/larger/editorinlinepaste remain; OSconversioncannotbeexcluded.",
-      "category": "independent-code",
+      "remaining": "Raw PNG and bounded CF_DIB24/32 BI_RGB native baseline passed. Clipboard/source-app and OS conversion limitations and user acceptance remain. DIBV5, editor inline paste, general formats and increased limits are optional extensions.",
+      "category": "independent-test",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
         "src/MemoApp.Windows/AttachmentPanel.Clipboard.cs",
         "src/MemoApp.Core/Transfer/ClipboardPngSource.cs",
         "src/MemoApp.Windows/StructuredNoteEditor.cs",
         "tests/MemoApp.WindowsChecks/ClipboardPngChecks.cs",
-        "tests/MemoApp.ContractChecks/ClipboardPngChecks.cs"
+        "tests/MemoApp.ContractChecks/ClipboardPngChecks.cs",
+        "src/MemoApp.Windows/NativeClipboardDibCapture.cs",
+        "src/MemoApp.Windows/AttachmentPanel.DibClipboard.cs",
+        "src/MemoApp.Core/Transfer/DibToPng.cs",
+        "tests/MemoApp.WindowsChecks/DibClipboardChecks.cs"
       ],
       "name": "Ctrl+V로 이미지 붙이기",
       "normalized": "Ctrl+V로 이미지 붙이기",
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "DIBV5/generalformats/larger/editorinlinepaste remain; OSconversioncannotbeexcluded."
-        ],
+        "code": [],
         "inspection": [
-          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
+          "Retain current-source native clipboard, original source and decode/cleanup regressions; do not claim every image format."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1958,8 +1963,8 @@
     {
       "id": "H08",
       "implemented": "RGB/RGBA/gray/gray-alpha8 boundedPNG metadata/pixels/sharedclipboard/encryptedreopen actualWindows38008067402 relevantPASS.",
-      "remaining": "BroadJPEG/palette/interlace/ICC/EXIF/animation unsupported; actualuseracceptance remains. EntireWindowsgate failedseparateH01epoch.",
-      "category": "independent-code",
+      "remaining": "Bounded supported PNG preview has actual native evidence. Corpus and user acceptance remain. JPEG, palette/interlace PNG, ICC/EXIF and animation are unsupported optional extensions; unrelated historical H01 failures are not the current preview blocker.",
+      "category": "independent-test",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
         "src/MemoApp.Core/Transfer/PngPreviewProfile.cs",
@@ -1976,11 +1981,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "BroadJPEG/palette/interlace/ICC/EXIF/animation unsupported; actualuseracceptance remains. EntireWindowsgate failedseparateH01epoch."
-        ],
+        "code": [],
         "inspection": [
-          "Next actual Windows gate confirms the current changed source; component PASS and overall result remain distinct."
+          "Retain current-source native metadata, shared admission, display invalidation and cleanup regressions; validate supported-format corpus and user acceptance."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -1991,9 +1994,9 @@
     },
     {
       "id": "H09",
-      "implemented": "Source-linked attachment OCR input/grants/staged fixedruntime/schema11 per-note search metadata and explicit Windows search store action; actual1a86502 Windows staged runtime/linked OCR UI/isolated cleanup fault PASS, fullCore PASS; originalnote/body/source preserved.",
-      "remaining": "Wholef1/a162 Windows gates stillFAIL1 PDFemoji, finalpackage/install notproduced forsource. Physicaluser OCR/corpus/model/recognition usefulness acceptance remains unconfirmed.",
-      "category": "independent-code",
+      "implemented": "Source-linked attachment OCR input/grants/staged fixedruntime/schema11 per-note search metadata and explicit Windows search store action; actual1a86502 Windows staged runtime/linked OCR UI/isolated cleanup fault PASS, fullCore PASS; originalnote/body/source preserved. Actual c086 native linked runtime/UI/search groups passed; whole Windows gate still failed separately at PDF.",
+      "remaining": "Linked OCR/search native baseline passed. Current-source regression, final package/install and synthetic corpus/user usefulness acceptance remain. Unrelated PDF failure is not an H09 code deficit.",
+      "category": "independent-test",
       "minimum_user_action": "None. Independently review new stored OCR/reference structure before encrypted persistence; do not request real OCR images.",
       "evidence": [
         "src/MemoApp.Core/Search/NoteSearch.cs",
@@ -2023,11 +2026,9 @@
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "WholeWindows gate stillFAIL3 in existingbackup/DIB/PDF groups; final package/install not produced for thissource. Physical user OCR/corpus/models/recognition usefulness acceptance remains unconfirmed."
-        ],
+        "code": [],
         "inspection": [
-          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
+          "Record current-source native group results and package/install separately; retain linked authority, cleanup and source-preservation regressions."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2492,7 +2493,7 @@
     {
       "id": "N02",
       "implemented": "TextPDF actualauthorityPASS; displayPDF boundedraster/nativeglyph audits implemented. Actualf1/a162 baseline fix passes firstHangul/CJK/combining/Jamo vectors; unchangedemoji pixeloracleFAIL despite identical glyph/emsize/advance/DPI. Reference localglyphguideline vsbakedfractionalglobaldraworigin difference diagnosed; localdraw-frame correction pendingactualverification.",
-      "remaining": "Native allvectors/wrap/42–43page/clipping afteremoji and rich/table/Markdown/image rendering plus actualviewer/useracceptance remain.",
+      "remaining": "Actual515 native emoji still fails unchanged reference/threshold (peak132, sum3740). Actual renderer replay wholeRGB verified; reference drawing replays also produce actual raster, unlike live TextBlock. Native visual/timing cause, later wrap/42–43page/clipping and subsequent rich/table/Markdown/image verticals remain unresolved. Viewer/user acceptance remains unconfirmed.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -2512,7 +2513,8 @@
           "New display compositing/nativepixel regression pending. Rich/table/Markdown/image rendering and user viewer acceptance remain."
         ],
         "inspection": [
-          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
+          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct.",
+          "Compare unchanged initial TextBlock oracle against same-live-visual postinspection/native-host controls; preserve reference/threshold and distinguish raster cause from alpha/font properties."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2844,31 +2846,31 @@
     },
     {
       "id": "O04",
-      "implemented": "User capacity1..100; checks owned filename set again immediately before CreateNew; full directory refuses new backup and retains all old copies.",
-      "remaining": "Cap setting is implemented; rolling retention/automatic deletion is not. Ledger must distinguish full-stop from rotation. Automatic deletion of old user backups requires explicit destructive-policy authorization; durable capacity settings can be coded independently.",
-      "category": "decision",
+      "implemented": "User capacity1..100; checks owned filename set again immediately before CreateNew; full directory refuses new backup and retains all old copies. Schema9 encrypted policy persists Capacity and restores it after reopening.",
+      "remaining": "Capacity 1–100 with full-stop retention and encrypted policy persistence is implemented. User acceptance remains unconfirmed. Automatic rolling deletion is an optional unsupported destructive policy.",
+      "category": "physical-user",
       "minimum_user_action": "Only if rolling retention is desired: explicitly authorize which owned backup files may be deleted after a new verified copy; otherwise retain current full-stop policy.",
       "evidence": [
         "src/MemoApp.Core/Storage/AutomaticBackupPolicy.cs",
         "src/MemoApp.Windows/MainWindow.AutomaticBackup.cs",
         "tests/MemoApp.ContractChecks/AutomaticBackupPolicyChecks.cs",
-        "tests/MemoApp.WindowsChecks/AutomaticBackupChecks.cs"
+        "tests/MemoApp.WindowsChecks/AutomaticBackupChecks.cs",
+        "src/MemoApp.Core/Storage/StoredAutomaticBackupPolicy.cs",
+        "tests/MemoApp.WindowsChecks/AutomaticBackupPersistenceChecks.cs"
       ],
       "name": "백업 보관 개수 설정",
       "normalized": "백업 보관 개수 설정",
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "암호화된 보관 개수 설정의 재시작 복원은 기존 자료 삭제 없이 독립 구현 가능. rolling retention은 별도 정책 결정이다."
+        "code": [],
+        "inspection": [
+          "Retain capacity-race and persistent-policy restart regressions."
         ],
-        "inspection": [],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
         ],
-        "decision": [
-          "Cap setting is implemented; rolling retention/automatic deletion is not. Ledger must distinguish full-stop from rotation. Automatic deletion of old user backups requires explicit destructive-policy authorization; durable capacity settings can be coded independently."
-        ],
+        "decision": [],
         "access": []
       }
     },
@@ -2904,8 +2906,8 @@
     },
     {
       "id": "O06",
-      "implemented": "Same-ID live immutable branchunion/current preservation plus explicit selected maximal-tip keep-current two-parent resolution; genuine owner/display/confirmation/single-use authority, current cipher/currentroot key validation, prechange encrypted copy and truthful AppliedDirty/settlement. Model/owner/fullCore PASS; WPF source/postreview/crossbuild0w0e, nextactualWindows pending. Actualf1 Windows38016986323 backup-branch-resolution PASS including stopped faulted writer and existing explicitencryptedrecovery helper; originalhistory/head retained.",
-      "remaining": "New finalpackage/install plus actualuser branchcomparison/confirmation acceptance. Deleted/discarded resurrection/root-key adoption/recovery lineage/network synchronization remain separate.",
+      "implemented": "Same-ID live immutable branchunion/current preservation plus explicit selected maximal-tip keep-current two-parent resolution; genuine owner/display/confirmation/single-use authority, current cipher/currentroot key validation, prechange encrypted copy and truthful AppliedDirty/settlement. Model/owner/fullCore PASS; WPF source/postreview/crossbuild0w0e, nextactualWindows pending. Actualf1 Windows38016986323 backup-branch-resolution PASS including stopped faulted writer and existing explicitencryptedrecovery helper; originalhistory/head retained. Actual c086 native backup merge and branch-resolution groups passed.",
+      "remaining": "Bounded same-root live-branch merge and keep-current causal resolution passed native checks. Whole-copy recovery-secret migration to another independent directory/device is implemented and tested. Current-source regression/package/install/user acceptance and remaining overwrite/merge/key-epoch/deletion-lineage recovery semantics beyond that whole-copy path remain distinct work.",
       "category": "independent-code",
       "minimum_user_action": null,
       "evidence": [
@@ -2936,10 +2938,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "ActualnewWindows resolutionUI/corrected nativebatch selection/DIBsetup/PDFdiagnostics pending. Deleted/discarded resurrection/root-key adoption/recovery lineage/network synchronization and actual user acceptance remain separate."
+          "Identify and implement remaining approved overwrite/merge/deletion-lineage recovery cases beyond existing same-root merge and whole-copy recovery-secret migration only after independent security PRE; do not invent arbitrary-root adoption or claim automatic synchronization."
         ],
         "inspection": [
-          "Run the next actual Windows source gate; group results, entire result, installed artifact and user acceptance stay distinct."
+          "Retain native merge/resolution, prechange-copy, callback reentry and AppliedDirty regressions; distinguish group PASS from whole gate/package results."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -3028,7 +3030,7 @@
     },
     {
       "id": "P01",
-      "implemented": "Offline device-only notes/vault, per-user local paths, memory-only search, no runtime sync/account service needed. Follow-up installed app original launch2 snapshots ownPID TCP/UDP4/6 with positive synthetic listener self-check added; nativeWindows runtime pending. Observation is sampled evidence only, not full traffic blocking/absence proof.",
+      "implemented": "Offline device-only notes/vault, per-user local paths, memory-only search, no runtime sync/account service needed. Follow-up installed app original launch2 snapshots ownPID TCP/UDP4/6 with positive synthetic listener self-check added; nativeWindows runtime pending. Observation is sampled evidence only, not full traffic blocking/absence proof. Actual515c008 native bounded observer passed: positive TCP/UDP v4/v6 and crossprocess PID+creation, six host phases sampled, two actual fixed Tesseract child identities/five aggregate active samples; sampled rows zero. This is scoped observation, not complete offline/firewall assurance or installed unlocked EXE evidence.",
       "remaining": "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID.",
       "category": "independent-test",
       "minimum_user_action": null,
@@ -3048,7 +3050,8 @@
         "code": [],
         "inspection": [
           "Physical offline acceptance plus an independent runtime communication-observation test can verify negative network claim. No missing network service is needed for this ID.",
-          "기존 설치 launch만 사용한 new native owningPID socket snapshot/self-positive 검사를 실제 Windows에서 확인한다."
+          "기존 설치 launch만 사용한 new native owningPID socket snapshot/self-positive 검사를 실제 Windows에서 확인한다.",
+          "Preserve fresh native observer active-coverage and actual-reader-drain regressions; aggregate samples are not continuous per-engine coverage."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -3629,10 +3632,10 @@
     },
     {
       "id": "T12",
-      "implemented": "Fixed source-built Tesseract5.5.3/Leptonica1.87.0 kor+eng native OCR, explicit hash-validated public model installation/selection default off, app-wide input/admission/settlement, read-only result then new encrypted plain note/body search/restart. Actual Korean/English synthetic Windows OCR/product/install gates passed in latest whole CI.",
-      "remaining": "General image input is still limited PNG only; no JPEG/common-metadata PNG. Runtime communication observation/CPU-RAM/accuracy corpus validation and slow selection/source-epoch/native-setter/lock UI races remain unverified (current product test covers exact fixture/restart/cancel/lock after successful recognition and unsettled shared slot only). General input decoding is independent code; network observation and synthetic varied corpus/race matrix are independent tests, not a physical-user-only blocker.",
-      "category": "independent-code",
-      "minimum_user_action": "None. Extend safe decoder and add synthetic accuracy/slow-authority/native-publication/network-observation checks before any new physical acceptance request.",
+      "implemented": "Fixed source-built Tesseract5.5.3/Leptonica1.87.0 kor+eng native OCR, explicit hash-validated public model installation/selection default off, app-wide input/admission/settlement, read-only result then new encrypted plain note/body search/restart. Actual Korean/English synthetic Windows OCR/product/install gates passed in latest whole CI. Actual c086 linked OCR runtime/UI and schema11 authority/search groups passed. Actual515c008 native bounded observer passed: positive TCP/UDP v4/v6 and crossprocess PID+creation, six host phases sampled, two actual fixed Tesseract child identities/five aggregate active samples; sampled rows zero. This is scoped observation, not complete offline/firewall assurance or installed unlocked EXE evidence.",
+      "remaining": "Fixed native OCR and linked authority/selection/source/native-setter/lock/settlement regressions have actual evidence. Bounded runtime observation passed actual515; generic pending-result races, synthetic accuracy corpus and CPU/RAM measurements remain pending. Unsupported image formats are optional extensions; broad OCR accuracy and user acceptance remain unconfirmed.",
+      "category": "independent-test",
+      "minimum_user_action": null,
       "evidence": [
         "src/MemoApp.Windows/InstalledOcrBackend.cs",
         "src/MemoApp.Windows/AttachmentPanel.Ocr.cs",
@@ -3642,18 +3645,21 @@
         "tests/MemoApp.WindowsChecks/OcrProductChecks.cs",
         "tests/MemoApp.ContractChecks/LocalOcrChecks.cs",
         "docs/plans/2026-10-09-local-ocr-windows-integration.md",
-        "tools/build_native_ocr.py"
+        "tools/build_native_ocr.py",
+        "tests/MemoApp.WindowsChecks/AttachmentLinkedOcrUiChecks.cs",
+        "tests/MemoApp.WindowsChecks/LinkedOcrRuntimeChecks.cs",
+        "tests/MemoApp.WindowsChecks/NetworkObservationChecks.cs",
+        "docs/P01_T12_NETWORK_OBSERVATION_DELTA_PLAN.md"
       ],
       "name": "OCR로 이미지 글자 추출",
       "normalized": "OCR로 이미지 글자 추출",
       "ledger_status": "진행 중",
       "user_acceptance": "미확인",
       "additional_actions": {
-        "code": [
-          "General image input is still limited PNG only; no JPEG/common-metadata PNG. Runtime communication observation/CPU-RAM/accuracy corpus validation and slow selection/source-epoch/native-setter/lock UI races remain unverified (current product test covers exact fixture/restart/cancel/lock after successful recognition and unsettled shared slot only). General input decoding is independent code; network observation and synthetic varied corpus/race matrix are independent tests, not a physical-user-only blocker."
-        ],
+        "code": [],
         "inspection": [
-          "보완한 경계의 합성 회귀 및 실제 Windows 제어 검사를 실행하고 별도 근거를 기록한다. 현재 감사 작업에서는 실행하지 않는다."
+          "Verify fresh observer positive checks and actual engine active coverage/cleanup; distinguish installed locked EXE from unlocked WPF test host. Expand generic pending-result races and synthetic corpus/resource measurements.",
+          "Preserve fresh native observer active-coverage and actual-reader-drain regressions; aggregate samples are not continuous per-engine coverage."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."

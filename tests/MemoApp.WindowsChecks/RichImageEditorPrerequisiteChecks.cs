@@ -29,8 +29,8 @@ internal static partial class Program
         }
         var box=new RichTextBox{Document=document,IsUndoEnabled=true,UndoLimit=100,AcceptsTab=true,AllowDrop=false};
         var window=new Window{Title="Synthetic v2 editor prerequisite",Content=box,Width=600,Height=380};
-        string phase="show";int starts=0,updates=0,completed=0;TextComposition? activeComposition=null;Exception? primaryFailure=null;
-        TextCompositionEventHandler start=(_,_)=>starts++;TextCompositionEventHandler update=(_,_)=>updates++;TextCompositionEventHandler finish=(_,_)=>completed++;
+        string phase="show";int starts=0,updates=0,completed=0;bool? startHandled=null,updateHandled=null,completeHandled=null;TextComposition? activeComposition=null;Exception? primaryFailure=null;
+        TextCompositionEventHandler start=(_,e)=>{if(ReferenceEquals(e.TextComposition,activeComposition))starts++;};TextCompositionEventHandler update=(_,e)=>{if(ReferenceEquals(e.TextComposition,activeComposition))updates++;};TextCompositionEventHandler finish=(_,e)=>{if(ReferenceEquals(e.TextComposition,activeComposition))completed++;};
         box.AddHandler(TextCompositionManager.PreviewTextInputStartEvent,start,true);
         box.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,update,true);
         box.AddHandler(TextCompositionManager.PreviewTextInputEvent,finish,true);
@@ -50,11 +50,13 @@ internal static partial class Program
             box.IsUndoEnabled=false;box.IsUndoEnabled=true;phase="native text composition typing";
             box.Selection.Select(text[0].ContentEnd,text[0].ContentEnd);string before=Contents();
             activeComposition=new TextComposition(InputManager.Current,box,"한글 e\u0301 😀",TextCompositionAutoComplete.Off);
-            Require(TextCompositionManager.StartComposition(activeComposition),"Native TextCompositionManager starts composition");Exact("composition start");
-            Require(starts>0&&completed==0&&Contents()==before,"Uncompleted native composition has a real start boundary without prematurely inserting text");
-            Require(TextCompositionManager.UpdateComposition(activeComposition),"Native TextCompositionManager updates composition");Exact("composition update");Require(updates>0,"Actual native composition update event observed");
-            Require(TextCompositionManager.CompleteComposition(activeComposition),"Native TextCompositionManager completes composition");activeComposition=null;await Idle();Exact("composition completion");
-            string typed=Contents();Require(completed>0&&typed.Contains("한글 e\u0301 😀",StringComparison.Ordinal)&&typed!=before,"Native RichTextBox actually consumes completed Unicode TextInput; event-only simulation is insufficient");
+            // WPF v10.0.0 UnsafeStart/Update/CompleteComposition return ProcessInput's
+            // event-handled flag. An unhandled start can still set Started and dispatch.
+            startHandled=TextCompositionManager.StartComposition(activeComposition);Exact("composition start");
+            Require(starts==1&&updates==0&&completed==0&&Contents()==before,"Uncompleted exact native composition has a real start boundary without prematurely inserting text");
+            updateHandled=TextCompositionManager.UpdateComposition(activeComposition);Exact("composition update");Require(starts==1&&updates==1&&completed==0&&Contents()==before,"Actual same-composition native update observed before completion without premature text insertion");
+            completeHandled=TextCompositionManager.CompleteComposition(activeComposition);activeComposition=null;await Idle();Exact("composition completion");
+            string typed=Contents();Require(starts==1&&updates==1&&completed==1&&typed.Contains("한글 e\u0301 😀",StringComparison.Ordinal)&&typed!=before,"Native RichTextBox actually consumes the exact completed Unicode TextInput; event-only simulation is insufficient");
             UndoRedo("composition text",before,typed);
 
             phase="native selection replacement";box.IsUndoEnabled=false;box.IsUndoEnabled=true;
@@ -72,12 +74,12 @@ internal static partial class Program
             {
                 var last=placeholders[^1];Block? after=last.Paragraph.NextBlock;document.Blocks.Remove(last.Paragraph);document.Blocks.InsertBefore(original.Paragraph,last.Paragraph);Require(!Valid(),"Reordered repeated image references fail despite equal IDs and labels");document.Blocks.Remove(last.Paragraph);if(after is not null)document.Blocks.InsertBefore(after,last.Paragraph);else document.Blocks.Add(last.Paragraph);Exact("restored original order");
             }
-            Console.WriteLine("H01 v2 native prerequisite observed boundaries="+string.Join(',',boundaries)+" placeholders="+placeholders.Count+" compositionStart="+starts+" update="+updates+" completed="+completed+" exactIdentity=true (synthetic TextCompositionManager, not physical keyboard IME)");
+            Console.WriteLine("H01 v2 native prerequisite observed boundaries="+string.Join(',',boundaries)+" placeholders="+placeholders.Count+" compositionStart="+starts+" update="+updates+" completed="+completed+" handled="+startHandled+"/"+updateHandled+"/"+completeHandled+" exactIdentity=true (synthetic TextCompositionManager, not physical keyboard IME)");
         }
         catch(Exception error)
         {
             primaryFailure=error;
-            Console.Error.WriteLine("H01 v2 native prerequisite FAIL phase="+phase+" boundaries="+string.Join(',',boundaries)+" identity="+Valid()+" start="+starts+" update="+updates+" completed="+completed+" type="+error.GetType().Name);
+            Console.Error.WriteLine("H01 v2 native prerequisite FAIL phase="+phase+" boundaries="+string.Join(',',boundaries)+" identity="+Valid()+" start="+starts+" update="+updates+" completed="+completed+" handled="+startHandled+"/"+updateHandled+"/"+completeHandled+" type="+error.GetType().Name);
             throw;
         }
         finally

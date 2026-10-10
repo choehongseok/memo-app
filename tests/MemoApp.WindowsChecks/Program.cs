@@ -78,8 +78,10 @@ internal static partial class Program
                 groups=groups.Append(("ocr-product-native",(Func<Task>)OcrProductRun)).Append(("ocr-shared-settlement",(Func<Task>)OcrSettlementUiRun)).ToArray();
                 groups=groups.Append(("rich-image-document",(Func<Task>)RichImageDocumentRun)).Append(("rich-image-publication",(Func<Task>)RichImagePublicationRun)).ToArray();
                 groups=groups.Append(("rich-image-product",(Func<Task>)RichImageProductRun)).ToArray();
+                groups=groups.Append(("ocr-pending-races",(Func<Task>)OcrPendingRaceRun)).ToArray();
                 groups=groups.Append(("runtime-network-observation",(Func<Task>)NetworkObservationRun)).ToArray();
                 groups=groups.Append(("rich-image-editor-prerequisite",(Func<Task>)RichImageEditorPrerequisiteRun)).ToArray();
+                if(arguments.Contains("--ocr-pending-only"))groups=groups.Where(group=>group.Name=="ocr-pending-races").ToArray();
                 if(arguments.Contains("--h01-v2-prerequisite-only"))groups=groups.Where(group=>group.Name=="rich-image-editor-prerequisite").ToArray();
                 if(arguments.Contains("--h01-image-only"))groups=groups.Where(group=>group.Name is "rich-image-document" or "rich-image-publication" or "rich-image-product").ToArray();
                 if(arguments.Contains("--backup-merge-only"))groups=groups.Where(group=>group.Name=="backup-same-id-merge").ToArray();
