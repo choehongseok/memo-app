@@ -15,7 +15,7 @@ internal static partial class Program
 {
     private static async Task RichImageTextEditorRun()
     {
-        foreach(string scenario in new[]{"v1-constructor","capture-document","capture-awayback","preapply-document","preapply-awayback","preapply-native-text","generic-baseline","unavailable-font","fallback-epoch","fallback-metadata","fallback-hide","fallback-setter","edit-undo","edge-edit","composition","zero-images","ordinary-label","format","checklist","save-reopen","adjacent-delete","no-change","image-touch","clone","reorder","delete","extra-inline","active-link","embedded-ui","native-limit","source-invalidation","metadata-invalidation","paste-reentry","paste-selection","own-reentry","own-retire","notification-throw","queued-composition","setter","hide","lock"})await RichImageTextEditorCase(scenario);
+        foreach(string scenario in new[]{"v1-constructor","capture-document","capture-awayback","preapply-document","preapply-awayback","preapply-native-text","generic-baseline","unavailable-font","fallback-epoch","fallback-metadata","fallback-hide","fallback-setter","edit-undo","edge-edit","composition","zero-images","ordinary-label","format","checklist","save-reopen","adjacent-delete","no-change","image-touch","clone","reorder","delete","extra-inline","active-link","embedded-ui","native-limit","source-invalidation","metadata-invalidation","paste-reentry","paste-selection","own-reentry","own-retire","notification-throw","completed-before-retire","queued-composition","setter","hide","lock"})await RichImageTextEditorCase(scenario);
     }
     private static string[] ImageRawNodes(StyledDocument document)
     {
@@ -30,7 +30,7 @@ internal static partial class Program
     }
     private static async Task RichImageTextEditorCase(string scenario)
     {
-        string root=Path.Combine(Path.GetTempPath(),"memo-v2-text-editor-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();SaveCoordinator? session=null;StructuredNoteEditor? editor=null;Window? window=null;bool live=true;Action? currentCallback=null;bool currentArmed=false;Action<NoteDraft?>? invalidating=null;Action? changed=null;DependencyPropertyDescriptor? descriptor=null;EventHandler? setter=null;TextComposition? activeComposition=null;var nativeCleanup=new List<Action>();Exception? primaryFailure=null;
+        string root=Path.Combine(Path.GetTempPath(),"memo-v2-text-editor-"+Guid.NewGuid().ToString("N"));byte[] secret=EncryptedVault.GenerateRecoverySecret();SaveCoordinator? session=null;StructuredNoteEditor? editor=null;Window? window=null;bool live=true;Action? currentCallback=null;bool currentArmed=false;Action<NoteDraft?>? invalidating=null;Action? changed=null;DependencyPropertyDescriptor? descriptor=null;EventHandler? setter=null;TextComposition? activeComposition=null;Task? queuedCompositionTask=null;var nativeCleanup=new List<Action>();Exception? primaryFailure=null;
         try
         {
             session=new(EncryptedVault.Create(root,secret,secret),TimeProvider.System);var note=session.Workspace.CreateNote();session.Workspace.ConvertMode(note,"rich",true);
@@ -192,9 +192,41 @@ internal static partial class Program
                     bool fired=false;changed=()=>{if(!fired){fired=true;throw new InvalidOperationException("SYNTHETIC_V2_POST_INSTALL_NOTIFICATION");}};session.Workspace.Changed+=changed;
                     var paragraph=(Paragraph)native.Document.Blocks.FirstBlock;native.Selection.Select(paragraph.ContentEnd,paragraph.ContentEnd);native.Selection.Text="valid applied candidate";await Idle();ImagesExact();Require(fired&&note.Text.Contains("valid applied candidate",StringComparison.Ordinal)&&session.IsDirty&&editor.IsDisposed&&native.Document.Blocks.Count==0,"AppliedDirty receipt retains exact valid mutation after post-install observer failure while retiring native authority");
                 }
-                else if(scenario=="queued-composition")
+                else if(scenario is "completed-before-retire" or "queued-composition")
                 {
-                    var composition=new TextComposition(InputManager.Current,native,"late synthetic",TextCompositionAutoComplete.Off);TextCompositionManager.StartComposition(composition);TextCompositionManager.CompleteComposition(composition);live=false;editor.ClearSensitive();await Idle();Require(note.Document.SourceJson==original&&native.Document.Blocks.Count==0&&!native.CanUndo,"Queued native composition completion cannot revive retired host/source");
+                    window.Activate();native.Focus();Keyboard.Focus(native);await Idle();Require(native.IsKeyboardFocused,"Composition retirement fixture uses actual focused native RichTextBox");
+                    var graph=native.Document;var paragraph=(Paragraph)graph.Blocks.FirstBlock;native.Selection.Select(paragraph.ContentEnd,paragraph.ContentEnd);
+                    long initialEdit=note.EditVersion,initialContent=note.ContentVersion,initialEpoch=session.AttachmentPreviewEpoch;
+                    var composition=new TextComposition(InputManager.Current,native,"synthetic composition boundary",TextCompositionAutoComplete.Off);activeComposition=composition;
+                    int starts=0,updates=0,finishes=0,order=0,startOrder=0,updateOrder=0,completeOrder=0,retirementOrder=0;bool retireFinished=false,completionSawRetired=false,completionSawRetireFinished=false;
+                    TextCompositionEventHandler start=(_,e)=>{if(ReferenceEquals(e.TextComposition,composition)){starts++;startOrder=++order;}};
+                    TextCompositionEventHandler update=(_,e)=>{if(ReferenceEquals(e.TextComposition,composition)){updates++;updateOrder=++order;}};
+                    TextCompositionEventHandler finish=(_,e)=>{if(ReferenceEquals(e.TextComposition,composition)){finishes++;completeOrder=++order;completionSawRetired=editor.IsDisposed;completionSawRetireFinished=retireFinished;}};
+                    native.AddHandler(TextCompositionManager.PreviewTextInputStartEvent,start,true);nativeCleanup.Add(()=>native.RemoveHandler(TextCompositionManager.PreviewTextInputStartEvent,start));
+                    native.AddHandler(TextCompositionManager.PreviewTextInputUpdateEvent,update,true);nativeCleanup.Add(()=>native.RemoveHandler(TextCompositionManager.PreviewTextInputUpdateEvent,update));
+                    native.AddHandler(TextCompositionManager.PreviewTextInputEvent,finish,true);nativeCleanup.Add(()=>native.RemoveHandler(TextCompositionManager.PreviewTextInputEvent,finish));
+                    TextCompositionManager.StartComposition(composition);TextCompositionManager.UpdateComposition(composition);
+                    Require(starts==1&&updates==1&&finishes==0&&startOrder<updateOrder&&note.Document.SourceJson==original&&note.EditVersion==initialEdit&&note.ContentVersion==initialContent&&session.AttachmentPreviewEpoch==initialEpoch,"Exact native Start/Update occur before retirement/completion without premature source publication");
+                    if(scenario=="completed-before-retire")
+                    {
+                        TextCompositionManager.CompleteComposition(composition);activeComposition=null;await Idle();ImagesExact();
+                        Require(finishes==1&&updateOrder<completeOrder&&!completionSawRetired&&note.Document.SourceJson!=original&&note.Text.Contains("synthetic composition boundary",StringComparison.Ordinal),"Focused positive control completes and actually publishes text before retirement");
+                    }
+                    else
+                    {
+                        queuedCompositionTask=native.Dispatcher.InvokeAsync(()=>{TextCompositionManager.CompleteComposition(composition);activeComposition=null;},System.Windows.Threading.DispatcherPriority.Background).Task;
+                        Require(finishes==0&&!queuedCompositionTask.IsCompleted,"Actual manager completion is queued before host retirement and has not executed yet");
+                    }
+                    string beforeRetire=note.Document.SourceJson;long beforeEdit=note.EditVersion,beforeContent=note.ContentVersion,beforeEpoch=session.AttachmentPreviewEpoch;
+                    bool changedBeforeRetire=beforeRetire!=original;retirementOrder=++order;live=false;editor.ClearSensitive();retireFinished=true;
+                    if(queuedCompositionTask is not null)await queuedCompositionTask;await Idle();
+                    bool documentExact=note.Document.SourceJson==beforeRetire,editExact=note.EditVersion==beforeEdit,contentExact=note.ContentVersion==beforeContent,epochExact=session.AttachmentPreviewEpoch==beforeEpoch;bool sourceExact=documentExact&&editExact&&contentExact&&epochExact;
+                    bool originalGraphEmpty=graph.Blocks.Count==0&&new TextRange(graph.ContentStart,graph.ContentEnd).Text.Length==0;
+                    bool currentGraphEmpty=native.Document.Blocks.Count==0&&new TextRange(native.Document.ContentStart,native.Document.ContentEnd).Text.Length==0;
+                    bool undoEmpty=!native.IsUndoEnabled&&!native.CanUndo;
+                    Console.WriteLine($"H01 composition retirement scenario={scenario} start={starts} update={updates} complete={finishes} sourceChangedBeforeRetire={changedBeforeRetire} editDeltaBeforeRetire={beforeEdit-initialEdit} contentDeltaBeforeRetire={beforeContent-initialContent} epochDeltaBeforeRetire={beforeEpoch-initialEpoch} documentExactAfterRetire={documentExact} editExactAfterRetire={editExact} contentExactAfterRetire={contentExact} epochExactAfterRetire={epochExact} originalGraphBlocks={graph.Blocks.Count} originalGraphTextLength={new TextRange(graph.ContentStart,graph.ContentEnd).Text.Length} currentGraphBlocks={native.Document.Blocks.Count} currentGraphTextLength={new TextRange(native.Document.ContentStart,native.Document.ContentEnd).Text.Length} startOrder={startOrder} updateOrder={updateOrder} retirementOrder={retirementOrder} completeOrder={completeOrder} originalGraphEmpty={originalGraphEmpty} currentGraphEmpty={currentGraphEmpty} undoEmpty={undoEmpty} completeAfterRetire={completeOrder>retirementOrder} completionSawRetired={completionSawRetired} completionSawRetireFinished={completionSawRetireFinished} (synthetic TextCompositionManager; not physical IME)");
+                    Require(sourceExact&&originalGraphEmpty&&currentGraphEmpty&&undoEmpty,"Composition retirement preserves exact immediately-before-retire source/versions/epoch and clears original/current native graphs and Undo");
+                    if(scenario=="queued-composition")Require(!changedBeforeRetire&&note.Document.SourceJson==original&&note.EditVersion==initialEdit&&note.ContentVersion==initialContent&&session.AttachmentPreviewEpoch==initialEpoch&&starts==1&&updates==1&&finishes==1&&updateOrder<retirementOrder&&retirementOrder<completeOrder&&completionSawRetired&&completionSawRetireFinished,"Exact real queued completion executes after completed retirement and cannot revive original source/graphs/Undo");
                 }
                 else if(scenario=="hide")
                 {
@@ -211,7 +243,7 @@ internal static partial class Program
         catch(Exception error){primaryFailure=error;throw;}
         finally
         {
-            var failures=new List<Exception>();foreach(Action cleanup in new Action[]{()=>{if(activeComposition is not null)TextCompositionManager.CompleteComposition(activeComposition);},()=>{if(descriptor is not null&&setter is not null&&editor is not null)descriptor.RemoveValueChanged(editor.RichInput,setter);},()=>{if(invalidating is not null&&session is not null)session.Workspace.AttachmentReadInvalidating-=invalidating;},()=>{if(changed is not null&&session is not null)session.Workspace.Changed-=changed;},()=>{live=false;editor?.Dispose();},()=>{if(window is not null)window.Content=null;},()=>window?.Close()}.Concat(nativeCleanup))try{cleanup();}catch(Exception error){failures.Add(error);}
+            var failures=new List<Exception>();if(queuedCompositionTask is not null)try{await queuedCompositionTask;}catch(Exception error){failures.Add(error);}foreach(Action cleanup in new Action[]{()=>{if(activeComposition is not null)TextCompositionManager.CompleteComposition(activeComposition);},()=>{if(descriptor is not null&&setter is not null&&editor is not null)descriptor.RemoveValueChanged(editor.RichInput,setter);},()=>{if(invalidating is not null&&session is not null)session.Workspace.AttachmentReadInvalidating-=invalidating;},()=>{if(changed is not null&&session is not null)session.Workspace.Changed-=changed;},()=>{live=false;editor?.Dispose();},()=>{if(window is not null)window.Content=null;},()=>window?.Close()}.Concat(nativeCleanup))try{cleanup();}catch(Exception error){failures.Add(error);}
             bool cleaned=session is null;try{if(session is not null){try{await session.LockAsync();}catch(Exception error){failures.Add(error);}if(session.KeysReleased&&!session.IsBusy){try{session.Dispose();cleaned=true;}catch(Exception error){failures.Add(error);}}}}finally{CryptographicOperations.ZeroMemory(secret);if(cleaned&&Directory.Exists(root))try{Directory.Delete(root,true);}catch(Exception error){failures.Add(error);}}
             if(failures.Count!=0){if(primaryFailure is not null)failures.Insert(0,primaryFailure);throw new AggregateException("Synthetic v2 editor cleanup failed",failures);}
         }
