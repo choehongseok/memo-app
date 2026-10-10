@@ -62,6 +62,7 @@ public sealed partial class StructuredNoteEditor
         session.Conceal+=ClearSensitive;session.Changed+=ImageTextSessionChanged;
         workspace!.AttachmentReadInvalidating+=ImageTextInvalidating;IsVisibleChanged+=ImageTextVisibilityChanged;
     }
+    internal bool IsRichImageTextRefreshDeferred{get{Dispatcher.VerifyAccess();return RichImageTextPhase.Busy(Dispatcher);}}
     internal bool HasCurrentRichImageTextProjection
     {
         get

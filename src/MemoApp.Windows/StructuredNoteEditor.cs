@@ -45,11 +45,11 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         internal long MutationGeneration{get;private set;}
         protected override void OnTextChanged(TextChangedEventArgs e)
         {
-            MutationGeneration++;EventDepth++;try{MutationStarting?.Invoke();base.OnTextChanged(e);}finally{EventDepth--;if(EventDepth==0)EventFinished?.Invoke();}
+            using var phase=RichImageTextPhase.Enter(Dispatcher);MutationGeneration++;EventDepth++;try{MutationStarting?.Invoke();base.OnTextChanged(e);}finally{EventDepth--;if(EventDepth==0)EventFinished?.Invoke();}
         }
         protected override void OnSelectionChanged(RoutedEventArgs e)
         {
-            MutationGeneration++;MutationStarting?.Invoke();base.OnSelectionChanged(e);
+            using var phase=RichImageTextPhase.Enter(Dispatcher);MutationGeneration++;MutationStarting?.Invoke();base.OnSelectionChanged(e);
         }
     }
     private readonly NativeRichTextBox native=new(){AllowDrop=false,IsUndoEnabled=true,UndoLimit=100,AcceptsTab=true,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Padding=new(8)};
@@ -96,6 +96,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     private void PublishProjection()
     {
+        using var phase=RichImageTextPhase.Enter(Dispatcher);
         if(!Live()){ClearSensitive();return;}
         if(rebuilding||native.EventDepth!=0){refreshPending=true;return;}
         var target=note!;var owner=workspace!;var source=target.Document!;string text=target.Text;long version=target.EditVersion,generation=++projectionGeneration;
@@ -337,6 +338,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     private void CommitNative(bool restoreProjectionSource=false)
     {
         if(rebuilding||committing)return;
+        using var phase=RichImageTextPhase.Enter(Dispatcher);
         try{BeginImageTextNativeGuard();if(!Live()||!editable)return;var captured=CaptureDocument();
             // Native Undo restores the model, but capture has its own JSON field order/run
             // normalization. Returning to the projection's original model must restore
@@ -431,7 +433,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
     }
     public void ClearSensitive()
     {
-        if(disposed)return;var ownedNativeDocuments=CaptureOwnedNativeDocumentsForCleanup();disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;native.MutationStarting=null;EndImageTextNativeGuard();editable=false;rebuilding=true;
+        if(disposed)return;using var phase=RichImageTextPhase.Enter(Dispatcher);var ownedNativeDocuments=CaptureOwnedNativeDocumentsForCleanup();disposed=true;projectionGeneration++;compositionToken++;refreshPending=false;waitingTransaction=composing=false;transactionRetry.Stop();native.EventFinished=null;native.MutationStarting=null;EndImageTextNativeGuard();editable=false;rebuilding=true;
         var oldNote=note;ClearImageTextEditing();projected=projectionSource=null;projectedContentVersion=0;note=null;workspace=null;current=null;notice=null;if(oldNote is not null)oldNote.PropertyChanged-=DraftChanged;
         // Drop all ownership before invoking native text operations, which can raise arbitrary handlers.
         foreach(Action detach in new Action[]{()=>RichInput.TextChanged-=Changed,()=>RichInput.SelectionChanged-=CaretSelectionChanged,()=>DataObject.RemovePastingHandler(RichInput,Pasting),

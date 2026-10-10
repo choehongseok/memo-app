@@ -24,15 +24,39 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
     private CancellationTokenSource? cancellation;
     private long generation, observedEpoch;
     private bool refreshing, refreshPending;
+    private readonly bool imageActionsOnly;
+    private long uiGeneration;
+    private readonly Dictionary<int,RenderedImageAction> renderedActions=[];
+    private sealed class RenderedImageAction(NoteDraft note,StyledDocument document,long version,long epoch,long uiGeneration,int blockIndex,Guid id,string alt,Image image,StackPanel panel,Button display,Button remove)
+    {
+        internal NoteDraft? Note=note;internal StyledDocument? Document=document;internal string? Alt=alt;
+        internal readonly long Version=version,Epoch=epoch,UiGeneration=uiGeneration;internal readonly int BlockIndex=blockIndex;internal readonly Guid Id=id;
+        internal readonly Image Image=image;internal readonly StackPanel Panel=panel;internal readonly Button Display=display,Remove=remove;
+        internal RoutedEventHandler? DisplayHandler,RemoveHandler;
+        internal void Revoke()
+        {
+            Note=null;Document=null;Alt=null;var displayHandler=DisplayHandler;var removeHandler=RemoveHandler;DisplayHandler=RemoveHandler=null;
+            try{if(displayHandler is not null)Display.Click-=displayHandler;}catch{}try{if(removeHandler is not null)Remove.Click-=removeHandler;}catch{}
+            foreach(var label in Panel.Children.OfType<TextBlock>().ToArray())try{label.Text="";}catch{}try{Image.Source=null;}catch{}try{Image.Visibility=Visibility.Collapsed;}catch{}try{Panel.Children.Clear();}catch{}
+        }
+    }
+    private static void RevokeRenderedActions(IEnumerable<RenderedImageAction> actions){foreach(var action in actions.ToArray())action.Revoke();}
+    private void WireRenderedAction(RenderedImageAction action)
+    {
+        var weak=new WeakReference<RichImageDocumentView>(this);
+        action.DisplayHandler=async(_,_)=>{if(weak.TryGetTarget(out var view)&&view.RenderedCurrent(action))await view.DisplayImageCoreAsync(action.BlockIndex,action);};
+        action.RemoveHandler=(_,_)=>{if(weak.TryGetTarget(out var view)&&view.RenderedCurrent(action))view.RemoveImageCore(action.BlockIndex,action);};
+        action.Display.Click+=action.DisplayHandler;action.Remove.Click+=action.RemoveHandler;
+    }
     private StyledDocument? projected;
     private readonly Dictionary<int,Image> images=[];
     internal StackPanel BlocksHost {get;}=new();
     public bool IsDisposed {get;private set;}
     public RichImageDocumentView(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice)
         :this(session,note,current,notice,new ImagePreviewBackend()){}
-    internal RichImageDocumentView(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend)
+    internal RichImageDocumentView(SaveCoordinator session,NoteDraft note,Func<bool> current,Action<string> notice,ImagePreviewBackend backend,bool imageActionsOnly=false)
     {
-        Dispatcher.VerifyAccess();this.session=session;workspace=session.Workspace;this.note=note;this.current=current;this.notice=notice;this.backend=backend;observedEpoch=session.AttachmentPreviewEpoch;
+        Dispatcher.VerifyAccess();this.session=session;workspace=session.Workspace;this.note=note;this.current=current;this.notice=notice;this.backend=backend;this.imageActionsOnly=imageActionsOnly;observedEpoch=session.AttachmentPreviewEpoch;
         Content=new ScrollViewer{Content=BlocksHost,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,MaxHeight=600};
         session.Conceal+=Dispose;session.Changed+=StateChanged;note.PropertyChanged+=NoteChanged;
         workspace.AttachmentReadInvalidating+=AttachmentReadsInvalidating;
@@ -63,14 +87,14 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
     }
     private void Refresh()
     {
-        if(!Live()){Dispose();return;}if(refreshing){refreshPending=true;return;}refreshing=true;
+        if(!Live()){Dispose();return;}if(refreshing){refreshPending=true;return;}refreshing=true;var nextActions=new Dictionary<int,RenderedImageAction>();bool published=false;RevokeRenderedActions(renderedActions.Values);renderedActions.Clear();
         try
         {
-            InvalidateImageDisplay();var source=note!;var document=source.Document!;long version=source.EditVersion,request=generation;
+            InvalidateImageDisplay();long projection=++uiGeneration;var source=note!;var document=source.Document!;long version=source.EditVersion,epoch=session!.AttachmentPreviewEpoch,request=generation;
             bool Same()=>Live()&&ReferenceEquals(note,source)&&ReferenceEquals(source.Document,document)&&source.EditVersion==version&&generation==request;
             var nodes=new List<FrameworkElement>();var nextImages=new Dictionary<int,Image>();
             var info=RichDocumentCodec.Inspect(document);
-            if(document.SchemaVersion!=2||!info.Supported)nodes.Add(new TextBlock{Text=source.Text,TextWrapping=TextWrapping.Wrap});
+            if(document.SchemaVersion!=2||!info.Supported){if(!imageActionsOnly)nodes.Add(new TextBlock{Text=source.Text,TextWrapping=TextWrapping.Wrap});}
             else
             {
                 using var json=JsonDocument.Parse(document.SourceJson,new(){MaxDepth=16});int index=0;
@@ -81,22 +105,23 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
                         int blockIndex=index;var image=new Image{MaxWidth=1024,MaxHeight=360,Stretch=Stretch.Uniform,Visibility=Visibility.Collapsed};nextImages.Add(index,image);
                         var panel=new StackPanel{Margin=new(0,4,0,8)};panel.Children.Add(new TextBlock{Text="[이미지: "+block.GetProperty("alt").GetString()+"]",TextWrapping=TextWrapping.Wrap});
                         var actions=new WrapPanel();var display=new Button{Content="이미지 표시",Padding=new(6,3,6,3),Margin=new(0,0,6,0)};var remove=new Button{Content="이미지 블록 제거",Padding=new(6,3,6,3)};
-                        display.Click+=async(_,_)=>await DisplayImageAsync(blockIndex);remove.Click+=(_,_)=>RemoveImage(blockIndex);actions.Children.Add(display);actions.Children.Add(remove);panel.Children.Add(actions);panel.Children.Add(image);nodes.Add(panel);
+                        var action=new RenderedImageAction(source,document,version,epoch,projection,blockIndex,Guid.Parse(block.GetProperty("attachmentId").GetString()!),block.GetProperty("alt").GetString()!,image,panel,display,remove);nextActions.Add(blockIndex,action);
+                        WireRenderedAction(action);actions.Children.Add(display);actions.Children.Add(remove);panel.Children.Add(actions);panel.Children.Add(image);nodes.Add(panel);
                     }
-                    else nodes.Add(RenderBlock(block));
+                    else if(!imageActionsOnly)nodes.Add(RenderBlock(block));
                     index++;
                 }
             }
             if(!Same()){refreshPending=Live();return;}
             projected=document;BlocksHost.Children.Clear();
             if(!Same()){refreshPending=Live();return;}
-            images.Clear();foreach(var pair in nextImages)images.Add(pair.Key,pair.Value);
-            foreach(var element in nodes){if(!Same()){InvalidateImageDisplay();refreshPending=Live();return;}BlocksHost.Children.Add(element);if(!Same()){InvalidateImageDisplay();refreshPending=Live();return;}}
+            images.Clear();renderedActions.Clear();foreach(var pair in nextImages)images.Add(pair.Key,pair.Value);foreach(var pair in nextActions)renderedActions.Add(pair.Key,pair.Value);
+            foreach(var element in nodes){if(!Same()){InvalidateImageDisplay();refreshPending=Live();return;}BlocksHost.Children.Add(element);if(!Same()){InvalidateImageDisplay();refreshPending=Live();return;}}published=true;
         }
-        catch{if(!IsDisposed){InvalidateImageDisplay();try{BlocksHost.Children.Clear();}catch{}images.Clear();projected=null;}}
+        catch{if(!IsDisposed){InvalidateImageDisplay();try{BlocksHost.Children.Clear();}catch{}images.Clear();renderedActions.Clear();projected=null;}}
         finally
         {
-            refreshing=false;if(refreshPending&&!IsDisposed){refreshPending=false;Dispatcher.BeginInvoke(new Action(Refresh),DispatcherPriority.Background);}
+            if(!published)RevokeRenderedActions(nextActions.Values);refreshing=false;if(refreshPending&&!IsDisposed){refreshPending=false;Dispatcher.BeginInvoke(new Action(Refresh),DispatcherPriority.Background);}
         }
     }
     private static TextBlock RenderRuns(JsonElement owner,string prefix="")
@@ -144,16 +169,19 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
         byte Part(int offset)=>byte.Parse(hex.AsSpan(offset,2),NumberStyles.HexNumber,CultureInfo.InvariantCulture);
         return new(hex.Length==9?Color.FromArgb(Part(1),Part(3),Part(5),Part(7)):Color.FromRgb(Part(1),Part(3),Part(5)));
     }
-    public Task<bool> DisplayImageAsync(int blockIndex)
+    private bool RenderedPure(RenderedImageAction action)=>!IsDisposed&&action.Note is not null&&action.Document is not null&&uiGeneration==action.UiGeneration&&ReferenceEquals(note,action.Note)&&ReferenceEquals(action.Note.Document,action.Document)&&action.Note.EditVersion==action.Version&&session?.AttachmentPreviewEpoch==action.Epoch&&renderedActions.TryGetValue(action.BlockIndex,out var original)&&ReferenceEquals(original,action)&&images.TryGetValue(action.BlockIndex,out var image)&&ReferenceEquals(image,action.Image)&&ReferenceEquals(action.Panel.Parent,BlocksHost)&&RichDocumentCodec.Images(action.Document).Any(image=>image.BlockIndex==action.BlockIndex&&image.AttachmentId==action.Id&&image.Alt==action.Alt)&&action.Panel.Children.OfType<WrapPanel>().Any(panel=>panel.Children.Contains(action.Display)&&panel.Children.Contains(action.Remove));
+    private bool RenderedCurrent(RenderedImageAction action)=>RenderedPure(action)&&Live()&&RenderedPure(action);
+    public Task<bool> DisplayImageAsync(int blockIndex)=>DisplayImageCoreAsync(blockIndex,null);
+    private Task<bool> DisplayImageCoreAsync(int blockIndex,RenderedImageAction? action)
     {
-        Dispatcher.VerifyAccess();if(!Live()||!IsVisible||!images.ContainsKey(blockIndex))return Task.FromResult(false);
+        Dispatcher.VerifyAccess();if(!Live()||!IsVisible||!images.ContainsKey(blockIndex)||action is not null&&!RenderedPure(action))return Task.FromResult(false);
         if(!ImagePreviewAdmission.TryEnter(Dispatcher)){Report("다른 이미지/OCR 처리 중입니다. 처리 후 다시 이미지 표시를 눌러 주세요.");return Task.FromResult(false);}
         AttachmentReadLease? lease=null;CancellationTokenSource? cancel=null;
         try
         {
             ImagePreviewAdmission.ClearDisplayed();InvalidateImageDisplay();var active=session!;var source=note!;var document=source.Document!;long version=source.EditVersion,epoch=active.AttachmentPreviewEpoch,request=generation;observedEpoch=epoch;
             var reference=RichDocumentCodec.Images(document).Single(item=>item.BlockIndex==blockIndex);var image=images[blockIndex];cancel=new();cancellation=cancel;var token=cancel.Token;
-            bool Allowed()=>Live()&&IsVisible&&ReferenceEquals(session,active)&&ReferenceEquals(note,source)&&ReferenceEquals(source.Document,document)&&source.EditVersion==version&&epoch==active.AttachmentPreviewEpoch&&request==generation&&!token.IsCancellationRequested&&images.TryGetValue(blockIndex,out var target)&&ReferenceEquals(target,image)&&RichDocumentCodec.Images(source.Document!).Any(item=>item.BlockIndex==blockIndex&&item.AttachmentId==reference.AttachmentId)&&active.IsAttachmentPreviewCurrent(source,reference.AttachmentId,version,epoch);
+            bool Allowed()=>Live()&&(action is null||RenderedPure(action))&&IsVisible&&ReferenceEquals(session,active)&&ReferenceEquals(note,source)&&ReferenceEquals(source.Document,document)&&source.EditVersion==version&&epoch==active.AttachmentPreviewEpoch&&request==generation&&!token.IsCancellationRequested&&images.TryGetValue(blockIndex,out var target)&&ReferenceEquals(target,image)&&RichDocumentCodec.Images(source.Document!).Any(item=>item.BlockIndex==blockIndex&&item.AttachmentId==reference.AttachmentId)&&active.IsAttachmentPreviewCurrent(source,reference.AttachmentId,version,epoch);
             if(!Allowed())throw new OperationCanceledException();lease=active.CreateAttachmentReadLease(source,reference.AttachmentId,version);if(!Allowed())throw new OperationCanceledException();
             return RunDisplayAsync(backend,lease,cancel,Dispatcher,Allowed,image);
         }
@@ -181,15 +209,16 @@ public sealed class RichImageDocumentView : UserControl, IDisposable, IImageDisp
         }
         finally{raster?.Dispose();lease.Dispose();cancel.Dispose();ImagePreviewAdmission.Exit();}
     }
-    public bool RemoveImage(int blockIndex)
+    public bool RemoveImage(int blockIndex)=>RemoveImageCore(blockIndex,null);
+    private bool RemoveImageCore(int blockIndex,RenderedImageAction? action)
     {
-        Dispatcher.VerifyAccess();if(!Live()||!IsVisible)return false;var active=session!;var source=note!;long version=source.EditVersion;
+        Dispatcher.VerifyAccess();if(!Live()||!IsVisible||action is not null&&!RenderedPure(action))return false;var active=session!;var source=note!;long version=source.EditVersion;
         try{active.RemoveInlineImage(source,blockIndex,version);Report("이미지 블록을 제거했습니다. 첨부 원본과 이전 이력은 보존하며 자동 저장 상태를 확인하세요.");return true;}
         catch{Report("이미지 블록 제거를 적용하지 못했습니다. 현재 문서와 저장 상태를 확인하세요.");return false;}
     }
     public void Dispose()
     {
-        Dispatcher.VerifyAccess();if(IsDisposed)return;IsDisposed=true;InvalidateImageDisplay();var active=session;var source=note;var previousWorkspace=workspace;session=null;workspace=null;note=null;current=null;notice=null;projected=null;refreshPending=false;
+        Dispatcher.VerifyAccess();if(IsDisposed)return;IsDisposed=true;uiGeneration++;RevokeRenderedActions(renderedActions.Values);renderedActions.Clear();InvalidateImageDisplay();var active=session;var source=note;var previousWorkspace=workspace;session=null;workspace=null;note=null;current=null;notice=null;projected=null;refreshPending=false;
         if(previousWorkspace is not null)previousWorkspace.AttachmentReadInvalidating-=AttachmentReadsInvalidating;
         if(active is not null){active.Conceal-=Dispose;active.Changed-=StateChanged;}if(source is not null)source.PropertyChanged-=NoteChanged;IsVisibleChanged-=VisibilityChanged;Dispatcher.ShutdownStarted-=DispatcherClosing;CompositionTarget.Rendering-=Rendering;
         try{Visibility=Visibility.Collapsed;}catch{}try{Content=null;}catch{}try{BlocksHost.Children.Clear();}catch{}images.Clear();

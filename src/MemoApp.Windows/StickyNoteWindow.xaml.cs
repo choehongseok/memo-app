@@ -19,10 +19,10 @@ public partial class StickyNoteWindow : Window
     private AttachmentPanel? attachmentPanel;
     private string? bodyMode;
     public void SetEditingContext(EditingWorkspace owner,Func<bool> valid,Action<string> status)
-    {workspace=owner;current=valid;notice=status;ConfigureBody();}
+    {ClearStructuredEditor();ClearInlineImageView();workspace=owner;current=valid;notice=status;ConfigureBody();}
     public void SetAttachmentContext(SaveCoordinator owner,Func<bool> valid,Action<string> status,Guid uiDeviceId=default)
     {
-        imageSession=owner;ClearAttachmentPanel();if(closed||!valid()||draft.IsClosed||draft.IsDeleted)return;
+        ClearStructuredEditor();ClearInlineImageView();imageSession=owner;ClearAttachmentPanel();if(closed||!valid()||draft.IsClosed||draft.IsDeleted)return;
         bool attached=false;AttachmentPanel? created=null;
         bool Current()=>!closed&&valid()&&!draft.IsClosed&&!draft.IsDeleted&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
         created=new(owner,draft,Current,status,uiDeviceId);ConfigureInlineImageInsertion(created,owner,Current);if(Current()){attachmentPanel=created;AttachmentHost.Content=created;attached=true;AttachmentHost.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;}else created.Dispose();ConfigureBody();
@@ -36,7 +36,7 @@ public partial class StickyNoteWindow : Window
     private void ClearMarkdownPreview()
     {var previous=markdownPreview;markdownPreview=null;MarkdownHost.Content=null;MarkdownHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ClearStructuredEditor()
-    {var previous=structuredEditor;structuredEditor=null;if(previous is not null&&ReferenceEquals(StructuredHost.Content,previous)){StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;}previous?.Dispose();}
+    {if(richImageHost is not null){ClearInlineImageView();return;}var previous=structuredEditor;structuredEditor=null;if(previous is not null&&ReferenceEquals(StructuredHost.Content,previous)){StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;}previous?.Dispose();}
     private void ConfigureBody()
     {
         if(closed)return;
@@ -46,7 +46,7 @@ public partial class StickyNoteWindow : Window
             if(workspace is not null&&current?.Invoke()==true&&!draft.IsClosed&&!draft.IsDeleted)
             {
                 BodyEditor.Visibility=Visibility.Collapsed;StructuredHost.Visibility=Visibility.Visible;
-                if(draft.Document?.SchemaVersion==2){ClearStructuredEditor();ConfigureInlineImageView();}
+                if(draft.Document?.SchemaVersion==2){if(richImageHost is null)ClearStructuredEditor();ConfigureInlineImageView();}
                 else
                 {
                     ClearInlineImageView();
@@ -94,7 +94,7 @@ public partial class StickyNoteWindow : Window
     private bool dark;
     public StickyNoteWindow(NoteDraft draft)
     {
-        InitializeComponent(); this.draft = draft; DataContext = draft; UpdateColor();ConfigureBody();
+        InitializeComponent(); this.draft = draft;DataContextChanged+=RichImageDataContextChanged;IsVisibleChanged+=(_,_)=>{if(!IsVisible)ClearInlineImageView();else RequestRichImageRefresh();}; DataContext = draft; UpdateColor();ConfigureBody();
         draft.PropertyChanged += DraftChanged;
         Closed += (_, _) =>
         {
@@ -105,7 +105,7 @@ public partial class StickyNoteWindow : Window
     }
     private void DraftChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if(e.PropertyName is nameof(NoteDraft.Mode) or nameof(NoteDraft.Document))ConfigureBody();
+        if(e.PropertyName is nameof(NoteDraft.Mode) or nameof(NoteDraft.Document)){if(draft.Document?.SchemaVersion==2)RequestRichImageRefresh();else ConfigureBody();}
         if (e.PropertyName == nameof(NoteDraft.Color)){UpdateColor();TitleEditor.Background=BodyEditor.Background=Background;}
         if (e.PropertyName is nameof(NoteDraft.IsClosed) or nameof(NoteDraft.IsDeleted) && (draft.IsClosed || draft.IsDeleted)) { Hide(); Close(); }
     }
@@ -122,7 +122,7 @@ public partial class StickyNoteWindow : Window
     private void Fold_Changed(object sender, RoutedEventArgs e)
     {
         if (BodyEditor is null || restoringLayout) return;
-        bool folded = ((CheckBox)sender).IsChecked == true;BodyPanel.Visibility=folded?Visibility.Collapsed:Visibility.Visible;AttachmentHost.Visibility=folded||attachmentPanel is null?Visibility.Collapsed:Visibility.Visible;
+        bool folded = ((CheckBox)sender).IsChecked == true;if(folded)ClearInlineImageView();else RequestRichImageRefresh();BodyPanel.Visibility=folded?Visibility.Collapsed:Visibility.Visible;AttachmentHost.Visibility=folded||attachmentPanel is null?Visibility.Collapsed:Visibility.Visible;
         if(Placement is not null){Placement.SetFolded(folded);BodyEditor.Visibility=folded?Visibility.Collapsed:Visibility.Visible;return;}
         if (folded) { expandedHeight = Height; BodyEditor.Visibility = Visibility.Collapsed; Height = 160; }
         else { BodyEditor.Visibility = Visibility.Visible; Height = expandedHeight; }

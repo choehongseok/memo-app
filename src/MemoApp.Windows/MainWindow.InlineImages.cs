@@ -9,21 +9,62 @@ public partial class MainWindow
 {
     private RichImageDocumentView? inlineImageView;
     private NoteDraft? inlineImageNote;
+    private RichImageTextHost? richImageHost;
+    private long richImageGeneration;
+    private bool richImageRefreshQueued;
+    private Action? richImageWake;
+    private void RichImageDataContextChanged(object sender,DependencyPropertyChangedEventArgs args)
+    {
+        if(richImageHost is not null)ClearInlineImageView();
+        if(ReferenceEquals(args.NewValue,SingleNote)&&ReferenceEquals(Editor.DataContext,SingleNote)&&SingleNote is{Mode:"rich",Document:{SchemaVersion:2}})RequestRichImageRefresh();
+    }
+    private void CancelRichImageRefresh()
+    {
+        var wake=richImageWake;richImageWake=null;richImageRefreshQueued=false;if(wake is not null)RichImageTextPhase.Unsubscribe(Dispatcher,wake);
+    }
+    private void RequestRichImageRefresh()
+    {
+        if(windowClosed||!IsVisible||concealing||session is not{IsLocked:false}||!ReferenceEquals(Editor.DataContext,SingleNote))return;
+        long generation=richImageGeneration,epoch=uiEpoch;
+        if(RichImageTextPhase.Busy(Dispatcher))
+        {
+            if(richImageWake is not null)return;
+            var wake=RichImageTextPhase.WeakWake(Dispatcher,this,generation,epoch,static (root,completed,g,e)=>{if(!Equals(root.richImageWake,completed))return;root.richImageWake=null;if(g==root.richImageGeneration&&e==root.uiEpoch&&!root.windowClosed&&!root.concealing)root.RequestRichImageRefresh();});
+            richImageWake=wake;RichImageTextPhase.Subscribe(Dispatcher,wake);return;
+        }
+        if(richImageRefreshQueued)return;richImageRefreshQueued=true;
+        Dispatcher.BeginInvoke(RichImageTextPhase.WeakWork(this,generation,epoch,static (root,g,e)=>
+        {
+            if(g!=root.richImageGeneration||e!=root.uiEpoch)return;root.richImageRefreshQueued=false;
+            if(root.windowClosed||!root.IsVisible||root.concealing||root.session is not{IsLocked:false}||!ReferenceEquals(root.Editor.DataContext,root.SingleNote))return;
+            if(RichImageTextPhase.Busy(root.Dispatcher)){root.RequestRichImageRefresh();return;}root.RefreshNotes();
+        }),System.Windows.Threading.DispatcherPriority.Background);
+    }
     private void ClearInlineImageView()
     {
-        var previous=inlineImageView;inlineImageView=null;inlineImageNote=null;previous?.Dispose();
-        if(previous is not null&&ReferenceEquals(StructuredHost.Content,previous)){try{StructuredHost.Content=null;}catch{}try{StructuredHost.Visibility=Visibility.Collapsed;}catch{}}
+        using var phase=RichImageTextPhase.Enter(Dispatcher);CancelRichImageRefresh();richImageGeneration++;var owner=richImageHost;var previous=inlineImageView;richImageHost=null;inlineImageView=null;inlineImageNote=null;
+        if(owner is not null){structuredEditor=null;structuredNote=null;}
+        foreach(Action cleanup in new Action[]{()=>owner?.Dispose(),()=>previous?.Dispose(),()=>{if(owner is not null&&ReferenceEquals(StructuredHost.Content,owner)||previous is not null&&ReferenceEquals(StructuredHost.Content,previous))StructuredHost.Content=null;},()=>{if(owner is not null||previous is not null)StructuredHost.Visibility=Visibility.Collapsed;}})try{cleanup();}catch{}
     }
     private void ConfigureInlineImageView(SaveCoordinator active,NoteDraft selected)
     {
+        if(RichImageTextPhase.Busy(Dispatcher)){RequestRichImageRefresh();return;}
+        if(ReferenceEquals(inlineImageNote,selected)&&richImageHost is{IsDisposed:false} retained&&ReferenceEquals(StructuredHost.Content,retained)&&retained.RetainCurrentEditor())
+        {using var phase=RichImageTextPhase.Enter(Dispatcher);retained.RefreshImageActions();inlineImageView=retained.ImageView;return;}
+        ClearInlineImageView();using var bootstrap=RichImageTextPhase.Enter(Dispatcher);
         BindingOperations.ClearBinding(BodyEditor,TextBox.TextProperty);BodyEditor.IsUndoEnabled=false;BodyEditor.Clear();BodyEditor.IsReadOnly=true;BodyEditor.Visibility=Visibility.Collapsed;
-        if(!ReferenceEquals(inlineImageNote,selected)||inlineImageView is null||inlineImageView.IsDisposed)
+        long epoch=uiEpoch,generation=richImageGeneration,version=selected.EditVersion,previewEpoch=active.AttachmentPreviewEpoch;var original=selected.Document;bool bootstrapping=true;RichImageTextHost? created=null;
+        bool Pure()=>!windowClosed&&IsVisible&&!concealing&&epoch==uiEpoch&&generation==richImageGeneration&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&active.Workspace.Notes.Contains(selected)&&selected is{IsClosed:false,IsDeleted:false,Mode:"rich",Document:{SchemaVersion:2}}&&ReferenceEquals(richImageHost,created)&&ReferenceEquals(StructuredHost.Content,created)&&(!bootstrapping||selected.EditVersion==version&&active.AttachmentPreviewEpoch==previewEpoch&&ReferenceEquals(selected.Document,original));
+        try
         {
-            ClearInlineImageView();long epoch=uiEpoch;bool attached=false;RichImageDocumentView? created=null;
-            bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&ReferenceEquals(SingleNote,selected)&&ReferenceEquals(Editor.DataContext,selected)&&selected is {IsClosed:false,IsDeleted:false,Mode:"rich",Document:{SchemaVersion:2}}&&(!attached||ReferenceEquals(StructuredHost.Content,created));
-            created=new(active,selected,Current,message=>{if(Current())Notice.Text=message;});
-            if(Current()){inlineImageView=created;inlineImageNote=selected;StructuredHost.Content=created;attached=true;StructuredHost.Visibility=Visibility.Visible;}else created.Dispose();
+            created=new();richImageHost=created;inlineImageNote=selected;StructuredHost.Content=created;
+            if(!Pure()){ClearInlineImageView();return;}
+            created.Initialize(active,selected,Pure,message=>{if(Pure())Notice.Text=message;},RequestRichImageRefresh);
+            if(!Pure()||created.IsDisposed){ClearInlineImageView();return;}
+            structuredEditor=created.Editor;structuredNote=selected;inlineImageView=created.ImageView;
+            StructuredHost.Visibility=Visibility.Visible;if(!Pure()){ClearInlineImageView();return;}created.Editor.ApplyPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);if(!Pure())ClearInlineImageView();else bootstrapping=false;
         }
+        catch{created?.Dispose();if(ReferenceEquals(richImageHost,created))ClearInlineImageView();}
     }
     private bool CanInsertInlineImage(NoteDraft selected)
     {

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -23,6 +24,7 @@ public partial class MainWindow : Window
     private bool concealing,hiddenSticky;
     private readonly HashSet<HistoryWindow> historyWindows = [];
     private bool loadingUi = true;
+    private readonly ObservableCollection<NoteDraft> displayedNotes=[];
     private CancellationTokenSource fileOperations = new();
     private Point dragStart;
     private Guid? draggingNote, dragCandidate;
@@ -51,13 +53,13 @@ public partial class MainWindow : Window
     {
         if(uiDeviceId==Guid.Empty)throw new ArgumentException("Empty UI profile");this.uiDeviceId=uiDeviceId;
         root = Path.GetFullPath(dataRoot);
-        InitializeComponent(); loadingUi = false;
+        InitializeComponent();Editor.DataContextChanged+=RichImageDataContextChanged;IsVisibleChanged+=(_,_)=>{if(!IsVisible)ClearInlineImageView();else if(session is{IsLocked:false})RequestRichImageRefresh();}; loadingUi = false;
         timer.Tick += Timer_Tick; timer.Start();
         InputManager.Current.PreProcessInput += Activity;
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
-        Closed += (_, _) => { windowClosed=true;DisableTray();ClearBackupPreviews();ClearBackupMergeViews();ClearAutomaticBackupViews();ClearAutomaticTrashViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+        Closed += (_, _) => { windowClosed=true;ClearInlineImageView();ClearStructuredEditor();displayedNotes.Clear();DisableTray();ClearBackupPreviews();ClearBackupMergeViews();ClearAutomaticBackupViews();ClearAutomaticTrashViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -93,8 +95,9 @@ public partial class MainWindow : Window
         active.Workspace.Changed += () =>
         {
             ClearBackupPreviews();
+            if(richImageHost is not null||RichImageTextPhase.Busy(Dispatcher)){RequestRichImageRefresh();return;}
             long epoch = uiEpoch;
-            Dispatcher.BeginInvoke(new Action(() => { if (epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked) RefreshNotes(); }));
+            Dispatcher.BeginInvoke(new Action(() => { if (epoch == uiEpoch && ReferenceEquals(session, active) && !active.IsLocked){if(RichImageTextPhase.Busy(Dispatcher))RequestRichImageRefresh();else RefreshNotes();} }));
         };
         RefreshFolders(); RefreshNotes();ApplyUiPreferences();RestoreDeviceWindows();
         activity = DateTimeOffset.UtcNow; UpdateStatus();
@@ -107,7 +110,7 @@ public partial class MainWindow : Window
         foreach (var window in stickyWindows.Values.ToArray()) { window.Hide(); window.Close(); }
         foreach (var window in historyWindows.ToArray()) { window.Hide(); window.Close(); }
         EditingPanel.Visibility = Visibility.Collapsed;ClearMarkdownPreview();ClearStructuredEditor();ClearInlineImageView();ClearAttachmentPanel();
-        Editor.DataContext = null; Editor.IsEnabled = false; NotesList.ItemsSource = null;
+        Editor.DataContext = null; Editor.IsEnabled = false; NotesList.ItemsSource = null;displayedNotes.Clear();
         BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false; BodyEditor.Clear(); TitleEditor.Clear();
         loadingUi = true;
         foreach (var input in new[] { SearchInput, TagFilter, FolderName, TagsInput }) { input.IsUndoEnabled = false; input.Clear(); }
@@ -185,11 +188,12 @@ public partial class MainWindow : Window
     }
     private async void Save_Click(object sender, RoutedEventArgs e) { if (session is {IsLocked:false} active){bool dirty=active.IsDirty;bool saved=await active.SaveAsync();if(ReferenceEquals(session,active)&&!active.IsLocked&&dirty&&saved)await RunAutomaticBackupAsync(true);} }
     private async void Lock_Click(object sender, RoutedEventArgs e) { if (session is not null) await session.LockAsync(); else ClearSecretControls(); }
-    private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!loadingUi) SelectEditor(); }
+    private void NotesList_SelectionChanged(object sender, SelectionChangedEventArgs e) { ClearInlineImageView();if (!loadingUi) SelectEditor(); }
     private void ClearMarkdownPreview()
     {var previous=markdownPreview;markdownPreview=null;markdownNote=null;MarkdownHost.Content=null;MarkdownHost.Visibility=Visibility.Collapsed;previous?.Dispose();}
     private void ClearStructuredEditor()
     {
+        if(richImageHost is not null){ClearInlineImageView();return;}
         var previous=structuredEditor;structuredEditor=null;structuredNote=null;if(previous is not null&&ReferenceEquals(StructuredHost.Content,previous)){StructuredHost.Content=null;StructuredHost.Visibility=Visibility.Collapsed;}previous?.Dispose();
     }
     private void ClearAttachmentPanel()
@@ -215,7 +219,7 @@ public partial class MainWindow : Window
         Editor.DataContext=selected;Editor.IsEnabled=session is {IsLocked:false}&&!concealing&&selected is {IsDeleted:false};
         TitleEditor.IsUndoEnabled=Editor.IsEnabled;selectedBodyMode=selected?.Mode;
         if(selected is {Mode:"rich",IsDeleted:false,Document:{SchemaVersion:2}}&&session is {IsLocked:false} imageActive&&!concealing)
-        {ClearStructuredEditor();ConfigureInlineImageView(imageActive,selected);}
+        {if(richImageHost is null)ClearStructuredEditor();ConfigureInlineImageView(imageActive,selected);}
         else if(selected is {Mode:"rich",IsDeleted:false}&&session is {IsLocked:false} active&&!concealing)
         {
             ClearInlineImageView();
@@ -433,18 +437,24 @@ public partial class MainWindow : Window
     private void RefreshNotes(NoteDraft? preferred = null)
     {
         if (session is not { IsLocked: false } active || loadingUi || searchBlocked) return;
+        if(RichImageTextPhase.Busy(Dispatcher)){RequestRichImageRefresh();return;}
+        if(SingleNote is{Mode:"rich",Document:{SchemaVersion:2}}&&!ReferenceEquals(Editor.DataContext,SingleNote))return;
         var selected=preferred is null?NotesList.SelectedItems.Cast<NoteDraft>().ToArray():[preferred];
         preferred ??= NotesList.SelectedItem as NoteDraft;
         var options = Options(ReadFilters());
         var results = NoteSearch.Find(active.Workspace, options);
         loadingUi = true;
-        NotesList.ItemsSource = results;
-        // Selector can retain matching selected objects when ItemsSource is replaced.
-        // Rebuild exactly the captured surviving set (or explicit preferred singleton).
-        NotesList.SelectedItems.Clear();
-        foreach(var note in selected.Where(results.Contains))NotesList.SelectedItems.Add(note);
-        if(NotesList.SelectedItems.Count==0)NotesList.SelectedItem = preferred is not null && results.Contains(preferred) ? preferred : results.FirstOrDefault();
-        loadingUi = false; SelectEditor();
+        try
+        {
+            if(!ReferenceEquals(NotesList.ItemsSource,displayedNotes))NotesList.ItemsSource=displayedNotes;
+            for(int index=displayedNotes.Count-1;index>=0;index--)if(!results.Contains(displayedNotes[index]))displayedNotes.RemoveAt(index);
+            for(int index=0;index<results.Length;index++){int old=displayedNotes.IndexOf(results[index]);if(old<0)displayedNotes.Insert(index,results[index]);else if(old!=index)displayedNotes.Move(old,index);}
+            var desired=selected.Where(results.Contains).ToArray();if(desired.Length==0&&results.Length>0)desired=[preferred is not null&&results.Contains(preferred)?preferred:results[0]];
+            var current=NotesList.SelectedItems.Cast<NoteDraft>().ToArray();
+            if(current.Length!=desired.Length||current.Any(note=>!desired.Contains(note))){NotesList.SelectedItems.Clear();foreach(var note in desired)NotesList.SelectedItems.Add(note);}
+        }
+        finally{loadingUi=false;}
+        SelectEditor();
         int trash = active.Workspace.Notes.Count(n => n.IsDeleted), archive = active.Workspace.Notes.Count(n => !n.IsDeleted && n.Archived);
         Counts.Text = $"전체 {active.Workspace.Notes.Count} · 활성 {active.Workspace.Notes.Count - trash - archive} · 보관 {archive} · 휴지통 {trash} · 결과 {results.Length}";
         UpdateSelectedDetails();RefreshSearchStateViews();
