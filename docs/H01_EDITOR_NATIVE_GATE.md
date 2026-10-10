@@ -35,3 +35,11 @@
 독립 host POST에서 Main `Editor.DataContext`와 Sticky `DataContext`를 다른 note로 바꿨다가 돌아오는 실제 전환이 오래된 callback 권한을 유지할 수 있는 Important가 확인됐습니다. 현재 identity predicate만으로 완료된 away/back 이력을 알 수 없어, 두 root의 실제 DataContextChanged 때 기존 owner를 동기 폐기하고 exact association이 돌아온 뒤 fresh owner만 생성하도록 수정합니다. native 두 사례와 좁은 POST를 통과하기 전 소스 게이트 게시를 보류합니다.
 
 Main/Sticky 실제 DataContextChanged의 즉시 단조 폐기·exact association factory/queued guard와 native 두 사례를 추가했습니다. 좁은 독립 POST는 추가 Critical/Important 없이 통과했으며 수정 후 교차 빌드도 0 warning/0 error입니다. 실제 Windows 26사례·corpus·전체 회귀는 다음 소스 게이트에서 확인합니다.
+
+## 5d0fe3ad 실제 게이트159
+
+[Windows run159](https://github.com/choehongseok/memo-app/actions/runs/38027695906), job114141949939: 전체 FAIL1, new host의 17번째 `old-buttons` 준비에서 Enter 뒤 image block index 이동 assertion 실패. 앞선16 사례는 도달·통과했고 오래된 버튼 동작과 이후9 사례는 미도달입니다. 원문 endpoint·focus·실제 명령 effect 진단이 없으므로 입력 준비 문제인지 제품 거절인지 확정하지 않습니다. 실제 Run 내부 caret·focus·CanExecute와 native/source 변화 증거를 추가하고 index 이동·raw image·stale 버튼 거절 oracle을 그대로 유지합니다.
+
+기존 standalone editor/PDF/OCR/Core/cleanup 통과. 이전 OCR 실행 파일 점유 오류는 이 실행에서 재발하지 않았으나 앞선 오류 원인 규명을 뜻하지 않습니다. Corpus4 조건 실제 통과: normalized scalar errors0/30, raw errors6/42와 whitespace12→18 차이. 단일 합성 이미지 변형이며 broad accuracy·CPU/RSS 보장은 아닙니다. 패키지·설치·업로드는 건너뛰었습니다.
+
+검사만 보완했습니다. 원래 Main editor focus·Run 내부 collapsed caret·명령 guard/CanExecute·실제 native 이벤트와 정확한 block/index+1·source/version 변화·동일 graph/placeholder·raw image 보존을 필수로 확인한 뒤 기존 오래된 버튼 oracle을 실행합니다. 독립 POST와 수정 후 교차 빌드0w0e 통과. 제품/Core/workflow는 같고 native 재실행 전 원인·전체 통과는 확정하지 않습니다.

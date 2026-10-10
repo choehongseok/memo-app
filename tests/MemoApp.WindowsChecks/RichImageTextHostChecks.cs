@@ -20,7 +20,7 @@ internal static partial class Program
     private static async Task RichImageTextHostRun()
     {
         foreach(string scenario in new[]{"main-table","sticky-table","move","cross-host","nested-document","nested-sticky-document","nested-workspace","nested-foreign-before","nested-foreign-after","selection-awayback","selection-loading","fold","hide","epoch","metadata","readonly-fallback","old-buttons","pending-display","setter","setter-source","setter-conceal","child-content-awayback","child-editor-awayback","main-context-awayback","sticky-context-awayback","lock"})
-            await RichImageTextHostCase(scenario);
+            {Console.WriteLine("H01 host native CASE "+scenario);await RichImageTextHostCase(scenario);}
     }
     private sealed record RichHostWitness(object Owner,StructuredNoteEditor Editor,RichImageDocumentView Images,FlowDocument Graph,object[] Actions);
     private static T RichHostProperty<T>(object owner,string name)=>(T)owner.GetType().GetProperty(name,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(owner)!;
@@ -127,7 +127,22 @@ internal static partial class Program
                 else if(scenario=="old-buttons")
                 {
                     var spy=new CountingRichHostBackend();SetField(mainHost.Images,"backend",spy);var display=RichHostButton(mainHost.Images,"이미지 표시");var remove=RichHostButton(mainHost.Images,"이미지 블록 제거");
-                    var first=(Paragraph)mainHost.Editor.RichInput.Document.Blocks.FirstBlock;mainHost.Editor.RichInput.Selection.Select(first.ContentEnd,first.ContentEnd);EditingCommands.EnterParagraphBreak.Execute(null,mainHost.Editor.RichInput);await Idle();Require(RichDocumentCodec.Images(note.Document!).Single().BlockIndex!=block,"Actual text insertion shifts image block index before stale-button reentry");string candidate=note.Document!.SourceJson;long version=note.EditVersion;
+                    var native=mainHost.Editor.RichInput;main.Activate();native.Focus();Keyboard.Focus(native);await Idle();
+                    Require(native.IsKeyboardFocused&&ReferenceEquals(RichHost(main).Editor,mainHost.Editor)&&mainHost.Editor.HasCurrentRichImageTextProjection,"Stale-button index-shift fixture uses actual focused original current editor");
+                    var graph=native.Document;var first=(Paragraph)graph.Blocks.FirstBlock;var originalRun=(Run)first.Inlines.FirstInline;Require(originalRun.Text.Length>3,"Synthetic first run has a real interior split position");
+                    var interior=originalRun.ContentStart.GetPositionAtOffset(3,LogicalDirection.Forward)!;native.Selection.Select(interior,interior);
+                    bool exactCaret=native.Selection.IsEmpty&&ReferenceEquals(native.Selection.Start.Paragraph,first)&&native.Selection.Start.CompareTo(originalRun.ContentStart)>0&&native.Selection.Start.CompareTo(originalRun.ContentEnd)<0;
+                    bool allowed=(bool)Invoke(mainHost.Editor,"ImageTextCommandAllowed")!;bool canExecute=EditingCommands.EnterParagraphBreak.CanExecute(null,native);
+                    int beforeBlocks=graph.Blocks.Count,textEvents=0,commandEvents=0;bool commandHandled=false;long beforeVersion=note.EditVersion;var placeholder=graph.Blocks.Cast<Block>().ElementAt(block);
+                    TextChangedEventHandler changed=(_,_)=>textEvents++;ExecutedRoutedEventHandler command=(_,e)=>{if(e.Command==EditingCommands.EnterParagraphBreak){commandEvents++;commandHandled=e.Handled;}};
+                    native.TextChanged+=changed;native.AddHandler(CommandManager.PreviewExecutedEvent,command,true);detach.Add(()=>native.TextChanged-=changed);detach.Add(()=>native.RemoveHandler(CommandManager.PreviewExecutedEvent,command));
+                    Console.WriteLine($"H01 host old-buttons before focused={native.IsKeyboardFocused} exactCaret={exactCaret} allowed={allowed} canExecute={canExecute} blocks={beforeBlocks} imageIndex={block}");
+                    Require(exactCaret&&allowed&&canExecute,"Real ordinary-text interior caret is current, avoids original image placeholder, and permits the native paragraph-break command");
+                    EditingCommands.EnterParagraphBreak.Execute(null,native);await Idle();int afterIndex=RichDocumentCodec.Images(note.Document!).Single().BlockIndex;
+                    bool sameEditor=ReferenceEquals(RichHost(main).Editor,mainHost.Editor),sameGraph=ReferenceEquals(native.Document,graph),samePlaceholder=graph.Blocks.Cast<Block>().ElementAtOrDefault(afterIndex) is{ } retained&&ReferenceEquals(retained,placeholder);
+                    Console.WriteLine($"H01 host old-buttons after textEvents={textEvents} commandEvents={commandEvents} handled={commandHandled} blocks={graph.Blocks.Count} blockDelta={graph.Blocks.Count-beforeBlocks} imageIndex={afterIndex} indexDelta={afterIndex-block} editDelta={note.EditVersion-beforeVersion} sourceChanged={note.Document.SourceJson!=original} sameEditor={sameEditor} sameGraph={sameGraph} samePlaceholder={samePlaceholder}");
+                    Require(textEvents>0&&commandEvents==1&&sameEditor&&sameGraph&&samePlaceholder&&graph.Blocks.Count==beforeBlocks+1&&afterIndex==block+1&&note.EditVersion>beforeVersion&&note.Document.SourceJson!=original&&ImageRawNodes(note.Document).SequenceEqual(rawImages),"Actual interior native paragraph split adds exactly one block before the unchanged exact image placeholder and genuinely publishes shifted source/index/version");
+                    string candidate=note.Document!.SourceJson;long version=note.EditVersion;
                     display.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));remove.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));await Idle();await session.WhenAttachmentReadsIdle;
                     Require(mainHost.Actions.All(action=>Field<object?>(action,"Note") is null&&Field<object?>(action,"Document") is null&&Field<string?>(action,"Alt") is null&&Field<RoutedEventHandler?>(action,"DisplayHandler") is null&&Field<RoutedEventHandler?>(action,"RemoveHandler") is null&&Field<StackPanel>(action,"Panel").Children.Count==0&&Field<Image>(action,"Image").Source is null),"Old rendered buttons retain no canonical source/note/alt snapshot after refresh");
                     Require(spy.Decodes==0&&note.Document.SourceJson==candidate&&note.EditVersion==version&&mainPixels.Source is null,"Detached rendered buttons cannot read/remove a different current-index block after text shift");
