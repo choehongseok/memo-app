@@ -38,6 +38,7 @@ public sealed partial class SaveCoordinator : IDisposable
     private void RevokeAttachmentReads(NoteDraft? source)
     {
         AttachmentPreviewEpoch++;
+        RevokeWordImageContext();
         RevokeOcrGrants();
         ObserveBranchResolutionRevocation(source);
         ObserveMergeRevocation(source);

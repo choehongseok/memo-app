@@ -116,7 +116,14 @@ internal static class PdfVisualRenderer
                             if(!Finite(height)||height>DipHeight-2*Margin)throw new InvalidDataException("Display PDF line ink exceeds a page");
                             if(!ink.IsEmpty&&(Margin+ink.Left<0||Margin+ink.Right>DipWidth))throw new InvalidDataException("Display PDF line ink exceeds page width");
                             if(y+height>DipHeight-Margin){await EndPage();BeginPage();}
-                            Current();line.Draw(drawing!,new Point(Margin,y-above),InvertAxes.None);Current();y+=height;
+                            Current();
+                            // Match TextBlock's local text frame: its margin is an outer visual translation.
+                            // TextLine.Draw builds a baseline guideline from its origin; baking a fractional
+                            // page margin into that origin can change native glyph snapping despite equal metrics.
+                            drawing!.PushTransform(new TranslateTransform(Margin,Margin));
+                            try{line.Draw(drawing,new Point(0,y-Margin-above),InvertAxes.None);}
+                            finally{drawing.Pop();}
+                            Current();y+=height;
                             previous?.Dispose();previous=line.GetTextLineBreak();index=next;linesInBatch++;
                         }
                         // Only this page's inert drawing commands survive the bounded batch yield.

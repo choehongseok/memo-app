@@ -18,6 +18,9 @@ if (args.Contains("--trash-encryption-only")) { await TrashEncryptionChecks.Run(
 if (args.Contains("--user-link-only")) { UserLinkChecks.Run(); return; }
 if (args.Contains("--png-metadata-only")) { PngMetadataChecks.Run(); return; }
 if (args.Contains("--structured-word-only")) { StructuredWordChecks.Run(); return; }
+if (args.Contains("--word-image-context-only")) { await WordImageContextChecks.Run(); return; }
+if (args.Contains("--word-image-export-only")) { await WordImageExportChecks.Run(); return; }
+if (args.Contains("--word-image-all-only")) { await WordImageContextChecks.Run(); await WordImageExportChecks.Run(); return; }
 if (args.Contains("--h01-insertion-admission-only")) { await InlineImageAdmissionChecks.Run(); return; }
 if (args.Contains("--h01-codec-only")) { await InlineImageChecks.Run(); return; }
 if (args.Contains("--h01-schema-only")) { await Schema10ImageChecks.Run(); await Schema10ImageHiddenChecks.Run(); await InlineImageAdmissionChecks.Run(); return; }
@@ -170,6 +173,8 @@ AutomaticTrashChecks.Run();
 UserLinkChecks.Run();
 PngMetadataChecks.Run();
 StructuredWordChecks.Run();
+await WordImageContextChecks.Run();
+await WordImageExportChecks.Run();
 SpreadsheetScalarChecks.Run();
 SpreadsheetScalarImportChecks.Run();
 

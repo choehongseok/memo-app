@@ -2,8 +2,8 @@
   "schema_version": 1,
   "purpose": "원문134 ID의 구현/미완료·독립 작업·사용자 수용/새 결정 경계를 분리한 감사 snapshot. 기존 FEATURES 원장 상태를 변경하지 않는다.",
   "snapshot_basis": {
-    "head": "1a8650205eb667354a2316723b01e45875d9bfd6",
-    "working_tree": "1a86502 actualWindows wholeFAIL3; subsequent keep-current causalresolution model/owner/fullCorePASS, WindowsChecks crossbuild0w0e, independentpostreviewclear; nextnative gate pending.",
+    "head": "a16271cb84091a7f34ead2937537ba95989d084e",
+    "working_tree": "a162 emoji diagnostic source committed; N04 authenticatedPNG Word phase focusedCore/crossbuild/review PASS, fullCore actualexit0/newnative pending; nextPDF localdraw-frame correction crossbuild/review PASS, native pending.",
     "dirty_changes_observed": [
       "현재 dirty 구현은 git status --short 및 후속 commit tree로 확인한다; 감사의 이전 파일 목록을 새 상태로 오인하지 않는다."
     ],
@@ -19,9 +19,9 @@
       "docs/FEATURES.json",
       "docs/NEXT_SCOPE.md"
     ],
-    "current_change_verification": "Actual Windows38014327434/job114101150936: build/fullCore/isolatedOCRcleanupfault/stagedlinkedruntime/attachmentlinkedOCRUI PASS; wholeWPF FAIL backup-same-id-merge,clipboard-dib-input,pdf-visual-export. Package/install/uploadSKIPPED. Test-only selection/DIB setup corrections and unchanged PDF oracle diagnostics independently reviewed, not yet native verified. O06 keep-current causal resolution PREreview clear, implementation underway. Existing artifact11647312201 remains source d8bccaab, no newartifact/acceptance.",
+    "current_change_verification": "Actual f1 Windows38016986323 and a162 Windows38017598386 wholeFAIL1 PDFemoji. Backupbranchresolution/backupmerge/DIB/H09/build/fullCore/isolatedcleanup PASS. OtherPDF vectors afteremoji not reached. Package/install/uploadSKIPPED. Existingartifact11647312201 remains d8bccaab; no finalartifact/useracceptance.",
     "access_provenance": "T13~T16 공식 route 403 및 Android SDK 약관 pending는 부모의 명시 위임/전달 기록에 기반하며 새 접근/질문을 수행하지 않았다.",
-    "supplemental_source": "Current1a86502 committed; subsequent O06 causalresolution plus actualnativefailure fixtures/diagnostics uncommitted working phase."
+    "supplemental_source": "N04 capture/writer/UI source paused; actualtargetGREEN and independentpostreviewclear. Pendinglocaldraw-frame correction uses unchanged nativeoracle."
   },
   "summary": {
     "original_id_count": 134,
@@ -1992,7 +1992,7 @@
     {
       "id": "H09",
       "implemented": "Source-linked attachment OCR input/grants/staged fixedruntime/schema11 per-note search metadata and explicit Windows search store action; actual1a86502 Windows staged runtime/linked OCR UI/isolated cleanup fault PASS, fullCore PASS; originalnote/body/source preserved.",
-      "remaining": "WholeWindows gate stillFAIL3 in existingbackup/DIB/PDF groups; final package/install not produced for thissource. Physical user OCR/corpus/models/recognition usefulness acceptance remains unconfirmed.",
+      "remaining": "Wholef1/a162 Windows gates stillFAIL1 PDFemoji, finalpackage/install notproduced forsource. Physicaluser OCR/corpus/model/recognition usefulness acceptance remains unconfirmed.",
       "category": "independent-code",
       "minimum_user_action": "None. Independently review new stored OCR/reference structure before encrypted persistence; do not request real OCR images.",
       "evidence": [
@@ -2491,8 +2491,8 @@
     },
     {
       "id": "N02",
-      "implemented": "TextPDF actualauthorityPASS; displayPDF boundedraster/nativeglyph audits implemented. Actualc3 interioralpha254 diagnosed, strict premultiplied white compositing + independentreference/fixedvectors written and reviewed.",
-      "remaining": "New display compositing/nativepixel regression pending. Rich/table/Markdown/image rendering and user viewer acceptance remain.",
+      "implemented": "TextPDF actualauthorityPASS; displayPDF boundedraster/nativeglyph audits implemented. Actualf1/a162 baseline fix passes firstHangul/CJK/combining/Jamo vectors; unchangedemoji pixeloracleFAIL despite identical glyph/emsize/advance/DPI. Reference localglyphguideline vsbakedfractionalglobaldraworigin difference diagnosed; localdraw-frame correction pendingactualverification.",
+      "remaining": "Native allvectors/wrap/42–43page/clipping afteremoji and rich/table/Markdown/image rendering plus actualviewer/useracceptance remain.",
       "category": "independent-code",
       "minimum_user_action": "None for the current bounded implementation.",
       "evidence": [
@@ -2550,10 +2550,10 @@
     },
     {
       "id": "N04",
-      "implemented": "Multi-select Word route now dirty canonical rich run styles/font/color/list/checklist/table export; links are inert visible URL text. Linux target GREEN includes exact source/history invariance, fixed internal relations, aggregate XML/package bounds and retired-array zeroing; actual new Windows route gate pending.",
-      "remaining": "Word-compatible viewer 표시 수용 및 새 Windows rich route/lock 검사. Attachment image embedding과 rendered Markdown은 미연결; 원본 전체 서식·이력·첨부는 암호 이전 파일로 보존한다.",
+      "implemented": "Existing rich styles/list/checklist/table/inertURL plus authenticated canonicalv2 exact inlinePNG DOCX embedding. Closed sourceowner cap1/64Mpixel bound/samelease PNG authentication, fixeddata-only sequential decoder+boundedZIP worker, actualsettlement and monotonic UI/filewriter authority. FocusedCore/crossbuild/independentreview PASS; independentOpenXML3.4.1 and installedLibreOfficeDev actualsyntheticrender PASS.",
+      "remaining": "New nativeWindows inlinePNG Word command/lock/reentry gate and actualMicrosoftWord/useracceptance; renderedMarkdown remains source-literal projection. Generalattachments/OCR/history notembedded; encryptedwholevault transfer preserves originals.",
       "category": "independent-code",
-      "minimum_user_action": "None. Add XML-only canonical rich export with synthetic fixtures; later viewer check can use available compatible app.",
+      "minimum_user_action": "None before nativegate. Synthetic existingLibreOffice compatible-viewer render performed; actualMicrosoftWord acceptance later if used.",
       "evidence": [
         "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
         "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
@@ -2561,7 +2561,14 @@
         "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs",
         "docs/PRODUCT_SPEC.md",
         "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
-        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs"
+        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs",
+        "src/MemoApp.Core/Transfer/OwnedWordImageContext.cs",
+        "src/MemoApp.Core/Transfer/WordImageDrawing.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.WordExport.cs",
+        "src/MemoApp.Windows/MainWindow.WordImageExport.cs",
+        "tests/MemoApp.ContractChecks/WordImageContextChecks.cs",
+        "tests/MemoApp.ContractChecks/WordImageExportChecks.cs",
+        "docs/N04_INLINE_IMAGE_EXPORT_PLAN.md"
       ],
       "name": "Word 내보내기",
       "normalized": "Word 내보내기",
@@ -2569,10 +2576,10 @@
       "user_acceptance": "미확인",
       "additional_actions": {
         "code": [
-          "canonical image/source-linked attachment export와 rendered Markdown 필요 범위를 안전한 bounded projection 내에서 이어간다."
+          "Render supported Markdown export within approved bounded document/output and source authority contracts."
         ],
         "inspection": [
-          "새 WPF canonical rich Word route와 independent OpenXML schema/relationship 검사를 확인한다."
+          "Run new actualWindows inlinePNG Office route and retain independent schema/viewer evidence separate from useracceptance."
         ],
         "physical_user": [
           "해당 ID의 합성 자료 실제 Windows 입력·표시·재실행 수용은 미확인. 자동 검사로 사용자 수용을 대체하지 않는다."
@@ -2899,8 +2906,8 @@
     },
     {
       "id": "O06",
-      "implemented": "Same-ID live immutable branchunion/current preservation plus explicit selected maximal-tip keep-current two-parent resolution; genuine owner/display/confirmation/single-use authority, current cipher/currentroot key validation, prechange encrypted copy and truthful AppliedDirty/settlement. Model/owner/fullCore PASS; WPF source/postreview/crossbuild0w0e, nextactualWindows pending.",
-      "remaining": "ActualnewWindows resolutionUI/corrected nativebatch selection/DIBsetup/PDFdiagnostics pending. Deleted/discarded resurrection/root-key adoption/recovery lineage/network synchronization and actual user acceptance remain separate.",
+      "implemented": "Same-ID live immutable branchunion/current preservation plus explicit selected maximal-tip keep-current two-parent resolution; genuine owner/display/confirmation/single-use authority, current cipher/currentroot key validation, prechange encrypted copy and truthful AppliedDirty/settlement. Model/owner/fullCore PASS; WPF source/postreview/crossbuild0w0e, nextactualWindows pending. Actualf1 Windows38016986323 backup-branch-resolution PASS including stopped faulted writer and existing explicitencryptedrecovery helper; originalhistory/head retained.",
+      "remaining": "New finalpackage/install plus actualuser branchcomparison/confirmation acceptance. Deleted/discarded resurrection/root-key adoption/recovery lineage/network synchronization remain separate.",
       "category": "independent-code",
       "minimum_user_action": null,
       "evidence": [

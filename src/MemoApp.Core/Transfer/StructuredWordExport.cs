@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Collections.Immutable;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,16 +42,89 @@ public static class StructuredWordExport
                 if (canonicalBytes > Limit) throw new InvalidDataException("Word canonical source byte limit");
             }
         }
-        using var output = new BoundedWordBuffer();
+        return BuildPackage(notes.Select(n=>new WordNoteSource(n.Title,n.Text,n.Mode,n.Document)).ToImmutableArray(),null,default,null);
+    }
+
+    internal static WordImageBuildOperation StartOwned(OwnedWordImageContext context,CancellationToken token=default)
+    {
+        ArgumentNullException.ThrowIfNull(context);var state=new WordBuildState(context,token);
+        try{context.BeginBuild(state.Operation.Completion,state.Operation.Settled);}
+        catch{state.ReleaseBeforeLaunch();throw;}
+        try
+        {
+            if(!ThreadPool.UnsafeQueueUserWorkItem(static (WordBuildState work)=>work.Run(),state,false))throw new IOException("Word worker queue refused");
+        }
+        catch(Exception error){state.QueueFailed(error);}
+        return state.Operation;
+    }
+    internal static PreparedTextExport BuildOwned(OwnedWordImageContext context,CancellationToken token=default,Action<byte[]>? allocations=null)
+    {
+        ArgumentNullException.ThrowIfNull(context);Check(context,token);ValidateOwned(context,token);
+        // Decode every unique source sequentially before any ZIP/media construction. Pixels are never exported.
+        foreach(var image in context.Images)
+        {
+            Check(context,token);context.ReadImage(image.ObjectId,bytes=>{using var raster=PngPixelDecoder.Decode(bytes,token,allocations);Check(context,token);});Check(context,token);
+        }
+        return BuildPackage(context.Notes,context,token,allocations);
+    }
+    private static string Normalize(string text)=>text.Replace("\r\n","\n",StringComparison.Ordinal).Replace('\r','\n');
+    private static void Check(OwnedWordImageContext? context,CancellationToken token)
+    {token.ThrowIfCancellationRequested();if(context?.IsRevoked==true)throw new OperationCanceledException("Word source context revoked");}
+    private static void ValidateOwned(OwnedWordImageContext context,CancellationToken token)
+    {
+        if(context.Notes.Length is <1 or >100||context.Images.Length>128||context.Placements.Length>102400)throw new InvalidDataException("Word detached source bounds");
+        long media=0,pixels=0,source=0,canonical=0;var ids=new HashSet<Guid>();
+        foreach(var image in context.Images)
+        {
+            Check(context,token);if(image.ObjectId==Guid.Empty||image.RootId==Guid.Empty||!ids.Add(image.ObjectId))throw new InvalidDataException("Word media identity");
+            context.ReadImage(image.ObjectId,bytes=>
+            {
+                if(bytes.Length!=image.Length||bytes.Length>4194304||Convert.ToHexStringLower(SHA256.HashData(bytes))!=image.Sha256)throw new InvalidDataException("Word exact media descriptor");
+                var header=PngPreviewProfile.Inspect(bytes);
+                if(header.Width!=image.Width||header.Height!=image.Height||header.SourcePixels!=image.SourcePixels)throw new InvalidDataException("Word source geometry changed");
+                media=checked(media+bytes.Length);pixels=checked(pixels+header.SourcePixels);
+                if(media>8388608||pixels>64000000)throw new InvalidDataException("Word unique media or source pixel budget");
+            });
+        }
+        var placements=context.Placements.ToDictionary(p=>(p.NoteIndex,p.BlockIndex));int seen=0;
+        for(int index=0;index<context.Notes.Length;index++)
+        {
+            Check(context,token);var note=context.Notes[index];
+            if(note.Title.Length>256||note.Text.Length>65536||note.Title.Contains('\0')||note.Text.Contains('\0')||!RichDocumentCodec.IsWellFormedUnicode(note.Title)||!RichDocumentCodec.IsWellFormedUnicode(note.Text)||note.Mode is not("plain" or "markdown" or "rich"))throw new InvalidDataException("Word scalar source");
+            XmlConvert.VerifyXmlChars(note.Title);XmlConvert.VerifyXmlChars(note.Text);
+            string payload=(note.Title.Length==0?"":Normalize(note.Title)+"\n\n")+Normalize(note.Text);
+            source=checked(source+new UTF8Encoding(false,true).GetByteCount(payload.Replace("\n","\r\n",StringComparison.Ordinal)));if(source>Limit)throw new InvalidDataException("Word projected source budget");
+            if(note.Mode!="rich")continue;
+            if(note.Document is null||note.Document.SchemaVersion is not(1 or 2))throw new InvalidDataException("Word rich source version");
+            var inspected=RichDocumentCodec.Inspect(note.Document);if(!inspected.Supported||inspected.Text!=note.Text)throw new InvalidDataException("Word rich projection authority");
+            canonical=checked(canonical+new UTF8Encoding(false,true).GetByteCount(note.Document.SourceJson));if(canonical>Limit)throw new InvalidDataException("Word canonical source budget");
+            foreach(var block in RichDocumentCodec.Images(note.Document))
+            {
+                if(!placements.TryGetValue((index,block.BlockIndex),out var placement)||placement.ObjectId!=block.AttachmentId||placement.Alt!=block.Alt||!ids.Contains(placement.ObjectId))throw new InvalidDataException("Word complete image placement authority");
+                XmlConvert.VerifyXmlChars(placement.Alt);seen++;
+            }
+        }
+        if(seen!=placements.Count)throw new InvalidDataException("Word extra detached placement");
+        if(!ids.SetEquals(context.Placements.Select(p=>p.ObjectId)))throw new InvalidDataException("Word unreferenced detached media");
+    }
+    private static PreparedTextExport BuildPackage(ImmutableArray<WordNoteSource> notes,OwnedWordImageContext? images,CancellationToken token,Action<byte[]>? allocations)
+    {
+        Check(images,token);using var output = new BoundedWordBuffer(allocations);
+        byte[]? final=null;
+        try
+        {
         long xmlBytes = 0;
+        var mediaIds=images?.Images.Select((image,index)=>(image.ObjectId,Id:index+1)).ToDictionary(i=>i.ObjectId,i=>i.Id)??new Dictionary<Guid,int>();
+        var placements=images?.Placements.ToDictionary(p=>(p.NoteIndex,p.BlockIndex))??new Dictionary<(int,int),WordImagePlacement>();
+        int drawingId=0;
         using (var zip = new ZipArchive(output, ZipArchiveMode.Create, true))
         {
             void Part(string name, Action<XmlWriter> content)
             {
-                using var entry = zip.CreateEntry(name, CompressionLevel.Optimal).Open();
+                Check(images,token);using var entry = zip.CreateEntry(name, CompressionLevel.Optimal).Open();
                 using var bounded = new XmlBudgetStream(entry, count =>
                 {
-                    if (count > Limit - xmlBytes) throw new IOException("Word XML construction limit");
+                    Check(images,token);if (count > Limit - xmlBytes) throw new IOException("Word XML construction limit");
                     xmlBytes += count;
                 });
                 using var writer = XmlWriter.Create(bounded, new() { Encoding = new UTF8Encoding(false, true), CloseOutput = false, NewLineHandling = NewLineHandling.Entitize });
@@ -61,6 +135,7 @@ public static class StructuredWordExport
                 writer.WriteStartElement("Types", Types);
                 foreach (var pair in new[] { ("rels", "application/vnd.openxmlformats-package.relationships+xml"), ("xml", "application/xml") })
                 { writer.WriteStartElement("Default", Types); writer.WriteAttributeString("Extension", pair.Item1); writer.WriteAttributeString("ContentType", pair.Item2); writer.WriteEndElement(); }
+                if(images is not null&&images.Images.Length>0){writer.WriteStartElement("Default",Types);writer.WriteAttributeString("Extension","png");writer.WriteAttributeString("ContentType","image/png");writer.WriteEndElement();}
                 foreach (var pair in new[] { ("document", "document.main"), ("numbering", "numbering") })
                 { writer.WriteStartElement("Override", Types); writer.WriteAttributeString("PartName", "/word/" + pair.Item1 + ".xml"); writer.WriteAttributeString("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml." + pair.Item2 + "+xml"); writer.WriteEndElement(); }
                 writer.WriteEndElement();
@@ -72,24 +147,35 @@ public static class StructuredWordExport
                 writer.WriteEndElement(); writer.WriteEndElement();
             }
             Part("_rels/.rels", writer => Relationship(writer, "officeDocument", "word/document.xml"));
-            Part("word/_rels/document.xml.rels", writer => Relationship(writer, "numbering", "numbering.xml"));
+            Part("word/_rels/document.xml.rels", writer =>
+            {
+                writer.WriteStartElement("Relationships",Relations);
+                void Rel(string id,string type,string target){writer.WriteStartElement("Relationship",Relations);writer.WriteAttributeString("Id",id);writer.WriteAttributeString("Type",OfficeRelations+"/"+type);writer.WriteAttributeString("Target",target);writer.WriteEndElement();}
+                Rel("rId1","numbering","numbering.xml");
+                if(images is not null)foreach(var image in images.Images){int id=mediaIds[image.ObjectId];Rel("rIdImage"+id.ToString(CultureInfo.InvariantCulture),"image","media/image"+id.ToString("D4",CultureInfo.InvariantCulture)+".png");}
+                writer.WriteEndElement();
+            });
             // Each list has a separate num instance so ordered lists restart at one.
             var lists = new List<(int Id, bool Ordered)>();
             Part("word/document.xml", writer =>
             {
                 Start(writer, "document"); Start(writer, "body");
-                foreach (var note in notes)
+                for(int noteIndex=0;noteIndex<notes.Length;noteIndex++)
                 {
-                    Start(writer, "p"); WriteRun(writer, note.Title, title: true); writer.WriteEndElement();
+                    Check(images,token);var note=notes[noteIndex];Start(writer, "p"); WriteRun(writer, note.Title, title: true); writer.WriteEndElement();
                     if (note.Mode != "rich") { Start(writer, "p"); WriteRun(writer, note.Text); writer.WriteEndElement(); }
                     else
                     {
                         using var json = JsonDocument.Parse(note.Document!.SourceJson, new() { MaxDepth = 16 });
-                        foreach (var block in json.RootElement.GetProperty("nodes").EnumerateArray())
+                        int blockIndex=0;foreach (var block in json.RootElement.GetProperty("nodes").EnumerateArray())
                         {
-                            string type = block.GetProperty("type").GetString()!;
+                            Check(images,token);int currentBlock=blockIndex++;string type = block.GetProperty("type").GetString()!;
                             switch (type)
                             {
+                                case "image":
+                                    if(images is null||!placements.TryGetValue((noteIndex,currentBlock),out var placement))throw new InvalidDataException("Word image source authority missing");
+                                    var descriptor=images.Images.Single(i=>i.ObjectId==placement.ObjectId);int imageId=mediaIds[placement.ObjectId];
+                                    WordImageDrawing.Write(writer,checked(++drawingId),"rIdImage"+imageId.ToString(CultureInfo.InvariantCulture),descriptor.Width,descriptor.Height,placement.Alt);break;
                                 case "paragraph": Paragraph(writer, block); break;
                                 case "list":
                                     int id = lists.Count + 1; lists.Add((id, block.GetProperty("ordered").GetBoolean()));
@@ -116,6 +202,7 @@ public static class StructuredWordExport
                     }
                     Start(writer, "p"); writer.WriteEndElement();
                 }
+                if(images is not null)WordImageDrawing.Section(writer);
                 writer.WriteEndElement(); writer.WriteEndElement();
             });
             Part("word/numbering.xml", writer =>
@@ -133,8 +220,17 @@ public static class StructuredWordExport
                 { Start(writer, "num"); Attribute(writer, "numId", list.Id.ToString(CultureInfo.InvariantCulture)); Property(writer, "abstractNumId", list.Ordered ? "0" : "1"); writer.WriteEndElement(); }
                 writer.WriteEndElement();
             });
+            if(images is not null)foreach(var image in images.Images)
+            {
+                Check(images,token);int id=mediaIds[image.ObjectId];using var entry=zip.CreateEntry("word/media/image"+id.ToString("D4",CultureInfo.InvariantCulture)+".png",CompressionLevel.NoCompression).Open();
+                images.ReadImage(image.ObjectId,bytes=>{for(int offset=0;offset<bytes.Length;offset+=65536){Check(images,token);entry.Write(bytes.Slice(offset,Math.Min(65536,bytes.Length-offset)));}});
+            }
+            Check(images,token);
+        } // ZIP central directory is finalized while the same hard-bounded zeroing buffer is live.
+        Check(images,token);final=output.ToArray();allocations?.Invoke(final);Check(images,token);
+        var prepared=new PreparedTextExport(final);final=null;return prepared;
         }
-        return new(output.ToArray());
+        finally{if(final is not null)CryptographicOperations.ZeroMemory(final);}
     }
 
     private static void Start(XmlWriter writer, string name) => writer.WriteStartElement("w", name, W);
@@ -206,6 +302,9 @@ public static class StructuredWordExport
     }
     private sealed class BoundedWordBuffer : MemoryStream
     {
+        private readonly Action<byte[]>? allocations;
+        public BoundedWordBuffer() { }
+        internal BoundedWordBuffer(Action<byte[]>? allocations) { this.allocations=allocations; }
         private bool cleared;
         private static void Check(long value) { if (value < 0 || value > Limit) throw new IOException("Word package construction limit"); }
         public override int Capacity
@@ -216,7 +315,7 @@ public static class StructuredWordExport
                 Check(value);
                 byte[] previous = GetBuffer();
                 base.Capacity = value;
-                if (!ReferenceEquals(previous, GetBuffer())) CryptographicOperations.ZeroMemory(previous);
+                if (!ReferenceEquals(previous, GetBuffer())){CryptographicOperations.ZeroMemory(previous);allocations?.Invoke(GetBuffer());}
             }
         }
         private void Prepare(long end)
@@ -233,5 +332,38 @@ public static class StructuredWordExport
         public override void WriteByte(byte value) { Prepare(checked(Position + 1)); base.WriteByte(value); }
         protected override void Dispose(bool disposing)
         { if (disposing && !cleared) { cleared = true; CryptographicOperations.ZeroMemory(GetBuffer()); } base.Dispose(disposing); }
+    }
+}
+
+internal sealed record WordImageBuildOperation(Task<PreparedTextExport> Completion,Task Settled);
+// Fixed detached worker state: no issuer, live note, key or native callback is retained.
+internal sealed class WordBuildState
+{
+    private readonly OwnedWordImageContext context;
+    private readonly CancellationTokenSource linked;
+    private readonly TaskCompletionSource<PreparedTextExport> completion=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource settled=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal WordImageBuildOperation Operation{get;}
+    internal WordBuildState(OwnedWordImageContext context,CancellationToken token)
+    {this.context=context;Operation=new(completion.Task,settled.Task);linked=CancellationTokenSource.CreateLinkedTokenSource(context.Token,token);}
+    internal void ReleaseBeforeLaunch()=>linked.Dispose();
+    internal void QueueFailed(Exception error)=>Finish(null,error);
+    internal void Run()
+    {
+        PreparedTextExport? result=null;Exception? failure=null;
+        try{result=StructuredWordExport.BuildOwned(context,linked.Token);}catch(Exception error){failure=error;}
+        Finish(result,failure);
+    }
+    private void Finish(PreparedTextExport? result,Exception? failure)
+    {
+        Exception? cleanup=null;
+        try{if(!context.CompleteBuild()){result?.Dispose();result=null;failure??=new OperationCanceledException("Word context revoked");}}catch(Exception error){cleanup=error;}
+        try{linked.Dispose();}catch(Exception error){cleanup??=error;}
+        if(failure is null&&cleanup is null&&result is not null)completion.TrySetResult(result);
+        else
+        {
+            result?.Dispose();if(failure is OperationCanceledException canceled)completion.TrySetCanceled(canceled.CancellationToken);else completion.TrySetException(failure??cleanup??new InvalidDataException("Word build result missing"));
+        }
+        if(cleanup is null)settled.TrySetResult();else settled.TrySetException(cleanup);
     }
 }

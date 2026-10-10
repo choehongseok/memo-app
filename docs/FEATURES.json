@@ -3425,15 +3425,23 @@
         "src/MemoApp.Core/Transfer/OfficeTextTransfer.cs",
         "src/MemoApp.Windows/MainWindow.OfficeExport.cs",
         "src/MemoApp.Core/Transfer/StructuredWordExport.cs",
-        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs"
+        "tests/MemoApp.ContractChecks/StructuredWordChecks.cs",
+        "src/MemoApp.Core/Transfer/OwnedWordImageContext.cs",
+        "src/MemoApp.Core/Transfer/WordImageDrawing.cs",
+        "src/MemoApp.Core/Editing/SaveCoordinator.WordExport.cs",
+        "src/MemoApp.Windows/MainWindow.WordImageExport.cs",
+        "tests/MemoApp.ContractChecks/WordImageContextChecks.cs",
+        "tests/MemoApp.ContractChecks/WordImageExportChecks.cs",
+        "tests/MemoApp.WindowsChecks/OfficeExportChecks.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
         "073182a Windows37936392724 전체 SUCCESS: actual selected Office commands, plaintext confirmation/sourceepoch/version/vault destination refusal, blockedCreateNew lock cancellation, compiled worker ownership; BCL generated packages independently pass official OpenXML SDK3.4.1 schema/relationship probe.",
         "후속 dirty: canonical rich Word run styles/fonts/color/list/checklist/table/inert URL route Linux target GREEN; aggregate XML/package16MiB and retired plaintext zeroing RED→GREEN. independent OpenXML SDK3.4.1 actual rich package schema/relationship errors0. 실제 새 WPF gate 및 Word viewer 수용 대기.",
-        "5db5d8a Windows38002826135 office-plaintext-export group PASS includes actual canonical rich Word run/list/table/checkstate/inertURL and source preservation. Fullgate fails separategroups; Word viewer acceptance remains unverified."
+        "5db5d8a Windows38002826135 office-plaintext-export group PASS includes actual canonical rich Word run/list/table/checkstate/inertURL and source preservation. Fullgate fails separategroups; Word viewer acceptance remains unverified.",
+        "2026-10-10 staged N04: immutable301 Core missingAPI actualRED→closedcontext/writer actualfocusedPASS; Core+Contract/WindowsChecks crossbuild0warning0error; independentpausedsource three-unit reviewclear. Synthetic mixedDOCX3087B SHA2566efaf4f01f0473cd1697fc0a1c233af4b88e5d6e9e21d2a95a7b66de48d07a4d independent existingOpenXMLSDK3.4.1 errors0; installedLibreOfficeDev26.8 actualA4PDF render1page/6image placements+alpha masks/texttable/inertURL. Fontconfigcache warnings occurred; exactMicrosoftWord/useracceptance notclaimed. FullCore actualexit0; finalWindowsChecks crossbuild0w0e; newnativegate pending."
       ],
-      "blocking_reason": "지원 canonical 글자·목록·체크 상태·표를 내보내며 링크는 inert주소문자. 첨부 그림·rendered Markdown 미연결, 실제 Word viewer 수용 별도; 새 Windows gate 대기."
+      "blocking_reason": "인증된 canonical v2 inline PNG 원본 DOCX embedding 구현/집중Core PASS 및 독립OpenXML3.4.1/LibreOfficeDev 실제 합성render 확인. 새 실제Windows Word route/lock gate·실제Microsoft Word 수용·rendered Markdown은 남는다. 전체ID 완료/사용자수용은 미확인."
     },
     {
       "id": "N05",
