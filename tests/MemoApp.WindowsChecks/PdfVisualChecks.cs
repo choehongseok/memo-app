@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.TextFormatting;
 using System.Windows.Threading;
+using MemoApp.Core.Documents;
 using MemoApp.Core.Editing;
 using MemoApp.Core.Storage;
 using MemoApp.Core.Transfer;
@@ -114,7 +115,14 @@ internal static partial class Program
             Require(await Mode(()=>PdfExportMode.Text,"explicit-text.pdf")&&textConsent&&!visualConsent,"Explicit text mode retains the original searchable PDF route");textConsent=visualConsent=false;
             foreach(string unsupported in new[]{"markdown","rich"})
             {
-                active.Workspace.ConvertMode(note,unsupported,true);await Idle();list.SelectedItem=note;
+                active.Workspace.ConvertMode(note,unsupported,true);
+                if(unsupported=="rich")
+                {
+                    // Paragraph/run rich v1 is supported by N02; a genuine list remains outside its closed profile.
+                    active.Workspace.SetRichDocument(note,new StyledDocument(1,"{\"nodes\":[{\"type\":\"list\",\"ordered\":false,\"items\":[{\"runs\":[{\"text\":\"합성 목록\"}]}]}]}"));
+                    Require(RichDocumentCodec.Inspect(note.Document!).Supported,"Unsupported PDF list fixture remains a valid rich document");
+                }
+                await Idle();list.SelectedItem=note;
                 Require(!await Export(unsupported+".pdf")&&!File.Exists(Path.Combine(dir,unsupported+".pdf")),"Visual PDF refuses "+unsupported+" before creating a file");
                 active.Workspace.ConvertMode(note,"plain",true);await Idle();list.SelectedItem=note;
             }

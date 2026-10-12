@@ -51,6 +51,13 @@ internal static partial class Program
             Require(accepted,"N02 native behavioral RED: existing display PDF route must export the supported rich v1 styled paragraph after positive native reference controls");
             Require(File.Exists(destination),"Accepted rich paragraph route creates its complete external PDF");pdf=File.ReadAllBytes(destination);var grammar=System.Text.Encoding.Latin1.GetString(pdf);
             Require(grammar.StartsWith("%PDF-",StringComparison.Ordinal)&&grammar.Contains("/Subtype /Image",StringComparison.Ordinal)&&!grammar.Contains("/Type /Font",StringComparison.Ordinal)&&!grammar.Contains("/ToUnicode",StringComparison.Ordinal),"Rich display PDF remains a raster document without embedded fonts or searchable text");
+            byte[]? actual=null,expected=null;
+            try
+            {
+                actual=VisualPdfFirstRgb(pdf);expected=RichReferenceRgb(RichBasicReference);
+                Require(VisualPdfReferenceMatches(actual,expected)&&VisualPdfWhiteBorder(actual),"Real rich host route preserves complete styled pixels against independent manual WPF reference");
+            }
+            finally{if(actual is not null)CryptographicOperations.ZeroMemory(actual);if(expected is not null)CryptographicOperations.ZeroMemory(expected);}
         }
         catch(Exception error){primary=error;throw;}
         finally
@@ -82,12 +89,12 @@ internal static partial class Program
         var decorations=new TextDecorationCollection{TextDecorations.Underline[0],TextDecorations.Strikethrough[0]};
         text.Inlines.Add(new Run("굵은 한글 ABC"){FontFamily=new FontFamily("Malgun Gothic"),FontWeight=FontWeights.Bold,Foreground=new SolidColorBrush(Color.FromRgb(204,0,0)),Background=new SolidColorBrush(Color.FromArgb(128,255,255,0)),TextDecorations=decorations});
         text.Inlines.Add(new Run(" é 😀"));page.Children.Add(text);TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);
-        var window=new Window{Content=page,Width=820,Height=700};byte[]? bgra=null,rgb=null;bool transferred=false;Exception? primary=null;
+        var window=new Window{Content=page,Width=820,Height=700};RenderTargetBitmap? bitmap=null;byte[]? bgra=null,rgb=null;bool transferred=false;Exception? primary=null;
         try
         {
             window.Show();await Idle();page.Measure(new Size(794,1123));page.Arrange(new Rect(0,0,794,1123));page.UpdateLayout();
             Require(new TextRange(text.ContentStart,text.ContentEnd).Text.Contains("굵은 한글 ABC é 😀",StringComparison.Ordinal),"Manually constructed native run graph contains the exact styled Unicode reference body");
-            var bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);bgra=new byte[794*1123*4];rgb=new byte[794*1123*3];bitmap.CopyPixels(bgra,794*4,0);
+            bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);bgra=new byte[794*1123*4];rgb=new byte[794*1123*3];bitmap.CopyPixels(bgra,794*4,0);
             int red=0,yellow=0,ink=0;
             for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
             {
@@ -102,7 +109,7 @@ internal static partial class Program
         finally
         {
             var failures=new List<Exception>();if(bgra is not null)CryptographicOperations.ZeroMemory(bgra);if(!transferred&&rgb is not null)CryptographicOperations.ZeroMemory(rgb);
-            foreach(Action cleanup in new Action[]{()=>text.Inlines.Clear(),()=>page.Children.Clear(),()=>window.Content=null,()=>window.Close()})try{cleanup();}catch(Exception error){failures.Add(error);}
+            foreach(Action cleanup in new Action[]{()=>bitmap?.Clear(),()=>text.Inlines.Clear(),()=>page.Children.Clear(),()=>window.Content=null,()=>window.Close()})try{cleanup();}catch(Exception error){failures.Add(error);}
             if(failures.Count>0){if(rgb is not null)CryptographicOperations.ZeroMemory(rgb);if(primary is not null)failures.Insert(0,primary);throw new AggregateException("Synthetic styled native reference cleanup failed",failures);}
         }
     }
