@@ -16,7 +16,7 @@ public partial class MainWindow
         Dispatcher.VerifyAccess();if(windowClosed||concealing||pdfExportBusy||CaptureBatch(false) is not{ } request)return false;
         long sourceEpoch=request.Session.AttachmentPreviewEpoch;var versions=request.Notes.Select(n=>n.EditVersion).ToArray();
         using var operation=CancellationTokenSource.CreateLinkedTokenSource(fileOperations.Token);var token=operation.Token;var workspace=request.Session.Workspace;
-        bool Current()=>!token.IsCancellationRequested&&!windowClosed&&!concealing&&CurrentBatch(request)&&sourceEpoch==request.Session.AttachmentPreviewEpoch&&request.Notes.Where((n,i)=>n.EditVersion!=versions[i]).Any()==false&&NotesList.SelectedItems.Count==request.Notes.Length&&request.Notes.All(n=>NotesList.SelectedItems.Contains(n));
+        bool Current()=>!token.IsCancellationRequested&&!windowClosed&&!concealing&&CurrentBatch(request)&&ReferenceEquals(request.Session.Workspace,workspace)&&sourceEpoch==request.Session.AttachmentPreviewEpoch&&request.Notes.Where((n,i)=>n.EditVersion!=versions[i]).Any()==false&&NotesList.SelectedItems.Cast<object>().SequenceEqual(request.Notes.Cast<object>(),ReferenceEqualityComparer.Instance);
         void Revoke()=>operation.Cancel();
         // Cancellation is monotonic: restoring the original selection cannot restore this operation.
         void SelectionChanged(object sender,SelectionChangedEventArgs e)=>Revoke();

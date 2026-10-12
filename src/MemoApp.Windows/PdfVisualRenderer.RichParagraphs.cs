@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -171,6 +172,7 @@ internal static partial class PdfVisualRenderer
                 if(source.OriginalDocument is not {SchemaVersion:1} original||source.Paragraphs.Length>1024)throw Refused();
                 var inspected=RichDocumentCodec.Inspect(original);if(!inspected.Supported||!string.Equals(inspected.Text,source.Text,StringComparison.Ordinal))throw Refused();
                 sourceBytes=checked(sourceBytes+StrictUtf8.GetByteCount(original.SourceJson));if(sourceBytes>MaxInputBytes)throw Refused();
+                ValidateRichOriginalBinding(source,original,current);
                 var projection=new StringBuilder();int runs=0;minimumHeight=0;
                 foreach(var paragraph in source.Paragraphs)
                 {
@@ -184,6 +186,40 @@ internal static partial class PdfVisualRenderer
             }
             else throw Refused();
             if(minimumPages>PdfRasterDocumentBuilder.MaxPages)throw Refused();current();
+        }
+    }
+    private static void ValidateRichOriginalBinding(RichParagraphPdfSource source,StyledDocument original,Action current)
+    {
+        // The bounded codec inspection above validates scalar types, fields, counts and Unicode.
+        // Equal projections alone do not bind the detached DTO's structure or styles to that source.
+        using var parsed=JsonDocument.Parse(original.SourceJson,new JsonDocumentOptions{MaxDepth=16});
+        var nodes=parsed.RootElement.GetProperty("nodes");if(nodes.GetArrayLength()!=source.Paragraphs.Length)throw Refused();int nodeIndex=0;
+        foreach(var node in nodes.EnumerateArray())
+        {
+            current();if(node.GetProperty("type").GetString()!="paragraph")throw Refused();
+            var paragraph=source.Paragraphs[nodeIndex++];if(paragraph is null||paragraph.Runs.IsDefault)throw Refused();
+            var encoded=node.GetProperty("runs");if(encoded.GetArrayLength()!=paragraph.Runs.Length)throw Refused();int runIndex=0;
+            foreach(var raw in encoded.EnumerateArray())
+            {
+                current();if(raw.TryGetProperty("link",out _))throw Refused();
+                var run=paragraph.Runs[runIndex++];
+                if(run is null||run.Text is null||run.Style is null||!string.Equals(run.Text,raw.GetProperty("text").GetString(),StringComparison.Ordinal))throw Refused();
+                bool Flag(string name)=>raw.TryGetProperty(name,out var field)&&field.GetBoolean();
+                uint ColorValue(string name,uint fallback)
+                {
+                    if(!raw.TryGetProperty(name,out var field))return fallback;
+                    string hex=field.GetString()!;uint value=uint.Parse(hex.AsSpan(1),NumberStyles.HexNumber,CultureInfo.InvariantCulture);
+                    return hex.Length==7?value|0xff000000:value;
+                }
+                var expected=new RichPdfRunStyle(Flag("bold"),Flag("underline"),Flag("strike"),
+                    raw.TryGetProperty("fontFamily",out var family)?family.GetString()!:RichDefaults.FontFamily,
+                    raw.TryGetProperty("fontSize",out var size)?size.GetDouble():RichDefaults.FontSize,
+                    ColorValue("foreground",RichDefaults.Foreground),ColorValue("background",RichDefaults.Background));
+                if(run.Style!=expected)throw Refused();
+                // An empty run has no glyph to audit. Unsupported requested bold must reject the
+                // complete selection here, before even an earlier valid note starts native work.
+                if(run.Text.Length==0&&!RichSystemFaces.Any(face=>face.Family==expected.FontFamily&&face.Bold==expected.Bold))throw Refused();
+            }
         }
     }
     private sealed record RichSpan(int Start,int Length,RichPdfRunStyle Style);

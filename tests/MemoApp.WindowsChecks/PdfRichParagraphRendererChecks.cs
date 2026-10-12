@@ -168,7 +168,7 @@ internal static partial class Program
             await NoAllocations([honest,new("",prefix,"rich",doc,[new RichPdfParagraph(runs)])],"Empty unsupported bold admission: "+family+(prefix.Length==0?" empty-only":" trailing-empty"));
         }
         var payload=new RichParagraphPdfSource("",new string('한',65000),"plain",null,ImmutableArray<RichPdfParagraph>.Empty);
-        await NoAllocations(Enumerable.Repeat(payload,90).ToArray(),"Direct aggregate TextTransfer payload over 16 MiB");
+        await NoAllocations(Enumerable.Repeat(payload,90).Prepend(honest).ToArray(),"Direct mixed aggregate TextTransfer payload over 16 MiB");
         string padded=original.SourceJson+new string(' ',1024*1024-Encoding.UTF8.GetByteCount(original.SourceJson));
         Require(Encoding.UTF8.GetByteCount(padded)==1024*1024&&RichDocumentCodec.Inspect(new(1,padded)).Supported,"Raw-source aggregate control is individually valid at the exact 1-MiB source boundary");
         await NoAllocations(Enumerable.Repeat(honest with{OriginalDocument=new(1,padded)},17).ToArray(),"Direct aggregate exact rich JSON over 16 MiB with a tiny text payload");
