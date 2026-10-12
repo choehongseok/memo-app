@@ -3490,9 +3490,16 @@
           "environment": "Linux cloud x86_64 / SDK10.0.401/runtime10.0.12; native Windows not executed",
           "command": "docs/N02_RECOVERY_20261012.md",
           "result": "New reconstruction from exact base55, not recovered unpublished source. Core88 baseline PASS (Core unchanged), Python64 PASS/no skips, final WindowsChecks crossbuild0warnings/errors43.19s. Metadata API/call-route RED to GREEN proves wiring only. Host and renderer scoped source re-reviews cleared all findings; viewer source clear with one Minor; final integration source/specification and quality review clear. Actual Windows WPF/app-produced PDFs/independent viewer/installed EXE pending; native compressed16MiB overflow remains unverified. Actions query returned Forbidden, no bypass. No new installer/Library file ID or N02/full134/user acceptance completion."
+        },
+        {
+          "kind": "verified-original-comparison-delta-local-partial",
+          "commit": "599fb7cf2b1133e279d972796d1e76e31ec93d6b",
+          "environment": "Linux cloud x86_64 / fixed SDK10.0.401/runtime10.0.12; Windows execution held pending PC approval",
+          "command": "docs/N02_RECOVERY_20261012.md; docs/N02_PC_VALIDATION.md",
+          "result": "Original unreferenced tree52b02772 verified:23 trees/17 changed blobs and all three frozen SHA256s match; aa88d512 is RichParagraphs. Tests-first5f5a6bf; narrow workspace/order and exact originalJSON/DTO binding restored; native RGB/admission/pages/Flush/failure-drain tests authored. Final crossbuild0warnings/errors23.95s, unchanged Core88 and Python64/28.586s/no skips PASS. Independent host/renderer/docs/integration source reviews clear after three Minor corrections. Native RED/GREEN, actual app PDF/viewer and installed EXE remain unexecuted; no new installer/Library ID or complete feature/user acceptance claim. No Actions retry/bypass or main/development/PR1 change."
         }
       ],
-      "blocking_reason": "별도 recovery/n02-20261012에서 rich-v1 문단 renderer·정확한 UI 권한·독립 viewer 도구 소스를 재구현하고 Linux 교차빌드/검사를 확인했다. 실제 새 Windows WPF/RGB·앱 생성 PDF viewer·전체 native/설치 검증과 Library 전달은 Actions Forbidden 때문에 미완료. Rich list/table/Markdown/image fidelity 및 실제 사용자 수용 미완료. 이전 run164는 새 renderer 증거가 아니다."
+      "blocking_reason": "별도 recovery/n02-20261012의 재구현 후 원본 보존 tree/3파일 지문을 확인하고 필요한 권한·원문/DTO 방어 및 회귀검사만 보강했다. Linux 교차빌드·Core/Python 검사와 독립 소스 검토는 통과했으나 실제 새 Windows WPF/RGB·앱 생성 PDF viewer·전체 native/설치 실행은 사용자 PC 승인 대기다. 이전 Actions Forbidden 미해결·우회 없음, Library 전달 미완료. Rich list/table/Markdown/image fidelity 및 실제 사용자 수용 미완료; 이전 run164는 새 renderer 증거가 아니다."
     },
     {
       "id": "N03",
