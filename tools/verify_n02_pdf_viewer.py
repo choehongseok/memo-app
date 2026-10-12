@@ -229,10 +229,19 @@ def _read_file(path, bound, identities):
         data = stream.read(bound + 1)
         after = os.fstat(stream.fileno())
     final = path.lstat()
+    if os.name == "nt":
+        require(all(isinstance(getattr(info, "st_birthtime_ns", None), int)
+                    for info in (before, opened, after, final)), "Windows fixture birth time unavailable")
     def signature(info):
+        # CPython 3.12 on Windows can expose creation time through lstat ctime
+        # and ChangeTime through fstat ctime. Bind birth time across APIs and
+        # retain both APIs' own ctime stability checks below.
+        timestamp = info.st_birthtime_ns if os.name == "nt" else info.st_ctime_ns
         return (info.st_dev, info.st_ino, info.st_mode, info.st_nlink, info.st_size, info.st_mtime_ns,
-                info.st_ctime_ns, getattr(info, "st_file_attributes", 0))
-    require(signature(before) == signature(opened) == signature(after) == signature(final), "Fixture changed while reading")
+                timestamp, getattr(info, "st_file_attributes", 0))
+    require(signature(before) == signature(opened) == signature(after) == signature(final)
+            and before.st_ctime_ns == final.st_ctime_ns and opened.st_ctime_ns == after.st_ctime_ns,
+            "Fixture changed while reading")
     require(len(data) == before.st_size and len(data) <= bound, "Fixture bounded read mismatch")
     return data
 

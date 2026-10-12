@@ -326,6 +326,61 @@ class ViewerChecks(unittest.TestCase):
             with self.assertRaises(self.viewer.VerificationError):
                 self.viewer.verify_directory(self.directory)
 
+    def read_with_stat_snapshots(self, ctimes, changes=(), platform="nt"):
+        # Keep the bounded file read real; synthesize only OS metadata snapshots so
+        # Windows API semantics and otherwise racy mutations are deterministic.
+        path = self.directory / "stat-fixture.bin"
+        content = b"public synthetic stat fixture"
+        path.write_bytes(content)
+        actual = path.lstat()
+        fields = {key: getattr(actual, key) for key in dir(actual) if key.startswith("st_")}
+        fields.update(st_birthtime_ns=10, st_mtime_ns=30, st_file_attributes=32)
+        snapshots = [SimpleNamespace(**{**fields, "st_ctime_ns": value}) for value in ctimes]
+        for index, field, value in changes:
+            setattr(snapshots[index], field, value)
+        with mock.patch.object(self.viewer.os, "name", platform), \
+                mock.patch.object(Path, "lstat", side_effect=[snapshots[0], snapshots[3]]), \
+                mock.patch.object(self.viewer.os, "fstat", side_effect=[snapshots[1], snapshots[2]]):
+            return self.viewer._read_file(path, 128, set()), content
+
+    def test_stable_windows_birth_and_change_times_are_not_confused(self):
+        # CPython 3.12 Windows lstat reports creation time as ctime, while
+        # fstat can report ChangeTime. Both API sequences are individually stable.
+        try:
+            actual, expected = self.read_with_stat_snapshots((10, 20, 20, 10))
+        except self.viewer.VerificationError as error:
+            self.fail("Stable Windows path/handle timestamps were rejected: " + str(error))
+        self.assertEqual(expected, actual)
+
+    def test_windows_each_api_rejects_ctime_only_mutation(self):
+        for index, value in ((3, 11), (2, 21)):
+            with self.subTest(snapshot=index), self.assertRaises(self.viewer.VerificationError):
+                self.read_with_stat_snapshots((10, 20, 20, 10), [(index, "st_ctime_ns", value)])
+
+    def test_windows_birthtime_is_bound_across_every_snapshot(self):
+        for index in range(4):
+            with self.subTest(snapshot=index), self.assertRaises(self.viewer.VerificationError):
+                self.read_with_stat_snapshots((10, 10, 10, 10), [(index, "st_birthtime_ns", 11)])
+
+    def test_windows_identity_and_metadata_changes_remain_rejected(self):
+        path = self.directory / "metadata-control.bin"
+        path.write_bytes(b"control")
+        info = path.lstat()
+        mutations = (("st_dev", info.st_dev + 1), ("st_ino", 0),
+                     ("st_mode", info.st_mode ^ 0o100), ("st_nlink", 2),
+                     ("st_size", 1), ("st_mtime_ns", 31),
+                     ("st_file_attributes", 32 | 0x400))
+        for index in range(4):
+            for field, value in mutations:
+                with self.subTest(snapshot=index, field=field), self.assertRaises(self.viewer.VerificationError):
+                    self.read_with_stat_snapshots((10, 10, 10, 10), [(index, field, value)])
+
+    def test_posix_retains_cross_api_ctime_binding(self):
+        actual, expected = self.read_with_stat_snapshots((20, 20, 20, 20), platform="posix")
+        self.assertEqual(expected, actual)
+        with self.assertRaises(self.viewer.VerificationError):
+            self.read_with_stat_snapshots((10, 20, 20, 10), platform="posix")
+
     def test_blank_references_cannot_report_success(self):
         self.bundle(blank=True)
         with self.assertRaises(self.viewer.VerificationError):
