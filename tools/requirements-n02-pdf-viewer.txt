@@ -1,0 +1,9 @@
+# Test tooling only. No application dependency; Linux x86_64 / Windows x64.
+# Install: python -m pip install --index-url https://pypi.org/simple --only-binary=:all: --require-hashes -r tools/requirements-n02-pdf-viewer.txt
+# Official PyPI release: https://pypi.org/project/pypdfium2/5.3.0/
+# Both wheels verified against PyPI JSON SHA256 and internal version metadata:
+# pypdfium2 5.3.0; PDFium 145.0.7616.0; no runtime Requires-Dist dependencies.
+# manylinux_2_17_x86_64.manylinux2014_x86_64 / win_amd64, respectively.
+pypdfium2==5.3.0 \
+    --hash=sha256:b3ff1071e9a782625822658dfe6e29e3a644a66960f8713bb17819f5a0ac5987 \
+    --hash=sha256:8365af22a39d4373c265f8e90e561cd64d4ddeaf5e6a66546a8caed216ab9574

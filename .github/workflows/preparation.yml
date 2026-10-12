@@ -62,6 +62,9 @@ jobs:
               Write-Output "MSI tool signature: $($signature.Status) $($signature.SignerCertificate.Subject)"
             }
           }
+      - name: Install fixed independent PDF viewer test tooling
+        run: |
+          python -m pip install --index-url https://pypi.org/simple --only-binary=:all: --require-hashes -r tools/requirements-n02-pdf-viewer.txt
       - name: Scope and safety checks
         shell: pwsh
         run: |
@@ -86,7 +89,11 @@ jobs:
       - name: Isolated OCR cleanup fault checks
         run: dotnet run --project tests/MemoApp.ContractChecks -c Release --no-build -- --ocr-cleanup-fault-only
       - name: Actual Windows WPF synthetic control checks
+        env:
+          MEMO_N02_VIEWER_OUTPUT: ${{ runner.temp }}/memo-n02-pdf-viewer
         run: dotnet run --project tests/MemoApp.WindowsChecks -c Release --no-build
+      - name: Independently render actual fixed synthetic PDFs at 96 DPI
+        run: python tools/verify_n02_pdf_viewer.py "${{ runner.temp }}/memo-n02-pdf-viewer"
       - name: Publish unsigned synthetic-data Windows x64 trial
         run: dotnet publish src/MemoApp.Windows -p:NativeOcrBundle="${{ env.MEMO_OCR_BUNDLE }}" -c Release -r win-x64 --self-contained true -o artifacts/windows-x64-synthetic-trial
       - name: Package bounded per-user installation payload
