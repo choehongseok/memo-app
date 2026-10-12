@@ -181,7 +181,7 @@ internal static partial class Program
         }
         foreach(string family in new[]{"Segoe UI Symbol","Segoe UI Emoji"})
         {
-            await RichMustRefuseAsync(()=>RichRender([RichSource(RichRuns(new{text="ABC",fontFamily=family,bold=true}))]),"Unapproved actual bold fallback/simulation refused");
+            await RichMustRefuseAsync(()=>RichRender([RichSource(RichRuns(new{text="ABC",fontFamily=family,bold=true}))]),"Unapproved requested bold face/simulation refused before glyph formatting");
             await RichMustRefuseAsync(()=>RichRender([RichSource(RichRuns(new{text="valid"},new{text="",fontFamily=family,bold=true}))]),"Empty unsupported bold run is still refused");
         }
         if(!new Typeface("Arial").TryGetGlyphTypeface(out var unknown))throw new Exception("Installed Arial negative control missing");
@@ -189,6 +189,71 @@ internal static partial class Program
         foreach(string uri in new[]{"file:///C:/Users/synthetic/Fonts/segoeui.ttf","file://synthetic-server/share/segoeui.ttf","https://example.invalid/segoeui.ttf"})RichMustRefuse(()=>PdfVisualRenderer.ValidateFontOrigin(new Uri(uri)),"Rogue font origin refused without loading");
         foreach(var document in new[]{RichRuns(new{text="e"},new{text="́",bold=true}),RichRuns(new{text="\r"},new{text="\n",underline=true}),RichRuns(new{text="👩‍💻"}),RichRuns(new{text="x",fontFamily="Arial"})})
             RichMustRefuse(()=>RichSource(document),"Unsupported profile is refused before native preparation");
+        await RichActualBoldFallbackCheck();
+    }
+    private static async Task RichActualBoldFallbackCheck()
+    {
+        const int scalar=0x1f600;const string text="\U0001F600";
+        var english=CultureInfo.GetCultureInfo("en-US");string fonts=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows),"Fonts");
+        var requested=new Typeface(new FontFamily("Segoe UI"),FontStyles.Normal,FontWeights.Bold,FontStretches.Normal);
+        if(!requested.TryGetGlyphTypeface(out var requestedFace)||requestedFace is null)throw new Exception("Actual Segoe UI Bold fallback control requires the approved installed face");
+        // Independent preconditions use the actual requested font, never the product manifest or audit.
+        Require(requestedFace.FamilyNames.TryGetValue(english,out var requestedFamily)&&requestedFamily=="Segoe UI"
+            &&requestedFace.FaceNames.TryGetValue(english,out var requestedName)&&requestedName=="Bold"
+            &&requestedFace.Weight==FontWeights.Bold&&requestedFace.Style==FontStyles.Normal&&requestedFace.Stretch==FontStretches.Normal&&requestedFace.StyleSimulations==StyleSimulations.None
+            &&requestedFace.FontUri.IsAbsoluteUri&&requestedFace.FontUri.IsFile&&!requestedFace.FontUri.IsUnc&&requestedFace.FontUri.Query.Length==0&&requestedFace.FontUri.Fragment.Length==0
+            &&Path.GetFullPath(requestedFace.FontUri.LocalPath).Equals(Path.GetFullPath(Path.Combine(fonts,"segoeuib.ttf")),StringComparison.OrdinalIgnoreCase),
+            "Fallback control starts with the exact independently approved actual unsimulated Segoe UI Bold system face");
+        Require(!requestedFace.CharacterToGlyphMap.TryGetValue(scalar,out ushort requestedGlyph)||requestedGlyph==0,
+            "Fixed U+1F600 must actually be absent from this installed Segoe UI Bold face; do not skip or infer fallback from the family name");
+
+        int actualFallbacks=0;string resolvedSummary="";byte[]? reference=null;
+        try
+        {
+            reference=RichReferenceRgb(()=>RichReferenceBlock(new Run(text){FontFamily=new FontFamily("Segoe UI"),FontWeight=FontWeights.Bold}),inspect:block=>
+            {
+                Require(new TextRange(block.ContentStart,block.ContentEnd).Text==text,"Independent fallback control contains exactly the fixed supplementary scalar");
+                void Visit(Drawing? drawing)
+                {
+                    if(drawing is DrawingGroup group){foreach(var child in group.Children)Visit(child);return;}
+                    if(drawing is not GlyphRunDrawing actual)return;
+                    var glyph=actual.GlyphRun;var face=glyph.GlyphTypeface;
+                    Require(glyph.Characters is not null&&glyph.Characters.SequenceEqual(text)&&glyph.GlyphIndices.Count>0&&glyph.GlyphIndices.All(index=>index!=0)&&glyph.BidiLevel==0&&!glyph.IsSideways,
+                        "Independent native fallback drawing maps the complete original scalar to real nonzero glyphs");
+                    Require(face.CharacterToGlyphMap.TryGetValue(scalar,out ushort fallbackGlyph)&&fallbackGlyph!=0&&glyph.GlyphIndices.Contains(fallbackGlyph),
+                        "Independent actual fallback font and drawn glyph both cover the fixed scalar");
+                    string? fallbackFile=null;
+                    if(face.FamilyNames.TryGetValue(english,out var family))fallbackFile=family switch{"Segoe UI Emoji"=>"seguiemj.ttf","Segoe UI Symbol"=>"seguisym.ttf",_=>null};
+                    Require(fallbackFile is not null&&face.FaceNames.TryGetValue(english,out var name)&&name=="Regular"
+                        &&face.Style==FontStyles.Normal&&face.Stretch==FontStretches.Normal&&face.FontUri.IsAbsoluteUri&&face.FontUri.IsFile&&!face.FontUri.IsUnc
+                        &&face.FontUri.Query.Length==0&&face.FontUri.Fragment.Length==0
+                        &&Path.GetFullPath(face.FontUri.LocalPath).Equals(Path.GetFullPath(Path.Combine(fonts,fallbackFile)),StringComparison.OrdinalIgnoreCase)
+                        &&!face.FontUri.Equals(requestedFace.FontUri),"Independent native drawing actually switched from the approved bold request to a known regular fallback system file");
+                    Require(face.Weight!=FontWeights.Bold||face.StyleSimulations!=StyleSimulations.None,
+                        "Actual native fallback loses the requested unsimulated bold style; an environment without that control must fail closed");
+                    actualFallbacks++;resolvedSummary=$"{family}/{Path.GetFileName(face.FontUri.LocalPath)} weight={face.Weight.ToOpenTypeWeight()} simulation={face.StyleSimulations}";
+                }
+                Visit(VisualTreeHelper.GetDrawing(block));
+            });
+            Require(actualFallbacks==1&&reference.Any(value=>value<240),"Independent native reference witnessed exactly one visible actual unsupported bold fallback");
+        }
+        finally{if(reference is not null)CryptographicOperations.ZeroMemory(reference);}
+        using(var supported=await RichRender([RichSource(RichRuns(new{text="ABC",fontFamily="Segoe UI",bold=true}))]))
+            Require(supported.Bytes.AsSpan().StartsWith("%PDF-"u8),"The same approved bold request succeeds before testing its actual glyph fallback");
+
+        var owned=new List<byte[]>();int populatedPages=0;bool refused=false;
+        var pending=RichRender([RichSource(new(1,RichBasicJson)),RichSource(RichRuns(new{text,fontFamily="Segoe UI",bold=true}))],owned:bytes=>
+        {
+            owned.Add(bytes);if(bytes.Length==794*1123*3){Require(bytes.Any(value=>value<240),"A real earlier native page is populated before the later glyph fallback refusal");populatedPages++;}
+        });
+        try{using var unused=await pending;}
+        catch(InvalidDataException error)
+        {
+            Require(error.Message=="Rich PDF actual face does not preserve the requested unsimulated style","Refusal comes from actual resolved-style audit after the independent valid requested-face control");refused=true;
+        }
+        Require(refused&&pending.IsCompleted&&populatedPages==1&&owned.Any(bytes=>bytes.Length==16*1024*1024)&&owned.All(bytes=>bytes.All(value=>value==0)),
+            "Actual fallback from approved bold discards the complete candidate and erases the earlier populated page/builder buffers after settlement");
+        Console.WriteLine("N02 fixed U+1F600 actual bold glyph fallback independently witnessed="+resolvedSummary+" wholeRefusal=True earlierPageZero=True");
     }
     private static async Task RichBoundaryChecks()
     {
@@ -198,16 +263,28 @@ internal static partial class Program
             var block=RichReferenceBlock(new Run("one\n\n"),new Run("last gy"){TextDecorations=RichReferenceDecorations(true,false)});block.LineHeight=28;return block;
         }));
         string line="last-line é gy";string body=string.Join('\n',Enumerable.Repeat(line,43));
-        using(var prepared=await RichRender([RichSource(RichRuns(new{text=body,underline=true,background="#40FFCC00"}))]))
+        var copiedPages=new List<byte[]>();
+        try
         {
-            Require(Encoding.Latin1.GetString(prepared.Bytes).Contains("/Count 2 ",StringComparison.Ordinal),"43rd rich minimum-height line moves to next page");
+            using var prepared=await RichRender([RichSource(RichRuns(new{text=body,underline=true,background="#40FFCC00"}))],owned:bytes=>
+            {
+                if(bytes.Length!=794*1123*3)return;
+                Require(copiedPages.Count<2,"Fixed boundary oracle retains at most two copied native RGB pages");copiedPages.Add((byte[])bytes.Clone());
+            });
+            Require(Encoding.Latin1.GetString(prepared.Bytes).Contains("/Count 2 ",StringComparison.Ordinal)&&copiedPages.Count==2,"43rd rich minimum-height line moves to next page and exactly two native page arrays were observed");
             for(int page=0;page<2;page++)
             {
-                byte[] actual=VisualPdfFirstRgb(prepared.Bytes,page),reference=RichReferenceRgb(()=>RichReferenceBlock(new Run(string.Join('\n',Enumerable.Repeat(line,page==0?42:1))){TextDecorations=RichReferenceDecorations(true,false),Background=new SolidColorBrush(Color.FromArgb(64,255,204,0))}));
-                try{Require(VisualPdfReferenceMatches(actual,reference)&&VisualPdfWhiteBorder(actual),"Complete last line decoration/background remains visible: "+page);}
-                finally{CryptographicOperations.ZeroMemory(actual);CryptographicOperations.ZeroMemory(reference);}
+                byte[]? actual=null,reference=null;
+                try
+                {
+                    actual=VisualPdfFirstRgb(prepared.Bytes,page);reference=RichReferenceRgb(()=>RichReferenceBlock(new Run(string.Join('\n',Enumerable.Repeat(line,page==0?42:1))){TextDecorations=RichReferenceDecorations(true,false),Background=new SolidColorBrush(Color.FromArgb(64,255,204,0))}));
+                    Require(actual.AsSpan().SequenceEqual(copiedPages[page]),"Each boundary PDF page exactly preserves its corresponding native RGB across the page transition: "+page);
+                    Require(VisualPdfReferenceMatches(actual,reference)&&VisualPdfWhiteBorder(actual),"Complete last line decoration/background remains visible: "+page);
+                }
+                finally{if(actual is not null)CryptographicOperations.ZeroMemory(actual);if(reference is not null)CryptographicOperations.ZeroMemory(reference);}
             }
         }
+        finally{foreach(var bytes in copiedPages)CryptographicOperations.ZeroMemory(bytes);}
         // Compare a mixed plain note page byte-for-byte to its original renderer, including title spacing.
         var plain=new RichParagraphPdfSource("Plain title"," A  \r\nB\tC ","plain",null,ImmutableArray<RichPdfParagraph>.Empty);
         using(var baseline=await PdfVisualRenderer.RenderPlainAsync([new(plain.Title,plain.Text)],()=>true,CancellationToken.None))
