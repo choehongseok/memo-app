@@ -97,6 +97,7 @@ internal static partial class Program
     private static async Task PdfRichParagraphRendererRun()
     {
         Require(typeof(PdfVisualRenderer).GetMethod("RenderParagraphsAsync",BindingFlags.Static|BindingFlags.NonPublic) is not null,"N02 rich native renderer API missing: RenderParagraphsAsync");
+        await RichDirectAdmissionChecks();
         foreach(var fixture in RichViewerFixtures())await RichAssertReference(fixture);
         // Each isolated style loses its oracle comparison if the corresponding production property is dropped.
         var styles=new RichRasterFixture[]{
@@ -105,6 +106,8 @@ internal static partial class Program
             new("underline",RichRuns(new{text="ABC gy",underline=true}),()=>RichReferenceBlock(new Run("ABC gy"){TextDecorations=RichReferenceDecorations(true,false)})),
             new("strike",RichRuns(new{text="ABC gy",strike=true}),()=>RichReferenceBlock(new Run("ABC gy"){TextDecorations=RichReferenceDecorations(false,true)})),
             new("family",RichRuns(new{text="ABC 한글",fontFamily="Malgun Gothic"}),()=>RichReferenceBlock(new Run("ABC 한글"){FontFamily=new FontFamily("Malgun Gothic")})),
+            new("explicit-symbol",RichRuns(new{text="★",fontFamily="Segoe UI Symbol"}),()=>RichReferenceBlock(new Run("★"){FontFamily=new FontFamily("Segoe UI Symbol")})),
+            new("explicit-emoji",RichRuns(new{text="😀",fontFamily="Segoe UI Emoji"}),()=>RichReferenceBlock(new Run("😀"){FontFamily=new FontFamily("Segoe UI Emoji")})),
             new("size8",RichRuns(new{text="ABC gy",fontSize=8}),()=>RichReferenceBlock(new Run("ABC gy"){FontSize=8})),
             new("size96",RichRuns(new{text="ABC gy",fontSize=96}),()=>RichReferenceBlock(new Run("ABC gy"){FontSize=96})),
             new("foreground",RichRuns(new{text="ABC gy",foreground="#802060C0"}),()=>RichReferenceBlock(new Run("ABC gy"){Foreground=new SolidColorBrush(Color.FromArgb(128,32,96,192))})),
@@ -118,9 +121,57 @@ internal static partial class Program
                 ()=>RichReferenceBlock(new Run("AB"){Foreground=new SolidColorBrush(Color.FromRgb(204,0,0))},new Run("CD"){TextDecorations=RichReferenceDecorations(true,false),Background=Brushes.Yellow})),
             new("empty",RichRuns(new{text=""}),()=>RichReferenceBlock(new Run("")))})await RichAssertReference(fixture);
         byte[] evidence=RichReferenceRgb(RichBasicReference,inspect:RichInspectBasicDrawing);CryptographicOperations.ZeroMemory(evidence);
-        await RichFaceChecks();await RichBoundaryChecks();await RichCleanupChecks();await RichCapCleanupChecks();RichReferenceCleanupChecks();
+        await RichFaceChecks();await RichBoundaryChecks();await RichDistinctParagraphPages();await RichCleanupChecks();await RichCapCleanupChecks();RichReferenceCleanupChecks();
         await RichEmitViewerFixtures();
         Console.WriteLine("N02 native rich renderer: independent styles/RGB, face/glyph/ink, boundaries/refusal and owned cleanup checks passed");
+    }
+    private static async Task RichDirectAdmissionChecks()
+    {
+        var normal=new RichPdfRunStyle(false,false,false,"Segoe UI",14,0xff000000,0);
+        var original=RichRuns(new{text="ABC"});
+        var honest=new RichParagraphPdfSource("","ABC","rich",original,[new RichPdfParagraph([new RichPdfRun("ABC",normal)])]);
+        async Task NoAllocations(IReadOnlyList<RichParagraphPdfSource> selection,string reason)
+        {
+            int allocations=0;await RichMustRefuseAsync(()=>RichRender(selection,owned:_=>allocations++),reason);
+            Require(allocations==0,"Whole direct DTO admission fails before owned native raster/builder/candidate allocations: "+reason);
+        }
+        // These records bypass Core capture intentionally: equal projection is not exact original style binding.
+        foreach(var changed in new[]{normal with{Bold=true},normal with{Underline=true},normal with{Strike=true},normal with{FontFamily="Malgun Gothic"},normal with{FontSize=16},normal with{Foreground=0xffcc0000},normal with{Background=0x80ffff00}})
+            await NoAllocations([honest,honest with{Paragraphs=[new RichPdfParagraph([new RichPdfRun("ABC",changed)])]}],"Original JSON versus DTO effective-style mismatch");
+        var splitOriginal=RichRuns(new{text="A"},new{text="BC"});
+        await NoAllocations([honest,honest with{OriginalDocument=splitOriginal}],"Same projection with changed run count");
+        await NoAllocations([honest,honest with{OriginalDocument=splitOriginal,Paragraphs=[new RichPdfParagraph([new RichPdfRun("AB",normal),new RichPdfRun("C",normal)])]}],"Same projection and run count with changed per-run text");
+        await NoAllocations([honest,new("","A\nB","rich",RichRuns(new{text="A\nB"}),[new RichPdfParagraph([new RichPdfRun("A",normal)]),new RichPdfParagraph([new RichPdfRun("B",normal)])])],"Same projection with changed paragraph count and structure");
+        foreach(string json in new[]{
+            "{\"nodes\":[{\"type\":\"list\",\"ordered\":false,\"items\":[{\"runs\":[{\"text\":\"ABC\"}]}]}]}",
+            "{\"nodes\":[{\"type\":\"table\",\"rows\":[[{\"runs\":[{\"text\":\"ABC\"}]}]]}]}",
+            "{\"nodes\":[{\"type\":\"paragraph\",\"runs\":[{\"text\":\"ABC\",\"link\":\"https://synthetic.invalid\"}]}]}"})
+        {
+            var document=new StyledDocument(1,json);var info=RichDocumentCodec.Inspect(document);
+            Require(info.Supported&&info.Text=="ABC","Unsupported PDF node/link control has the same independently inspected codec projection");
+            await NoAllocations([honest,honest with{OriginalDocument=document}],"Exact original unsupported node/link cannot hide behind paragraph DTO");
+        }
+        foreach(var conflict in new[]{("e","́"),("\r","\n")})
+        {
+            var doc=RichRuns(new{text=conflict.Item1},new{text=conflict.Item2,bold=true});
+            var direct=new RichParagraphPdfSource("",conflict.Item1+conflict.Item2,"rich",doc,
+                [new RichPdfParagraph([new RichPdfRun(conflict.Item1,normal),new RichPdfRun(conflict.Item2,normal with{Bold=true})])]);
+            Require(RichDocumentCodec.Inspect(doc).Supported,"Direct conflicting-style source is codec supported before renderer cluster admission");
+            await NoAllocations([honest,direct],"Exact raw/DTO conflicting grapheme or CRLF styles");
+        }
+        foreach(string family in new[]{"Segoe UI Symbol","Segoe UI Emoji"})foreach(string prefix in new[]{"","ordinary prefix ABC"})
+        {
+            var unsupported=normal with{FontFamily=family,Bold=true};
+            ImmutableArray<RichPdfRun> runs=prefix.Length==0?[new RichPdfRun("",unsupported)]:[new RichPdfRun(prefix,normal),new RichPdfRun("",unsupported)];
+            var doc=new StyledDocument(1,JsonSerializer.Serialize(new{nodes=new[]{new{type="paragraph",runs=runs.Select(run=>new{text=run.Text,fontFamily=run.Style.FontFamily,bold=run.Style.Bold}).ToArray()}}}));
+            Require(RichDocumentCodec.Inspect(doc) is {Supported:true} info&&info.Text==prefix,"Empty-bold control has exact supported raw JSON and original projection");
+            await NoAllocations([honest,new("",prefix,"rich",doc,[new RichPdfParagraph(runs)])],"Empty unsupported bold admission: "+family+(prefix.Length==0?" empty-only":" trailing-empty"));
+        }
+        var payload=new RichParagraphPdfSource("",new string('한',65000),"plain",null,ImmutableArray<RichPdfParagraph>.Empty);
+        await NoAllocations(Enumerable.Repeat(payload,90).ToArray(),"Direct aggregate TextTransfer payload over 16 MiB");
+        string padded=original.SourceJson+new string(' ',1024*1024-Encoding.UTF8.GetByteCount(original.SourceJson));
+        Require(Encoding.UTF8.GetByteCount(padded)==1024*1024&&RichDocumentCodec.Inspect(new(1,padded)).Supported,"Raw-source aggregate control is individually valid at the exact 1-MiB source boundary");
+        await NoAllocations(Enumerable.Repeat(honest with{OriginalDocument=new(1,padded)},17).ToArray(),"Direct aggregate exact rich JSON over 16 MiB with a tiny text payload");
     }
     private static async Task RichAssertReference(RichRasterFixture fixture)
     {
@@ -300,6 +351,47 @@ internal static partial class Program
         RichMustRefuse(()=>geometry.Invoke(null,[24d,100d,new Rect(0,0,900,24)]),"Too-wide complete drawing ink refused");
         RichMustRefuse(()=>geometry.Invoke(null,[24d,100d,new Rect(0,-1100,100,1200)]),"Too-tall complete drawing ink refused");
     }
+    private static async Task RichDistinctParagraphPages()
+    {
+        // Fixed short unique labels fit one native 24-DIP line; including the required4-DIP
+        // gap gives36 complete paragraphs per printable A4 page, then8 on the third page.
+        string[] labels=Enumerable.Range(0,80).Select(index=>$"paragraph {index:D2} ABC gy").ToArray();
+        var original=new StyledDocument(1,JsonSerializer.Serialize(new{nodes=labels.Select(text=>new{type="paragraph",runs=new[]{new{text}}}).ToArray()}));
+        var copiedPages=new List<byte[]>(3);
+        try
+        {
+            using var prepared=await RichRender([RichSource(original)],owned:bytes=>
+            {
+                if(bytes.Length!=794*1123*3)return;
+                Require(copiedPages.Count<3,"Distinct paragraph oracle retains at most three copied native RGB pages");copiedPages.Add((byte[])bytes.Clone());
+            });
+            Require(copiedPages.Count==3&&Encoding.Latin1.GetString(prepared.Bytes).Contains("/Count 3 ",StringComparison.Ordinal),"Eighty distinct paragraphs preserve exactly three pages with 36/36/8 membership");
+            for(int page=0;page<3;page++)
+            {
+                byte[]? actual=null,reference=null;
+                try
+                {
+                    int begin=page*36,count=page<2?36:8;
+                    reference=RichReferenceRgb(()=>
+                    {
+                        var block=RichReferenceBlock(new Run(string.Join('\n',labels.Skip(begin).Take(count))));block.LineHeight=28;return block;
+                    });
+                    actual=VisualPdfFirstRgb(prepared.Bytes,page);
+                    Require(actual.AsSpan().SequenceEqual(copiedPages[page]),"Distinct paragraph page exactly preserves its corresponding copied native RGB: "+page);
+                    Require(VisualPdfReferenceMatches(actual,reference)&&VisualPdfWhiteBorder(actual),"Independent unique-label paragraph oracle preserves order, spacing, last/first page membership and visible ink: "+page);
+                }
+                finally{if(actual is not null)CryptographicOperations.ZeroMemory(actual);if(reference is not null)CryptographicOperations.ZeroMemory(reference);}
+            }
+        }
+        finally{foreach(var bytes in copiedPages)CryptographicOperations.ZeroMemory(bytes);}
+    }
+    private static async Task RichDrainCancelled(Task<PreparedTextExport> pending,Action revoke)
+    {
+        // Run even if the expected-yield assertion fails: a completed successful candidate
+        // still belongs to this fixture and must be disposed before it can leave the group.
+        try{revoke();}
+        finally{try{using var late=await pending;}catch(OperationCanceledException){}}
+    }
     private static async Task RichCleanupChecks()
     {
         var owned=new List<byte[]>();int populated=0;byte[]? candidate=null;
@@ -321,12 +413,19 @@ internal static partial class Program
         Require(owned.Any(bytes=>bytes.Length==794*1123*3)&&owned.All(bytes=>bytes.All(value=>value==0)),"Late refusal zeroes prior actual page and builder allocations");
         owned.Clear();using var cancel=new CancellationTokenSource();
         var pending=RichRender([RichSource(new(1,RichBasicJson)),RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("합성 cancel",100))}))],token:cancel.Token,owned:Observe);
-        Require(!pending.IsCompleted,"Native work reaches bounded page yield before cancellation");cancel.Cancel();bool canceled=false;
-        try{using var unused=await pending;}catch(OperationCanceledException){canceled=true;}
-        Require(canceled&&pending.IsCompleted&&owned.Count>0&&owned.All(bytes=>bytes.All(value=>value==0)),"Canceled real native task settles and erases earlier populated page/builder bytes");
+        try
+        {
+            Require(!pending.IsCompleted,"Native work reaches bounded page yield before cancellation");cancel.Cancel();bool canceled=false;
+            try{using var unused=await pending;}catch(OperationCanceledException){canceled=true;}
+            Require(canceled&&pending.IsCompleted&&owned.Count>0&&owned.All(bytes=>bytes.All(value=>value==0)),"Canceled real native task settles and erases earlier populated page/builder bytes");
+        }
+        finally{await RichDrainCancelled(pending,cancel.Cancel);}
         using var batchCancel=new CancellationTokenSource();var batched=RichRender([RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("batch é",100))}))],token:batchCancel.Token);
-        Require(!batched.IsCompleted,"32-line bounded native batch yields before page completion");batchCancel.Cancel();try{using var unused=await batched;throw new Exception("Missing batch cancellation");}catch(OperationCanceledException){}
-        bool current=true;var revoked=RichRender([RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("current",100))}))],()=>current);current=false;try{using var unused=await revoked;throw new Exception("Missing authority cancellation");}catch(OperationCanceledException){}
+        try{Require(!batched.IsCompleted,"32-line bounded native batch yields before page completion");batchCancel.Cancel();try{using var unused=await batched;throw new Exception("Missing batch cancellation");}catch(OperationCanceledException){}}
+        finally{await RichDrainCancelled(batched,batchCancel.Cancel);}
+        bool current=true;var revoked=RichRender([RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("current",100))}))],()=>current);
+        try{Require(!revoked.IsCompleted,"Source authority fixture reaches a real bounded line yield");current=false;try{using var unused=await revoked;throw new Exception("Missing authority cancellation");}catch(OperationCanceledException){}}
+        finally{await RichDrainCancelled(revoked,()=>current=false);}
         owned.Clear();bool failCurrent=false,callbackFailed=false;
         try{using var unused=await RichRender([RichSource(new(1,RichBasicJson))],()=>failCurrent?throw new InvalidOperationException("synthetic current failure"):true,owned:bytes=>{Observe(bytes);if(bytes.Length==794*1123*3)failCurrent=true;});}
         catch(InvalidOperationException error)when(error.Message=="synthetic current failure"){callbackFailed=true;}
@@ -392,15 +491,20 @@ internal static partial class Program
         Directory.CreateDirectory(output);var manifest=new List<object>();
         foreach(var fixture in RichViewerFixtures())
         {
-            byte[] reference=RichReferenceRgb(fixture.Reference);byte[]? actual=null;
+            byte[] reference=RichReferenceRgb(fixture.Reference);byte[]? actual=null,observed=null;
             try
             {
-                using var pdf=await RichRender([RichSource(fixture.Document)]);actual=VisualPdfFirstRgb(pdf.Bytes);
+                using var pdf=await RichRender([RichSource(fixture.Document)],owned:bytes=>
+                {
+                    if(bytes.Length!=794*1123*3)return;
+                    Require(observed is null,"Emitted fixed viewer fixture has exactly one native RGB page");observed=(byte[])bytes.Clone();
+                });actual=VisualPdfFirstRgb(pdf.Bytes);
+                Require(observed is not null&&actual.AsSpan().SequenceEqual(observed),"Emitted PDF image exactly preserves copied native RGB from this same rendering invocation: "+fixture.Name);
                 Require(Encoding.Latin1.GetString(pdf.Bytes).Contains("/Count 1 ",StringComparison.Ordinal)&&VisualPdfReferenceMatches(actual,reference),"Viewer reference bound to actual fixed synthetic PDF page: "+fixture.Name);
                 File.WriteAllBytes(Path.Combine(output,fixture.Name+".pdf"),pdf.Bytes);File.WriteAllBytes(Path.Combine(output,fixture.Name+".rgb"),reference);
                 manifest.Add(new{name=fixture.Name,pdf_sha256=Convert.ToHexString(SHA256.HashData(pdf.Bytes)).ToLowerInvariant(),pdf_bytes=pdf.Bytes.Length,reference_sha256=Convert.ToHexString(SHA256.HashData(reference)).ToLowerInvariant(),reference_bytes=reference.Length});
             }
-            finally{CryptographicOperations.ZeroMemory(reference);if(actual is not null)CryptographicOperations.ZeroMemory(actual);}
+            finally{CryptographicOperations.ZeroMemory(reference);if(actual is not null)CryptographicOperations.ZeroMemory(actual);if(observed is not null)CryptographicOperations.ZeroMemory(observed);}
         }
         File.WriteAllText(Path.Combine(output,"manifest.json"),JsonSerializer.Serialize(new{version=1,width=794,height=1123,dpi=96,fixtures=manifest},new JsonSerializerOptions{WriteIndented=true}));
     }

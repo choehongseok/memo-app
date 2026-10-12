@@ -30,10 +30,14 @@ internal static partial class Program
             await RichHostSuccessAndRefusal(fixture);
             await RichHostCallbacks(fixture);
             await RichHostFinalizerAdmission(fixture);
+            await RichHostTextPureAuthority(fixture);
+            await RichHostOrderedSelectionEvents(fixture);
             await RichHostYieldAndWrite(fixture);
+            await RichHostFlushLifetime(fixture);
         }
         await RichHostTerminalWrite(false);
         await RichHostTerminalWrite(true);
+        await RichHostFailureDrain();
     }
 
     private static async Task RichHostSuccessAndRefusal(RichHostFixture f)
@@ -50,12 +54,13 @@ internal static partial class Program
             try
             {
                 Require(!await f.Export("rich.pdf")&&File.ReadAllBytes(f.PathFor("rich.pdf")).SequenceEqual(richPdf),"Rich host preserves an existing destination through CreateNew semantics");
-                await f.Select(f.Plain,f.Rich);Require(await f.Export("mixed.pdf"),"One actual visual document supports the ordered mixed selection");
+                await f.Select(f.Plain,f.Rich);using var mixedCheckpoint=f.Checkpoint();Require(await f.Export("mixed.pdf"),"One actual visual document supports the ordered mixed selection");
                 byte[] mixedPdf=File.ReadAllBytes(f.PathFor("mixed.pdf")),richRgb=VisualPdfFirstRgb(richPdf),mixedRich=VisualPdfFirstRgb(mixedPdf,1);
                 using var plain=await PdfVisualRenderer.RenderPlainAsync([new(f.Plain.Title,f.Plain.Text)],()=>true,CancellationToken.None);
                 byte[] plainRgb=VisualPdfFirstRgb(plain.Bytes),mixedPlain=VisualPdfFirstRgb(mixedPdf);
                 try{Require(richRgb.SequenceEqual(mixedRich)&&plainRgb.SequenceEqual(mixedPlain),"Mixed file preserves selected order, exact single rich page and the existing plain pixel layout");}
                 finally{foreach(var bytes in new[]{mixedPdf,richRgb,mixedRich,plainRgb,mixedPlain})CryptographicOperations.ZeroMemory(bytes);}
+                mixedCheckpoint.Assert("mixed success retains exact source objects, epoch and dirty state");
             }
             finally{CryptographicOperations.ZeroMemory(richPdf);}
         }
@@ -131,7 +136,7 @@ internal static partial class Program
             descriptor.AddValueChanged(button,enabled);
             try
             {
-                var parent=(Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(f.Main,[new Func<PdfExportMode?>(()=>mode),new Func<bool>(()=>true),new Func<bool>(()=>true),new Func<string?>(()=>f.PathFor("finalizer-parent-"+mode+".pdf")),null])!;
+                var parent=f.Track((Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(f.Main,[new Func<PdfExportMode?>(()=>mode),new Func<bool>(()=>true),new Func<bool>(()=>true),new Func<string?>(()=>f.PathFor("finalizer-parent-"+mode+".pdf")),null])!);
                 Require(await parent&&entered&&child is not null,"Actual native enable setter reenters after the previous "+mode+" worker settled");
                 await files.Entered.Task.WaitAsync(TimeSpan.FromSeconds(15));
                 Require(!child!.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Outer mode cleanup cannot release admission now owned by a reentrant actual file worker: "+mode);
@@ -143,15 +148,78 @@ internal static partial class Program
         }
     }
 
+    private static async Task RichHostTextPureAuthority(RichHostFixture f)
+    {
+        // Mutation sensitivity: deleting the Text ordered-reference or captured-workspace predicate
+        // makes the corresponding Current() negative succeed, even with cancellation unavailable as an oracle.
+        foreach(string defense in new[]{"order","workspace"})
+        {
+            await f.Select(f.Plain,f.Rich);using var checkpoint=f.Checkpoint();var files=new RichHostFiles(true);
+            var pending=f.ExportText("pure-text-"+defense+".pdf",files:files);object? scope=null;RichHostWorkspaceCapture? workspaceCapture=null;EditingWorkspace? originalWorkspace=null;SelectionChangedEventHandler? observer=null;
+            var selection=Control<ListBox>(f.Main,"NotesList");
+            try
+            {
+                await files.Entered.Task.WaitAsync(TimeSpan.FromSeconds(15));scope=RichHostTextScope(pending);
+                var methods=scope.GetType().GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
+                var current=methods.Single(method=>method.Name.Contains("g__Current|",StringComparison.Ordinal));
+                bool Current()=>(bool)current.Invoke(scope,null)!;
+                var token=(CancellationToken)scope.GetType().GetField("token",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!.GetValue(scope)!;var request=scope.GetType().GetField("request",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public)!.GetValue(scope)!;
+                Require(Current()&&!token.IsCancellationRequested&&(bool)Invoke(f.Main,"CurrentBatch",request)!,"Real Text operation starts with an uncanceled current source before the isolated defense probe");
+                if(defense=="order")
+                {
+                    observer=(SelectionChangedEventHandler)methods.Single(method=>method.Name.Contains("g__SelectionChanged|",StringComparison.Ordinal)).CreateDelegate(typeof(SelectionChangedEventHandler),scope);
+                    selection.SelectionChanged-=observer;f.SelectNow(f.Rich,f.Plain);
+                    Require(selection.SelectedItems.Cast<NoteDraft>().SequenceEqual(new[]{f.Rich,f.Plain},ReferenceEqualityComparer.Instance),"Pure Text order probe reverses the same two exact selected references");
+                }
+                else
+                {
+                    // Fault only the captured authority variable, never the live session/workspace or note graph.
+                    workspaceCapture=new(pending,scope);originalWorkspace=workspaceCapture.Value;workspaceCapture.Value=new EditingWorkspace(TimeProvider.System);
+                    Require(ReferenceEquals(f.Active.Workspace,originalWorkspace),"Pure workspace probe leaves the live source workspace untouched");
+                }
+                Require(!token.IsCancellationRequested&&(bool)Invoke(f.Main,"CurrentBatch",request)!,"Pure Text defense has unchanged live batch membership and an uncanceled token: "+defense);
+                checkpoint.Assert("pure Text defense does not mutate source data: "+defense);
+                Require(!Current(),"Pure Text predicate rejects isolated "+defense+" mismatch independently of event cancellation");
+            }
+            finally
+            {
+                if(originalWorkspace is not null)workspaceCapture!.Value=originalWorkspace;
+                if(observer is not null){f.SelectNow(f.Plain,f.Rich);selection.SelectionChanged+=observer;}
+                files.Continue.TrySetResult();await pending;
+            }
+            checkpoint.Assert("restored pure Text fixture settles without source changes: "+defense);
+        }
+    }
+
+    private static async Task RichHostOrderedSelectionEvents(RichHostFixture f)
+    {
+        // Mutation sensitivity: losing monotonic selection-event cancellation permits a restored order.
+        foreach(bool text in new[]{false,true})foreach(bool roundtrip in new[]{false,true})
+        {
+            await f.Select(f.Plain,f.Rich);using var checkpoint=f.Checkpoint();var files=new RichHostFiles();int consent=0,picker=0;
+            Func<bool> confirm=()=>{consent++;f.SelectNow(f.Rich,f.Plain);if(roundtrip)f.SelectNow(f.Plain,f.Rich);return true;};
+            Func<string?> choose=()=>{picker++;return f.PathFor("event-order.pdf");};
+            bool accepted=await (text?f.ExportText("event-order.pdf",confirm,choose,files):f.Export("event-order.pdf",confirm,choose,files));
+            Require(!accepted&&consent==1&&picker==0&&files.Creates==0&&!Field<bool>(f.Main,"pdfExportBusy"),"Actual multi-note selection "+(roundtrip?"round trip":"reorder")+" revokes "+(text?"Text":"Visual")+" before picker/CreateNew");
+            checkpoint.Assert("ordered selection events preserve source objects/epoch/dirty/cipher");
+        }
+    }
+
     private static async Task RichHostYieldAndWrite(RichHostFixture f)
     {
         foreach(string mutation in new[]{"edit","same-version-accept","selection-roundtrip"})
         {
             f.Active.Workspace.SetRichDocument(f.Rich,RichHostDocument(new{text=string.Join('\n',Enumerable.Repeat("합성 긴 ABC",100))}));await f.Select(f.Rich);var files=new RichHostFiles();
-            var pending=f.Export("yield-"+mutation+".pdf",files:files);Require(!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Native rich preparation reaches an actual bounded dispatcher yield");
-            f.Mutate(mutation);int excludedConsent=0,excludedPicker=0;
-            Require(!await f.Export("yield-reentry.pdf",()=>{excludedConsent++;return false;},()=>{excludedPicker++;return null;})&&excludedConsent==0&&excludedPicker==0&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Canceled preparation excludes callbacks and retains busy admission until its real task settles");
-            Require(!await pending&&files.Creates==0&&!Field<bool>(f.Main,"pdfExportBusy"),"Yield mutation discards the candidate before file creation: "+mutation);
+            var pending=f.Export("yield-"+mutation+".pdf",files:files);
+            try
+            {
+                Require(!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Native rich preparation reaches an actual bounded dispatcher yield");
+                f.Mutate(mutation);using var checkpoint=f.Checkpoint();int excludedConsent=0,excludedPicker=0;
+                Require(!await f.Export("yield-reentry.pdf",()=>{excludedConsent++;return false;},()=>{excludedPicker++;return null;})&&excludedConsent==0&&excludedPicker==0&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Canceled preparation excludes callbacks and retains busy admission until its real task settles");
+                Require(!await pending&&files.Creates==0&&!Field<bool>(f.Main,"pdfExportBusy"),"Yield mutation discards the candidate before file creation: "+mutation);
+                checkpoint.Assert("post-yield cancellation preserves exact post-event source/document identity/epoch/dirty: "+mutation);
+            }
+            finally{await pending;}
         }
         f.Active.Workspace.SetRichDocument(f.Rich,new(1,RichHostFixture.Raw));
         foreach(string mutation in new[]{"none","edit","same-version-accept","selection-roundtrip"})
@@ -175,6 +243,33 @@ internal static partial class Program
         }
     }
 
+    private static async Task RichHostFlushLifetime(RichHostFixture f)
+    {
+        // Mutation sensitivity: treating cancellation as file settlement disposes/zeros the actual
+        // host candidate or releases busy while the already-written stream remains inside FlushToDisk.
+        foreach(bool cancel in new[]{false,true})
+        {
+            await f.Select(f.Rich);var files=new RichHostFiles(pauseFlush:true);string name="post-write-flush-"+cancel+".pdf";var pending=f.Export(name,files:files);
+            try
+            {
+                await files.FlushEntered.Task.WaitAsync(TimeSpan.FromSeconds(15));var prepared=RichHostPrepared(pending);byte[] bytes=prepared.Bytes;int length=bytes.Length;byte[] digest=SHA256.HashData(bytes);
+                try
+                {
+                    Require(files.WrittenBytes==length&&length>0&&!prepared.IsDisposed&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Actual host candidate has been fully written but remains owned during blocked disk flush");
+                    if(cancel)f.Mutate("same-version-accept");using var checkpoint=f.Checkpoint();int consent=0,picker=0;
+                    Require(!await f.Export("flush-reentry.pdf",()=>{consent++;return false;},()=>{picker++;return null;})&&consent==0&&picker==0&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Blocked post-write flush retains admission and excludes callback reentry");
+                    Require(!prepared.IsDisposed&&bytes.Any(value=>value!=0),"Post-write cancellation cannot dispose the actual host candidate before flush settlement");
+                    files.Continue.TrySetResult();Require(await pending==!cancel,"Actual completed flush reports success only for its still-current host authority");
+                    Require(prepared.IsDisposed&&bytes.All(value=>value==0)&&!Field<bool>(f.Main,"pdfExportBusy"),"Actual post-write flush settles before candidate zero/disposal and admission release");
+                    byte[] saved=File.ReadAllBytes(f.PathFor(name));try{Require(saved.Length==length&&SHA256.HashData(saved).SequenceEqual(digest),"Cancellation after write leaves the completed synthetic PDF intact; it does not retroactively erase written plaintext");}finally{CryptographicOperations.ZeroMemory(saved);}
+                    checkpoint.Assert("post-write flush preserves source/document identity/epoch/dirty/cipher");
+                }
+                finally{CryptographicOperations.ZeroMemory(digest);}
+            }
+            finally{files.Continue.TrySetResult();await pending;}
+        }
+    }
+
     private static async Task RichHostTerminalWrite(bool close)
     {
         await using var f=await RichHostFixture.Create();await f.Select(f.Rich);var files=new RichHostFiles(true);var pending=f.Export(close?"closed.pdf":"locked.pdf",files:files);
@@ -191,6 +286,26 @@ internal static partial class Program
             Require(prepared.IsDisposed&&bytes.All(value=>value==0)&&!Field<bool>(f.Main,"pdfExportBusy"),"Terminal actual worker settles before payload zero and busy release");
         }
         finally{files.Continue.TrySetResult();await pending;}
+    }
+
+    private static async Task RichHostFailureDrain()
+    {
+        // Test-fixture mutation sensitivity: removing registered backend release/actual-task drain
+        // must fail when a genuine test exception occurs while host-owned file work is still blocked.
+        foreach(bool flush in new[]{false,true})
+        {
+            const string failure="Synthetic assertion interruption while PDF work is pending";
+            Task<bool>? pending=null;PreparedTextExport? prepared=null;byte[]? bytes=null;string? directory=null;bool observed=false;
+            try
+            {
+                await using var f=await RichHostFixture.Create();directory=Path.GetDirectoryName(f.Root);var files=new RichHostFiles(pause:!flush,pauseFlush:flush);
+                pending=f.Export("failure-drain.pdf",files:files);await (flush?files.FlushEntered.Task:files.Entered.Task).WaitAsync(TimeSpan.FromSeconds(15));prepared=RichHostPrepared(pending);bytes=prepared.Bytes;
+                Require(!pending.IsCompleted&&!prepared.IsDisposed&&bytes.Any(value=>value!=0),"Failure-drain control owns real pending file work and a populated host candidate");
+                throw new InvalidOperationException(failure);
+            }
+            catch(InvalidOperationException error)when(error.Message==failure){observed=true;}
+            Require(observed&&pending is{IsCompleted:true}&&!await pending&&prepared is{IsDisposed:true}&&bytes is not null&&bytes.All(value=>value==0)&&directory is not null&&!Directory.Exists(directory),"Failure cleanup releases and drains actual "+(flush?"post-write flush":"CreateNew")+" before payload zero, owner disposal and fixture deletion");
+        }
     }
 
     private static StyledDocument RichHostDocument(params object[] runs)=>new(1,JsonSerializer.Serialize(new{nodes=new[]{new{type="paragraph",runs}}}));
@@ -217,17 +332,76 @@ internal static partial class Program
         Visit(task,0);Require(found.Count==1,"Blocked real export task retains exactly one complete prepared PDF in its async ownership chain");return found.Single();
     }
 
-    private sealed class RichHostFiles(bool pause=false):IAtomicVaultFiles
+    private static object RichHostTextScope(Task task)
     {
-        private readonly AtomicVaultFiles actual=new();private int creates;
+        var visited=new HashSet<object>(ReferenceEqualityComparer.Instance);var found=new List<object>();
+        void Visit(object? value,int depth)
+        {
+            if(value is null||depth>12||!visited.Add(value))return;Type type=value.GetType();
+            bool closure=type.DeclaringType==typeof(MainWindow)&&type.Name.StartsWith("<>c__DisplayClass",StringComparison.Ordinal);
+            if(value is not Task&&value is not IAsyncStateMachine&&!type.Name.StartsWith("TaskAwaiter",StringComparison.Ordinal)&&!closure)return;
+            if(closure&&type.GetMethods(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public).Any(method=>method.Name.Contains("<ExportSelectedPdfAsync>g__Current|",StringComparison.Ordinal))){found.Add(value);return;}
+            for(Type? current=type;current is not null&&current!=typeof(object);current=current.BaseType)
+                foreach(var field in current.GetFields(BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.DeclaredOnly))Visit(field.GetValue(value),depth+1);
+        }
+        Visit(task,0);Require(found.Count==1,"Blocked Text export exposes exactly its real compiler-owned local authority closure");return found.Single();
+    }
+
+    private sealed class RichHostCheckpoint:IDisposable
+    {
+        private readonly RichHostFixture fixture;private readonly EditingWorkspace workspace;private readonly NoteDraft[] notes;private readonly StyledDocument?[] documents;
+        private readonly long epoch;private readonly bool dirty;private readonly byte[] source,cipher;
+        internal RichHostCheckpoint(RichHostFixture fixture)
+        {
+            this.fixture=fixture;workspace=fixture.Active.Workspace;notes=workspace.Notes.ToArray();documents=notes.Select(note=>note.Document).ToArray();epoch=fixture.Active.AttachmentPreviewEpoch;dirty=fixture.Active.IsDirty;
+            source=PdfAuthorityStableSource(workspace);cipher=File.ReadAllBytes(fixture.CipherPath);
+        }
+        internal void Assert(string scenario)
+        {
+            fixture.AssertStable(source,cipher,scenario);
+            Require(ReferenceEquals(fixture.Active.Workspace,workspace)&&fixture.Active.AttachmentPreviewEpoch==epoch&&fixture.Active.IsDirty==dirty&&workspace.Notes.SequenceEqual(notes,ReferenceEqualityComparer.Instance)&&notes.Select((note,index)=>ReferenceEquals(note.Document,documents[index])).All(same=>same),"Exact workspace/note/document identities, source epoch and dirty state remain unchanged: "+scenario);
+        }
+        public void Dispose(){CryptographicOperations.ZeroMemory(source);CryptographicOperations.ZeroMemory(cipher);}
+    }
+
+    private sealed class RichHostWorkspaceCapture
+    {
+        private readonly FieldInfo local;private readonly object storage;private readonly FieldInfo? stateMachine;private readonly Task? task;
+        internal RichHostWorkspaceCapture(Task task,object scope)
+        {
+            const BindingFlags flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
+            var captured=scope.GetType().GetField("workspace",flags);
+            if(captured is not null){local=captured;storage=scope;return;}
+            // Without the workspace predicate, the compiler keeps this local in the async state machine
+            // instead of its authority closure. Handle both layouts so removing the guard fails Current,
+            // not a missing-field lookup. Only replace the boxed state while its real worker is paused.
+            this.task=task;stateMachine=task.GetType().GetField("StateMachine",flags)??throw new Exception("Text async state machine field missing");
+            storage=stateMachine.GetValue(task)??throw new Exception("Text async state machine missing");
+            local=storage.GetType().GetFields(flags).Single(field=>field.FieldType==typeof(EditingWorkspace)&&field.Name.StartsWith("<workspace>",StringComparison.Ordinal));
+        }
+        internal EditingWorkspace Value
+        {
+            get=>(EditingWorkspace)local.GetValue(storage)!;
+            set{local.SetValue(storage,value);if(stateMachine is not null)stateMachine.SetValue(task,storage);}
+        }
+    }
+
+    private sealed class RichHostFiles(bool pause=false,bool pauseFlush=false):IAtomicVaultFiles
+    {
+        private readonly AtomicVaultFiles actual=new();private int creates;private long writtenBytes;
         internal int Creates=>Volatile.Read(ref creates);
-        internal readonly TaskCompletionSource Entered=new(TaskCreationOptions.RunContinuationsAsynchronously),Continue=new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal long WrittenBytes=>Interlocked.Read(ref writtenBytes);
+        internal readonly TaskCompletionSource Entered=new(TaskCreationOptions.RunContinuationsAsynchronously),FlushEntered=new(TaskCreationOptions.RunContinuationsAsynchronously),Continue=new(TaskCreationOptions.RunContinuationsAsynchronously);
         public Stream CreateNew(string path)
         {
             Interlocked.Increment(ref creates);var stream=actual.CreateNew(path);Entered.TrySetResult();
             if(pause&&!Continue.Task.Wait(TimeSpan.FromSeconds(30))){stream.Dispose();throw new IOException("Synthetic rich host CreateNew pause timed out");}return stream;
         }
-        public void FlushToDisk(Stream stream)=>actual.FlushToDisk(stream);
+        public void FlushToDisk(Stream stream)
+        {
+            Interlocked.Exchange(ref writtenBytes,stream.Position);FlushEntered.TrySetResult();
+            if(pauseFlush&&!Continue.Task.Wait(TimeSpan.FromSeconds(30)))throw new IOException("Synthetic rich host disk flush pause timed out");actual.FlushToDisk(stream);
+        }
         public void Move(string temporary,string current)=>throw new NotSupportedException();
         public void Replace(string temporary,string current,string previous)=>throw new NotSupportedException();
     }
@@ -237,6 +411,7 @@ internal static partial class Program
         internal const string Raw="{\"nodes\":[{\"type\":\"paragraph\",\"runs\":[{\"text\":\"합성 굵은 ABC\",\"bold\":true,\"underline\":true,\"strike\":true,\"fontFamily\":\"Malgun Gothic\",\"foreground\":\"#CC0000\",\"background\":\"#80FFFF00\"}]}]}";
         private readonly byte[] secret=EncryptedVault.GenerateRecoverySecret();
         private readonly string directory=Path.Combine(Path.GetTempPath(),"memo-wpf-rich-host-"+Guid.NewGuid().ToString("N"));
+        private readonly List<Task> work=[];private readonly HashSet<RichHostFiles> backends=[];
         internal string Root=>Path.Combine(directory,"vault");internal string CipherPath=>Path.Combine(Root,"current.vault");
         internal MainWindow Main=null!;internal SaveCoordinator Active=null!;internal NoteDraft Rich=null!,Plain=null!,Last=null!;
         private ListBox Selection=>Control<ListBox>(Main,"NotesList");
@@ -255,13 +430,24 @@ internal static partial class Program
         }
         internal async Task Select(params NoteDraft[] notes)
         {
-            Selection.UnselectAll();foreach(var note in notes)Selection.SelectedItems.Add(note);await Idle();await Field<Task>(Main,"recentTask");await Idle();
+            SelectNow(notes);await Idle();await Field<Task>(Main,"recentTask");await Idle();
             Require(Selection.SelectedItems.Cast<NoteDraft>().SequenceEqual(notes),"Native fixture settles the exact ordered live selection before export");
         }
-        internal Task<bool> Export(string name,Func<bool>? confirm=null,Func<string?>? choose=null,IAtomicVaultFiles? files=null)=>(Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedVisualPdfAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[confirm??(()=>true),choose??(()=>PathFor(name)),files])!;
+        internal void SelectNow(params NoteDraft[] notes){Selection.UnselectAll();foreach(var note in notes)Selection.SelectedItems.Add(note);}
+        internal RichHostCheckpoint Checkpoint()=>new(this);
+        internal Task<bool> Track(Task<bool> pending){work.Add(pending);return pending;}
+        private void TrackBackend(IAtomicVaultFiles? files){if(files is RichHostFiles controlled)backends.Add(controlled);}
+        internal Task<bool> Export(string name,Func<bool>? confirm=null,Func<string?>? choose=null,IAtomicVaultFiles? files=null)
+        {
+            TrackBackend(files);return Track((Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedVisualPdfAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[confirm??(()=>true),choose??(()=>PathFor(name)),files])!);
+        }
+        internal Task<bool> ExportText(string name,Func<bool>? confirm=null,Func<string?>? choose=null,IAtomicVaultFiles? files=null)
+        {
+            TrackBackend(files);return Track((Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[confirm??(()=>true),choose??(()=>PathFor(name)),files])!);
+        }
         internal async Task<bool> Mode(string name,Func<PdfExportMode?> mode,Func<bool> confirm,Func<string?> choose,IAtomicVaultFiles? files=null)
         {
-            int textConsent=0;bool accepted=await (Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[mode,new Func<bool>(()=>{textConsent++;return false;}),confirm,choose,files])!;
+            TrackBackend(files);int textConsent=0;bool accepted=await Track((Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[mode,new Func<bool>(()=>{textConsent++;return false;}),confirm,choose,files])!);
             Require(textConsent==0,"Visual mode and mode cancellation never enter Text consent: "+name);return accepted;
         }
         internal void RoundTrip(){Selection.SelectedItem=Plain;Selection.SelectedItem=Rich;}
@@ -283,17 +469,36 @@ internal static partial class Program
         }
         public async ValueTask DisposeAsync()
         {
+            var errors=new List<Exception>();Task<bool>? locking=null;bool released=Active is null,closed=Main is null;
             try
             {
                 if(Active is not null)
                 {
-                    if(Field<bool>(Main,"windowClosed"))Active.Conceal-=(Action)typeof(MainWindow).GetMethod("ConcealViews",BindingFlags.Instance|BindingFlags.NonPublic)!.CreateDelegate(typeof(Action),Main);
-                    if(!Active.IsLocked)await Active.LockAsync();await Active.WhenAttachmentReadsIdle;
-                    Require(Active.KeysReleased&&!Active.IsBusy,"Synthetic rich host cleanup waits for session settlement and released keys");Invoke(Main,"ReleaseSettledSession");
+                    if(Main is not null&&Field<bool>(Main,"windowClosed"))Active.Conceal-=(Action)typeof(MainWindow).GetMethod("ConcealViews",BindingFlags.Instance|BindingFlags.NonPublic)!.CreateDelegate(typeof(Action),Main);
+                    try{if(!Active.IsLocked)locking=Active.LockAsync();}catch(Exception error){errors.Add(error);}
                 }
-                if(Main is not null){SetField(Main,"confirmedExit",true);Main.Close();}
+                foreach(var backend in backends)backend.Continue.TrySetResult();
+                for(int index=0;index<work.Count;index++)try{await work[index];}catch(Exception error){errors.Add(error);}
+                if(locking is not null)try{await locking;}catch(Exception error){errors.Add(error);}
+                if(Main is not null)try{await Field<Task>(Main,"recentTask");}catch(Exception error){errors.Add(error);}
+                if(Active is not null)
+                {
+                    try
+                    {
+                        await Active.WhenAttachmentReadsIdle;
+                        Require(work.All(task=>task.IsCompleted)&&Active.IsLocked&&Active.KeysReleased&&!Active.IsBusy,"Synthetic rich host cleanup drains every actual export before releasing the source owner");
+                        if(Main is null)throw new InvalidOperationException("Synthetic rich host session has no UI owner; retain fixture after actual task drain");
+                        released=(bool)Invoke(Main,"ReleaseSettledSession")!;
+                    }
+                    catch(Exception error){errors.Add(error);}
+                }
+                if(Main is not null)try{SetField(Main,"confirmedExit",true);Main.Close();closed=Field<bool>(Main,"windowClosed");}catch(Exception error){errors.Add(error);}
             }
-            finally{CryptographicOperations.ZeroMemory(secret);if(Directory.Exists(directory))Directory.Delete(directory,true);}
+            finally{CryptographicOperations.ZeroMemory(secret);}
+            if(errors.Count==0&&work.All(task=>task.IsCompleted)&&released&&closed)
+            {try{if(Directory.Exists(directory))Directory.Delete(directory,true);}catch(Exception error){errors.Add(error);}}
+            else errors.Add(new InvalidOperationException("Synthetic rich host fixture retained because actual work/owner cleanup did not succeed: "+directory));
+            if(errors.Count!=0)throw new AggregateException("Synthetic rich host cleanup failures",errors);
         }
     }
 }
