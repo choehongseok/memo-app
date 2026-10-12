@@ -169,8 +169,19 @@ internal static partial class Program
     }
     private static async Task RichNestedNativeWorker()
     {
+        // Obtain the localized framework refusal without accepting unrelated dispatcher failures.
+        InvalidOperationException? suspended=null;
+        using(Dispatcher.CurrentDispatcher.DisableProcessing())
+        {
+            try{Dispatcher.PushFrame(new DispatcherFrame());}
+            catch(InvalidOperationException error){suspended=error;}
+        }
+        Require(suspended?.TargetSite?.DeclaringType==typeof(Dispatcher) && suspended.TargetSite.Name==nameof(Dispatcher.PushFrame),"native dispatcher suspension control must originate in PushFrame");
+        bool IsSuspended(InvalidOperationException error)=>Equals(error.TargetSite,suspended!.TargetSite) && string.Equals(error.Message,suspended.Message,StringComparison.Ordinal);
+        try{throw new InvalidOperationException(suspended!.Message);}
+        catch(InvalidOperationException unrelated){Require(!IsSuspended(unrelated),"same-message callback failure must not be treated as framework suspension");}
         int requestedPumps=0,refusedPumps=0;
-        void Pump(){requestedPumps++;var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>frame.Continue=false));try{Dispatcher.PushFrame(frame);}catch(InvalidOperationException e) when(e.Message.Contains("dispatcher processing is suspended",StringComparison.OrdinalIgnoreCase)){refusedPumps++;}}
+        void Pump(){requestedPumps++;var frame=new DispatcherFrame();Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,new Action(()=>frame.Continue=false));try{Dispatcher.PushFrame(frame);}catch(InvalidOperationException e) when(IsSuspended(e)){refusedPumps++;}}
         var workspace=new EditingWorkspace(TimeProvider.System);var note=workspace.CreateNote();note.Text="nested before";workspace.ConvertMode(note,"rich",true);bool live=true;using var view=new StructuredNoteEditor(workspace,note,()=>live,_=>{});var window=new Window{Content=view,Width=400,Height=300};window.Show();await Idle();bool armed=true;
         view.RichInput.TextChanged+=(_,_)=>{if(armed){armed=false;workspace.SetRichDocument(note,RichDocumentCodec.FromPlain("NESTED_HANDLER_B"));Pump();}};
         ((Paragraph)view.RichInput.Document.Blocks.FirstBlock).Inlines.Add(new Run("_A"));await Idle();Require(note.Text=="NESTED_HANDLER_B" && new TextRange(view.RichInput.Document.ContentStart,view.RichInput.Document.ContentEnd).Text.Contains("NESTED_HANDLER_B"),"nested dispatcher pump must not replace Document inside outer native TextChanged");
