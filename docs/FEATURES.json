@@ -3458,7 +3458,8 @@
         "src/MemoApp.Core/Transfer/PdfRasterDocumentBuilder.cs",
         "src/MemoApp.Windows/PdfVisualRenderer.cs",
         "src/MemoApp.Windows/MainWindow.VisualPdfExport.cs",
-        "src/MemoApp.Core/Transfer/RichParagraphPdfSource.cs"
+        "src/MemoApp.Core/Transfer/RichParagraphPdfSource.cs",
+        "src/MemoApp.Windows/PdfVisualRenderer.RichParagraphs.cs"
       ],
       "planned_module": "ImportExport",
       "test_evidence": [
@@ -3482,9 +3483,16 @@
           "environment": "GitHub Windows Server2022 / SDK10.0.401/runtime10.0.12",
           "command": "https://github.com/choehongseok/memo-app/actions/runs/38032655607",
           "result": "Whole native/Core/package/actual installed EXE SUCCESS. Eight regular/bold requests resolved; six exact unsimulated system candidates independently approved, Symbol/Emoji bold simulation refused. Core capture PASS; glyph/styled renderer/nativeviewer/host integration remain pending. Upload SKIP; no full N02/134 or physical acceptance claim."
+        },
+        {
+          "kind": "reconstructed-rich-paragraph-source-local-partial",
+          "commit": "53e41606a1db186ee6e2b282447baf982ba5d210",
+          "environment": "Linux cloud x86_64 / SDK10.0.401/runtime10.0.12; native Windows not executed",
+          "command": "docs/N02_RECOVERY_20261012.md",
+          "result": "New reconstruction from exact base55, not recovered unpublished source. Core88 baseline PASS (Core unchanged), Python64 PASS/no skips, final WindowsChecks crossbuild0warnings/errors43.19s. Metadata API/call-route RED to GREEN proves wiring only. Host and renderer scoped source re-reviews cleared all findings; viewer source clear with one Minor; final integration source/specification and quality review clear. Actual Windows WPF/app-produced PDFs/independent viewer/installed EXE pending; native compressed16MiB overflow remains unverified. Actions query returned Forbidden, no bypass. No new installer/Library file ID or N02/full134/user acceptance completion."
         }
       ],
-      "blocking_reason": "Bounded plain 표시 PDF 및 inert rich paragraph capture는 run164 전체Windows/실제설치 gate PASS. 실제6systemface 독립승인 후 Task2 tests-first 활성화; 서식 renderer/nativeRGB/viewer 및 정확한 UI선택순서 권한·통합은 대기. Rich list/table/Markdown/image fidelity 및 실제 사용자 수용 미완료."
+      "blocking_reason": "별도 recovery/n02-20261012에서 rich-v1 문단 renderer·정확한 UI 권한·독립 viewer 도구 소스를 재구현하고 Linux 교차빌드/검사를 확인했다. 실제 새 Windows WPF/RGB·앱 생성 PDF viewer·전체 native/설치 검증과 Library 전달은 Actions Forbidden 때문에 미완료. Rich list/table/Markdown/image fidelity 및 실제 사용자 수용 미완료. 이전 run164는 새 renderer 증거가 아니다."
     },
     {
       "id": "N03",
