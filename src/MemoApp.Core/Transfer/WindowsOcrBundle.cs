@@ -13,6 +13,13 @@ internal sealed partial class WindowsOcrBundle
   if(trustedAssemblyManifest.Length>16384)throw new InvalidDataException("OCR manifest limit");Root=LocalFilePath.Resolve(root);
   using var json=JsonDocument.Parse(trustedAssemblyManifest,new(){MaxDepth=4});var m=json.RootElement;
   if(m.GetProperty("tesseractCommit").GetString()!="db0ec62f81b0737fbbe184d8fea40af5738f8eef"||m.GetProperty("leptonicaCommit").GetString()!="13275a278eb55b5746e33f95fbf5a2c8f604b3ab"||m.GetProperty("modelsCommit").GetString()!="87416418657359cb625c412a48b6e1d6d41c29bd")throw new InvalidDataException("OCR source provenance");
+  // This fixed Windows integration removes Leptonica's temporary plaintext PNM file.
+  foreach(var pin in new[]{
+   ("inputDecoder","memo-canonical-p6-memory-v1"),
+   ("memoryPnmSha256","8a69c392409e5d6c4119e3875edc9256e561cf054aba44bd9fbbc1401cbc9fd3"),
+   ("upstreamPnmSha256","b6dbee33ae0ee3e3f399bec304c92ca8b74717edf0b94e4a018efeeebc7b1198"),
+   ("patchedPnmSha256","78e0793c30fb4c36bf77dea48d9dd0c21c8731338acebb9c907b8a45c5e100f3")})
+   if(!m.TryGetProperty(pin.Item1,out var actual)||actual.GetString()!=pin.Item2)throw new InvalidDataException("OCR memory input provenance");
   var dll=m.GetProperty("peDependencies").EnumerateArray().Select(v=>v.GetString()).ToArray();if(dll.Length!=1||dll[0]!="KERNEL32.dll")throw new InvalidDataException("OCR native dependencies");
   engineLength=m.GetProperty("engineLength").GetInt64();archiveLength=m.GetProperty("modelsArchiveLength").GetInt64();engineHash=m.GetProperty("engineSha256").GetString()!;archiveHash=m.GetProperty("modelsArchiveSha256").GetString()!;
   if(engineLength is <1 or >8388608||archiveLength is <1 or >8388608||!Hash(engineHash)||!Hash(archiveHash))throw new InvalidDataException("OCR component bounds");

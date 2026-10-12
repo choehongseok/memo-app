@@ -31,7 +31,15 @@ internal static class LocalOcrChecks
   {
    // Synthetic metadata probes path refusal only; it never executes/authenticates a native binary.
    string manifest=System.Text.Json.JsonSerializer.Serialize(new{tesseractCommit="db0ec62f81b0737fbbe184d8fea40af5738f8eef",leptonicaCommit="13275a278eb55b5746e33f95fbf5a2c8f604b3ab",modelsCommit="87416418657359cb625c412a48b6e1d6d41c29bd",engineLength=1,engineSha256=new string('0',64),modelsArchiveLength=1,modelsArchiveSha256=new string('0',64),peDependencies=new[]{"KERNEL32.dll"}});
-   var bundle=new WindowsOcrBundle(root,Encoding.UTF8.GetBytes(manifest));
+   VaultChecks.ExpectFailure(()=>new WindowsOcrBundle(root,Encoding.UTF8.GetBytes(manifest)),"Old native bundle without memory decoder provenance is refused");
+   byte[] patchedManifest=WithMemoryProvenance(Encoding.UTF8.GetBytes(manifest));
+   foreach(string key in new[]{"inputDecoder","memoryPnmSha256","upstreamPnmSha256","patchedPnmSha256"})
+   {
+    var changed=System.Text.Json.Nodes.JsonNode.Parse(patchedManifest)!.AsObject();changed[key]="unexpected";
+    VaultChecks.ExpectFailure(()=>new WindowsOcrBundle(root,Encoding.UTF8.GetBytes(changed.ToJsonString())),"Changed native memory decoder provenance is refused: "+key);
+    changed.Remove(key);VaultChecks.ExpectFailure(()=>new WindowsOcrBundle(root,Encoding.UTF8.GetBytes(changed.ToJsonString())),"Missing native memory decoder provenance is refused: "+key);
+   }
+   var bundle=new WindowsOcrBundle(root,patchedManifest);
    Directory.CreateDirectory(Path.Combine(root,"unexpected-child"));VaultChecks.ExpectFailure(()=>bundle.CheckNativeRoot(),"OCR refuses additional directory without traversing children");Directory.Delete(Path.Combine(root,"unexpected-child"));
    Directory.CreateDirectory(Path.Combine(root,"tesseract.exe"));VaultChecks.ExpectFailure(()=>bundle.CheckNativeRoot(),"OCR fixed component name cannot be a directory");Directory.Delete(Path.Combine(root,"tesseract.exe"));
    if(!OperatingSystem.IsWindows())
@@ -39,6 +47,16 @@ internal static class LocalOcrChecks
   }
   finally{Directory.Delete(root,true);}
   Console.WriteLine("PASS: bounded owned OCR PPM input RGB/alpha/source zero/refusal/cancel; engine validation separate");
+ }
+
+ internal static byte[] WithMemoryProvenance(byte[] manifest)
+ {
+  var value=System.Text.Json.Nodes.JsonNode.Parse(manifest)!.AsObject();
+  value["inputDecoder"]="memo-canonical-p6-memory-v1";
+  value["memoryPnmSha256"]="8a69c392409e5d6c4119e3875edc9256e561cf054aba44bd9fbbc1401cbc9fd3";
+  value["upstreamPnmSha256"]="b6dbee33ae0ee3e3f399bec304c92ca8b74717edf0b94e4a018efeeebc7b1198";
+  value["patchedPnmSha256"]="78e0793c30fb4c36bf77dea48d9dd0c21c8731338acebb9c907b8a45c5e100f3";
+  return Encoding.UTF8.GetBytes(value.ToJsonString());
  }
 
  internal static async Task ProcessChecks()
@@ -111,6 +129,7 @@ internal static class LocalOcrChecks
  {
   VaultChecks.Require(OperatingSystem.IsWindows(),"Native OCR probe requires actual Windows");
   root=Path.GetFullPath(root);using var manifest=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(root,"native-build.json")));
+  _=new WindowsOcrBundle(root,File.ReadAllBytes(Path.Combine(root,"native-build.json"))); // Same pinned memory-input policy as the product.
   var value=manifest.RootElement;
   VaultChecks.Require(value.GetProperty("tesseractCommit").GetString()=="db0ec62f81b0737fbbe184d8fea40af5738f8eef"&&value.GetProperty("leptonicaCommit").GetString()=="13275a278eb55b5746e33f95fbf5a2c8f604b3ab"&&value.GetProperty("modelsCommit").GetString()=="87416418657359cb625c412a48b6e1d6d41c29bd","Exact public upstream source provenance");
   VaultChecks.Require(!Directory.EnumerateFiles(root,"*.dll",SearchOption.AllDirectories).Any(),"Probe bundle contains no additional DLL dependencies");

@@ -14,7 +14,7 @@ internal static class LinkedOcrStarterChecks
         {
             string components=Path.Combine(root,"empty-components");Directory.CreateDirectory(components);
             byte[] manifest=JsonSerializer.SerializeToUtf8Bytes(new{tesseractCommit=OcrProvenanceFacts.TesseractCommit,leptonicaCommit=OcrProvenanceFacts.LeptonicaCommit,modelsCommit=OcrProvenanceFacts.ModelsCommit,peDependencies=new[]{"KERNEL32.dll"},engineLength=1,modelsArchiveLength=1,engineSha256=new string('a',64),modelsArchiveSha256=new string('b',64)});
-            var bundle=new WindowsOcrBundle(components,manifest);
+            var bundle=new WindowsOcrBundle(components,MemoApp.Core.LocalOcrChecks.WithMemoryProvenance(manifest));
             using var owner=new SaveCoordinator(EncryptedVault.Create(Path.Combine(root,"vault"),secret,secret),TimeProvider.System);var note=owner.Workspace.CreateNote();
             VaultChecks.Require(await owner.PrepareAttachmentsAsync(),"Staged starter anchored synthetic encrypted root");Guid id=owner.AttachBytes(note,png,"synthetic.png","image/png",note.EditVersion);VaultChecks.Require(await owner.SaveAsync(),"Staged starter genuine authenticated source");
             var source=new OcrSourceDescriptor(id,owner.Workspace.Capture().AttachmentRootId,Convert.ToHexStringLower(SHA256.HashData(png)),png.Length);

@@ -1,9 +1,12 @@
 """Build pinned public OCR components in CI; no runtime download or artifact upload."""
-import hashlib, json, pathlib, re, shutil, subprocess, sys, urllib.request, zipfile
+import hashlib, json, os, pathlib, re, shutil, subprocess, sys, urllib.request, zipfile
 
 TESSERACT = 'db0ec62f81b0737fbbe184d8fea40af5738f8eef'
 LEPTONICA = '13275a278eb55b5746e33f95fbf5a2c8f604b3ab'
 MODELS = '87416418657359cb625c412a48b6e1d6d41c29bd'
+LEPTONICA_PNM_SHA256 = 'b6dbee33ae0ee3e3f399bec304c92ca8b74717edf0b94e4a018efeeebc7b1198'
+LEPTONICA_PNM_FUNCTION_SHA256 = '36478e52b8f226a731702eccbba5b9a38791f86fbcb0ced25952bf8d0b858c6d'
+MEMORY_PNM_SOURCE = pathlib.Path(__file__).resolve().parent / 'native' / 'memo_pnm_memory.c'
 PINS = {
  'kor': (1677415, '6b85e11d9bbf07863b97b3523b1b112844c43e713df8b66418a081fd1060b3b2'),
  'eng': (4113088, '7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2'),
@@ -27,16 +30,47 @@ def compiler_dumpbin(selected):
   raise ValueError('Selected MSVC compiler is missing')
  return pathlib.Path(selected).with_name('dumpbin.exe')
 
+def apply_memory_pnm_patch(root):
+ """Replace only the pinned memory reader; Windows product P6 must never spill to a FILE."""
+ path = pathlib.Path(root) / 'src' / 'pnmio.c'
+ source = path.read_bytes().replace(b'\r\n', b'\n')
+ original_hash = hashlib.sha256(source).hexdigest()
+ if original_hash != LEPTONICA_PNM_SHA256:
+  raise ValueError('Pinned Leptonica PNM source mismatch')
+ matches = list(re.finditer(rb'(?ms)^PIX \*\npixReadMemPnm\(.*?^}\n', source))
+ if len(matches) != 1 or hashlib.sha256(matches[0].group()).hexdigest() != LEPTONICA_PNM_FUNCTION_SHA256:
+  raise ValueError('Pinned Leptonica memory reader mismatch')
+ replacement = MEMORY_PNM_SOURCE.read_bytes().replace(b'\r\n', b'\n')
+ if not replacement or not replacement.endswith(b'\n'):
+  raise ValueError('Memory PNM replacement must be nonempty with final newline')
+ match = matches[0]
+ patched = source[:match.start()] + replacement + source[match.end():]
+ provenance = {'inputDecoder': 'memo-canonical-p6-memory-v1',
+               'memoryPnmSha256': hashlib.sha256(replacement).hexdigest(),
+               'upstreamPnmSha256': original_hash,
+               'patchedPnmSha256': hashlib.sha256(patched).hexdigest()}
+ path.write_bytes(patched)
+ return provenance
+
 def main(root):
  if sys.platform != 'win32':
   raise RuntimeError('Existing MSVC Windows CI only; no compiler/SDK installation')
  root.mkdir(parents=True, exist_ok=False)
  prefix = root / 'leptonica-install'
  leptonica = clone(root, 'leptonica', '1.87.0', LEPTONICA)
+ memory_provenance = apply_memory_pnm_patch(leptonica)
  common = ['-G', 'Visual Studio 17 2022', '-A', 'x64', '-DCMAKE_POLICY_DEFAULT_CMP0091=NEW', '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded']
  flags = ['-DBUILD_PROG=OFF', '-DSW_BUILD=OFF', '-DBUILD_SHARED_LIBS=OFF'] + ['-DENABLE_' + option + '=OFF' for option in ['ZLIB', 'PNG', 'GIF', 'JPEG', 'TIFF', 'WEBP', 'OPENJPEG']]
  run('cmake', '-S', str(leptonica), '-B', str(root / 'leptonica-build'), *common, '-DCMAKE_INSTALL_PREFIX=' + str(prefix), *flags)
  run('cmake', '--build', str(root / 'leptonica-build'), '--config', 'Release', '--target', 'install', '--parallel', '2')
+ checks = root / 'memory-pnm-checks'
+ run('cmake', '-S', str(pathlib.Path(__file__).resolve().parents[1] / 'tests' / 'native'),
+     '-B', str(checks), *common, '-DCMAKE_PREFIX_PATH=' + str(prefix), '-DMEMO_PNM_BUILD_REPLACEMENT_TESTS=ON')
+ run('cmake', '--build', str(checks), '--config', 'Release', '--parallel', '2')
+ windows = os.environ['SystemRoot']
+ for name in ['memo_pnm_memory_tests', 'memo_pnm_memory_boundaries']:
+  subprocess.run([str(checks / 'Release' / (name + '.exe'))], check=True,
+                 env={'SystemRoot': windows, 'WINDIR': windows, 'OMP_THREAD_LIMIT': '1'})
  tesseract = clone(root, 'tesseract', '5.5.3', TESSERACT)
  trace = root / 'record-selected-compiler.cmake'
  trace.write_text('file(WRITE "${CMAKE_BINARY_DIR}/memo-selected-compiler.txt" "${CMAKE_CXX_COMPILER}\\n")\n', encoding='utf-8')
@@ -81,7 +115,7 @@ def main(root):
    raise ValueError('Component license mismatch')
   (bundle / filename).write_bytes(content)
  content = (bundle / 'tesseract.exe').read_bytes()
- manifest = {'tesseractCommit': TESSERACT, 'leptonicaCommit': LEPTONICA, 'modelsCommit': MODELS, 'engineLength': len(content), 'engineSha256': hashlib.sha256(content).hexdigest(), 'peDependencies': dependencies}
+ manifest = {'tesseractCommit': TESSERACT, 'leptonicaCommit': LEPTONICA, 'modelsCommit': MODELS, 'engineLength': len(content), 'engineSha256': hashlib.sha256(content).hexdigest(), 'peDependencies': dependencies, **memory_provenance}
  archive = bundle / 'models.zip'
  with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as output:
   for filename in ['kor.traineddata', 'eng.traineddata']:
