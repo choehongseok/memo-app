@@ -23,6 +23,8 @@ internal static partial class Program
     private const double RichReferenceMargin=40*96.0/72,RichReferenceWidth=210*96.0/25.4-2*RichReferenceMargin;
     private const string RichBasicJson="{\"nodes\":[{\"type\":\"paragraph\",\"runs\":[{\"text\":\"합성 \"},{\"text\":\"굵은 한글 ABC\",\"bold\":true,\"underline\":true,\"strike\":true,\"fontFamily\":\"Malgun Gothic\",\"foreground\":\"#CC0000\",\"background\":\"#80FFFF00\"},{\"text\":\" é 😀\"}]}]}";
     private sealed record RichRasterFixture(string Name,StyledDocument Document,Func<TextBlock> Reference);
+    private const string RichWrapUnit="합성 wrap gy ABC  ";
+    private sealed record RichWrapLinePolicy(double Advance,double Top,double Baseline);
 
     // This method deliberately finds the API at runtime so the unchanged baseline DLL is a meaningful RED.
     private static Task<PreparedTextExport> RichRender(IReadOnlyList<RichParagraphPdfSource> sources,Func<bool>? current=null,CancellationToken token=default,Action<byte[]>? owned=null)
@@ -58,14 +60,73 @@ internal static partial class Program
             Background=new SolidColorBrush(Color.FromArgb(128,255,255,0)),TextDecorations=RichReferenceDecorations(true,true)},new Run(" é 😀"));
     private static RichRasterFixture[] RichViewerFixtures()
     {
-        string wrap=string.Concat(Enumerable.Repeat("합성 wrap gy ABC  ",24));
+        string wrap=string.Concat(Enumerable.Repeat(RichWrapUnit,24));
         return [new("basic",new(1,RichBasicJson),RichBasicReference),
             new("large",RichRuns(new{text="큰 gy",fontFamily="Malgun Gothic",bold=true,fontSize=96,underline=true,strike=true,foreground="#802000C0",background="#80FFCC00"}),
                 ()=>RichReferenceBlock(new Run("큰 gy"){FontFamily=new FontFamily("Malgun Gothic"),FontWeight=FontWeights.Bold,FontSize=96,
                     Foreground=new SolidColorBrush(Color.FromArgb(128,32,0,192)),Background=new SolidColorBrush(Color.FromArgb(128,255,204,0)),TextDecorations=RichReferenceDecorations(true,true)})),
             new("wrap",RichRuns(new{text=wrap,fontFamily="Malgun Gothic",fontSize=24,underline=true,foreground="#006030",background="#402080FF"}),
-                ()=>RichReferenceBlock(new Run(wrap){FontFamily=new FontFamily("Malgun Gothic"),FontSize=24,Foreground=new SolidColorBrush(Color.FromRgb(0,96,48)),
-                    Background=new SolidColorBrush(Color.FromArgb(64,32,128,255)),TextDecorations=RichReferenceDecorations(true,false)}))];
+                ()=>RichWrapReference(wrap))];
+    }
+    private static Run RichWrapReferenceRun(string text)=>new(text){FontFamily=new FontFamily("Malgun Gothic"),FontSize=24,
+        Foreground=new SolidColorBrush(Color.FromRgb(0,96,48)),Background=new SolidColorBrush(Color.FromArgb(64,32,128,255)),TextDecorations=RichReferenceDecorations(true,false)};
+    private static TextBlock RichWrapReference(string text)
+    {
+        RichWrapLinePolicy? policy=null;byte[]? sampleRgb=null;
+        try
+        {
+            // The declared PDF policy encloses complete ink, whereas TextBlock's MaxHeight
+            // alone encloses natural font metrics. Measure an independent manually styled
+            // native one-line sample; never obtain this advance from the product or its RGB.
+            sampleRgb=RichReferenceRgb(()=>RichReferenceBlock(RichWrapReferenceRun(RichWrapUnit)),inspect:sample=>
+            {
+                var measured=RichWrapNativeInk(sample);
+                Require(measured.Lines.Length==1,"Independent wrap policy sample remains one native line");
+                Rect envelope=measured.Ink;envelope.Union(new Rect(0,0,sample.RenderSize.Width,Math.Max(24,sample.RenderSize.Height)));
+                double top=Math.Min(0,envelope.Top),advance=envelope.Bottom-top;
+                Require(double.IsFinite(advance)&&advance>=24&&double.IsFinite(top),"Independent wrap policy has finite complete native ink");
+                policy=new(advance,top,measured.Lines[0].Baseline);
+            });
+        }
+        finally{if(sampleRgb is not null)CryptographicOperations.ZeroMemory(sampleRgb);}
+        Require(policy is not null,"Independent wrap policy sample completed");
+        var block=RichReferenceBlock(RichWrapReferenceRun(text));block.LineHeight=policy!.Advance;
+        block.Margin=new Thickness(RichReferenceMargin,RichReferenceMargin-policy.Top,0,0);block.Tag=policy;
+        return block;
+    }
+    private static (Rect Ink,(double Baseline,string Text)[] Lines) RichWrapNativeInk(TextBlock block)
+    {
+        DrawingGroup drawing=VisualTreeHelper.GetDrawing(block)??throw new Exception("Independent wrap native drawing missing");
+        Rect ink=drawing.Bounds;var runs=new List<(double Baseline,double X,string Text)>();
+        void Visit(Drawing item)
+        {
+            if(item is DrawingGroup group)
+            {
+                Require(group.Transform is null||group.Transform.Value.IsIdentity,"Independent wrap drawing stays in local line coordinates");
+                foreach(var child in group.Children)Visit(child);
+            }
+            else if(item is GlyphRunDrawing text)
+            {
+                var glyph=text.GlyphRun;Require(glyph.Characters is not null&&glyph.FontRenderingEmSize==24,"Independent wrap native glyph retains the explicit sample size and text");
+                Rect glyphInk=glyph.ComputeInkBoundingBox();if(!glyphInk.IsEmpty){glyphInk.Offset(glyph.BaselineOrigin.X,glyph.BaselineOrigin.Y);ink.Union(glyphInk);}
+                runs.Add((glyph.BaselineOrigin.Y,glyph.BaselineOrigin.X,new string(glyph.Characters!.ToArray())));
+            }
+        }
+        Visit(drawing);
+        var lines=runs.GroupBy(run=>run.Baseline).OrderBy(group=>group.Key)
+            .Select(group=>(Baseline:group.Key,Text:string.Concat(group.OrderBy(run=>run.X).Select(run=>run.Text)))).ToArray();
+        Require(lines.Length>0&&lines.All(line=>line.Text.Contains(RichWrapUnit.TrimEnd(),StringComparison.Ordinal)),
+            "Every independent wrap line contains the complete repeated sample glyph set; a single uniform ink envelope is valid only for this fixture");
+        return(ink,lines);
+    }
+    private static void RichValidateWrapPolicy(TextBlock block,RichWrapLinePolicy policy)
+    {
+        var measured=RichWrapNativeInk(block);
+        Require(measured.Lines.Length>1&&Math.Abs(measured.Lines[0].Baseline-policy.Baseline)<0.000001,
+            "Independent MaxHeight wrap policy preserves the sample's first native baseline");
+        for(int line=1;line<measured.Lines.Length;line++)
+            Require(Math.Abs(measured.Lines[line].Baseline-measured.Lines[line-1].Baseline-policy.Advance)<0.000001,
+                "Independent wrap baseline advances follow the separately measured complete ink policy");
     }
     private static byte[] RichReferenceRgb(Func<TextBlock> create,Action<string,byte[]>? observe=null,Action<TextBlock>? inspect=null)
     {
@@ -77,7 +138,24 @@ internal static partial class Program
             page=new Grid{Width=794,Height=1123,Background=Brushes.White};block=create();page.Children.Add(block);
             TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);
             page.Measure(new Size(794,1123));page.Arrange(new Rect(0,0,794,1123));page.UpdateLayout();
-            bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);inspect?.Invoke(block);bgra=new byte[794*1123*4];bitmap.CopyPixels(bgra,794*4,0);observe?.Invoke("bgra-populated",bgra);
+            bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);
+            if(block.Tag is RichWrapLinePolicy wrapPolicy)RichValidateWrapPolicy(block,wrapPolicy);
+            else
+            {
+                // The declared PDF policy encloses negative native ink above the first line.
+                // Measure only this independently styled drawing, never product pixels.
+                // Wrap already applies its separately measured top and advance policy.
+                Rect ink=RichReferenceVisibleInk(block);double top=ink.IsEmpty?0:Math.Min(0,ink.Top);
+                if(top<0)
+                {
+                    double baseline=block.BaselineOffset,width=block.RenderSize.Width;Thickness margin=block.Margin;
+                    block.Margin=new Thickness(margin.Left,margin.Top-top,margin.Right,margin.Bottom);
+                    page.Measure(new Size(794,1123));page.Arrange(new Rect(0,0,794,1123));page.UpdateLayout();
+                    bitmap.Clear();bitmap.Render(page);
+                    Require(block.BaselineOffset==baseline&&block.RenderSize.Width==width,"Independent first-line ink policy preserves native baseline and wrapping width");
+                }
+            }
+            inspect?.Invoke(block);bgra=new byte[794*1123*4];bitmap.CopyPixels(bgra,794*4,0);observe?.Invoke("bgra-populated",bgra);
             for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
             {
                 int alpha=bgra[i+3];Require(bgra[i]<=alpha&&bgra[i+1]<=alpha&&bgra[i+2]<=alpha,"Independent rich reference premultiplied channels valid");
@@ -94,6 +172,47 @@ internal static partial class Program
             finally{if(!transferred&&rgb is not null)CryptographicOperations.ZeroMemory(rgb);}
         }
     }
+    private static Rect RichReferenceVisibleInk(TextBlock block)
+    {
+        Rect ink=Rect.Empty;int visited=0;double negativeBottom=double.NegativeInfinity;var baselines=new SortedSet<double>();
+        bool Visible(Brush? brush)
+        {
+            Require(brush is null or SolidColorBrush,"Independent native reference uses only manually specified solid brushes");
+            return brush is SolidColorBrush solid&&solid.Color.A>0&&solid.Opacity>0;
+        }
+        void Visit(Drawing drawing,int depth)
+        {
+            Require(++visited<=4096&&depth<=32,"Independent native ink inspection is bounded");
+            if(drawing is DrawingGroup group)
+            {
+                Require(group.Transform is null||group.Transform.Value.IsIdentity,"Independent native ink stays in local line coordinates");
+                if(group.Opacity>0)foreach(var child in group.Children)Visit(child,depth+1);
+                return;
+            }
+            Rect bounds=Rect.Empty;
+            if(drawing is GlyphRunDrawing text)
+            {
+                baselines.Add(text.GlyphRun.BaselineOrigin.Y);
+                if(Visible(text.ForegroundBrush))
+                {
+                    bounds=text.GlyphRun.ComputeInkBoundingBox();
+                    if(!bounds.IsEmpty)bounds.Offset(text.GlyphRun.BaselineOrigin.X,text.GlyphRun.BaselineOrigin.Y);
+                    bounds.Union(text.Bounds);
+                }
+            }
+            else if(drawing is GeometryDrawing geometry&&(Visible(geometry.Brush)||Visible(geometry.Pen?.Brush)))bounds=geometry.Bounds;
+            if(!bounds.IsEmpty)
+            {
+                Require(double.IsFinite(bounds.Left)&&double.IsFinite(bounds.Top)&&double.IsFinite(bounds.Right)&&double.IsFinite(bounds.Bottom),"Independent visible native ink is finite");
+                if(bounds.Top<0)negativeBottom=Math.Max(negativeBottom,bounds.Bottom);
+                ink.Union(bounds);
+            }
+        }
+        Visit(VisualTreeHelper.GetDrawing(block)??throw new Exception("Independent native reference drawing missing"),0);
+        if(!ink.IsEmpty&&ink.Top<0&&baselines.Count>1)
+            Require(negativeBottom<=baselines.Skip(1).First(),"Independent initial ink correction must not extend across a later native baseline; multiline advance needs a separate policy");
+        return ink;
+    }
     private static async Task PdfRichParagraphRendererRun()
     {
         Require(typeof(PdfVisualRenderer).GetMethod("RenderParagraphsAsync",BindingFlags.Static|BindingFlags.NonPublic) is not null,"N02 rich native renderer API missing: RenderParagraphsAsync");
@@ -101,10 +220,16 @@ internal static partial class Program
         foreach(var fixture in RichViewerFixtures())await RichAssertReference(fixture);
         // Each isolated style loses its oracle comparison if the corresponding production property is dropped.
         var styles=new RichRasterFixture[]{
+            new("transparent-background",RichRuns(new{text="ABC gy 한글 é 😀",background="#00FFCC00"}),
+                ()=>RichReferenceBlock(new Run("ABC gy 한글 é 😀"){Background=new SolidColorBrush(Color.FromArgb(0,255,204,0))})),
             new("regular",RichRuns(new{text="ABC gy 한글 é 😀"}),()=>RichReferenceBlock(new Run("ABC gy 한글 é 😀"))),
             new("bold",RichRuns(new{text="ABC gy",bold=true}),()=>RichReferenceBlock(new Run("ABC gy"){FontWeight=FontWeights.Bold})),
             new("underline",RichRuns(new{text="ABC gy",underline=true}),()=>RichReferenceBlock(new Run("ABC gy"){TextDecorations=RichReferenceDecorations(true,false)})),
             new("strike",RichRuns(new{text="ABC gy",strike=true}),()=>RichReferenceBlock(new Run("ABC gy"){TextDecorations=RichReferenceDecorations(false,true)})),
+            new("translucent-underline",RichRuns(new{text="ABC gy 한글",fontSize=48,underline=true,foreground="#802000C0",background="#80FFCC00"}),
+                ()=>RichReferenceBlock(new Run("ABC gy 한글"){FontSize=48,TextDecorations=RichReferenceDecorations(true,false),Foreground=new SolidColorBrush(Color.FromArgb(128,32,0,192)),Background=new SolidColorBrush(Color.FromArgb(128,255,204,0))})),
+            new("translucent-strike",RichRuns(new{text="ABC gy 한글",fontSize=48,strike=true,foreground="#802000C0",background="#80FFCC00"}),
+                ()=>RichReferenceBlock(new Run("ABC gy 한글"){FontSize=48,TextDecorations=RichReferenceDecorations(false,true),Foreground=new SolidColorBrush(Color.FromArgb(128,32,0,192)),Background=new SolidColorBrush(Color.FromArgb(128,255,204,0))})),
             new("family",RichRuns(new{text="ABC 한글",fontFamily="Malgun Gothic"}),()=>RichReferenceBlock(new Run("ABC 한글"){FontFamily=new FontFamily("Malgun Gothic")})),
             new("explicit-symbol",RichRuns(new{text="★",fontFamily="Segoe UI Symbol"}),()=>RichReferenceBlock(new Run("★"){FontFamily=new FontFamily("Segoe UI Symbol")})),
             new("explicit-emoji",RichRuns(new{text="😀",fontFamily="Segoe UI Emoji"}),()=>RichReferenceBlock(new Run("😀"){FontFamily=new FontFamily("Segoe UI Emoji")})),
@@ -175,22 +300,80 @@ internal static partial class Program
     }
     private static async Task RichAssertReference(RichRasterFixture fixture)
     {
-        byte[]? expected=null,actual=null,copied=null;
+        byte[]? expected=null,actual=null,copied=null;string referenceDrawing="not captured";
         try
         {
-            expected=RichReferenceRgb(fixture.Reference);
+            expected=RichReferenceRgb(fixture.Reference,inspect:block=>referenceDrawing=RichReferenceDrawingDiagnostic(block));
             using var prepared=await RichRender([RichSource(fixture.Document)],owned:bytes=>{if(bytes.Length==794*1123*3){Require(copied is null,"Fixed fixture fits one page");copied=(byte[])bytes.Clone();}});
             actual=VisualPdfFirstRgb(prepared.Bytes);Require(copied is not null&&actual.AsSpan().SequenceEqual(copied),"PDF page image is exactly the copied native RGB: "+fixture.Name);
-            bool matches=VisualPdfReferenceMatches(actual,expected)&&VisualPdfWhiteBorder(actual);
+            bool referenceMatches=VisualPdfReferenceMatches(actual,expected),whiteBorder=VisualPdfWhiteBorder(actual);
+            bool matches=referenceMatches&&whiteBorder;
             if(!matches)
             {
-                long sum=0;int large=0,peak=0;
-                for(int index=0;index<actual.Length;index+=3){int delta=Math.Max(Math.Abs(actual[index]-expected[index]),Math.Max(Math.Abs(actual[index+1]-expected[index+1]),Math.Abs(actual[index+2]-expected[index+2])));sum+=delta;peak=Math.Max(peak,delta);if(delta>32)large++;}
+                long sum=0;int large=0,peak=0,first=-1,peakAt=-1,ink=0;
+                for(int index=0;index<actual.Length;index+=3)
+                {
+                    if(expected[index]<250||expected[index+1]<250||expected[index+2]<250)ink++;
+                    int delta=Math.Max(Math.Abs(actual[index]-expected[index]),Math.Max(Math.Abs(actual[index+1]-expected[index+1]),Math.Abs(actual[index+2]-expected[index+2])));
+                    sum+=delta;if(delta>0&&first<0)first=index;if(delta>peak){peak=delta;peakAt=index;}if(delta>32)large++;
+                }
                 Console.WriteLine($"N02 fixed synthetic rich RGB mismatch fixture={fixture.Name} maxChannelDifference={peak} sumPixelDifference={sum} pixelsOver32={large}");
+                string Pixel(int at)=>at<0?"none":$"({at/3%794},{at/3/794}) actual=[{actual[at]},{actual[at+1]},{actual[at+2]}] reference=[{expected[at]},{expected[at+1]},{expected[at+2]}]";
+                Console.WriteLine($"N02 fixed synthetic rich diagnostic referenceMatches={referenceMatches} whiteBorder={whiteBorder} expectedInk={ink} largeLimit={Math.Max(8,ink/20)} sumLimit={Math.Max(64,ink*8)} first={Pixel(first)} peak={Pixel(peakAt)} actualBounds={RichRgbDiagnosticBounds(actual)} referenceBounds={RichRgbDiagnosticBounds(expected)}");
+                Console.WriteLine("N02 fixed synthetic rich reference drawing "+referenceDrawing);
             }
             Require(matches,"Independent manual WPF styled RGB matches without clipping: "+fixture.Name);
         }
         finally{foreach(var bytes in new[]{expected,actual,copied})if(bytes is not null)CryptographicOperations.ZeroMemory(bytes);}
+    }
+    // Fixed synthetic fixtures only. Metadata is bounded and read after the existing oracle render;
+    // it never changes drawing commands, pixels, thresholds or the pass/fail decision.
+    private static string RichReferenceDrawingDiagnostic(TextBlock reference)
+    {
+        try
+        {
+            string Number(double value)=>value.ToString("R",CultureInfo.InvariantCulture);
+            string BrushInfo(Brush? brush)=>brush is SolidColorBrush solid?$"{solid.Color}/opacity={Number(solid.Opacity)}":brush?.GetType().Name??"null";
+            var geometries=new Dictionary<string,int>(StringComparer.Ordinal);var glyphs=new List<string>();int visited=0,glyphCount=0;bool truncated=false;
+            void Visit(Drawing? drawing,Matrix transform,double opacity,int depth)
+            {
+                if(drawing is null)return;
+                if(visited>=128||depth>32){truncated=true;return;}visited++;
+                if(drawing is DrawingGroup group)
+                {
+                    Matrix next=group.Transform?.Value??Matrix.Identity;next.Append(transform);
+                    foreach(var child in group.Children){Visit(child,next,opacity*group.Opacity,depth+1);if(visited>=128){truncated=true;break;}}
+                }
+                else if(drawing is GeometryDrawing geometry)
+                {
+                    Rect bounds=geometry.Bounds;bounds.Transform(transform);
+                    string pen=geometry.Pen is { } p?$"{BrushInfo(p.Brush)}/thickness={Number(p.Thickness)}":"null";
+                    string key=$"type={geometry.Geometry?.GetType().Name} bounds={bounds.ToString(CultureInfo.InvariantCulture)} brush={BrushInfo(geometry.Brush)} pen={pen} opacity={Number(opacity)}";
+                    geometries[key]=geometries.GetValueOrDefault(key)+1;
+                }
+                else if(drawing is GlyphRunDrawing text)
+                {
+                    glyphCount++;if(glyphs.Count>=8){truncated=true;return;}
+                    Rect bounds=text.Bounds;bounds.Transform(transform);Point origin=transform.Transform(text.GlyphRun.BaselineOrigin);
+                    glyphs.Add($"glyphs={text.GlyphRun.GlyphIndices.Count} em={Number(text.GlyphRun.FontRenderingEmSize)} baseline={origin.ToString(CultureInfo.InvariantCulture)} bounds={bounds.ToString(CultureInfo.InvariantCulture)} brush={BrushInfo(text.ForegroundBrush)}");
+                }
+            }
+            Visit(VisualTreeHelper.GetDrawing(reference),Matrix.Identity,1,0);
+            var offset=VisualTreeHelper.GetOffset(reference);if(geometries.Count>24)truncated=true;
+            string result=$"baselineOffset={Number(reference.BaselineOffset)} visualOffset={offset.ToString(CultureInfo.InvariantCulture)} nodes={visited} glyphDrawings={glyphCount} geometryDrawings={geometries.Values.Sum()} duplicateGeometryGroups={geometries.Count(pair=>pair.Value>1)} truncated={truncated}; "+string.Join("; ",glyphs)+"; "+string.Join("; ",geometries.Take(24).Select(pair=>$"count={pair.Value} {pair.Key}"));
+            return result.Length<=8192?result:result[..8100]+"; metadata truncated at 8192 characters";
+        }
+        catch(Exception error){return "metadata unavailable: "+error.GetType().Name;}
+    }
+    private static string RichRgbDiagnosticBounds(byte[] pixels)
+    {
+        int left=794,top=1123,right=-1,bottom=-1,count=0;
+        for(int y=0;y<1123;y++)for(int x=0;x<794;x++)
+        {
+            int at=(y*794+x)*3;if(pixels[at]>=250&&pixels[at+1]>=250&&pixels[at+2]>=250)continue;
+            left=Math.Min(left,x);top=Math.Min(top,y);right=Math.Max(right,x);bottom=Math.Max(bottom,y);count++;
+        }
+        return count==0?"empty":$"[{left},{top},{right},{bottom}] count={count}";
     }
     private static void RichInspectBasicDrawing(TextBlock reference)
     {

@@ -300,12 +300,21 @@ internal static partial class PdfVisualRenderer
             if(!Typeface.TryGetGlyphTypeface(out var face))throw new InvalidDataException("Rich PDF requested font has no approved native face");
             ValidateRichResolvedFont(face,style.Bold);
             if(!face.FamilyNames.TryGetValue(CultureInfo.GetCultureInfo("en-US"),out var family)||family!=style.FontFamily)throw new InvalidDataException("Rich PDF requested family was substituted");
-            FontRenderingEmSize=style.FontSize;ForegroundBrush=Solid(style.Foreground);BackgroundBrush=Solid(style.Background);
-            var decorations=new TextDecorationCollection();if(style.Underline)decorations.Add(System.Windows.TextDecorations.Underline[0]);if(style.Strike)decorations.Add(System.Windows.TextDecorations.Strikethrough[0]);decorations.Freeze();TextDecorations=decorations;
+            FontRenderingEmSize=style.FontSize;ForegroundBrush=Solid(style.Foreground);
+            // A zero-alpha run background has no ink. Emitting its rectangle would let
+            // fallback-font ascent bounds move otherwise unchanged visible glyphs.
+            BackgroundBrush=(style.Background>>24)==0?null:Solid(style.Background);
+            // WPF TextBlock supplies Run decorations through both its TextSpanModifier and
+            // TextProperties. Match that effective collection so translucent decoration
+            // compositing agrees with the read-only viewer and independent native Run oracle.
+            var decorations=new TextDecorationCollection();
+            for(int inlineSource=0;inlineSource<2;inlineSource++)
+            {if(style.Underline)decorations.Add(System.Windows.TextDecorations.Underline[0]);if(style.Strike)decorations.Add(System.Windows.TextDecorations.Strikethrough[0]);}
+            decorations.Freeze();TextDecorations=decorations;
         }
         private static SolidColorBrush Solid(uint value){var brush=new SolidColorBrush(Color.FromArgb((byte)(value>>24),(byte)(value>>16),(byte)(value>>8),(byte)value));brush.Freeze();return brush;}
         public override Typeface Typeface{get;}public override double FontRenderingEmSize{get;}public override double FontHintingEmSize=>FontRenderingEmSize;
-        public override TextDecorationCollection TextDecorations{get;}public override Brush ForegroundBrush{get;}public override Brush BackgroundBrush{get;}
+        public override TextDecorationCollection TextDecorations{get;}public override Brush ForegroundBrush{get;}public override Brush? BackgroundBrush{get;}
         public override CultureInfo CultureInfo=>CultureInfo.GetCultureInfo("ko-KR");public override TextEffectCollection TextEffects=>new();
     }
     private sealed class RichParagraphProperties(RichRunProperties defaults):TextParagraphProperties
