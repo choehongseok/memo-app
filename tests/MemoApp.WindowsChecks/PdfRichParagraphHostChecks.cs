@@ -29,6 +29,7 @@ internal static partial class Program
         {
             await RichHostSuccessAndRefusal(fixture);
             await RichHostCallbacks(fixture);
+            await RichHostFinalizerAdmission(fixture);
             await RichHostYieldAndWrite(fixture);
         }
         await RichHostTerminalWrite(false);
@@ -106,15 +107,39 @@ internal static partial class Program
             var result=await f.Mode(boundary+"-roundtrip.pdf",()=>{if(boundary=="mode")f.RoundTrip();return PdfExportMode.Visual;},()=>{consent++;if(boundary=="consent")f.RoundTrip();return true;},()=>{picker++;if(boundary=="picker")f.RoundTrip();return f.PathFor(boundary+"-roundtrip.pdf");},files);
             Require(!result&&files.Creates==0&&(boundary!="mode"||consent==0)&&(boundary=="picker"||picker==0),"Original authority permanently revokes a selection round trip at "+boundary);
         }
-        await f.Select(f.Rich);var button=Control<Button>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(Button));bool nativeEntered=false;Task<bool>? nested=null;files=new();consent=0;
-        EventHandler changed=(_,_)=>{if(nativeEntered||button.IsEnabled)return;nativeEntered=true;nested=f.Export("native-reentry.pdf",()=>throw new Exception("Busy native reentry must not ask consent"));f.RoundTrip();};
+        await f.Select(f.Rich);var button=Control<Button>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(Button));bool nativeEntered=false,nativeBusyRetained=false;Task<bool>? nested=null;files=new();consent=0;int nestedConsent=0,nestedPicker=0;
+        EventHandler changed=(_,_)=>{if(nativeEntered||button.IsEnabled)return;nativeEntered=true;nested=f.Export("native-reentry.pdf",()=>{nestedConsent++;return false;},()=>{nestedPicker++;return null;});nativeBusyRetained=Field<bool>(f.Main,"pdfExportBusy");f.RoundTrip();};
         descriptor.AddValueChanged(button,changed);
-        try{Require(!await f.Export("native-roundtrip.pdf",()=>{consent++;return true;},files:files)&&nativeEntered&&nested is not null&&!await nested&&consent==0&&files.Creates==0,"Actual native IsEnabled callback cannot reenter admission and selection round trip revokes before consent");}
+        try{Require(!await f.Export("native-roundtrip.pdf",()=>{consent++;return true;},files:files)&&nativeEntered&&nested is not null&&!await nested&&nestedConsent==0&&nestedPicker==0&&nativeBusyRetained&&consent==0&&files.Creates==0,"Actual native IsEnabled callback cannot reenter admission and selection round trip revokes before consent");}
         finally{descriptor.RemoveValueChanged(button,changed);}
         foreach(string callback in new[]{"consent","picker"})
         {
             await f.Select(f.Rich);files=new();
             Require(!await f.Export(callback+"-throws.pdf",callback=="consent"?()=>throw new InvalidOperationException("Synthetic consent callback"):()=>true,()=>throw new InvalidOperationException("Synthetic picker callback"),files)&&files.Creates==0&&!Field<bool>(f.Main,"pdfExportBusy"),"Callback failure settles admission without CreateNew: "+callback);
+        }
+    }
+
+    private static async Task RichHostFinalizerAdmission(RichHostFixture f)
+    {
+        // The earlier mixed visual case retains its combining fixture; Text has a stricter character profile.
+        f.Plain.Text="Existing searchable ABC";
+        foreach(var mode in new[]{PdfExportMode.Text,PdfExportMode.Visual})
+        {
+            await f.Select(f.Plain);var button=Control<Button>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(Button));var files=new RichHostFiles(true);Task<bool>? child=null;bool entered=false;
+            byte[] source=PdfAuthorityStableSource(f.Active.Workspace),cipher=File.ReadAllBytes(f.CipherPath);
+            EventHandler enabled=(_,_)=>{if(entered||!button.IsEnabled)return;entered=true;child=f.Export("finalizer-child-"+mode+".pdf",files:files);};
+            descriptor.AddValueChanged(button,enabled);
+            try
+            {
+                var parent=(Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(f.Main,[new Func<PdfExportMode?>(()=>mode),new Func<bool>(()=>true),new Func<bool>(()=>true),new Func<string?>(()=>f.PathFor("finalizer-parent-"+mode+".pdf")),null])!;
+                Require(await parent&&entered&&child is not null,"Actual native enable setter reenters after the previous "+mode+" worker settled");
+                await files.Entered.Task.WaitAsync(TimeSpan.FromSeconds(15));
+                Require(!child!.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Outer mode cleanup cannot release admission now owned by a reentrant actual file worker: "+mode);
+                int excludedConsent=0,excludedPicker=0;
+                Require(!await f.Export("finalizer-third.pdf",()=>{excludedConsent++;return false;},()=>{excludedPicker++;return null;})&&excludedConsent==0&&excludedPicker==0&&!child.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"A third command is refused without callbacks or releasing the actual reentrant worker's busy slot");
+                files.Continue.TrySetResult();Require(await child&&!Field<bool>(f.Main,"pdfExportBusy"),"Fresh native reentrant operation completes and releases its own slot");f.AssertStable(source,cipher,"native finalizer reentry "+mode);
+            }
+            finally{descriptor.RemoveValueChanged(button,enabled);files.Continue.TrySetResult();if(child is not null)await child;CryptographicOperations.ZeroMemory(source);CryptographicOperations.ZeroMemory(cipher);}
         }
     }
 
@@ -124,7 +149,8 @@ internal static partial class Program
         {
             f.Active.Workspace.SetRichDocument(f.Rich,RichHostDocument(new{text=string.Join('\n',Enumerable.Repeat("합성 긴 ABC",100))}));await f.Select(f.Rich);var files=new RichHostFiles();
             var pending=f.Export("yield-"+mutation+".pdf",files:files);Require(!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Native rich preparation reaches an actual bounded dispatcher yield");
-            f.Mutate(mutation);Require(!await f.Export("yield-reentry.pdf",()=>throw new Exception("Unsettled native preparation retains admission")),"Canceled preparation retains busy admission until its real task settles");
+            f.Mutate(mutation);int excludedConsent=0,excludedPicker=0;
+            Require(!await f.Export("yield-reentry.pdf",()=>{excludedConsent++;return false;},()=>{excludedPicker++;return null;})&&excludedConsent==0&&excludedPicker==0&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Canceled preparation excludes callbacks and retains busy admission until its real task settles");
             Require(!await pending&&files.Creates==0&&!Field<bool>(f.Main,"pdfExportBusy"),"Yield mutation discards the candidate before file creation: "+mutation);
         }
         f.Active.Workspace.SetRichDocument(f.Rich,new(1,RichHostFixture.Raw));
@@ -137,7 +163,8 @@ internal static partial class Program
                 Require(!prepared.IsDisposed&&bytes.Length>0&&bytes.Any(value=>value!=0)&&Field<bool>(f.Main,"pdfExportBusy")&&!pending.IsCompleted,"Real blocked CreateNew retains live complete prepared bytes and occupied admission");
                 if(mutation!="none")f.Mutate(mutation);
                 source=PdfAuthorityStableSource(f.Active.Workspace);cipher=File.ReadAllBytes(f.CipherPath);
-                Require(!await f.Export("blocked-reentry.pdf",()=>throw new Exception("Actual file worker has not settled")),"A canceled or live actual file worker prevents busy-slot reuse");
+                int excludedConsent=0,excludedPicker=0;
+                Require(!await f.Export("blocked-reentry.pdf",()=>{excludedConsent++;return false;},()=>{excludedPicker++;return null;})&&excludedConsent==0&&excludedPicker==0&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"A canceled or live actual file worker excludes callbacks and prevents busy-slot reuse");
                 Require(!prepared.IsDisposed&&bytes.Any(value=>value!=0),"Cancellation request alone does not dispose a worker-owned prepared payload");
                 files.Continue.TrySetResult();bool accepted=await pending;
                 Require(accepted==(mutation=="none")&&new FileInfo(f.PathFor("write-"+mutation+".pdf")).Length is var length&&(mutation=="none"?length>0:length==0),"Late CreateNew writes only while its original authority remains current: "+mutation);
@@ -157,7 +184,8 @@ internal static partial class Program
             if(close){SetField(f.Main,"confirmedExit",true);f.Main.Close();}
             else{locking=f.Active.LockAsync();Require(f.Active.IsLocked&&f.Active.KeysReleased,"Lock releases session keys immediately while actual PDF CreateNew remains blocked");}
             Require(!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy")&&!prepared.IsDisposed&&bytes.Any(value=>value!=0),"Lock/close cancellation keeps the prepared payload live until actual worker completion");
-            Require(!await f.Export("terminal-reentry.pdf",()=>throw new Exception("Terminal host cannot ask consent")),"Lock/close rejects command reentry before callback access");
+            int excludedConsent=0,excludedPicker=0;
+            Require(!await f.Export("terminal-reentry.pdf",()=>{excludedConsent++;return false;},()=>{excludedPicker++;return null;})&&excludedConsent==0&&excludedPicker==0&&!pending.IsCompleted&&Field<bool>(f.Main,"pdfExportBusy"),"Lock/close excludes both callbacks and retains the unsettled worker's busy admission");
             files.Continue.TrySetResult();Require(!await pending&&new FileInfo(f.PathFor(close?"closed.pdf":"locked.pdf")).Length==0,"CreateNew returning after lock/close writes no plaintext");
             if(locking is not null)await locking;
             Require(prepared.IsDisposed&&bytes.All(value=>value==0)&&!Field<bool>(f.Main,"pdfExportBusy"),"Terminal actual worker settles before payload zero and busy release");
@@ -231,7 +259,11 @@ internal static partial class Program
             Require(Selection.SelectedItems.Cast<NoteDraft>().SequenceEqual(notes),"Native fixture settles the exact ordered live selection before export");
         }
         internal Task<bool> Export(string name,Func<bool>? confirm=null,Func<string?>? choose=null,IAtomicVaultFiles? files=null)=>(Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedVisualPdfAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[confirm??(()=>true),choose??(()=>PathFor(name)),files])!;
-        internal Task<bool> Mode(string name,Func<PdfExportMode?> mode,Func<bool> confirm,Func<string?> choose,IAtomicVaultFiles? files=null)=>(Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[mode,new Func<bool>(()=>throw new Exception("Visual route cannot request Text consent")),confirm,choose,files])!;
+        internal async Task<bool> Mode(string name,Func<PdfExportMode?> mode,Func<bool> confirm,Func<string?> choose,IAtomicVaultFiles? files=null)
+        {
+            int textConsent=0;bool accepted=await (Task<bool>)typeof(MainWindow).GetMethod("ExportSelectedPdfWithModeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(Main,[mode,new Func<bool>(()=>{textConsent++;return false;}),confirm,choose,files])!;
+            Require(textConsent==0,"Visual mode and mode cancellation never enter Text consent: "+name);return accepted;
+        }
         internal void RoundTrip(){Selection.SelectedItem=Plain;Selection.SelectedItem=Rich;}
         internal void Mutate(string mutation)
         {

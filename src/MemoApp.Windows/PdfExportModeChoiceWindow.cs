@@ -18,7 +18,7 @@ internal sealed class PdfExportModeChoiceWindow:Window,IDisposable
         text=new RadioButton{Name="TextModeChoice",Content="텍스트 PDF (지원 문자·검색/복사 가능)",IsChecked=true,Margin=new Thickness(0,0,0,10)};
         visual=new RadioButton{Name="VisualModeChoice",Content="표시용 PDF (텍스트 검색·복사 미지원)",Margin=new Thickness(0,0,0,10)};
         RegisterName(text.Name,text);RegisterName(visual.Name,visual);panel.Children.Add(text);panel.Children.Add(visual);
-        panel.Children.Add(new TextBlock{Text="표시용 PDF는 plain 메모의 제목·본문만 지원하며, 한 페이지씩 이미지로 저장합니다. 글꼴·문자 조합·출력 한도에 따라 거절할 수 있습니다.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,14)});
+        panel.Children.Add(new TextBlock{Text="표시용 PDF는 plain 메모와 지원 rich v1 문단의 제목·본문을 한 페이지씩 이미지로 저장합니다. 굵게·밑줄·취소선·고정 글꼴/크기·글자/배경색을 지원합니다. 목록·체크리스트·표·rich v2·Markdown·미지원 서식/문자/글꼴이 있으면 선택 전체를 거절하며 첨부는 포함하지 않습니다. A4 96 DPI, 100개/256쪽/16 MiB 한도입니다. 검색·복사용 텍스트는 없지만 외부 OCR로 읽힐 수 있습니다.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,14)});
         var buttons=new StackPanel{Orientation=Orientation.Horizontal,HorizontalAlignment=HorizontalAlignment.Right};
         var cancel=new Button{Name="CancelButton",Content="취소",IsCancel=true,MinWidth=80,Margin=new Thickness(0,0,8,0)};
         var next=new Button{Name="ContinueButton",Content="계속",MinWidth=80};RegisterName(cancel.Name,cancel);RegisterName(next.Name,next);

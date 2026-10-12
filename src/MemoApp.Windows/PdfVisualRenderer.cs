@@ -16,7 +16,7 @@ namespace MemoApp.Windows;
 internal readonly record struct VisualPdfSource(string Title,string Body);
 
 // Detached plain sources only. No editor visual, arbitrary markup, image URI or font-file input.
-internal static class PdfVisualRenderer
+internal static partial class PdfVisualRenderer
 {
     internal const int PageWidth=794,PageHeight=1123;
     internal const double Margin=40*96.0/72,FontSize=11*96.0/72,LineHeight=24;
@@ -170,6 +170,8 @@ internal static class PdfVisualRenderer
     }
 
     private static Rect AuditLine(TextLine line,string text,int start,int end)
+        =>AuditLineCore(line,text,start,end,null);
+    private static Rect AuditLineCore(TextLine line,string text,int start,int end,Action<GlyphRun,int,int>? auditResolved)
     {
         if(!Finite(line.Baseline))throw Refused();
         var coverage=new bool[end-start];Rect ink=Rect.Empty;
@@ -177,7 +179,7 @@ internal static class PdfVisualRenderer
         {
             var glyph=indexed.GlyphRun;int runStart=indexed.TextSourceCharacterIndex,length=indexed.TextSourceLength;
             if(length<=0||runStart<start||runStart>end-length||glyph.BidiLevel!=0||glyph.IsSideways||glyph.GlyphIndices.Count==0||glyph.GlyphIndices.Any(index=>index==0))throw new InvalidDataException("Missing or unsupported native PDF glyph coverage");
-            ValidateResolvedFont(glyph.GlyphTypeface);
+            if(auditResolved is null)ValidateResolvedFont(glyph.GlyphTypeface);else auditResolved(glyph,runStart,length);
             if(glyph.Characters is null||glyph.Characters.Count!=length)throw new InvalidDataException("Native PDF glyph lacks original character mapping");
             for(int i=0;i<length;i++)
             {

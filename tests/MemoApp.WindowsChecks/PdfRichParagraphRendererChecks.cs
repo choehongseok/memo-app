@@ -67,7 +67,7 @@ internal static partial class Program
                 ()=>RichReferenceBlock(new Run(wrap){FontFamily=new FontFamily("Malgun Gothic"),FontSize=24,Foreground=new SolidColorBrush(Color.FromRgb(0,96,48)),
                     Background=new SolidColorBrush(Color.FromArgb(64,32,128,255)),TextDecorations=RichReferenceDecorations(true,false)}))];
     }
-    private static byte[] RichReferenceRgb(Func<TextBlock> create,Action<string,byte[]>? observe=null)
+    private static byte[] RichReferenceRgb(Func<TextBlock> create,Action<string,byte[]>? observe=null,Action<TextBlock>? inspect=null)
     {
         Grid? page=null;TextBlock? block=null;RenderTargetBitmap? bitmap=null;byte[]? bgra=null,rgb=null;bool transferred=false;
         try
@@ -77,7 +77,7 @@ internal static partial class Program
             page=new Grid{Width=794,Height=1123,Background=Brushes.White};block=create();page.Children.Add(block);
             TextOptions.SetTextFormattingMode(page,TextFormattingMode.Ideal);TextOptions.SetTextRenderingMode(page,TextRenderingMode.Grayscale);
             page.Measure(new Size(794,1123));page.Arrange(new Rect(0,0,794,1123));page.UpdateLayout();
-            bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);bgra=new byte[794*1123*4];bitmap.CopyPixels(bgra,794*4,0);observe?.Invoke("bgra-populated",bgra);
+            bitmap=new RenderTargetBitmap(794,1123,96,96,PixelFormats.Pbgra32);bitmap.Render(page);inspect?.Invoke(block);bgra=new byte[794*1123*4];bitmap.CopyPixels(bgra,794*4,0);observe?.Invoke("bgra-populated",bgra);
             for(int i=0,j=0;i<bgra.Length;i+=4,j+=3)
             {
                 int alpha=bgra[i+3];Require(bgra[i]<=alpha&&bgra[i+1]<=alpha&&bgra[i+2]<=alpha,"Independent rich reference premultiplied channels valid");
@@ -113,8 +113,12 @@ internal static partial class Program
         foreach(var fixture in new RichRasterFixture[]{
             new("split-grapheme",RichRuns(new{text="e"},new{text="́"},new{text=" 😀"}),()=>RichReferenceBlock(new Run("é 😀"))),
             new("split-crlf",RichRuns(new{text=" A  \r"},new{text="\nB\t C\rD\n"}),()=>RichReferenceBlock(new Run(" A  \nB     C\nD\n"))),
+            new("large-newlines",RichRuns(new{text="A\n\nB",fontSize=96}),()=>RichReferenceBlock(new Run("A\n\nB"){FontSize=96})),
+            new("adjacent-paint-styles",RichRuns(new{text="AB",foreground="#CC0000"},new{text="CD",underline=true,background="#FFFF00"}),
+                ()=>RichReferenceBlock(new Run("AB"){Foreground=new SolidColorBrush(Color.FromRgb(204,0,0))},new Run("CD"){TextDecorations=RichReferenceDecorations(true,false),Background=Brushes.Yellow})),
             new("empty",RichRuns(new{text=""}),()=>RichReferenceBlock(new Run("")))})await RichAssertReference(fixture);
-        await RichFaceChecks();await RichBoundaryChecks();await RichCleanupChecks();RichReferenceCleanupChecks();
+        byte[] evidence=RichReferenceRgb(RichBasicReference,inspect:RichInspectBasicDrawing);CryptographicOperations.ZeroMemory(evidence);
+        await RichFaceChecks();await RichBoundaryChecks();await RichCleanupChecks();await RichCapCleanupChecks();RichReferenceCleanupChecks();
         await RichEmitViewerFixtures();
         Console.WriteLine("N02 native rich renderer: independent styles/RGB, face/glyph/ink, boundaries/refusal and owned cleanup checks passed");
     }
@@ -126,9 +130,38 @@ internal static partial class Program
             expected=RichReferenceRgb(fixture.Reference);
             using var prepared=await RichRender([RichSource(fixture.Document)],owned:bytes=>{if(bytes.Length==794*1123*3){Require(copied is null,"Fixed fixture fits one page");copied=(byte[])bytes.Clone();}});
             actual=VisualPdfFirstRgb(prepared.Bytes);Require(copied is not null&&actual.AsSpan().SequenceEqual(copied),"PDF page image is exactly the copied native RGB: "+fixture.Name);
-            Require(VisualPdfReferenceMatches(actual,expected)&&VisualPdfWhiteBorder(actual),"Independent manual WPF styled RGB matches without clipping: "+fixture.Name);
+            bool matches=VisualPdfReferenceMatches(actual,expected)&&VisualPdfWhiteBorder(actual);
+            if(!matches)
+            {
+                long sum=0;int large=0,peak=0;
+                for(int index=0;index<actual.Length;index+=3){int delta=Math.Max(Math.Abs(actual[index]-expected[index]),Math.Max(Math.Abs(actual[index+1]-expected[index+1]),Math.Abs(actual[index+2]-expected[index+2])));sum+=delta;peak=Math.Max(peak,delta);if(delta>32)large++;}
+                Console.WriteLine($"N02 fixed synthetic rich RGB mismatch fixture={fixture.Name} maxChannelDifference={peak} sumPixelDifference={sum} pixelsOver32={large}");
+            }
+            Require(matches,"Independent manual WPF styled RGB matches without clipping: "+fixture.Name);
         }
         finally{foreach(var bytes in new[]{expected,actual,copied})if(bytes is not null)CryptographicOperations.ZeroMemory(bytes);}
+    }
+    private static void RichInspectBasicDrawing(TextBlock reference)
+    {
+        int glyphs=0,bold=0,decoration=0,highlight=0;
+        void Visit(Drawing? drawing)
+        {
+            if(drawing is DrawingGroup group){foreach(var child in group.Children)Visit(child);return;}
+            if(drawing is GlyphRunDrawing text)
+            {
+                Require(text.GlyphRun.GlyphIndices.Count>0&&text.GlyphRun.GlyphIndices.All(value=>value!=0),"Independent actual native reference glyph coverage has no missing glyphs");glyphs++;
+                if(text.GlyphRun.GlyphTypeface.Weight==FontWeights.Bold){Require(text.GlyphRun.GlyphTypeface.StyleSimulations==StyleSimulations.None,"Reference bold is actual unsimulated native glyph face");bold++;}
+            }
+            if(drawing is GeometryDrawing geometry)
+            {
+                Require(!geometry.Bounds.IsEmpty,"Independent native decoration/background has measurable ink bounds");
+                var color=(geometry.Brush as SolidColorBrush)?.Color??(geometry.Pen?.Brush as SolidColorBrush)?.Color;
+                if(color==Color.FromRgb(204,0,0))decoration++;
+                if(color==Color.FromArgb(128,255,255,0))highlight++;
+            }
+        }
+        Visit(VisualTreeHelper.GetDrawing(reference));
+        Require(glyphs>0&&bold>0&&decoration>=2&&highlight>0,"Actual independent native tree separately contains glyphs, real bold, underline/strike ink and alpha highlight geometry");
     }
     private static async Task RichFaceChecks()
     {
@@ -159,6 +192,11 @@ internal static partial class Program
     }
     private static async Task RichBoundaryChecks()
     {
+        var paragraphs=new StyledDocument(1,"{\"nodes\":[{\"type\":\"paragraph\",\"runs\":[{\"text\":\"one\"}]},{\"type\":\"paragraph\",\"runs\":[]},{\"type\":\"paragraph\",\"runs\":[{\"text\":\"last gy\",\"underline\":true}]}]}");
+        await RichAssertReference(new("paragraph-gaps-and-empty",paragraphs,()=>
+        {
+            var block=RichReferenceBlock(new Run("one\n\n"),new Run("last gy"){TextDecorations=RichReferenceDecorations(true,false)});block.LineHeight=28;return block;
+        }));
         string line="last-line é gy";string body=string.Join('\n',Enumerable.Repeat(line,43));
         using(var prepared=await RichRender([RichSource(RichRuns(new{text=body,underline=true,background="#40FFCC00"}))]))
         {
@@ -212,6 +250,14 @@ internal static partial class Program
         using var batchCancel=new CancellationTokenSource();var batched=RichRender([RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("batch é",100))}))],token:batchCancel.Token);
         Require(!batched.IsCompleted,"32-line bounded native batch yields before page completion");batchCancel.Cancel();try{using var unused=await batched;throw new Exception("Missing batch cancellation");}catch(OperationCanceledException){}
         bool current=true;var revoked=RichRender([RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("current",100))}))],()=>current);current=false;try{using var unused=await revoked;throw new Exception("Missing authority cancellation");}catch(OperationCanceledException){}
+        owned.Clear();bool failCurrent=false,callbackFailed=false;
+        try{using var unused=await RichRender([RichSource(new(1,RichBasicJson))],()=>failCurrent?throw new InvalidOperationException("synthetic current failure"):true,owned:bytes=>{Observe(bytes);if(bytes.Length==794*1123*3)failCurrent=true;});}
+        catch(InvalidOperationException error)when(error.Message=="synthetic current failure"){callbackFailed=true;}
+        Require(callbackFailed&&owned.Count>0&&owned.All(bytes=>bytes.All(value=>value==0)),"Throwing current callback erases populated raster and settles actual preparation");
+        owned.Clear();using var finalCancel=new CancellationTokenSource();bool finalCanceled=false;
+        try{using var unused=await RichRender([RichSource(new(1,RichBasicJson))],token:finalCancel.Token,owned:bytes=>{Observe(bytes);if(bytes.AsSpan().StartsWith("%PDF-"u8))finalCancel.Cancel();});}
+        catch(OperationCanceledException){finalCanceled=true;}
+        Require(finalCanceled&&owned.Any(bytes=>ReferenceEquals(bytes,candidate))&&owned.All(bytes=>bytes.All(value=>value==0)),"Cancellation after populated candidate creation erases the finished PDF before ownership transfer");
     }
     private static void RichReferenceCleanupChecks()
     {
@@ -222,6 +268,39 @@ internal static partial class Program
             catch(InvalidOperationException error)when(error.Message=="synthetic reference failure"){failed=true;}
             Require(failed&&owned.Count>=2&&owned.All(bytes=>bytes.All(value=>value==0)),"Independent reference erases earlier RGB on later native/observer failure: "+phase);
         }
+        byte[]? first=null;bool graphFailed=false;
+        try{RichReferenceRgb(()=>throw new InvalidOperationException("synthetic reference graph failure"),(name,bytes)=>first=bytes);}
+        catch(InvalidOperationException error)when(error.Message=="synthetic reference graph failure"){graphFailed=true;}
+        Require(graphFailed&&first is not null&&first.All(value=>value==0),"Reference graph construction failure erases already allocated populated RGB candidate");
+    }
+    private static async Task RichCapCleanupChecks()
+    {
+        // Native page-cap route: 4,097 natural size96 lines require >256 pages, while the
+        // conservative 24-DIP preflight remains below256. Keep only first/last actual arrays.
+        var large=RichSource(RichRuns(new{text=string.Join('\n',Enumerable.Repeat("W",4097)),fontSize=96}));
+        byte[]? firstBgra=null,firstRgb=null,lastBgra=null,lastRgb=null,document=null;int rendered=0;
+        await RichMustRefuseAsync(()=>RichRender([large],owned:bytes=>
+        {
+            if(bytes.Length==794*1123*4){firstBgra??=bytes;lastBgra=bytes;}
+            if(bytes.Length==794*1123*3){firstRgb??=bytes;lastRgb=bytes;rendered++;}
+            if(bytes.Length==16*1024*1024)document=bytes;
+        }),"Actual 257th native page attempt discards the document");
+        Require(rendered==256&&document is not null&&new[]{firstBgra,firstRgb,lastBgra,lastRgb,document}.All(bytes=>bytes is not null&&bytes.All(value=>value==0)),"Native page-cap failure erases first/last populated raster samples and the real document buffer");
+
+        // Component fault injection only: overwrite already-rendered RGB with fixed synthetic entropy
+        // at the existing ownership seam, then exercise the real unchanged writer's 16-MiB limit.
+        // This is NOT evidence that native glyph-only raster output reached that compressed limit.
+        var owned=new List<byte[]>();int nativePages=0;uint state=0x92ad15f3;
+        var notes=Enumerable.Range(0,8).Select(_=>RichSource(RichRuns(new{text="synthetic output cap"}))).ToArray();
+        await RichMustRefuseAsync(()=>RichRender(notes,owned:bytes=>
+        {
+            owned.Add(bytes);
+            if(bytes.Length!=794*1123*3)return;
+            Require(bytes.Any(value=>value!=255)&&bytes.Any(value=>value==255),"Output-cap seam receives an actual populated native RGB page before synthetic entropy injection");nativePages++;
+            for(int index=0;index<bytes.Length;index++){state^=state<<13;state^=state>>17;state^=state<<5;bytes[index]=(byte)state;}
+        }),"Real writer output cap refuses fixed synthetic entropy injected at the owned RGB boundary");
+        Require(nativePages==7&&owned.All(bytes=>bytes.All(value=>value==0)),"16-MiB component overflow erases all actual owned arrays after seven bounded injected pages");
+        Console.WriteLine("N02 limits: native257PageRefusal=True; injectedRgbOutputCapComponent=True; nativeCompressed16MiBOverflow=UNVERIFIED");
     }
     private static void RichMustRefuse(Action operation,string assertion)
     {
