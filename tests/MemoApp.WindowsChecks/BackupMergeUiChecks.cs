@@ -31,7 +31,7 @@ internal static partial class Program
             // Populate real native items first; isolate unrelated recent-note refresh only after selection exists.
             SetField(main,"searchBlocked",false);Invoke(main,"RefreshNotes",note);await Idle();await Field<Task>(main,"recentTask");await Idle();var list=Control<ListBox>(main,"NotesList");list.SelectedItem=note;SetField(main,"searchBlocked",true);
             Require(list.Items.Contains(note)&&list.Items.Contains(otherNote)&&list.SelectedItems.Count==1&&ReferenceEquals(list.SelectedItem,note),"Actual native list populated and original selection established before merge request");
-            Require(main.FindName("BackupMergeButton") is Button&&main.FindName("PendingBackupBranchesButton") is Button,"Native same-ID preserve and durable compare buttons are separate from fresh-copy restore");
+            Require(main.FindName("BackupMergeButton") is MenuItem&&main.FindName("PendingBackupBranchesButton") is MenuItem,"Native same-ID preserve and durable compare buttons are separate from fresh-copy restore");
             var show=typeof(MainWindow).GetMethod("ShowBackupMergeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!;
             Task<bool> Show(Func<string?>? choose=null)=>(Task<bool>)show.Invoke(main,[choose??(()=>source)])!;
             var apply=typeof(MainWindow).GetMethod("ConfirmBackupMergeAsync",BindingFlags.Instance|BindingFlags.NonPublic)!;
@@ -96,7 +96,7 @@ internal static partial class Program
             var nextBranch=branch with{RevisionId=Guid.NewGuid(),Title="다른 백업 D",Text="incoming D"};WriteBackup(snapshot with{Notes=[nextBranch]});Require(await Show(),"Lock-paused branch preservation preview opened");var lockViewer=Viewer();var lockFiles=new PausedBatchFiles();var lockMerge=Apply(lockViewer,()=>true,lockFiles);
             try
             {
-                await lockFiles.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));var locking=active.LockAsync();Require(active.KeysReleased&&!lockMerge.IsCompleted&&lockViewer.IsRevoked&&lockViewer.CurrentTextView.Text.Length==0&&lockViewer.IncomingTextView.Text.Length==0&&!Control<Button>(main,"BackupMergeButton").IsEnabled,"Lock releases keys and independently clears comparison while cipher-only preservation remains paused");
+                await lockFiles.Entered.Task.WaitAsync(TimeSpan.FromSeconds(10));var locking=active.LockAsync();Require(active.KeysReleased&&!lockMerge.IsCompleted&&lockViewer.IsRevoked&&lockViewer.CurrentTextView.Text.Length==0&&lockViewer.IncomingTextView.Text.Length==0&&!Control<MenuItem>(main,"BackupMergeButton").IsEnabled,"Lock releases keys and independently clears comparison while cipher-only preservation remains paused");
                 lockFiles.Continue.TrySetResult();Require(!await lockMerge,"Lock-paused merge applies no incoming branch");await locking;
             }
             finally{lockFiles.Continue.TrySetResult();await lockMerge;}

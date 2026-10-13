@@ -56,12 +56,23 @@ public partial class MainWindow : Window
         if(uiDeviceId==Guid.Empty)throw new ArgumentException("Empty UI profile");this.uiDeviceId=uiDeviceId;
         root = Path.GetFullPath(dataRoot);
         InitializeComponent();Editor.DataContextChanged+=RichImageDataContextChanged;IsVisibleChanged+=(_,_)=>{if(!IsVisible)ClearInlineImageView();else if(session is{IsLocked:false})RequestRichImageRefresh();}; loadingUi = false;
+        UiScale.Changed+=(_,_)=>UpdateWorkspaceViewport();Loaded+=(_,_)=>UpdateWorkspaceViewport();
         timer.Tick += Timer_Tick; timer.Start();
         InputManager.Current.PreProcessInput += Activity;
         SystemEvents.SessionSwitch += SessionSwitch;
         Closing += Window_Closing;
         CompositionTarget.Rendering+=SearchPreviewRendering;
         Closed += (_, _) => { windowClosed=true;ClearInlineImageView();ClearStructuredEditor();displayedNotes.Clear();DisableTray();ClearBackupPreviews();ClearBackupMergeViews();ClearAutomaticBackupViews();ClearAutomaticTrashViews();ClearSearchStateViews();CompositionTarget.Rendering-=SearchPreviewRendering;ClearSearchResultPreview(); fileOperations.Cancel(); fileOperations.Dispose(); timer.Stop(); InputManager.Current.PreProcessInput -= Activity; SystemEvents.SessionSwitch -= SessionSwitch; ClearSecretControls(); };
+    }
+    private void WorkspaceScroll_Changed(object sender,ScrollChangedEventArgs e)
+    {
+        if(e.ViewportWidthChange!=0||e.ViewportHeightChange!=0)UpdateWorkspaceViewport();
+    }
+    private void UpdateWorkspaceViewport()
+    {
+        if(ViewRoot is null||WorkspaceScroll is null||UiScale is null)return;
+        ViewRoot.Width=Math.Max(1000,(WorkspaceScroll.ViewportWidth-40)/Math.Max(0.75,UiScale.ScaleX));
+        ViewRoot.Height=Math.Max(650,(WorkspaceScroll.ViewportHeight-40)/Math.Max(0.75,UiScale.ScaleY));
     }
     private void Activity(object sender, PreProcessInputEventArgs e) => activity = DateTimeOffset.UtcNow;
     private void SessionSwitch(object sender, SessionSwitchEventArgs e)
@@ -178,6 +189,10 @@ public partial class MainWindow : Window
         finally { if (confirm is not null) CryptographicOperations.ZeroMemory(confirm); }
     }
     private void NewNote_Click(object sender, RoutedEventArgs e)
+        => CreateNoteForWriting(false);
+    private void NewStickyNote_Click(object sender, RoutedEventArgs e)
+        => CreateNoteForWriting(true);
+    private void CreateNoteForWriting(bool openSticky)
     {
         try
         {
@@ -185,6 +200,8 @@ public partial class MainWindow : Window
             var note = active.Workspace.CreateNote();
             if (FolderFilter.SelectedItem is FolderChoice { Id: Guid folder }) active.Workspace.MoveNote(note, folder);
             ViewFilter.SelectedIndex = 0; SearchInput.Clear(); TagFilter.Clear(); RefreshNotes(note);
+            if(openSticky)OpenSticky(note);
+            else BodyEditor.Focus();
         }
         catch { Notice.Text = "새 메모를 만들 수 없습니다. 시험판은 최대 100개입니다."; }
     }
@@ -279,7 +296,8 @@ public partial class MainWindow : Window
         bool Current()=>!concealing&&epoch==uiEpoch&&ReferenceEquals(session,active)&&!active.IsLocked&&stickyWindows.TryGetValue(note.Id,out var current)&&ReferenceEquals(current,window);
         var placement=new DesktopWindowController(window,"memo",note.Id,state,Current,layout=>PersistLayout(active,epoch,layout));
         placements.Add(window,placement);window.SetPlacement(placement);window.SetEditingContext(active.Workspace,Current,message=>{if(Current())Notice.Text=message;});window.SetAttachmentContext(active,Current,message=>{if(Current())Notice.Text=message;},uiDeviceId);window.ApplyUiPreferences(active.Workspace.GetUiDevice(uiDeviceId).Preferences);
-        window.Closed+=(_,_)=>{stickyWindows.Remove(note.Id);placements.Remove(window);};window.Show();
+        window.SetNewNoteAction(()=>{if(Current())CreateNoteForWriting(true);});
+        window.Closed+=(_,_)=>{stickyWindows.Remove(note.Id);placements.Remove(window);};window.Show();window.Activate();window.FocusBody();
     }
     private void PersistLayout(SaveCoordinator active,long epoch,StoredWindowLayout layout)
     {

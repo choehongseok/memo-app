@@ -112,7 +112,7 @@ internal static partial class Program
             var result=await f.Mode(boundary+"-roundtrip.pdf",()=>{if(boundary=="mode")f.RoundTrip();return PdfExportMode.Visual;},()=>{consent++;if(boundary=="consent")f.RoundTrip();return true;},()=>{picker++;if(boundary=="picker")f.RoundTrip();return f.PathFor(boundary+"-roundtrip.pdf");},files);
             Require(!result&&files.Creates==0&&(boundary!="mode"||consent==0)&&(boundary=="picker"||picker==0),"Original authority permanently revokes a selection round trip at "+boundary);
         }
-        await f.Select(f.Rich);var button=Control<Button>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(Button));bool nativeEntered=false,nativeBusyRetained=false;Task<bool>? nested=null;files=new();consent=0;int nestedConsent=0,nestedPicker=0;
+        await f.Select(f.Rich);var button=Control<MenuItem>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(MenuItem));bool nativeEntered=false,nativeBusyRetained=false;Task<bool>? nested=null;files=new();consent=0;int nestedConsent=0,nestedPicker=0;
         EventHandler changed=(_,_)=>{if(nativeEntered||button.IsEnabled)return;nativeEntered=true;nested=f.Export("native-reentry.pdf",()=>{nestedConsent++;return false;},()=>{nestedPicker++;return null;});nativeBusyRetained=Field<bool>(f.Main,"pdfExportBusy");f.RoundTrip();};
         descriptor.AddValueChanged(button,changed);
         try{Require(!await f.Export("native-roundtrip.pdf",()=>{consent++;return true;},files:files)&&nativeEntered&&nested is not null&&!await nested&&nestedConsent==0&&nestedPicker==0&&nativeBusyRetained&&consent==0&&files.Creates==0,"Actual native IsEnabled callback cannot reenter admission and selection round trip revokes before consent");}
@@ -130,7 +130,7 @@ internal static partial class Program
         f.Plain.Text="Existing searchable ABC";
         foreach(var mode in new[]{PdfExportMode.Text,PdfExportMode.Visual})
         {
-            await f.Select(f.Plain);var button=Control<Button>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(Button));var files=new RichHostFiles(true);Task<bool>? child=null;bool entered=false;
+            await f.Select(f.Plain);var button=Control<MenuItem>(f.Main,"PdfExportButton");var descriptor=DependencyPropertyDescriptor.FromProperty(UIElement.IsEnabledProperty,typeof(MenuItem));var files=new RichHostFiles(true);Task<bool>? child=null;bool entered=false;
             byte[] source=PdfAuthorityStableSource(f.Active.Workspace),cipher=File.ReadAllBytes(f.CipherPath);
             EventHandler enabled=(_,_)=>{if(entered||!button.IsEnabled)return;entered=true;child=f.Export("finalizer-child-"+mode+".pdf",files:files);};
             descriptor.AddValueChanged(button,enabled);

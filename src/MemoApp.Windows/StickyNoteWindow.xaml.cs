@@ -19,15 +19,36 @@ public partial class StickyNoteWindow : Window
     private MarkdownNotePreview? markdownPreview;
     private StructuredNoteEditor? structuredEditor;
     private AttachmentPanel? attachmentPanel;
+    private SaveCoordinator? statusSession;
+    private Action? newNoteAction;
+    public void SetNewNoteAction(Action action)=>newNoteAction=action;
+    private void NewSticky_Click(object sender,RoutedEventArgs e){if(!closed&&current?.Invoke()==true)newNoteAction?.Invoke();}
+    public void FocusBody()
+    {
+        if(FoldToggle.IsChecked==true)return;
+        if(structuredEditor is not null)structuredEditor.RichInput.Focus();
+        else BodyEditor.Focus();
+    }
+    private void RefreshSaveState()
+    {
+        if(!closed&&statusSession is { } active&&current?.Invoke()==true)SaveState.Text=active.Status;
+    }
+    private void DetachSaveState()
+    {
+        if(statusSession is { } previous)previous.Changed-=RefreshSaveState;
+        statusSession=null;
+    }
     private string? bodyMode;
     public void SetEditingContext(EditingWorkspace owner,Func<bool> valid,Action<string> status)
     {ClearStructuredEditor();ClearInlineImageView();workspace=owner;current=valid;notice=status;ConfigureBody();}
     public void SetAttachmentContext(SaveCoordinator owner,Func<bool> valid,Action<string> status,Guid uiDeviceId=default)
     {
+        DetachSaveState();
         ClearStructuredEditor();ClearInlineImageView();imageSession=owner;ClearAttachmentPanel();if(closed||!valid()||draft.IsClosed||draft.IsDeleted)return;
+        statusSession=owner;owner.Changed+=RefreshSaveState;RefreshSaveState();
         bool attached=false;AttachmentPanel? created=null;
         bool Current()=>!closed&&valid()&&!draft.IsClosed&&!draft.IsDeleted&&(!attached||ReferenceEquals(AttachmentHost.Content,created));
-        created=new(owner,draft,Current,status,uiDeviceId);ConfigureInlineImageInsertion(created,owner,Current);if(Current()){attachmentPanel=created;AttachmentHost.Content=created;attached=true;AttachmentHost.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;}else created.Dispose();ConfigureBody();
+        created=new(owner,draft,Current,message=>{if(Current()){ActionState.Text=message;status(message);}},uiDeviceId);ConfigureInlineImageInsertion(created,owner,Current);if(Current()){attachmentPanel=created;AttachmentHost.Content=created;attached=true;AttachmentHost.Visibility=FoldToggle.IsChecked==true?Visibility.Collapsed:Visibility.Visible;}else created.Dispose();ConfigureBody();
     }
     private void ClearAttachmentPanel()
     {
@@ -100,9 +121,13 @@ public partial class StickyNoteWindow : Window
         draft.PropertyChanged += DraftChanged;
         Closed += (_, _) =>
         {
-            closed=true;workspace=null;imageSession=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearMarkdownPreview();ClearStructuredEditor();ClearInlineImageView();ClearAttachmentPanel();
+            bool wasLocked=statusSession?.IsLocked==true;
+            closed=true;DetachSaveState();newNoteAction=null;
+            workspace=null;imageSession=null;current=null;notice=null;draft.PropertyChanged -= DraftChanged;ClearMarkdownPreview();ClearStructuredEditor();ClearInlineImageView();ClearAttachmentPanel();
             BodyEditor.IsUndoEnabled = TitleEditor.IsUndoEnabled = false;
             DataContext = null; BodyEditor.Clear(); TitleEditor.Clear();
+            try{SaveState.Text=wasLocked?"잠금":"창 닫힘 · 메모 보존";}catch{}
+            try{ActionState.Text="";}catch{}
         };
     }
     private void DraftChanged(object? sender, PropertyChangedEventArgs e)
@@ -125,6 +150,7 @@ public partial class StickyNoteWindow : Window
     {
         if (BodyEditor is null || restoringLayout) return;
         bool folded = ((CheckBox)sender).IsChecked == true;if(folded)ClearInlineImageView();else RequestRichImageRefresh();BodyPanel.Visibility=folded?Visibility.Collapsed:Visibility.Visible;AttachmentHost.Visibility=folded||attachmentPanel is null?Visibility.Collapsed:Visibility.Visible;
+        if(folded){MoreTools.IsExpanded=false;AttachmentTools.IsExpanded=false;}
         if(Placement is not null){Placement.SetFolded(folded);BodyEditor.Visibility=folded?Visibility.Collapsed:Visibility.Visible;return;}
         if (folded) { expandedHeight = Height; BodyEditor.Visibility = Visibility.Collapsed; Height = 160; }
         else { BodyEditor.Visibility = Visibility.Visible; Height = expandedHeight; }

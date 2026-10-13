@@ -25,11 +25,11 @@ internal static partial class Program
             Task<bool> Export(string name,Func<bool>? confirm=null,Func<string?>? choose=null,IAtomicVaultFiles? files=null)=>(Task<bool>)method.Invoke(main,[confirm??(()=>true),choose??(()=>Path.Combine(dir,name)),files])!;
             void SelectionRoundTrip(){list.SelectedItem=other;list.SelectedItem=note;}
 
-            var enabled=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(System.Windows.UIElement.IsEnabledProperty,typeof(Button));bool nativeOnce=true;
-            EventHandler nativeSelection=(_,_)=>{if(nativeOnce&&!Control<Button>(main,"PdfExportButton").IsEnabled){nativeOnce=false;SelectionRoundTrip();}};
-            enabled.AddValueChanged(Control<Button>(main,"PdfExportButton"),nativeSelection);
+            var enabled=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(System.Windows.UIElement.IsEnabledProperty,typeof(MenuItem));bool nativeOnce=true;
+            EventHandler nativeSelection=(_,_)=>{if(nativeOnce&&!Control<MenuItem>(main,"PdfExportButton").IsEnabled){nativeOnce=false;SelectionRoundTrip();}};
+            enabled.AddValueChanged(Control<MenuItem>(main,"PdfExportButton"),nativeSelection);
             try{Require(!await Export("native-roundtrip.pdf",()=>throw new Exception("No consent after native setter selection round trip"))&&!File.Exists(Path.Combine(dir,"native-roundtrip.pdf")),"Native command setter selection round trip revokes before consent");}
-            finally{enabled.RemoveValueChanged(Control<Button>(main,"PdfExportButton"),nativeSelection);}
+            finally{enabled.RemoveValueChanged(Control<MenuItem>(main,"PdfExportButton"),nativeSelection);}
             Require(!await Export("consent-roundtrip.pdf",()=>{SelectionRoundTrip();return true;},()=>throw new Exception("No picker after selection round trip"))&&!File.Exists(Path.Combine(dir,"consent-roundtrip.pdf")),"Consent selection away and back irreversibly revokes PDF export");
             Require(!await Export("picker-roundtrip.pdf",choose:()=>{SelectionRoundTrip();return Path.Combine(dir,"picker-roundtrip.pdf");})&&!File.Exists(Path.Combine(dir,"picker-roundtrip.pdf")),"Picker selection away and back creates no PDF");
 

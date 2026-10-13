@@ -34,6 +34,7 @@ internal static partial class Program
             {
                 var failures=new List<string>();
                 var groups=new (string Name,Func<Task> Run)[]{("rich-paste-race",RichPasteRaceRun),("rich-own-commit-race",RichCommitRaceRun),("rich-rebuild-race",RichRebuildRaceRun),("rich-post-handler-race",RichPostHandlerRaceRun),("rich-exception-purge",RichExceptionPurgeRun),("rich-clear-exception",RichClearExceptionRun),("rich-url-clear-exception",()=>RichClearExceptionCase(true)),("rich-two-views",RichViewsRun),("rich-formatting-commands",RichFormattingCommandsRun),("rich-fidelity",RichFidelityRun),("rich-link-split",RichLinkSplitRun),("rich-history-mode",RichHistoryRun),("rich-native-style-refusal",RichNativeStyleRun),("rich-native-malformed-unicode",RichMalformedNativeRun),("rich-composition-boundary",RichCompositionRun),("rich-production-integration",RichWindowsIntegrationRun),("plain-editing",Run),("batch-refusal",BatchFailureRun),("device-native",DeviceWindowsRun),("rich-nested-native-worker",RichNestedNativeProcessRun)};
+                groups=groups.Append(("writing-first-ui",(Func<Task>)WritingUiRun)).ToArray();
                 groups=groups.Append(("rich-explicit-link",(Func<Task>)RichLinkRun)).ToArray();
                 groups=groups.Append(("rich-checklist-enter",(Func<Task>)ChecklistEditingRun)).ToArray();
                 groups=groups.Append(("rich-checklist-enter-boundary",(Func<Task>)ChecklistEnterBoundaryRun)).ToArray();
@@ -88,6 +89,7 @@ internal static partial class Program
                 groups=groups.Append(("rich-image-editor-prerequisite",(Func<Task>)RichImageEditorPrerequisiteRun)).ToArray();
                 groups=groups.Append(("rich-image-text-editor",(Func<Task>)RichImageTextEditorRun)).ToArray();
                 groups=groups.Append(("rich-image-text-host",(Func<Task>)RichImageTextHostRun)).ToArray();
+                if(arguments.Contains("--writing-ui-only"))groups=groups.Where(group=>group.Name=="writing-first-ui").ToArray();
                 if(arguments.Contains("--h01-v2-host-only"))groups=groups.Where(group=>group.Name=="rich-image-text-host").ToArray();
                 if(arguments.Contains("--h01-v2-text-editor-only"))groups=groups.Where(group=>group.Name=="rich-image-text-editor").ToArray();
                 if(arguments.Contains("--ocr-pending-only"))groups=groups.Where(group=>group.Name=="ocr-pending-races").ToArray();
@@ -555,7 +557,7 @@ internal static partial class Program
             Require(Control<ListBox>(main,"NotesList").SelectionMode==SelectionMode.Extended,"batch list must allow explicit Extended selection");
             Require(await session.SaveAsync(),"batch WPF starting basis save");
             var list=Control<ListBox>(main,"NotesList");Control<ComboBox>(main,"FolderFilter").SelectedIndex=0;list.SelectedItems.Clear();list.SelectedItems.Add(other);list.SelectedItems.Add(first);await Idle();
-            Require(Control<FrameworkElement>(main,"Editor").DataContext is null && !Control<FrameworkElement>(main,"Editor").IsEnabled && !Control<Button>(main,"DuplicateButton").IsEnabled,"multiple selection must revoke singleton editor/binding/actions");
+            Require(Control<FrameworkElement>(main,"Editor").DataContext is null && !Control<FrameworkElement>(main,"Editor").IsEnabled && !Control<MenuItem>(main,"DuplicateButton").IsEnabled,"multiple selection must revoke singleton editor/binding/actions");
             int countBefore=session.Workspace.Notes.Count;var singleBefore=session.Workspace.Capture();
             foreach(string handler in new[]{"Duplicate_Click","ApplyTags_Click","OrderUp_Click","OpenSticky_Click","History_Click"})Invoke(main,handler,main,new RoutedEventArgs());
             Control<ComboBox>(main,"MoveFolder").SelectedIndex=0;Control<ComboBox>(main,"ColorPicker").SelectedIndex=2;await Idle();

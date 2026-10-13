@@ -70,7 +70,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         this.workspace=workspace;this.note=note;this.current=current;this.notice=notice;native.MutationStarting=ImageTextNativeMutation;
         native.EventFinished=()=>{if(!disposed&&(refreshPending||waitingTransaction))QueueRefresh();};
         transactionRetry.Tick+=(_,_)=>{transactionRetry.Stop();if(!disposed&&waitingTransaction){waitingTransaction=false;if(Live())ScheduleRefresh();else ClearSensitive();}};
-        var root=new DockPanel();DockPanel.SetDock(toolbar,Dock.Top);root.Children.Add(toolbar);DockPanel.SetDock(state,Dock.Top);root.Children.Add(state);root.Children.Add(RichInput);Content=root;
+        var root=new DockPanel();var tools=new Expander{Header="서식 도구",IsExpanded=false,Content=new ScrollViewer{Content=toolbar,MaxHeight=180,VerticalScrollBarVisibility=ScrollBarVisibility.Auto}};DockPanel.SetDock(tools,Dock.Top);root.Children.Add(tools);DockPanel.SetDock(state,Dock.Top);root.Children.Add(state);root.Children.Add(RichInput);Content=root;
         Button("굵게",ApplyBold);var sizes=new ComboBox{Width=60,ItemsSource=new double[]{8,10,12,14,16,18,22,28,36,48,72,96},SelectedItem=14d};sizes.SelectionChanged+=(_,_)=>{if(!rebuilding&&sizes.SelectedItem is double size)ApplyFontSize(size);};toolbar.Children.Add(sizes);
         var fonts=new ComboBox{Width=140,ItemsSource=SafeFonts.Order(StringComparer.OrdinalIgnoreCase).Take(500).ToArray(),SelectedItem="Segoe UI"};fonts.SelectionChanged+=(_,_)=>{if(!rebuilding&&fonts.SelectedItem is string font)ApplyFontFamily(font);};toolbar.Children.Add(fonts);
         Button("밑줄",ApplyUnderline);Button("취소선",ApplyStrike);
@@ -85,7 +85,7 @@ public sealed partial class StructuredNoteEditor:UserControl,IDisposable
         CommandManager.AddPreviewExecutedHandler(RichInput,PreviewCommand);
         note.PropertyChanged+=DraftChanged;try{InitializeImageTextEditing(imageSession);PublishProjection();}catch{ClearSensitive();throw;}
     }
-    private void Button(string label,Action action){var button=new Button{Content=label,Padding=new(6,3,6,3),Margin=new(0,0,4,0),Focusable=false};button.Click+=(_,_)=>action();toolbar.Children.Add(button);}
+    private void Button(string label,Action action){var button=new Button{Content=label,Padding=new(6,3,6,3),Margin=new(0,0,4,0),Focusable=true};button.Click+=(_,_)=>action();toolbar.Children.Add(button);}
     private static bool SafeFontName(string name)=>name.Length is >0 and <=128&&RichDocumentCodec.IsWellFormedUnicode(name)&&name.All(c=>char.IsLetterOrDigit(c)||c is ' ' or '-' or '_' or '.');
     private bool Live()
     {
