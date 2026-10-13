@@ -33,5 +33,7 @@ core.*
 
 ui-device.id
 pending-ui-*.id
+ui-device.create.lock
+**/SyntheticTest/
 
 .superpowers/

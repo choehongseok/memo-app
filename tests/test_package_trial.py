@@ -1,4 +1,4 @@
-import hashlib,json,pathlib,subprocess,tempfile,unittest
+import hashlib,json,pathlib,subprocess,sys,tempfile,unittest
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 class PackageTrialChecks(unittest.TestCase):
  def setUp(self):
@@ -6,7 +6,7 @@ class PackageTrialChecks(unittest.TestCase):
   for name in ['MemoApp.Windows.exe','MemoApp.Windows.dll','coreclr.dll','MemoApp.Windows.deps.json','MemoApp.Windows.runtimeconfig.json','Start-Portable.cmd','Install-User.cmd','createdump.exe','MemoApp.Windows.pdb','licenses/Markdig1.4.0.txt','licenses/D2Coding1.4.0-OFL.txt','licenses/DotNet10.txt','licenses/DotNet10-ThirdPartyNotices.txt','licenses/WindowsDesktop10.txt']:
    p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes((ROOT/'docs/licenses/D2Coding1.4.0-OFL.txt').read_bytes() if name=='licenses/D2Coding1.4.0-OFL.txt' else ('synthetic '+name).encode())
  def tearDown(self):self.temp.cleanup()
- def run_tool(self):return subprocess.run(['python3',str(ROOT/'tools/package_trial.py'),str(self.root)],cwd=ROOT,capture_output=True,text=True)
+ def run_tool(self):return subprocess.run([sys.executable,str(ROOT/'tools/package_trial.py'),str(self.root)],cwd=ROOT,capture_output=True,text=True)
  def test_exact_payload_hashes_dump_debug_removed(self):
   self.assertEqual(self.run_tool().returncode,0)
   data=json.loads((self.root/'installation-manifest.json').read_text());names={x['path'] for x in data['files']}

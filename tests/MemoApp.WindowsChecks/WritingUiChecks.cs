@@ -18,6 +18,7 @@ internal static partial class Program
         {
             main=new MainWindow(Path.Combine(root,"vault"));main.Show();
             Require(!Control<Expander>(main,"CreateTools").IsExpanded&&!Control<Expander>(main,"RecoveryTools").IsExpanded,"Unlock is code-first with separate optional creation/repair");
+            await Idle();UiValidationEvidence.Capture(main,"locked");
             Invoke(main,"StartSession",EncryptedVault.Create(Path.Combine(root,"vault"),secret,secret,files));var active=Field<SaveCoordinator>(main,"session");Field<DispatcherTimer>(main,"timer").Stop();
             main.Width=1000;var scale=Control<ScaleTransform>(main,"UiScale");scale.ScaleX=scale.ScaleY=1.75;await Idle();
             var scroll=Control<ScrollViewer>(main,"WorkspaceScroll");Require(scroll.ScrollableWidth>0&&Control<Grid>(main,"ViewRoot").ActualWidth>=1000,"Maximum scale retains horizontal access to full workspace");
@@ -38,6 +39,9 @@ internal static partial class Program
             note.Text="합성 한글 작성";Require(Control<TextBlock>(sticky,"SaveState").Text==active.Status&&active.IsDirty,"Sticky immediately shows coordinator dirty state");
             var states=new List<string>();active.Changed+=()=>states.Add(Control<TextBlock>(sticky,"SaveState").Text);
             Require(await active.SaveAsync(),"Shared synthetic save succeeds");Require(states.Contains("저장 중")&&Control<TextBlock>(sticky,"SaveState").Text=="저장됨","Sticky reports real saving and saved events");
+            Control<Expander>(sticky,"AttachmentTools").IsExpanded=false;
+            Control<Expander>(sticky,"MoreTools").IsExpanded=false;
+            await Idle();UiValidationEvidence.Capture(main,"manager");UiValidationEvidence.Capture(sticky,"sticky");
             Control<CheckBox>(sticky,"ImportantToggle").IsChecked=true;Require(note.Important,"Importance icon changes same draft");
             Control<CheckBox>(sticky,"TopmostToggle").IsChecked=true;Require(sticky.Topmost&&!Control<CheckBox>(sticky,"PositionToggle").IsChecked.GetValueOrDefault(),"Topmost and position lock remain separate");
             var descriptor=System.ComponentModel.DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty,typeof(TextBlock));

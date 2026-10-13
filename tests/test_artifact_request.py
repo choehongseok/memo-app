@@ -1,4 +1,4 @@
-import json,pathlib,subprocess,tempfile,unittest
+import json,pathlib,subprocess,sys,tempfile,unittest
 TOOL=pathlib.Path(__file__).resolve().parents[1]/'tools/check_artifact_request.py'
 class ArtifactRequestChecks(unittest.TestCase):
  def setUp(self):
@@ -13,7 +13,7 @@ class ArtifactRequestChecks(unittest.TestCase):
  def request(self,source=None):
   data={'schemaVersion':1,'sourceTree':source or self.git('rev-parse','HEAD:src'),'testTree':self.git('rev-parse','HEAD:tests'),'purpose':'authorized-final-windows-trial'}
   (self.root/'docs/ARTIFACT_UPLOAD_REQUEST.json').write_text(json.dumps(data))
- def run_tool(self):return subprocess.run(['python3',str(TOOL)],cwd=self.root,capture_output=True,text=True)
+ def run_tool(self):return subprocess.run([sys.executable,str(TOOL)],cwd=self.root,capture_output=True,text=True)
  def test_no_request_stays_off(self):
   result=self.run_tool();self.assertEqual(result.returncode,0);self.assertIn('none for this commit',result.stdout)
  def test_exact_marker_only_allows(self):

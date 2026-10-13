@@ -1,11 +1,13 @@
 using MemoApp.Core.Transfer;
 namespace MemoApp.Core.Lifecycle;
-public sealed record StartupOptions(bool Portable,bool TrayStart)
+public sealed record StartupOptions(bool Portable,bool TrayStart,bool SyntheticTest=false)
 {
-    public string[] DataArguments=>Portable?["--portable"]:[];
+    public string[] DataArguments=>SyntheticTest?["--synthetic-test"]:Portable?["--portable"]:[];
     public static StartupOptions Parse(string[] args)
     {
-        ArgumentNullException.ThrowIfNull(args);bool portable=false,tray=false;
+        ArgumentNullException.ThrowIfNull(args);
+        if(args.SequenceEqual(new[]{"--synthetic-test"}))return new(false,false,true);
+        bool portable=false,tray=false;
         if(args.Length>2)throw new ArgumentException("Too many startup arguments");
         foreach(string option in args)
         {

@@ -5,9 +5,15 @@ public partial class MainWindow
 {
     private StartupRegistration? startupRegistration;
     private bool startupBusy;
-    internal void ConfigureStartup(string executable,bool portable,IStartupStore? store=null)
+    internal void ConfigureStartup(string executable,bool portable,IStartupStore? store=null,bool disableSystemRegistration=false)
     {
         if(startupBusy||windowClosed||closing||confirmedExit)return;startupBusy=true;
+        if(disableSystemRegistration)
+        {
+            try{startupRegistration=null;StartupMenu.IsChecked=false;StartupMenu.IsEnabled=false;}
+            finally{startupBusy=false;}
+            return;
+        }
         try{startupRegistration=new(StartupCommand.Create(executable,portable),store??new WindowsStartupStore());RefreshStartupMenu();}
         catch{startupRegistration=null;try{StartupMenu.IsChecked=false;StartupMenu.IsEnabled=false;Notice.Text="자동 실행 경로/기존 등록 확인 실패 — 등록은 변경하지 않았습니다.";}catch{}}
         finally{startupBusy=false;}

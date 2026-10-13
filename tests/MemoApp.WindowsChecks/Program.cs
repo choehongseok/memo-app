@@ -22,6 +22,7 @@ internal static partial class Program
     private static int Main()
     {
         var arguments=Environment.GetCommandLineArgs();
+        if(arguments.Length==2&&arguments[1]=="--synthetic-test")return SyntheticAppEntryRun();
         if(arguments.Length==3&&arguments[1]=="--installed-package")return InstalledPackageRun(arguments[2]);
         if(arguments.Contains("--image-shutdown-worker"))return ImageShutdownWorker();
         if(arguments.Contains("--network-observation-only"))return NetworkObservationParentRun().GetAwaiter().GetResult();
@@ -89,6 +90,14 @@ internal static partial class Program
                 groups=groups.Append(("rich-image-editor-prerequisite",(Func<Task>)RichImageEditorPrerequisiteRun)).ToArray();
                 groups=groups.Append(("rich-image-text-editor",(Func<Task>)RichImageTextEditorRun)).ToArray();
                 groups=groups.Append(("rich-image-text-host",(Func<Task>)RichImageTextHostRun)).ToArray();
+                var namedFilters=arguments.Skip(1).Where(argument=>argument.StartsWith("--wpf-group=",StringComparison.Ordinal)).ToArray();
+                if(namedFilters.Length!=0)
+                {
+                    if(namedFilters.Length!=1||arguments.Length!=2)throw new ArgumentException("Use one exact --wpf-group=<name> selection");
+                    string name=namedFilters[0]["--wpf-group=".Length..];
+                    groups=groups.Where(group=>group.Name==name).ToArray();
+                    if(groups.Length!=1)throw new ArgumentException("Unknown WPF group selection");
+                }
                 if(arguments.Contains("--writing-ui-only"))groups=groups.Where(group=>group.Name=="writing-first-ui").ToArray();
                 if(arguments.Contains("--h01-v2-host-only"))groups=groups.Where(group=>group.Name=="rich-image-text-host").ToArray();
                 if(arguments.Contains("--h01-v2-text-editor-only"))groups=groups.Where(group=>group.Name=="rich-image-text-editor").ToArray();
@@ -113,7 +122,7 @@ internal static partial class Program
                     catch(Exception e){var actual=e.GetBaseException();string failure=group.Name+" "+actual.GetType().Name+": "+actual.Message;failures.Add(failure);Console.Error.WriteLine("FAIL: WPF synthetic checks "+failure);if(group.Name is "trial-installer" or "clipboard-dib-input" or "pdf-visual-export" or "pdf-system-font-inventory" or "pdf-rich-paragraph-export" or "pdf-rich-paragraph-renderer" or "pdf-rich-paragraph-host" or "rich-image-text-editor" or "rich-image-text-host" or "ocr-synthetic-corpus" or "ocr-linked-runtime" or "automatic-backup-persistence"){string stack=e.ToString();Console.Error.WriteLine(stack[..Math.Min(stack.Length,8192)]);}}
                     finally{foreach(var window in app.Windows.Cast<Window>().Where(w=>w.Content is StructuredNoteEditor or MarkdownNotePreview).ToArray()){((IDisposable)window.Content).Dispose();window.Close();}}
                 }
-                if(failures.Count==0){Console.WriteLine("PASS: actual Windows WPF rich/shared editing plus bound editing/search/organization/batch/comparison/lock clearing and native device-layout/preferences/widget/open-intent regression (not IME/physical mixed-DPI/OS SessionLock/user usability)");result=0;}
+                if(failures.Count==0){Console.WriteLine("PASS: actual Windows WPF selected groups ["+string.Join(",",groups.Select(group=>group.Name))+"]; physical IME/mixed-DPI/OS SessionLock/user usability are not established");result=0;}
             }
             catch (Exception e) { var actual = e.GetBaseException(); Console.Error.WriteLine("FAIL: WPF synthetic checks " + actual.GetType().Name + ": " + actual.Message); }
             finally { app.Shutdown(); }

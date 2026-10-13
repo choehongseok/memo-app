@@ -63,7 +63,8 @@ if (args.Contains("--rich-store-only")) { await RichStorageChecks.Run(); return;
 if (args.Contains("--batch-only")) { await BatchChecks.Run(); return; }
 if (args.Contains("--diff-only")) { HistoryDiffChecks.Run(); return; }
 if (args.Contains("--devices-only")) { await DeviceUiChecks.Run(); return; }
-if (args.Contains("--startup-only")) { StartupChecks.Run(); StartupRegistrationChecks.Run(); return; }
+if (args.Contains("--startup-isolation-only")) { StartupIsolationChecks.Run(); return; }
+if (args.Contains("--startup-only")) { StartupChecks.Run(); StartupRegistrationChecks.Run(); StartupIsolationChecks.Run(); return; }
 if (args.Length==2&&args[0]=="--pdf-probe") { PdfTextExportChecks.WriteProbe(args[1]); return; }
 if (args.Contains("--pdf-export-only")) { PdfTextExportChecks.Run(); return; }
 if (args.Contains("--pdf-rich-paragraph-capture-only")) { await RichParagraphPdfSourceChecks.Run(); return; }
@@ -82,6 +83,12 @@ if (args.Contains("--whole-migration-only")) { await WholeMigrationChecks.Run();
 if (args.Contains("--auto-backup-only")) { AutomaticBackupPolicyChecks.Run(); return; }
 if (args.Contains("--prepared-backup-only")) { await PreparedBackupChecks.Run(); return; }
 if (args.Contains("--text-only")) { TextTransferChecks.Run(); return; }
+if (args.Contains("--vault-only")) { VaultChecks.Run(); return; }
+if (args.Contains("--vault-failure-only")) { VaultFailureChecks.Run(); return; }
+if (args.Contains("--coordinator-only")) { await CoordinatorChecks.Run(); return; }
+if (args.Contains("--backup-only")) { await BackupChecks.Run(); return; }
+if (args.Contains("--search-only")) { SearchChecks.Run(); return; }
+if (args.Contains("--organization-only")) { OrganizationChecks.Run(); return; }
 
 // Synthetic in-memory contract checks; these do not prove save/encryption/sync behavior.
 using var content = JsonDocument.Parse("""
@@ -157,7 +164,7 @@ await ExcelImportChecks.Run();
 AutomaticBackupPolicyChecks.Run();
 TextTransferChecks.Run();
 BatchTextTransferChecks.Run();
-StartupChecks.Run();StartupRegistrationChecks.Run();
+StartupChecks.Run();StartupRegistrationChecks.Run();StartupIsolationChecks.Run();
 await FilePathLinkChecks.Run();
 PdfTextExportChecks.Run();
 await DeviceUiChecks.Run();

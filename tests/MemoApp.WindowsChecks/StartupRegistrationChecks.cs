@@ -12,8 +12,8 @@ internal static partial class Program
     private sealed class SyntheticStartupStore:IStartupStore
     {
         internal StartupValue Value=new(false,false,null);
-        internal int Writes,Deletes;internal Action? Reading,Writing;
-        public StartupValue Read(){Reading?.Invoke();return Value;}
+        internal int Reads,Writes,Deletes;internal Action? Reading,Writing;
+        public StartupValue Read(){Reads++;Reading?.Invoke();return Value;}
         public void Write(string command){Writes++;Writing?.Invoke();Value=new(true,true,command);}
         public void Delete(){Deletes++;Value=new(false,false,null);}
     }
@@ -22,7 +22,14 @@ internal static partial class Program
         string root=Path.Combine(Path.GetTempPath(),"memo-wpf-startup-"+Guid.NewGuid().ToString("N")),key=@"Software\MemoApp\SyntheticChecks\"+Guid.NewGuid().ToString("N");Directory.CreateDirectory(root);string exe=Path.Combine(root,"MemoApp.Windows.exe");File.WriteAllText(exe,"SYNTHETIC_NOT_EXECUTABLE");MainWindow? main=new MainWindow(Path.Combine(root,"vault"));
         try
         {
-            var store=new SyntheticStartupStore();main.ConfigureStartup(exe,false,store);main.Show();await Idle();var item=Control<MenuItem>(main,"StartupMenu");Require(!item.IsChecked&&item.IsEnabled&&store.Writes==0&&store.Deletes==0,"Configure/default startup control reads only; no startup registration or vault is created");
+            var store=new SyntheticStartupStore();
+            store.Reading=()=>throw new InvalidOperationException("Synthetic mode must not read a startup store");
+            main.ConfigureStartup(exe,false,store,disableSystemRegistration:true);
+            var isolatedItem=Control<MenuItem>(main,"StartupMenu");
+            isolatedItem.IsChecked=true;isolatedItem.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            Require(!isolatedItem.IsEnabled&&store.Reads==0&&store.Writes==0&&store.Deletes==0&&!store.Value.Exists,"Synthetic startup mode must refuse system registration without reading or writing its store");
+            store.Reading=null;
+            main.ConfigureStartup(exe,false,store);main.Show();await Idle();var item=Control<MenuItem>(main,"StartupMenu");Require(!item.IsChecked&&item.IsEnabled&&store.Writes==0&&store.Deletes==0,"Configure/default startup control reads only; no startup registration or vault is created");
             item.IsChecked=true;item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));Require(store.Writes==1&&store.Deletes==0&&item.IsChecked&&store.Value.Command==StartupCommand.Create(exe,false),"Explicit opt-in registers exact command once");
             item.IsChecked=false;item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));Require(store.Deletes==1&&!item.IsChecked&&!store.Value.Exists,"Explicit disable removes only own exact command");
             store.Value=new(true,true,"FOREIGN_SYNTHETIC_COMMAND");item.IsChecked=true;item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));Require(store.Writes==1&&store.Deletes==1&&store.Value.Command=="FOREIGN_SYNTHETIC_COMMAND"&&!item.IsEnabled,"Foreign same-name command is preserved without write/delete");
