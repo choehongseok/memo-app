@@ -69,7 +69,9 @@ internal static partial class Program
             var other=session.Workspace.CreateNote();other.Title="later synthetic note";other.Text="other";Invoke(main,"RefreshNotes",note);await Idle();await Field<Task>(main,"recentTask");
             Invoke(main,"OpenSticky",note);await Idle();await Field<Task>(main,"recentTask");Require(await session.SaveAsync(),"Host baseline includes actual sticky placement/recent state");await Idle();
             var sticky=Field<Dictionary<Guid,StickyNoteWindow>>(main,"stickyWindows")[note.Id];var mainHost=RichHost(main);var stickyHost=RichHost(sticky);
-            int block=RichDocumentCodec.Images(note.Document!).Single().BlockIndex;var mainPixels=mainHost.Images.ImageForBlock(block);var stickyPixels=stickyHost.Images.ImageForBlock(block);
+            int block=RichDocumentCodec.Images(note.Document!).Single().BlockIndex;
+            Require(!mainHost.Editor.IsDisposed&&!mainHost.Images.IsDisposed&&!stickyHost.Editor.IsDisposed&&!stickyHost.Images.IsDisposed,"Post-save actual hosts must contain live projections even after readonly fallback retirement");
+            var mainPixels=mainHost.Images.ImageForBlock(block);var stickyPixels=stickyHost.Images.ImageForBlock(block);
             Require(mainPixels.Source is null&&stickyPixels.Source is null&&!System.Windows.Data.BindingOperations.IsDataBound(Control<TextBox>(main,"BodyEditor"),TextBox.TextProperty)&&!System.Windows.Data.BindingOperations.IsDataBound(Control<TextBox>(sticky,"BodyEditor"),TextBox.TextProperty),"Opening composite never paints image pixels or enables lossy plain-text binding");
             string original=note.Document!.SourceJson;string[] rawImages=ImageRawNodes(note.Document);long originalVersion=note.EditVersion,originalContentVersion=note.ContentVersion,originalEpoch=session.AttachmentPreviewEpoch;cipher=File.ReadAllBytes(Path.Combine(root,"current.vault"));
             var list=Control<ListBox>(main,"NotesList");Require(list.SelectedItems.Count==1&&ReferenceEquals(list.SelectedItems[0],note),"Actual native selected-note baseline is exact singleton");

@@ -22,7 +22,14 @@ internal static partial class Program
     private static int Main()
     {
         var arguments=Environment.GetCommandLineArgs();
+        if(arguments.Contains("--synthetic-installed-package"))
+        {
+            if(arguments.Length!=3||arguments[1]!="--synthetic-installed-package"){Console.Error.WriteLine("FAIL: use --synthetic-installed-package <package>");return 1;}
+            return SyntheticInstalledPackageRun(arguments[2]);
+        }
         if(arguments.Length==2&&arguments[1]=="--synthetic-test")return SyntheticAppEntryRun();
+        if(arguments.Skip(1).Any(argument=>argument.StartsWith("--synthetic",StringComparison.Ordinal)))
+        {Console.Error.WriteLine("FAIL: unknown or malformed synthetic selection");return 1;}
         if(arguments.Length==3&&arguments[1]=="--installed-package")return InstalledPackageRun(arguments[2]);
         if(arguments.Contains("--image-shutdown-worker"))return ImageShutdownWorker();
         if(arguments.Contains("--network-observation-only"))return NetworkObservationParentRun().GetAwaiter().GetResult();
@@ -606,7 +613,7 @@ internal static partial class Program
             Require(reopened.Workspace.Notes.Single(n=>!n.IsDeleted).Text == "공유 포스트잇 수정", "WPF lock/reopen persisted latest");
             var reopenedNote = reopened.Workspace.Notes.Single(n=>!n.IsDeleted); reopened.Workspace.DeleteNote(reopenedNote);
             Control<ComboBox>(main, "ViewFilter").SelectedIndex = 4; await Idle();
-            Require(Control<ListBox>(main, "NotesList").Items.Count == 2 && !Control<FrameworkElement>(main, "Editor").IsEnabled && Control<Button>(main, "RestoreButton").IsEnabled, "trash selection must show readonly content and restore action");
+            Require(Control<ListBox>(main, "NotesList").Items.Count == 2 && !Control<FrameworkElement>(main, "Editor").IsEnabled && Control<MenuItem>(main, "RestoreButton").IsEnabled, "trash selection must show readonly content and restore action");
             reopened.Workspace.RestoreNote(reopenedNote); Control<ComboBox>(main, "ViewFilter").SelectedIndex = 0; await Idle();
             Require(Control<FrameworkElement>(main, "Editor").IsEnabled, "restored editor not usable");
             await reopened.LockAsync(); Invoke(main, "ReleaseSettledSession");

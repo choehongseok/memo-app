@@ -21,5 +21,11 @@ class PackageTrialChecks(unittest.TestCase):
   notice.write_bytes(original[:-1]);self.assertNotEqual(self.run_tool().returncode,0);self.assertFalse((self.root/'installation-manifest.json').exists())
   notice.write_bytes(original);self.assertEqual(self.run_tool().returncode,0)
  def test_unexpected_data_and_launcher_refused(self):
-  for name in ['private.vault','unreviewed.exe']:
+  for name in ['private.vault','unreviewed.exe','Start-Unreviewed.cmd']:
    p=self.root/name;p.write_bytes(b'synthetic');self.assertNotEqual(self.run_tool().returncode,0);self.assertFalse((self.root/'installation-manifest.json').exists());p.unlink()
+ def test_exact_synthetic_launcher_and_guide_are_hashed(self):
+  for name in ['Start-SyntheticTest.cmd','SYNTHETIC-TEST.txt']:(self.root/name).write_bytes(('synthetic '+name).encode())
+  result=self.run_tool();self.assertEqual(result.returncode,0,result.stderr)
+  entries={entry['path']:entry for entry in json.loads((self.root/'installation-manifest.json').read_text())['files']}
+  for name in ['Start-SyntheticTest.cmd','SYNTHETIC-TEST.txt']:
+   self.assertEqual(entries[name]['sha256'],hashlib.sha256((self.root/name).read_bytes()).hexdigest())

@@ -104,7 +104,7 @@ internal sealed class RichImageTextHost:UserControl,IDisposable
             if(!Current()){Dispose();return;}
             Editor=new(active,source,Current,Report);if(Editor.IsDisposed||IsDisposed){Dispose();return;}
             root.Children.Add(Editor);Editor.IsVisibleChanged+=ChildVisibilityChanged;if(!Current()){Dispose();return;}projectionStage=1;RefreshImageActions();
-            active.Conceal+=Dispose;active.Workspace.AttachmentReadInvalidating+=Invalidating;source.PropertyChanged+=SourceChanged;IsVisibleChanged+=VisibilityChanged;
+            active.Conceal+=Dispose;active.Changed+=SessionChanged;active.Workspace.AttachmentReadInvalidating+=Invalidating;source.PropertyChanged+=SourceChanged;IsVisibleChanged+=VisibilityChanged;
             if(!Current())Dispose();
         }
         catch{Dispose();throw;}
@@ -131,6 +131,13 @@ internal sealed class RichImageTextHost:UserControl,IDisposable
     }
     private void Report(string message){if(Current())notice?.Invoke(message);}
     private void SourceChanged(object? sender,System.ComponentModel.PropertyChangedEventArgs args)=>RequestRefresh();
+    private void SessionChanged()
+    {
+        // A readonly fallback has no renewable edit context. Its child can retire
+        // during a status notification after the parent has already refreshed.
+        // Retire the whole owner and schedule a fresh projection, never reuse it.
+        if(!IsDisposed&&Editor is{IsDisposed:true})RetireAndRefresh();
+    }
     private void Invalidating(NoteDraft? source)
     {
         if(IsDisposed)return;ImageView?.InvalidateImageDisplay();
@@ -167,7 +174,7 @@ internal sealed class RichImageTextHost:UserControl,IDisposable
     {
         Dispatcher.VerifyAccess();if(IsDisposed)return;using var phase=RichImageTextPhase.Enter(Dispatcher);IsDisposed=true;projectionStage=-1;imageGeneration++;var active=session;var source=note;var editor=Editor;var images=ImageView;
         session=null;note=null;current=null;notice=null;refreshRequested=null;imageDocument=null;Editor=null!;ImageView=null!;
-        foreach(Action cleanup in new Action[]{()=>{if(active is not null)active.Conceal-=Dispose;},()=>{if(active is not null)active.Workspace.AttachmentReadInvalidating-=Invalidating;},()=>{if(source is not null)source.PropertyChanged-=SourceChanged;},()=>IsVisibleChanged-=VisibilityChanged,()=>{if(editor is not null)editor.IsVisibleChanged-=ChildVisibilityChanged;},()=>{if(images is not null)images.IsVisibleChanged-=ChildVisibilityChanged;},()=>editor?.Dispose(),()=>images?.Dispose(),()=>Visibility=Visibility.Collapsed})try{cleanup();}catch{}
+        foreach(Action cleanup in new Action[]{()=>{if(active is not null)active.Conceal-=Dispose;},()=>{if(active is not null)active.Changed-=SessionChanged;},()=>{if(active is not null)active.Workspace.AttachmentReadInvalidating-=Invalidating;},()=>{if(source is not null)source.PropertyChanged-=SourceChanged;},()=>IsVisibleChanged-=VisibilityChanged,()=>{if(editor is not null)editor.IsVisibleChanged-=ChildVisibilityChanged;},()=>{if(images is not null)images.IsVisibleChanged-=ChildVisibilityChanged;},()=>editor?.Dispose(),()=>images?.Dispose(),()=>Visibility=Visibility.Collapsed})try{cleanup();}catch{}
         RichImageTextPhase.CleanupNative(Dispatcher,this,imageGeneration,static (owner,generation)=>{if(!owner.IsDisposed||owner.imageGeneration!=generation)return;try{owner.root.Children.Clear();}catch{}try{if(ReferenceEquals(owner.Content,owner.root))owner.Content=null;}catch{}});
     }
 }

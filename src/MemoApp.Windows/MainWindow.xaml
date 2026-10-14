@@ -2,7 +2,7 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:MemoApp.Windows" Title="메모앱 — 합성 자료용 시험판" Width="1280" Height="850" MinWidth="1000" MinHeight="700">
  <ScrollViewer x:Name="WorkspaceScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" ScrollChanged="WorkspaceScroll_Changed"><Grid x:Name="ViewRoot" Margin="20" Width="1000" Height="650"><Grid.LayoutTransform><ScaleTransform x:Name="UiScale"/></Grid.LayoutTransform>
   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-  <Border Background="#FFF3CD" Padding="12" Margin="0,0,0,12"><StackPanel>
+  <Border Background="#FFF3CD" Padding="8" Margin="0,0,0,8"><StackPanel>
    <Menu><MenuItem Header="_파일"><MenuItem x:Name="StartupMenu" Header="Windows 로그인 시 잠긴 트레이로 실행" IsCheckable="True" IsChecked="False" IsEnabled="False" Click="StartupMenu_Click"/><MenuItem x:Name="TrayMenu" Header="트레이 상주 (이번 실행)" IsCheckable="True" IsChecked="False" Click="TrayMenu_Click"/><MenuItem x:Name="ExitMenu" Header="완전히 종료" Click="Exit_Click"/></MenuItem></Menu>
    <TextBlock Text="합성 자료용 · 서명 없는 개발 시험판입니다. 실제 개인정보를 사용하지 마세요. 실제 IME·OS 잠금·다중모니터 사용자 검증을 기다립니다." TextWrapping="Wrap" Foreground="DarkRed"/>
    <TextBlock Foreground="Black" x:Name="Notice" Text="잠금 — 복구 비밀로 해제하세요." TextWrapping="Wrap" FontWeight="Bold" Margin="0,8,0,0"/>
@@ -10,7 +10,7 @@
   <DockPanel Grid.Row="1" Margin="0,0,0,12">
    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button x:Name="SaveButton" Content="지금 저장" Click="Save_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/><Button x:Name="LockButton" Content="잠금" Click="Lock_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/></StackPanel>
    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal"><Button x:Name="NewButton" Content="새 메모 · 포스트잇" Click="NewStickyNote_Click" Padding="12,6" Margin="0,0,8,0" IsEnabled="False"/></StackPanel>
-   <Menu VerticalAlignment="Center">
+   <Menu DockPanel.Dock="Right" VerticalAlignment="Center">
     <MenuItem Header="메모"><MenuItem Header="새 메모 · 관리창에서 작성" Click="NewNote_Click" IsEnabled="{Binding IsEnabled, ElementName=NewButton}"/><Separator/><MenuItem x:Name="DuplicateButton" Header="복제" Click="Duplicate_Click" IsEnabled="False"/><MenuItem x:Name="DeleteButton" Header="휴지통으로" Click="Delete_Click" IsEnabled="False"/><MenuItem x:Name="RestoreButton" Header="메모 복원" Click="Restore_Click" IsEnabled="False"/><MenuItem x:Name="HistoryButton" Header="수정 이력" Click="History_Click" IsEnabled="False"/></MenuItem>
     <MenuItem Header="백업·복구·이전"><MenuItem x:Name="BackupButton" Header="암호 백업" Click="Backup_Click" IsEnabled="False"/><MenuItem x:Name="WholeTransferButton" Header="전체 자료 이전 파일" Click="WholeTransfer_Click" IsEnabled="False"/><MenuItem x:Name="BackupPreviewButton" Header="암호 백업 미리보기" Click="BackupPreview_Click" IsEnabled="False"/><MenuItem x:Name="BackupMergeButton" Header="선택 메모의 백업 이력 보존" Click="BackupMerge_Click" ToolTip="현재 메모 유지 · 같은 메모 ID의 백업 이력 보존 · 미저장 수정은 비교 전에 암호 저장" IsEnabled="False"/><MenuItem x:Name="PendingBackupBranchesButton" Header="보존된 백업 분기 비교" Click="PendingBackupBranches_Click" ToolTip="선택한 현재 메모의 보존 분기를 읽기 전용 비교 · 미저장 수정은 비교 전에 암호 저장" IsEnabled="False"/></MenuItem>
     <MenuItem Header="가져오기"><MenuItem x:Name="TxtImportButton" Header="TXT 가져오기" Click="TxtImport_Click" IsEnabled="False"/><MenuItem x:Name="MarkdownImportButton" Header="Markdown 원문 가져오기" Click="MarkdownImport_Click" IsEnabled="False"/><MenuItem x:Name="ExcelImportButton" Header="Excel 제목·본문 가져오기" Click="ExcelImport_Click" IsEnabled="False"/></MenuItem>
@@ -24,25 +24,26 @@
    <TextBlock Text=" 배율 " VerticalAlignment="Center"/><Slider x:Name="ScaleSlider" Width="80" Minimum="0.75" Maximum="1.75" Value="1" ValueChanged="UiSlider_Changed"/>
 </StackPanel></MenuItem.Header></MenuItem></MenuItem>
    </Menu>
+   <TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" ToolTip="메모 검색" AutomationProperties.Name="메모 검색" Padding="8,5" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
   </DockPanel>
-  <ScrollViewer x:Name="LockPanel" Grid.Row="2" VerticalScrollBarVisibility="Auto"><StackPanel MaxWidth="650" HorizontalAlignment="Left">
+  <ScrollViewer x:Name="LockPanel" Grid.Row="2" VerticalScrollBarVisibility="Auto"><StackPanel Width="440" MaxWidth="440" HorizontalAlignment="Center" Margin="0,24,0,0">
    <TextBlock Text="메모 잠금 해제" FontSize="22" Margin="0,0,0,16"/>
    <TextBlock Text="복구 비밀은 32-byte 난수의 43글자 표기입니다. 재시작·잠금 해제·다른 PC 복구에도 필요합니다. 비밀을 잃으면 복구할 수 없습니다." TextWrapping="Wrap"/>
    <TextBlock Text="DPAPI 자동 접근: 꺼짐·미제공. Hello: 미제공·미검증. 앱/OS 잠금 시 편집 화면을 즉시 숨깁니다." TextWrapping="Wrap" Margin="0,8,0,16"/>
    <TextBlock Text="복구코드 (기존 복구 비밀)"/>
-   <PasswordBox x:Name="RecoveryInput" MaxLength="43" Width="550" HorizontalAlignment="Left" Margin="0,4,0,8"/>
-   <Button Content="해제" Click="Unlock_Click" HorizontalAlignment="Left" Padding="12,6" Margin="0,0,0,16"/>
+   <PasswordBox x:Name="RecoveryInput" MaxLength="43" HorizontalAlignment="Stretch" Margin="0,4,0,8"/>
+   <Button Content="잠금 해제" Click="Unlock_Click" HorizontalAlignment="Stretch" Padding="12,10" Margin="0,0,0,16"/>
    <Expander x:Name="CreateTools" Header="새 시험 자료 만들기" IsExpanded="False" Margin="0,12,0,0"><StackPanel>
    <Button Content="새 자료용 복구 비밀 생성" Click="GenerateSecret_Click" HorizontalAlignment="Left" Padding="12,6" Margin="0,16,0,8"/>
    <TextBlock Text="생성한 비밀을 오프라인에 보관한 뒤 아래에 정확히 다시 입력하세요. 자동 클립보드 복사·로그 기록은 하지 않습니다." TextWrapping="Wrap"/>
-   <TextBox x:Name="NewSecretDisplay" IsReadOnly="True" IsUndoEnabled="False" Width="550" HorizontalAlignment="Left" Margin="0,8,0,8"/>
-   <PasswordBox x:Name="ConfirmationInput" MaxLength="43" Width="550" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+   <TextBox x:Name="NewSecretDisplay" IsReadOnly="True" IsUndoEnabled="False" HorizontalAlignment="Stretch" Margin="0,8,0,8"/>
+   <PasswordBox x:Name="ConfirmationInput" MaxLength="43" HorizontalAlignment="Stretch" Margin="0,0,0,8"/>
    <Button Content="재입력 확인 후 새 자료 만들기" Click="Create_Click" HorizontalAlignment="Left" Padding="12,6" Margin="0,0,0,16"/>
    </StackPanel></Expander>
    <Expander x:Name="RecoveryTools" Header="자료 문제 복구 · 후보 보존" IsExpanded="False" Margin="0,12,0,0"><StackPanel>
    <TextBlock Text="손상·실패 복구: 기존 파일과 정상 후보를 보존합니다. 후보 검증과 적용은 별도 동작입니다." TextWrapping="Wrap" Margin="0,16,0,8"/>
    <Button Content="위 복구 비밀로 후보 검사" Click="Inspect_Click" HorizontalAlignment="Left" Padding="12,6" Margin="0,0,0,8"/>
-   <ComboBox x:Name="Candidates" DisplayMemberPath="Name" Width="550" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+   <ComboBox x:Name="Candidates" DisplayMemberPath="Name" HorizontalAlignment="Stretch" Margin="0,0,0,8"/>
    <Button Content="선택한 후보를 새 snapshot으로 복구" Click="Recover_Click" HorizontalAlignment="Left" Padding="12,6" Margin="0,0,0,8"/>
    <Button Content="보류 암호문 사본 저장" Click="ExportPending_Click" HorizontalAlignment="Left" Padding="12,6" Margin="0,0,0,8"/>
    <Button Content="암호문 사본 가져와 후보로 보존" Click="Import_Click" HorizontalAlignment="Left" Padding="12,6"/>
@@ -80,7 +81,7 @@
     <Button x:Name="BatchRestoreButton" Content="선택 메모 일괄 복원" Click="BatchRestore_Click" Padding="6" IsEnabled="False"/>
     <Button x:Name="BatchTxtExportButton" Content="선택 메모 TXT 내보내기" Click="BatchTxtExport_Click" Padding="6" Margin="0,4,0,0" IsEnabled="False"/>
     </StackPanel></Expander>
-    <Expander x:Name="BackupSettings" Header="자동 백업 · 휴지통 정리 설정" IsExpanded="False" Margin="0,16,0,0"><StackPanel>
+    <Expander x:Name="BackupSettings" HorizontalContentAlignment="Stretch" IsExpanded="False" Margin="0,16,0,0"><Expander.Header><TextBlock Text="자동 백업 · 휴지통 정리 설정" TextWrapping="Wrap" MaxWidth="150"/></Expander.Header><StackPanel>
     <TextBlock Text="자동 암호 백업" TextWrapping="Wrap"/><TextBlock x:Name="AutoBackupDirectory" TextWrapping="Wrap"/>
     <ComboBox x:Name="AutoBackupMode" SelectedIndex="0" Margin="0,4,0,4"><ComboBoxItem Content="자동 백업 꺼짐"/><ComboBoxItem Content="저장 후 백업"/><ComboBoxItem Content="UTC 하루 한 번"/></ComboBox>
     <CheckBox x:Name="AutoBackupPersist" Content="재실행 뒤 이 기기에 복원" IsChecked="False"/><CheckBox x:Name="AutoBackupExit" Content="완전 종료 때 백업"/><TextBlock Text="보관 한도 1~100개 (가득 차면 중단)" TextWrapping="Wrap"/><TextBox x:Name="AutoBackupCapacity" Text="20" MaxLength="3"/>
@@ -91,7 +92,7 @@
     </StackPanel></Expander>
    </StackPanel></ScrollViewer>
    <DockPanel Grid.Column="1" Margin="0,0,16,0">
-    <StackPanel DockPanel.Dock="Top"><WrapPanel><Button Content="순서 ↑" Click="OrderUp_Click" Padding="6" Margin="0,0,6,4"/><Button Content="순서 ↓" Click="OrderDown_Click" Padding="6" Margin="0,0,0,4"/></WrapPanel><TextBlock Text="검색"/><TextBox x:Name="SearchInput" TextChanged="SearchText_Changed" MaxLength="256" Margin="0,4,0,4"/><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문 + 첨부 이름"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/><ComboBoxItem Content="첨부 이름·확장자"/></ComboBox>
+    <StackPanel DockPanel.Dock="Top"><WrapPanel><Button Content="순서 ↑" Click="OrderUp_Click" Padding="6" Margin="0,0,6,4"/><Button Content="순서 ↓" Click="OrderDown_Click" Padding="6" Margin="0,0,0,4"/></WrapPanel><ComboBox x:Name="SearchFieldFilter" SelectedIndex="0" SelectionChanged="Filter_Changed" Margin="0,0,0,8"><ComboBoxItem Content="제목 + 본문 + 첨부 이름"/><ComboBoxItem Content="제목"/><ComboBoxItem Content="본문"/><ComboBoxItem Content="첨부 이름·확장자"/></ComboBox>
      <Border x:Name="SearchMatchArea" Visibility="Collapsed" BorderBrush="Gray" BorderThickness="1" Padding="8" Margin="0,0,0,8"><StackPanel>
       <TextBlock x:Name="SearchMatchSource" Foreground="Gray" Margin="0,0,0,4"/>
       <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto"><TextBlock x:Name="SearchMatchPreview" TextWrapping="Wrap" Visibility="Collapsed"><Run x:Name="SearchMatchBefore"/><Run x:Name="SearchMatch" FontWeight="Bold" Background="#FFE69A" Foreground="Black"/><Run x:Name="SearchMatchAfter"/></TextBlock></ScrollViewer>
@@ -103,8 +104,8 @@
    <local:RichImageNativeDockPanel x:Name="Editor" Grid.Column="2" IsEnabled="False">
     <StackPanel DockPanel.Dock="Top">
      <WrapPanel Margin="0,0,0,8"><Button Content="포스트잇 열기" Click="OpenSticky_Click" Padding="6" Margin="0,0,8,0"/><CheckBox Content="중요" IsChecked="{Binding Important}" Margin="0,4,8,0"/><CheckBox Content="즐겨찾기" IsChecked="{Binding Favorite}" Margin="0,4,8,0"/><CheckBox Content="목록 고정" IsChecked="{Binding Pinned}" Margin="0,4,8,0"/><CheckBox Content="보관" IsChecked="{Binding Archived}" Margin="0,4,8,0"/></WrapPanel>
-     <TextBlock Text="제목"/><TextBox x:Name="TitleEditor" MaxLength="256" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" Padding="6"/>
-     <TextBlock x:Name="NoteInfo" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
+     <TextBox x:Name="TitleEditor" FontWeight="Bold" BorderThickness="0" AutomationProperties.Name="메모 제목" MaxLength="256" Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" Padding="6"/>
+     <TextBlock x:Name="NoteInfo" FontSize="11" Foreground="Gray" TextWrapping="Wrap" Margin="0,0,0,8"/>
      <Expander Header="첨부 · 이미지 · OCR" IsExpanded="False" Margin="0,0,0,8"><ScrollViewer MaxHeight="240" VerticalScrollBarVisibility="Auto"><ContentControl x:Name="AttachmentHost" Visibility="Collapsed"/></ScrollViewer></Expander>
      <Expander Header="분류 · 색 · 문서 모드" IsExpanded="False"><StackPanel>
      <WrapPanel Margin="0,0,0,8"><TextBlock Text="폴더 " VerticalAlignment="Center"/><ComboBox x:Name="MoveFolder" Width="180" DisplayMemberPath="Name" SelectionChanged="MoveFolder_Changed" Margin="0,0,8,0"/><TextBlock Text="색 " VerticalAlignment="Center"/><ComboBox x:Name="ColorPicker" Width="100" SelectionChanged="Color_Changed"><ComboBoxItem Content="노랑" Tag="yellow"/><ComboBoxItem Content="파랑" Tag="blue"/><ComboBoxItem Content="초록" Tag="green"/><ComboBoxItem Content="분홍" Tag="pink"/><ComboBoxItem Content="흰색" Tag="white"/><ComboBoxItem Content="보라" Tag="purple"/></ComboBox></WrapPanel>
@@ -115,7 +116,7 @@
      </StackPanel></Expander>
     </StackPanel>
     <Grid x:Name="BodyPanel"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-    <TextBox x:Name="BodyEditor" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8" IsUndoEnabled="True" UndoLimit="100"/>
+    <TextBox x:Name="BodyEditor" BorderThickness="0" MaxLength="65536" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8" IsUndoEnabled="True" UndoLimit="100"/>
     <local:RichImageNativeContentControl x:Name="StructuredHost" Grid.RowSpan="2" Visibility="Collapsed"/><ContentControl x:Name="MarkdownHost" Grid.Row="1" MaxHeight="280" MinHeight="80" Margin="0,8,0,0" Visibility="Collapsed"/>
     </Grid>
    </local:RichImageNativeDockPanel>
